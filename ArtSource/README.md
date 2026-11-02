@@ -14,6 +14,7 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 | `Train/WagonCorner/build_wagon_corner.py` | Wagonhoek-blockout (deur, slot, ramen, interieurstukje) + art-check-decor |
 | `Tools/meshkit.py` | Kleine numpy-toolkit: lathe/superellips, afgeronde box, ellipsoïde, capsule; export naar FBX (ASCII) en glTF (.glb) |
 | `Tools/spatial_fallback.py` | NumPy-terugval voor de straalzoekopdracht bij het bakken van vertexkleur als SciPy ontbreekt |
+| `Tools/implicit_body.py` | Bouwt het lijf met broek en voeten als één verbonden oppervlak met een echte opening tussen de benen |
 | `Tools/unity_assets.py` | Schrijft URP Lit-materialen (`.mat`) en `.meta`-bestanden met stabiele GUID's |
 | `Render/render.html`, `render.cjs` | Headless stijlrender (three.js + Playwright) met de stylized ramp-shader |
 | `Render/scenes/*.json` | Camera's, poses en expressies van alle renders |
@@ -50,11 +51,10 @@ Pas vormen of maten aan in de `build_*.py`-scripts, niet in de FBX. Kleuren kome
 ## Conventies
 
 - Y omhoog, het model kijkt naar **+Z**, 1 unit = **1 meter**. De linkerkant van een personage ligt op +X.
-- **Starre poppen-rig:** elk onderdeel is een eigen node met een pivot op het gewricht (heup, schouder, pet, ogen).
-  Animatie = transforms roteren. Dit past bij de stijve, klungelige stijl en is eenvoudig te synchroniseren.
-  Er is geen skinning; die volgt alleen als een animatie erom vraagt.
-- **Conceptstudie v2:** de broekspijpen zijn hoger zichtbaar, met een huidkleurige V-hals en kleinere donkere revers. `Neckline` is een kind van `Body`. De bestaande ontwerpbladen zijn van vóór deze wijziging; zie `Docs/Art/Conductor_ConceptStudy_v2.png` voor een eenvoudige vormvergelijking, niet voor een Unity- of shadergoedkeuring.
-- Hiërarchie conducteur: `Conductor › Body › (Collar, Buttons, Eye_L/R › Pupil_L/R, Mouth_Neutral|Surprised|Happy, Cap, Arm_L/R › Hand_L/R › Prop_Key)`, `Leg_L/R`.
+- **Rigstatus:** de armen blijven aparte nodes en de sleutel kan aan `Hand_L` worden bevestigd. Per arm zijn mouw en hand nu één oppervlak met twee materialen. Lijf, broekspijpen en donker schoeisel vormen samen één verbonden `Body`-mesh. `Leg_L/R` zijn voorlopig lege plaatsaanduidingen: draaien van die nodes animeert de benen niet. Voor loopanimaties moet nog een huid-/bottenrig of een andere passende oplossing worden ontworpen en getest.
+- **Conceptstudie v3:** het lijf loopt door in ronde benen met een echte opening ertussen; het petembleem zit op de band en de armen lopen geleidelijk door in de handen. De bestaande ontwerpbladen en v2-vergelijking tonen vorige modelversies; zie `Docs/Art/Conductor_ConceptStudy_v3.png` voor een voorlopige vormvergelijking, niet voor een Unity- of shadergoedkeuring. De huidige hoge meshdichtheid is een prototype en moet voor meerdere personages worden beoordeeld.
+- `python ArtSource/Tests/test_conductor_body.py` controleert onder meer of het lijf een enkele gesloten mesh is en de ruimte tussen de benen echt open is.
+- Hiërarchie conducteur: `Conductor › Body › (Neckline, Collar, Buttons, Eye_L/R › Pupil_L/R, Mouth_Neutral|Surprised|Happy, Cap, Arm_L/R › Hand_L/R › Prop_Key)`, plus lege `Leg_L/R`-ankers.
   Standaard verborgen: `Mouth_Surprised`, `Mouth_Happy`, `Prop_Key`.
 - Wagonhoek: `DoorLeaf_L/R` schuiven langs lokale X (dicht = +0,475 / −0,475). `KeyLock` (0,72 m) en
   `DoorSill` zijn de interactie-ankers voor P0-05.

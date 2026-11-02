@@ -28,6 +28,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "ArtSource", "Tools"))
 import meshkit as mk  # noqa: E402
+import implicit_body  # noqa: E402
 import unity_assets  # noqa: E402
 
 PALETTE = json.load(open(os.path.join(ROOT, "Docs", "References", "palette.json"), encoding="utf-8"))
@@ -38,7 +39,7 @@ H_TOTAL = 1.25
 BODY_R = 0.28           # halve lijfbreedte
 BODY_DEPTH = 0.86       # diepte t.o.v. breedte (iets platte voorkant)
 BODY_N = 2.6            # superellips-doorsnede: zacht vierkant, 'speelgoed'
-Y_BOTTOM = 0.235        # hoger lijf: korte, afzonderlijke broekspijpen zichtbaar zoals in concept
+Y_BOTTOM = 0.235        # hoogte van het kruis; broekspijpen vormen één mesh met het lijf
 Y_DOME = 0.80           # begin van de koepel
 Y_TOP = 1.02            # kruin (zit onder de pet)
 Y_COLLAR = 0.53         # grens huid/uniform
@@ -46,9 +47,8 @@ EYE_Y, EYE_R, EYE_X = 0.835, 0.106, 0.099
 EYE_DEPTH = 0.55         # bolling van het oog (t.o.v. straal)
 MOUTH_Y = 0.632
 SHOULDER = (0.240, 0.475, 0.0)   # mouw komt hoog en dik uit de bovenkant van de jas (concept)
-HAND_OFFSET = 0.165
 HIP_Y = 0.265
-LEG_X = 0.120
+LEG_X = 0.162
 
 SEG = 32                # omtrek-segmenten lijf (rond silhouet, nog steeds low-poly)
 
@@ -58,8 +58,7 @@ def body_radius(y):
     if y >= Y_DOME:
         t = min(1.0, (y - Y_DOME) / (Y_TOP - Y_DOME))
         return max(0.0, (1 - t ** 2.4)) ** (1 / 2.4) * 0.965
-    # lichte taps: jas onderaan 3% breder dan het hoofd
-    return 0.965 + 0.035 * (1 - (y - Y_BOTTOM) / (Y_DOME - Y_BOTTOM))
+    return 1.0
 
 
 def body_surface(x, y):
@@ -88,24 +87,7 @@ def face_frame(nrm):
 
 # ------------------------------------------------------------------- onderdelen
 def build_body():
-    prof = [(0.0, Y_BOTTOM)]
-    fil = 0.07
-    for k in range(0, 6):
-        th = math.pi / 2 * k / 5
-        r = (BODY_R - fil + fil * math.sin(th)) / BODY_R
-        y = Y_BOTTOM + fil - fil * math.cos(th)
-        prof.append((r * body_radius(y) / body_radius(Y_BOTTOM + fil), y))
-    ys = list(np.linspace(Y_BOTTOM + fil + 0.04, Y_DOME, 16)) + [Y_COLLAR]
-    ys = sorted(set(round(v, 4) for v in ys))
-    prof += [(body_radius(y), y) for y in ys]
-    for k in range(1, 9):
-        y = Y_DOME + (Y_TOP - Y_DOME) * (k / 8) ** 0.8
-        prof.append((body_radius(y) if k < 8 else 0.0, y))
-    m = mk.lathe(prof, SEG, BODY_R, BODY_R * BODY_DEPTH, BODY_N, mat="M_Conductor_Skin")
-    # materiaalsplitsing op de kraaglijn
-    m.M = ["M_Conductor_Uniform" if m.V[list(f)][:, 1].mean() < Y_COLLAR else "M_Conductor_Skin" for f in m.F]
-    # jas-split tussen de benen: klein inkepinkje aan de voorkant is niet nodig in low-poly; benen tonen het al
-    return m
+    return implicit_body.make_body(BODY_R, BODY_DEPTH, Y_COLLAR)
 
 
 def conform(mesh, lift=0.003):
@@ -125,17 +107,14 @@ def build_neckline():
 
 
 def build_collar():
-    """Kraag (concept): smalle jasrand rond de hals + twee platte revers die in een V samenkomen."""
-    a = BODY_R * body_radius(Y_COLLAR)
-    roll = mk.torus(1.0, 0.011, SEG, 6, mat="M_Conductor_Uniform", a=a + 0.002, b=a * BODY_DEPTH + 0.002, n=BODY_N)
-    roll = roll.transform(t=(0, Y_COLLAR + 0.002, 0))
-    parts = [roll]
-    v_y = Y_COLLAR - 0.062          # punt van de V
-    for sx in (-1, 1):
-        ang = math.atan2(0.066, 0.092)
-        lap = mk.rounded_box(0.092, 0.042, 0.009, 0.006, 2, mat="M_Conductor_UniformDark").transform(t=(0, 0, 0.0045))
-        lap = lap.transform(R=mk.rot_z(sx * ang), t=(sx * 0.072, v_y + 0.030, 0.0))
-        parts.append(conform(lap, 0.002))
+    """Vlakke revers langs de V-hals, zonder opstaande kraagrol."""
+    parts=[]
+    for side in (-1,1):
+        xy=[(side*0.070,Y_COLLAR),(side*0.120,Y_COLLAR-0.036),
+            (side*0.070,Y_COLLAR-0.064),(0.0,Y_COLLAR-0.057)]
+        v=np.array([(x,y,body_surface(x,y)[0]+0.008) for x,y in xy])
+        faces=[(0,1,2),(0,2,3)] if side < 0 else [(2,1,0),(3,2,0)]
+        parts.append(mk.Mesh(v,faces,['M_Conductor_UniformDark']*2))
     return mk.merge(*parts)
 
 
@@ -203,24 +182,20 @@ def build_cap():
     # klep: platte ellipsoïde die vóór de band uitsteekt, licht omlaag gekanteld
     brim = mk.ellipsoid(band_a * 0.96, 0.02, 0.22, 28, 6, mat="M_Conductor_UniformDark")
     brim = brim.transform(R=mk.rot_x(math.radians(16)), t=(0, -0.002, band_b - 0.05))
-    # embleem: rond, goud, half op de band (concept)
-    # embleem (concept): grote, bolle gouden knop op de voorkant van de kroon, net boven de band
-    t_b = 0.55
-    r_b = 0.97 + 0.31 * math.sin(t_b * math.pi / 2) ** 0.9
-    z_b = band_b * 1.04 * r_b + 0.02
-    badge = mk.ellipsoid(0.072, 0.050, 0.040, 20, 10, mat="M_Conductor_Gold", n=2.3)
-    badge = badge.transform(R=mk.rot_x(math.radians(-12)), t=(0, BAND_H + 0.11 * t_b, z_b - 0.014))
+    # Embleem zit op de gouden band, overlapt de bovenrand licht zoals het concept.
+    badge = mk.ellipsoid(0.059, 0.043, 0.026, 20, 10, mat="M_Conductor_Gold", n=2.1)
+    badge = badge.transform(R=mk.rot_x(math.radians(-10)), t=(0, BAND_H * 0.62, band_b + 0.014))
     return mk.merge(band, crown, under, brim, badge)
 
 
 def build_arm():
-    """Mouw vanaf schouder-pivot; wijst in rust langs lokale -Y."""
-    sleeve = mk.capsule_between((0, 0.03, 0), (0, -0.105, 0), 0.076, 0.071, 18, 4, mat="M_Conductor_Uniform")
-    return sleeve
-
-
-def build_hand():
-    return mk.ellipsoid(0.094, 0.097, 0.088, 20, 12, mat="M_Conductor_Skin")
+    """Eén doorlopend mouw-handvolume; het materiaal wisselt bij de pols."""
+    profile=[(0.0,-0.265),(0.046,-0.260),(0.068,-0.244),(0.078,-0.218),
+             (0.079,-0.190),(0.074,-0.164),(0.071,-0.148),
+             (0.073,-0.120),(0.077,-0.070),(0.079,-0.025),(0.071,0.018),(0.0,0.045)]
+    arm=mk.lathe(profile,24,a=1.0,b=0.88,n=2.0,mat="M_Conductor_Uniform")
+    arm.M=["M_Conductor_Skin" if arm.V[list(f),1].mean() < -0.148 else "M_Conductor_Uniform" for f in arm.F]
+    return arm
 
 
 def build_key():
@@ -229,14 +204,6 @@ def build_key():
     shaft = mk.capsule_between((0, -0.03, 0), (0, -0.19, 0), 0.011, 0.011, 8, 2, mat="M_Conductor_Gold")
     bit = mk.rounded_box(0.035, 0.03, 0.012, 0.005, 1, mat="M_Conductor_Gold").transform(t=(0.02, -0.17, 0))
     return mk.merge(ring, shaft, bit).transform(t=(0, -0.02, 0.05))
-
-
-def build_leg():
-    """Dik, kort beentje + ronde 'kiezel'-voet met platte zool (concept); pivot = heup (lokale y=0 op HIP_Y)."""
-    leg = mk.capsule_between((0, 0.115 - HIP_Y, 0), (0, 0.285 - HIP_Y, 0), 0.105, 0.100, 18, 4, mat="M_Conductor_Uniform")
-    foot = mk.ellipsoid(0.104, 0.078, 0.132, 20, 10, mat="M_Conductor_Shoe", n=2.5).transform(t=(0, 0.062 - HIP_Y, 0.03))
-    foot.V[:, 1] = np.maximum(foot.V[:, 1], -HIP_Y)   # platte zool op de grond
-    return mk.merge(leg, foot)
 
 
 # ----------------------------------------------------------------------- scène
@@ -281,12 +248,12 @@ def build_scene(arm_angle_deg=50.0):
         sh = np.array([side * SHOULDER[0], SHOULDER[1], SHOULDER[2]]) - hip
         Ra = mk.rot_z(side * math.radians(arm_angle_deg))
         sc.add(mk.Part("Arm_" + nm, build_arm(), tuple(sh), "Body", Ra, ao_group="arm_" + nm, gradient=0.0))
-        sc.add(mk.Part("Hand_" + nm, build_hand(), (0, -HAND_OFFSET, 0.0), "Arm_" + nm, ao_group="arm_" + nm))
+        # Hand-pivot blijft beschikbaar als anker; huid en mouw zijn één mesh op Arm.
+        sc.add(mk.Part("Hand_" + nm, None, (0, -0.21, 0.0), "Arm_" + nm, ao_group="arm_" + nm))
     sc.add(mk.Part("Prop_Key", build_key(), (0, 0, 0), "Hand_L", visible=False))
 
     for side, nm in ((1, "L"), (-1, "R")):
-        sc.add(mk.Part("Leg_" + nm, build_leg(), (side * LEG_X, HIP_Y, 0.0), "Conductor",
-                       ao_group="leg_" + nm, ao_receive=("body",), gradient=0.25))
+        sc.add(mk.Part("Leg_" + nm, None, (side * LEG_X, HIP_Y, 0.0), "Conductor"))
     # ogen en pupillen blijven helder (concept): eigen AO-groep zonder occluders
     for p in sc.parts:
         if p.name.startswith(("Eye_", "Pupil_")):
