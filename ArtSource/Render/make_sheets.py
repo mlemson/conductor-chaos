@@ -3,6 +3,8 @@
   Docs/Art/Conductor_DesignSheet.png   turnaround, expressies, pose, ramps, proporties
   Docs/Art/ArtCheck_Wagon.png          conducteur bij de wagondeur (dicht shot) + wijd shot
   Docs/Art/ArtCheck_vs_Concept.png     render naast de conceptafbeelding
+  Docs/Art/Locomotive_DesignSheet.png  locomotief + kolenwagen
+  Docs/Art/CattleWagon_DesignSheet.png veewagen
 """
 import json
 import os
@@ -203,7 +205,8 @@ def art_check():
     wh = int(bgw.height * ww / bgw.width)
     sheet.alpha_composite(bgw.resize((ww, wh), Image.LANCZOS), (cw + 100, 200))
     d.text((cw + 100, 220 + wh), "Wijd shot: schaal t.o.v. wagon en landschap", font=font(22), fill=TXT)
-    notes = ["Facetstijl zoals de concept-locomotief: afgeschuinde blokken, vlakken met eigen toon",
+    notes = ["Low-poly: effen facetten, grote kleurvlakken, vuil onderin",
+             "Doorloopbaar: kopse doorgangen met balkons, interieur met banken",
              "Conducteur 1,25 m · wagon 7,2 m · deur 1,76 m hoog, 1,20 m breed",
              "Slot op 0,72 m: binnen bereik van de korte armpjes",
              "Livrei: treinrood, lichtere inzetpanelen, gouden bies, donkerbruin dak",
@@ -325,10 +328,78 @@ def loco_sheet():
     sheet.convert("RGB").save(os.path.join(DOCS, "Locomotive_DesignSheet.png"), optimize=True)
 
 
+def cattle_sheet():
+    W, H = 3000, 2120
+    sheet = Image.new("RGBA", (W, H), BG + (255,))
+    d = ImageDraw.Draw(sheet)
+    label(d, (60, 40), "Veewagen · ontwerpblad v1", 56)
+    d.text((64, 148), "Tweede wagontype (issue #25) · rode kooi uit één stuk om een houten lattenwand · doorloopbaar · kleuren uit palette.json",
+           font=font(25, False), fill=SUB)
+    hero = sky(load("cattle_hero").size)
+    hero.alpha_composite(load("cattle_hero"))
+    hw = 1560
+    hh = int(hero.height * hw / hero.width)
+    sheet.alpha_composite(hero.resize((hw, hh), Image.LANCZOS), (60, 200))
+    label(d, (84, 216), "Op het perron: schuifdeur open, regionale wagon erachter", 28)
+    rx = 60 + hw + 40
+    d.rounded_rectangle([rx, 200, W - 50, 200 + hh], 22, fill=PANEL)
+    d.text((rx + 24, 222), "Ontwerp", font=font(28), fill=YEL)
+    notes = ["Kooi (hoekstijlen, regels, deurstijlen) is één",
+             "  doorlopend stuk; geen losse latten tegen elkaar",
+             "Latten = één geheel met de wand; de kieren zijn",
+             "  echte openingen (stro en hooibalen zichtbaar)",
+             "Schuifdeur met Z-schoor uit één stuk, gele greep;",
+             "  schuift over het vak ernaast (anker SlideDoor_*)",
+             "Kopse doorgangen + balkons + gele relingen,",
+             "  zelfde maten als de regionale wagon",
+             "Gewelfd dak, weinig facetten; vuil onderin",
+             "Interieur: stro, hooibalen, voerbak; gangpad vrij"]
+    for k, t in enumerate(notes):
+        d.text((rx + 24, 280 + k * 44), ("•  " if not t.startswith("  ") else "    ") + t.strip(), font=font(21, False), fill=SUB)
+    det = sky(load("cattle_detail").size)
+    det.alpha_composite(load("cattle_detail"))
+    det = fit(det, W - 50 - rx - 48, 200 + hh - (280 + len(notes) * 44) - 70)
+    sheet.alpha_composite(det, (rx + 24, 300 + len(notes) * 44))
+    d.text((rx + 24, 306 + len(notes) * 44 + det.height), "Hoek: kooi, latten en dagkanten lopen naadloos door", font=font(20, False), fill=MUTED)
+    by = 200 + hh + 30
+    d.rounded_rectangle([60, by, W - 50, by + 560], 22, fill=PANEL)
+    label(d, (84, by + 14), "Aanzichten", 30)
+    views = [("cattle_34", "Voor 3/4"), ("cattle_side", "Zijaanzicht"), ("cattle_end", "Kopse kant: doorgang"),
+             ("cattle_door", "Schuifdeur open"), ("cattle_in", "Binnen: stro, hooi")]
+    cw = (W - 170) // 5
+    for i, (n, cap) in enumerate(views):
+        im = load(n)
+        im = fit(crop_alpha(im) if n not in ("cattle_door", "cattle_in") else im, cw - 40, 430)
+        x = 90 + i * cw + (cw - im.width) // 2
+        sheet.alpha_composite(im, (x, by + 80 + (430 - im.height) // 2))
+        d.text((90 + i * cw + cw // 2, by + 520), cap, font=font(24), fill=TXT, anchor="ma")
+    ly = by + 590
+    d.rounded_rectangle([60, ly, W - 50, H - 40], 22, fill=PANEL)
+    mats = json.load(open(os.path.join(ROOT, "ArtSource", "Exports", "CattleWagon_Blockout.materials.json"), encoding="utf-8"))
+    d.text((90, ly + 24), "Materialen (ramp schaduw → licht)", font=font(24), fill=YEL)
+    for i, (name, m) in enumerate(mats["materials"].items()):
+        x = 90 + (i % 5) * 270
+        y = ly + 70 + (i // 5) * 80
+        d.text((x, y), name.replace("M_Cattle_", ""), font=font(18), fill=TXT)
+        for j, hx in enumerate(m["ramp"]):
+            c = tuple(int(hx[k:k + 2], 16) for k in (1, 3, 5))
+            d.rounded_rectangle([x + j * 40, y + 28, x + j * 40 + 35, y + 54], 5, fill=c)
+    st = mats["stats"]
+    info = ["Bak 6,4 × 2,6 m · vloer 0,10 m · deur 1,5 m breed · doorgang 0,9 m",
+            f"{st['tris']:,} driehoeken · {st['materials']} materialen".replace(",", "."),
+            "Onderdelen: Walls, Cage, Roof, Interior, SlideDoor_Near/Far, DoorTracks, Underframe, Ends",
+            "Bron: ArtSource/Train/CattleWagon/build_cattle_wagon.py → CattleWagon_Blockout.fbx"]
+    for k, t in enumerate(info):
+        d.text((1500, ly + 70 + k * 40), "•  " + t, font=font(20, False), fill=SUB)
+    sheet.convert("RGB").save(os.path.join(DOCS, "CattleWagon_DesignSheet.png"), optimize=True)
+
+
 if __name__ == "__main__":
     design_sheet()
     c = art_check()
     vs_concept(c)
     if os.path.exists(os.path.join(OUT, "loco_hero.png")):
         loco_sheet()
+    if os.path.exists(os.path.join(OUT, "cattle_hero.png")):
+        cattle_sheet()
     print("ok ->", DOCS)
