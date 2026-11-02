@@ -4,6 +4,12 @@ Een warme, speelse co-opgame in ontwikkeling: 1–6 spelers proberen samen een t
 
 **Status:** fundament en documentatie. Er is nog geen gameplay, scène, kaart, netwerkverbinding of speelbare build. De Unity-basis is samengesteld uit de lokaal geïnstalleerde Unity URP-template en moet nog in de editor worden geopend en gevalideerd. Unity 6000.5.7f1 is de beoogde editorversie; package-resolutie en licentie zijn nog niet gecontroleerd.
 
+## 🚂 Live roadmap en samenwerken
+
+[**Bekijk het ontwikkelbord**](Docs/PROJECT_BOARD.md) · [**Openstaande taken**](https://github.com/mlemson/conductor-chaos/issues) · [**Samenwerkingsregels**](Docs/DEVELOPMENT_WORKFLOW.md)
+
+Het bord toont automatisch *te doen*, *bezig*, *review*, *geblokkeerd* en *klaar* zodra [de GitHub-workflow](.github/workflows/update-development-board.yml) in `main` is samengevoegd. De daadwerkelijke status komt uit GitHub Issues en gekoppelde PR's; niet uit losse commitberichten.
+
 ## Begin hier
 
 1. [Agentinstructies](AGENTS.md) en [projectstatus](Docs/AI/UnityProjectContext.md).
