@@ -13,6 +13,10 @@ Een humoristische **coöperatieve conducteur-game** waarin 1–6 spelers een tre
 4. **Van gezellig naar spannend:** begin met normale stations en passagiers; schaal daarna op naar meer tijdsdruk, technische problemen, moeilijkere routes, afgronden, bruggen en tunnels. Elke stap bouwt voort op bestaande handelingen.
 5. **Charmante, lichte 3D:** chunky kleine personages met grote expressieve ogen, ronde simpele volumes, matte materialen, beperkt palet en warm licht. Speels en compact, niet glossy/realistisch/futuristisch.
 
+## Fysiek ontsporen hoort bij de game
+
+De trein blijft **niet gegarandeerd op het spoor**. Bij een defect spoor, botsing, te hoge snelheid of instortende brug kunnen (delen van) de trein daadwerkelijk fysiek ontsporen, rollen en van hoogte vallen. Passagiers, spelers en voorwerpen reageren erop. Dat moet voor alle online spelers dezelfde server-autoritatieve gebeurtenis zijn, geen animatietruc. Normaal rijden mag efficiënt spoorgeleid blijven zolang botsingen niet onmogelijk gemaakt worden. Zie het expliciete [derailment- en physics-ontwerp](DERAILMENT_PHYSICS.md).
+
 ## Belangrijke interacties
 - Conducteur gebruikt een zichtbare sleutel in een slot om een deur te openen, te houden of vrij te geven. **Niet** een tweede generieke knop die exact hetzelfde doet als de sleutel; animatie en rechten consistent houden, ook onder beweging.
 - Reizigers staan/zitten, bieden tickets aan, reageren op controle, blokkeren soms de doorgang.
