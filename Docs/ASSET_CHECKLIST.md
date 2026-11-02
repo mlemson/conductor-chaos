@@ -1,5 +1,8 @@
 # 2. Unity Asset Checklist – Conducteur Game
 
+> **Let op:** 'Must Have' hieronder betekent nodig voor de volledige gewenste game, **niet** dat alles vóór de eerste technische P0-test gebouwd moet worden. De P0-test gebruikt tijdelijke geometrie, terwijl één kleine art-direction test parallel kan plaatsvinden. Zie [gamevisie](GAME_VISION.md) en [roadmap](ROADMAP.md). Gebruik de [visuele referenties](References/README.md) voor art-consistentie.
+
+
 Hieronder een praktische checklist.  
 Ik deel hem op in **Must Have**, **Should Have Later** en **Nice to Have**.
 
