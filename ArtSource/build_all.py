@@ -24,7 +24,6 @@ def run(*args, **kw):
 
 
 def main():
-    run(PY, os.path.join(HERE, "Textures", "build_paint_texture.py"))
     run(PY, os.path.join(HERE, "Characters", "Conductor", "build_conductor.py"))
     run(PY, os.path.join(HERE, "Train", "RegionalWagon", "build_regional_wagon.py"))
     run(PY, os.path.join(HERE, "Train", "Locomotive", "build_locomotive.py"))

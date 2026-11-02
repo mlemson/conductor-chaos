@@ -207,6 +207,7 @@ def build_wagon():
     sc.add(mk.Part("Ends", mk.merge(*ends), (0, 0, 0), "RegionalWagon"))
     for p in sc.parts:
         p.gradient = 0.25
+    sc.facet_all()
     sc.bake_shading(density=900, radius=0.30, noise_freq=1.1, edge_range=(3.0, 10.0))
     return sc
 
@@ -274,6 +275,7 @@ def build_env():
     for p in sc.parts:
         p.gradient = 0.0 if p.name in ("Ground", "Platform", "Mountains") else 0.15
         p.edges = p.name != "Mountains"
+    sc.facet_all()
     sc.bake_shading(density=60, radius=1.2, noise_freq=0.45, edge_range=(4.0, 14.0), max_samples=60000)
     return sc
 

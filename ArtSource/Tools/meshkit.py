@@ -511,6 +511,13 @@ class Scene:
             M = M @ L
         return M
 
+    def facet_all(self, skip=()):
+        """Low-poly look: alle vlakken plat (harde normalen), behalve onderdelen in `skip`."""
+        for p in self.parts:
+            if p.mesh is not None and p.name not in skip:
+                p.mesh.sharp = True
+                p.mesh.FS = None
+
     def bake_shading(self, density=3000.0, radius=0.12, noise_freq=4.0, edge_range=(9.0, 30.0), seed=1,
                      max_samples=120000):
         """Bak 'geschilderde' variatie per vertex in mesh.C = (R occlusie, G randlicht, B verfvariatie, A 1).

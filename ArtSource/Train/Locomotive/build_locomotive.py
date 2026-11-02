@@ -335,6 +335,7 @@ def build_locomotive():
         if p.name in ("Cab", "CabRoof", "Boiler", "Frame", "HeadLight", "Cylinders", "Firebox", "CoalBin", "FireboxDoor", "Regulator"):
             p.ao_group = "body"
     sc.get("Wheels").gradient = 0.12
+    sc.facet_all()
     sc.bake_shading(density=1100, radius=0.30, noise_freq=1.3, edge_range=(4.0, 16.0))
     return sc
 

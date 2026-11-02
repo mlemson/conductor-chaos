@@ -14,7 +14,6 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 | `Train/RegionalWagon/build_regional_wagon.py` | Regionale wagon in facetstijl (deur, slot, grepen, ramen, draaistellen, koplampen) + art-check-decor |
 | `Train/Locomotive/build_locomotive.py` | Locomotief v2.1 (ronde ketelneus, rookkastring met lamp, gewelfd dak, sierlijsten, drijfstang) — issue #22 |
 | `Train/Tender/build_tender.py` | Kolenwagen direct achter de loc (rode bak, gouden rand, panelen met klinknagels, kolenberg, ladder, sluitlampen) — issue #22 |
-| `Textures/build_paint_texture.py` | Tegelbare verftextuur `T_PaintStrokes` (vlekken, penseeltoetsen, korrel) |
 | `Tools/meshkit.py` | Kleine numpy-toolkit: lathe/superellips, afgeronde box, ellipsoïde, capsule, profielextrusie (ketel/dak); export naar FBX (ASCII) en glTF (.glb) |
 | `Tools/unity_assets.py` | Schrijft URP Lit-materialen (`.mat`) en `.meta`-bestanden met stabiele GUID's |
 | `Render/render.html`, `render.cjs` | Headless stijlrender (three.js + Playwright) met de stylized ramp-shader |
@@ -29,7 +28,6 @@ Gegenereerde uitvoer:
 - `Assets/Art/Models/Train/RegionalWagon/RegionalWagon_Blockout.fbx` (+ `.meta`)
 - `Assets/Art/Models/Train/Locomotive/Locomotive_Blockout.fbx` (+ `.meta`)
 - `Assets/Art/Models/Train/Tender/Tender_Blockout.fbx` (+ `.meta`)
-- `Assets/Art/Textures/T_PaintStrokes.png` (+ `.meta`: lineair, herhalen)
 - `Assets/Art/Materials/...` URP Lit-materialen (middentoon van elke ramp)
 - `Docs/Art/Conductor_DesignSheet.png`, `ArtCheck_Wagon.png`, `ArtCheck_vs_Concept.png`, `Locomotive_DesignSheet.png`
 
@@ -62,8 +60,9 @@ Pas vormen of maten aan in de `build_*.py`-scripts, niet in de FBX. Kleuren kome
   `DoorSill` zijn de interactie-ankers voor P0-05.
 - **Geschilderde variatie** (zodat niets één effen kleur is) is per vertex gebakken in de vertexkleur
   (`Scene.bake_shading`): **R** = occlusie (hoeken, onder randen, onderkant iets donkerder), **G** = randlicht op
-  afrondingen, **B** = verfvlekken (fBm, 0,5 = neutraal). De shader verschuift hiermee de positie in de kleurramp;
-  daarbovenop komt de verftextuur `T_PaintStrokes`, die de shader triplanair in objectruimte projecteert (geen UV's nodig). In Unity leest de toekomstige Shader Graph dit via de
+  afrondingen, **B** = verfvlekken (fBm, 0,5 = neutraal; staat in de render **uit**, `noise=1` zet hem aan ter vergelijking).
+  De shader verschuift hiermee de positie in de kleurramp. **Low-poly:** trein en decor hebben harde normalen per vlak
+  (`Scene.facet_all`), zodat elk vlak één effen tint krijgt. De conducteur blijft glad (boonvorm). In Unity leest de toekomstige Shader Graph dit via de
   *Vertex Color*-node. URP Lit negeert vertexkleuren.
 - Materialen heten `M_<Asset>_<Deel>`. In `*.materials.json` staan per materiaal de ramp (5 tinten),
   `rampShift` en shaderhints (`flat`, `noShadow`, `emissive`) voor de toekomstige stylized-lit Shader Graph.

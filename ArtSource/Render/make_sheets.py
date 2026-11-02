@@ -286,7 +286,7 @@ def loco_sheet():
              "Achthoekige rookkastring met 4 gouden bouten, lens geel → oranje",
              "Ruime cabine met kooloventje (gloeiend deurtje, drukmeter, hendel)",
              "Kolenwagen: rode bak, gouden rand/hoekstrips, panelen met klinknagels",
-             "Geschilderd: verftextuur (penseeltoetsen) + donkere ingezette panelen"]
+             "Low-poly: effen vlakken, harde facetten, donkerder ingezette panelen"]
     for k, t in enumerate(notes):
         d.text((rx + 24, ty + tx.height + 50 + k * 32), "•  " + t, font=font(19, False), fill=SUB)
     # aanzichten
@@ -317,7 +317,7 @@ def loco_sheet():
     tst = json.load(open(os.path.join(ROOT, "ArtSource", "Exports", "Tender_Blockout.materials.json"), encoding="utf-8"))["stats"]
     info = [f"Loc ≈ 6,8 m · cabine 2,6 m · vloer 0,74 m · kolenwagen 3,4 m",
             f"Loc {st['tris']:,} · kolenwagen {tst['tris']:,} driehoeken".replace(",", "."),
-            "Variatie: vertexkleur (AO/randen) + verftextuur T_PaintStrokes (triplanair)",
+            "Low-poly: effen platte vlakken, schaduw per facet, donkere inzetpanelen",
             "Onderdelen kolenwagen: Frame, Body › Coal/Ladder/TailLights, Wheels",
             "Bron: ArtSource/Train/{Locomotive,Tender}/build_*.py → *_Blockout.fbx"]
     for k, t in enumerate(info):

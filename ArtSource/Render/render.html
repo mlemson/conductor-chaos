@@ -29,6 +29,7 @@ document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const STYLE = {
+  noise: +(Q.get('noise') ?? 0),   // 0 = effen low-poly vlakken (gekozen stijl); 1 = gebakken verfvlekken (B) ter vergelijking
   key: '#FFE3BC', rim: '#B2C5F3', rimStrength: +(Q.get('rim') || 0.32),
   ground: '#6A4C4B',
   fog: Q.get('fog') || '#91A8E6', fogNear: +(Q.get('fogNear') || 1e5), fogFar: +(Q.get('fogFar') || 2e5),
@@ -50,28 +51,17 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
     sh.uniforms.uFogRange = { value: new THREE.Vector2(STYLE.fogNear, STYLE.fogFar) };
     sh.uniforms.uEmissive = { value: opts.emissive ?? 0.0 };
     sh.uniforms.uHasShade = { value: opts.hasShade ? 1.0 : 0.0 };
-    sh.uniforms.uPaint = { value: opts.paint ?? 1.0 };
+    sh.uniforms.uPaint = { value: (opts.paint ?? 1.0) * STYLE.noise };
     sh.uniforms.uEdge = { value: opts.edge ?? 1.0 };
-    sh.uniforms.uPaintTex = { value: window.__paintTex };
-    sh.uniforms.uPaintScale = { value: 1.0 / 2.4 };   // één tegel ≈ 2,4 m
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
-        attribute vec4 color; varying vec4 vShade; varying vec3 vWorldPos; varying vec3 vLocalPos; varying vec3 vLocalNormal;`)
+        attribute vec4 color; varying vec4 vShade; varying vec3 vWorldPos;`)
       .replace('#include <fog_vertex>', `#include <fog_vertex>
-        vShade = color; vWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz; vLocalPos = transformed; vLocalNormal = objectNormal;`);
+        vShade = color; vWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
         uniform vec3 uRamp[5]; uniform float uShift; uniform vec3 uFog; uniform vec2 uFogRange; uniform float uEmissive;
-        uniform float uHasShade; uniform float uPaint; uniform float uEdge; varying vec4 vShade; varying vec3 vWorldPos; varying vec3 vLocalPos;
-        varying vec3 vLocalNormal; uniform sampler2D uPaintTex; uniform float uPaintScale;
-        // triplanaire projectie van de geschilderde textuur in objectruimte (geen UV's nodig; zelfde aanpak als in Unity)
-        vec4 paintTriplanar(vec3 p, vec3 n) {
-          vec3 w = pow(abs(normalize(n)), vec3(4.0)); w /= (w.x + w.y + w.z);
-          vec4 a = texture2D(uPaintTex, p.zy * uPaintScale);
-          vec4 b = texture2D(uPaintTex, p.xz * uPaintScale + 0.37);
-          vec4 c = texture2D(uPaintTex, p.xy * uPaintScale + 0.71);
-          return a * w.x + b * w.y + c * w.z;
-        }
+        uniform float uHasShade; uniform float uPaint; uniform float uEdge; varying vec4 vShade; varying vec3 vWorldPos;
         float hash13(vec3 p){ p = fract(p*0.1031); p += dot(p, p.zyx+31.32); return fract((p.x+p.y)*p.z); }
         float vnoise(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
           return mix(mix(mix(hash13(i),hash13(i+vec3(1,0,0)),f.x), mix(hash13(i+vec3(0,1,0)),hash13(i+vec3(1,1,0)),f.x),f.y),
@@ -96,11 +86,6 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
         t -= (1. - ao) * 0.17;                                     // occlusie: dieper in de ramp
         t += edgeV * mix(0.05, 0.13, band) * uEdge;                // geschilderde lichte randjes op bevels/facetten
         t += (paint - 0.5) * 0.10 * uPaint;                        // verfvlekken (lage frequentie)
-        // geschilderde textuur in objectruimte (beweegt mee met het object):
-        // geschilderde verftextuur (T_PaintStrokes): R grote vlekken (+ warm/koel), G penseeltoetsen, B korrel
-        vec4 pt = paintTriplanar(vLocalPos + vec3(1.3, 0.7, 2.1), vLocalNormal);
-        float blot = pt.r;
-        t += ((pt.r - 0.5) * 0.075 + (pt.g - 0.5) * 0.045 + (pt.b - 0.5) * 0.012) * uPaint;
         #if NUM_DIR_LIGHTS > 0
           vec3 L = directionalLights[0].direction;
           float spec = pow(max(dot(N, normalize(L+V)),0.), 18.) * band;
@@ -108,8 +93,6 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
         #endif
         t = mix(t + uShift, 0.5 + uShift, uFlat);
         vec3 col = sampleRamp(t);
-        // lichte warm/koel-wisseling tussen de vlekken (zoals verf, niet alleen licht/donker)
-        col *= mix(vec3(0.975, 0.99, 1.035), vec3(1.03, 1.0, 0.965), clamp(pt.r * 1.3 - 0.15, 0., 1.)) * uPaint + (1. - uPaint);
         float fr = pow(1. - max(dot(N, V), 0.), 3.0);
         col = mix(col, uRim, clamp(fr * uRimStrength * (1.15 - band*0.75), 0., 1.));
         // gloeiende lens: midden licht/geel, naar de rand warmer oranje (concept-koplamp)
@@ -192,9 +175,6 @@ function setPose(root, pose) {
 
 (async () => {
   try {
-    const tex = await new THREE.TextureLoader().loadAsync('../Exports/T_PaintStrokes.png');
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.colorSpace = THREE.NoColorSpace; tex.anisotropy = 4;
-    window.__paintTex = tex;
     const items = JSON.parse(Q.get('items') || '[{"url":"../Exports/Conductor.glb"}]');
     for (const it of items) {
       const root = await loadAsset(it.url);
