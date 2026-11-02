@@ -175,5 +175,33 @@
     }
    ]
   }
+ },
+ {
+  "name": "loco_cab",
+  "params": {
+   "w": 900,
+   "h": 800,
+   "ss": 1.3,
+   "yaw": 12,
+   "pitch": 52,
+   "dist": 4.6,
+   "fov": 40,
+   "target": "-1.05,0.95,-1.3",
+   "lightAz": -30,
+   "lightEl": 62,
+   "shadowSize": 6,
+   "groundShadowOnly": 1,
+   "groundR": 6,
+   "items": [
+    {
+     "url": "../Exports/Locomotive_Blockout.glb",
+     "pose": {
+      "CabRoof": {
+       "visible": false
+      }
+     }
+    }
+   ]
+  }
  }
 ]

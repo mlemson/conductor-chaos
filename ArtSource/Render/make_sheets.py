@@ -282,9 +282,9 @@ def loco_sheet():
     ty = 320 + cc.height
     sheet.alpha_composite(tx, (rx + 24, ty))
     d.text((rx + 24, ty + tx.height + 10), "3D-model (render)", font=font(20, False), fill=MUTED)
-    notes = ["Ronde ketelneus met goudoranje sierlijst en donker inzetpaneel",
+    notes = ["Kortere ronde ketelneus, smalle ronde bufferbalk, brede wielen",
              "Achthoekige rookkastring met 4 gouden bouten, lens geel → oranje",
-             "Gewelfd bruin dak, dikke stijlen met kapiteel, gouden borstwering",
+             "Ruime cabine met kooloventje (gloeiend deurtje, drukmeter, hendel)",
              "Geschilderd: boven licht, onder donker, lichte randjes, zachte vlekken"]
     for k, t in enumerate(notes):
         d.text((rx + 24, ty + tx.height + 50 + k * 32), "•  " + t, font=font(19, False), fill=SUB)
@@ -292,8 +292,9 @@ def loco_sheet():
     by = 200 + hh + 30
     d.rounded_rectangle([60, by, W - 50, by + 560], 22, fill=PANEL)
     label(d, (84, by + 14), "Aanzichten", 30)
-    views = [("loco_front34", "Voor 3/4"), ("loco_side", "Zijaanzicht"), ("loco_rear34", "Achter 3/4")]
-    cw = (W - 170) // 3
+    views = [("loco_front34", "Voor 3/4"), ("loco_side", "Zijaanzicht"), ("loco_rear34", "Achter 3/4"),
+             ("loco_cab", "Cabine: kooloventje, hendel, kolenbak")]
+    cw = (W - 170) // 4
     for i, (n, cap) in enumerate(views):
         im = fit(crop_alpha(load(n)), cw - 40, 430)
         x = 90 + i * cw + (cw - im.width) // 2
@@ -305,19 +306,19 @@ def loco_sheet():
     mats = json.load(open(os.path.join(ROOT, "ArtSource", "Exports", "Locomotive_Blockout.materials.json"), encoding="utf-8"))
     d.text((90, ly + 24), "Materialen (ramp schaduw → licht)", font=font(24), fill=YEL)
     for i, (name, m) in enumerate(mats["materials"].items()):
-        x = 90 + (i % 5) * 262
-        y = ly + 70 + (i // 5) * 80
-        d.text((x, y), name.replace("M_Loco_", ""), font=font(19), fill=TXT)
+        x = 90 + (i % 7) * 205
+        y = ly + 70 + (i // 7) * 80
+        d.text((x, y), name.replace("M_Loco_", ""), font=font(18), fill=TXT)
         for j, hx in enumerate(m["ramp"]):
             c = tuple(int(hx[k:k + 2], 16) for k in (1, 3, 5))
-            d.rounded_rectangle([x + j * 50, y + 28, x + j * 50 + 44, y + 56], 6, fill=c)
+            d.rounded_rectangle([x + j * 36, y + 28, x + j * 36 + 31, y + 54], 5, fill=c)
     st = mats["stats"]
-    info = [f"≈ 6,9 m lang · cabinevloer 0,74 m · borstwering 1,36 m (conducteur leunt erop)",
+    info = [f"≈ 6,8 m lang · cabine 2,6 m · vloer 0,74 m · borstwering 1,36 m",
             f"{st['tris']:,} driehoeken · {st['materials']} materialen · geen textures (variatie in vertexkleur)".replace(",", "."),
-            "Onderdelen: Frame, Cab, Boiler, HeadLight, Wheels, GrabRails (starre hiërarchie)",
+            "Onderdelen: Frame, Cab, Boiler, HeadLight, Wheels, Cylinders, Firebox › FireboxDoor/Regulator, CoalBin",
             "Bron: ArtSource/Train/Locomotive/build_locomotive.py → Locomotive_Blockout.fbx"]
     for k, t in enumerate(info):
-        d.text((1450, ly + 70 + k * 40), "•  " + t, font=font(21, False), fill=SUB)
+        d.text((1560, ly + 70 + k * 40), "•  " + t, font=font(20, False), fill=SUB)
     sheet.convert("RGB").save(os.path.join(DOCS, "Locomotive_DesignSheet.png"), optimize=True)
 
 

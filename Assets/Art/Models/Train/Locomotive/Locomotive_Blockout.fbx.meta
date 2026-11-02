@@ -54,6 +54,21 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Loco_Lamp
     second: {fileID: 2100000, guid: 32ee380fdeca86a42b8ff215cccaa262, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Fire
+    second: {fileID: 2100000, guid: 311070a1bf51d704e72a12e5547d99d8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Coal
+    second: {fileID: 2100000, guid: 04066adc70d4512daad84f9efa2ad233, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Dial
+    second: {fileID: 2100000, guid: 73771d8c7e7ea8b522eb31e933a72f76, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

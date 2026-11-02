@@ -1,10 +1,10 @@
 {
   "model": "Locomotive_Blockout",
   "stats": {
-    "parts": 7,
-    "tris": 27824,
-    "verts": 14102,
-    "materials": 10
+    "parts": 13,
+    "tris": 37740,
+    "verts": 19114,
+    "materials": 13
   },
   "materials": {
     "M_Loco_Red": {
@@ -164,6 +164,55 @@
         "emissive": 1.0,
         "rim": 0.0,
         "paint": 0.2
+      }
+    },
+    "M_Loco_Fire": {
+      "base": "#E2722B",
+      "ramp": [
+        "#B5531F",
+        "#E2722B",
+        "#F5B038",
+        "#FDE080",
+        "#FEF2B0"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.4,
+      "opts": {
+        "emissive": 1.0,
+        "rim": 0.0,
+        "paint": 0.6
+      }
+    },
+    "M_Loco_Coal": {
+      "base": "#302629",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": -0.1,
+      "smoothness": 0.3,
+      "opts": {
+        "paint": 1.0,
+        "edge": 1.6
+      }
+    },
+    "M_Loco_Dial": {
+      "base": "#F4DCC0",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "flat": 0.5,
+        "paint": 0.3
       }
     }
   }
