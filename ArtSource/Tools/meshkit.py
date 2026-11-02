@@ -422,7 +422,10 @@ class Scene:
         B: lage-frequentie verfvlekken (fBm), 0.5 = neutraal.
         De stylized-lit shader (render.html, later Shader Graph) leest deze kanalen.
         """
-        from scipy.spatial import cKDTree
+        try:
+            from scipy.spatial import cKDTree
+        except ImportError:
+            from spatial_fallback import cKDTree
         rng = np.random.default_rng(seed)
         parts = [p for p in self.parts if p.mesh is not None]
         world = {}
@@ -725,3 +728,4 @@ class Scene:
             fh.write(struct.pack("<III", 0x46546C67, 2, total))
             fh.write(struct.pack("<II", len(js), 0x4E4F534A) + js)
             fh.write(struct.pack("<II", len(bin_chunks), 0x004E4942) + bytes(bin_chunks))
+

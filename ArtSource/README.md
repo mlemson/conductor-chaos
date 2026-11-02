@@ -13,6 +13,7 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 | `Characters/Conductor/build_conductor.py` | Conducteur-basismodel, parametrisch opgebouwd uit maten van het concept |
 | `Train/WagonCorner/build_wagon_corner.py` | Wagonhoek-blockout (deur, slot, ramen, interieurstukje) + art-check-decor |
 | `Tools/meshkit.py` | Kleine numpy-toolkit: lathe/superellips, afgeronde box, ellipsoïde, capsule; export naar FBX (ASCII) en glTF (.glb) |
+| `Tools/spatial_fallback.py` | NumPy-terugval voor de straalzoekopdracht bij het bakken van vertexkleur als SciPy ontbreekt |
 | `Tools/unity_assets.py` | Schrijft URP Lit-materialen (`.mat`) en `.meta`-bestanden met stabiele GUID's |
 | `Render/render.html`, `render.cjs` | Headless stijlrender (three.js + Playwright) met de stylized ramp-shader |
 | `Render/scenes/*.json` | Camera's, poses en expressies van alle renders |
@@ -34,6 +35,8 @@ python ArtSource/build_all.py --models   # alleen FBX/GLB/.mat (Python 3 + numpy
 python ArtSource/build_all.py            # + renders en ontwerpbladen
 ```
 
+Voor de snelste generatie van vertexkleuren wordt SciPy gebruikt; als dat niet is geïnstalleerd gebruikt meshkit de meegeleverde NumPy-terugval, die trager kan zijn. De oudere instructie dat alleen NumPy nodig was beschreef de SciPy-afhankelijkheid niet volledig.
+
 Voor renders: Node.js met Playwright (Chromium) en three.js **r187** in `ArtSource/Render/three` (staat in `.gitignore`):
 
 ```
@@ -50,6 +53,7 @@ Pas vormen of maten aan in de `build_*.py`-scripts, niet in de FBX. Kleuren kome
 - **Starre poppen-rig:** elk onderdeel is een eigen node met een pivot op het gewricht (heup, schouder, pet, ogen).
   Animatie = transforms roteren. Dit past bij de stijve, klungelige stijl en is eenvoudig te synchroniseren.
   Er is geen skinning; die volgt alleen als een animatie erom vraagt.
+- **Conceptstudie v2:** de broekspijpen zijn hoger zichtbaar, met een huidkleurige V-hals en kleinere donkere revers. `Neckline` is een kind van `Body`. De bestaande ontwerpbladen zijn van vóór deze wijziging; zie `Docs/Art/Conductor_ConceptStudy_v2.png` voor een eenvoudige vormvergelijking, niet voor een Unity- of shadergoedkeuring.
 - Hiërarchie conducteur: `Conductor › Body › (Collar, Buttons, Eye_L/R › Pupil_L/R, Mouth_Neutral|Surprised|Happy, Cap, Arm_L/R › Hand_L/R › Prop_Key)`, `Leg_L/R`.
   Standaard verborgen: `Mouth_Surprised`, `Mouth_Happy`, `Prop_Key`.
 - Wagonhoek: `DoorLeaf_L/R` schuiven langs lokale X (dicht = +0,475 / −0,475). `KeyLock` (0,72 m) en
@@ -73,3 +77,4 @@ Pas vormen of maten aan in de `build_*.py`-scripts, niet in de FBX. Kleuren kome
   Pipeline/Lit* toe.
 - URP Lit met alleen een basiskleur benadert de look maar haalt hem niet: de warme/koele ramp, de rim en de
   vlakke ogen vragen de geplande stylized-lit Shader Graph (zie `Docs/ART_STYLE_GUIDE.md`, Lighting).
+

@@ -38,7 +38,7 @@ H_TOTAL = 1.25
 BODY_R = 0.28           # halve lijfbreedte
 BODY_DEPTH = 0.86       # diepte t.o.v. breedte (iets platte voorkant)
 BODY_N = 2.6            # superellips-doorsnede: zacht vierkant, 'speelgoed'
-Y_BOTTOM = 0.15         # onderkant jas
+Y_BOTTOM = 0.235        # hoger lijf: korte, afzonderlijke broekspijpen zichtbaar zoals in concept
 Y_DOME = 0.80           # begin van de koepel
 Y_TOP = 1.02            # kruin (zit onder de pet)
 Y_COLLAR = 0.53         # grens huid/uniform
@@ -47,8 +47,8 @@ EYE_DEPTH = 0.55         # bolling van het oog (t.o.v. straal)
 MOUTH_Y = 0.632
 SHOULDER = (0.240, 0.475, 0.0)   # mouw komt hoog en dik uit de bovenkant van de jas (concept)
 HAND_OFFSET = 0.165
-HIP_Y = 0.20
-LEG_X = 0.108
+HIP_Y = 0.265
+LEG_X = 0.120
 
 SEG = 32                # omtrek-segmenten lijf (rond silhouet, nog steeds low-poly)
 
@@ -117,6 +117,13 @@ def conform(mesh, lift=0.003):
     return out
 
 
+def build_neckline():
+    """Warm huidkleurig V-halsje tussen de donkere revers, zoals in de concepttekening."""
+    xy = [(-0.070, Y_COLLAR + 0.003), (0.0, Y_COLLAR - 0.057), (0.070, Y_COLLAR + 0.003)]
+    vertices = np.array([(x, y, body_surface(x, y)[0] + 0.006) for x, y in xy])
+    return mk.Mesh(vertices, [(0, 1, 2)], ['M_Conductor_Skin'])
+
+
 def build_collar():
     """Kraag (concept): smalle jasrand rond de hals + twee platte revers die in een V samenkomen."""
     a = BODY_R * body_radius(Y_COLLAR)
@@ -126,8 +133,8 @@ def build_collar():
     v_y = Y_COLLAR - 0.062          # punt van de V
     for sx in (-1, 1):
         ang = math.atan2(0.066, 0.092)
-        lap = mk.rounded_box(0.118, 0.054, 0.016, 0.010, 2, mat="M_Conductor_Uniform").transform(t=(0, 0, 0.008))
-        lap = lap.transform(R=mk.rot_z(sx * ang), t=(sx * 0.048, v_y + 0.031, 0.0))
+        lap = mk.rounded_box(0.092, 0.042, 0.009, 0.006, 2, mat="M_Conductor_UniformDark").transform(t=(0, 0, 0.0045))
+        lap = lap.transform(R=mk.rot_z(sx * ang), t=(sx * 0.072, v_y + 0.030, 0.0))
         parts.append(conform(lap, 0.002))
     return mk.merge(*parts)
 
@@ -226,7 +233,7 @@ def build_key():
 
 def build_leg():
     """Dik, kort beentje + ronde 'kiezel'-voet met platte zool (concept); pivot = heup (lokale y=0 op HIP_Y)."""
-    leg = mk.capsule_between((0, 0.10 - HIP_Y, 0), (0, 0.24 - HIP_Y, 0), 0.084, 0.084, 16, 3, mat="M_Conductor_Uniform")
+    leg = mk.capsule_between((0, 0.115 - HIP_Y, 0), (0, 0.285 - HIP_Y, 0), 0.105, 0.100, 18, 4, mat="M_Conductor_Uniform")
     foot = mk.ellipsoid(0.104, 0.078, 0.132, 20, 10, mat="M_Conductor_Shoe", n=2.5).transform(t=(0, 0.062 - HIP_Y, 0.03))
     foot.V[:, 1] = np.maximum(foot.V[:, 1], -HIP_Y)   # platte zool op de grond
     return mk.merge(leg, foot)
@@ -250,6 +257,7 @@ def build_scene(arm_angle_deg=50.0):
     hip = np.array([0.0, HIP_Y, 0.0])
     sc.add(mk.Part("Conductor", None))
     sc.add(mk.Part("Body", build_body().transform(t=-hip), tuple(hip), "Conductor"))
+    sc.add(mk.Part("Neckline", build_neckline().transform(t=-hip), (0, 0, 0), "Body"))
     sc.add(mk.Part("Collar", build_collar().transform(t=-hip), (0, 0, 0), "Body"))
     sc.add(mk.Part("Buttons", build_buttons().transform(t=-hip), (0, 0, 0), "Body"))
 
@@ -283,7 +291,7 @@ def build_scene(arm_angle_deg=50.0):
     for p in sc.parts:
         if p.name.startswith(("Eye_", "Pupil_")):
             p.ao_group, p.gradient = "eyes", 0.0
-        elif p.name in ("Body", "Collar", "Buttons", "Cap") or p.name.startswith("Mouth_"):
+        elif p.name in ("Body", "Neckline", "Collar", "Buttons", "Cap") or p.name.startswith("Mouth_"):
             p.ao_group = "body"
         if p.name == "Prop_Key":
             p.ao_group, p.gradient = "key", 0.0
@@ -318,3 +326,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
