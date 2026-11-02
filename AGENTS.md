@@ -4,10 +4,16 @@
 
 ## Start elke taak
 
-1. Lees [status](Docs/AI/UnityProjectContext.md), [architectuur](Docs/ARCHITECTURE.md), [roadmap](Docs/ROADMAP.md), relevante guide en recente wijzigingen.
+1. Lees [status](Docs/AI/UnityProjectContext.md), [gamevisie](Docs/GAME_VISION.md), [architectuur](Docs/ARCHITECTURE.md), [roadmap](Docs/ROADMAP.md), relevante guide en recente wijzigingen.
 2. Inspecteer de echte projectbestanden, packages en Editor-status; documenten zijn een momentopname, geen bewijs dat een feature bestaat.
 3. Behoud bestaande inhoud en los geen andere taken stilzwijgend op. De huidige opdracht is een fundament: voeg geen gameplay, scènes, map of spelassets toe tenzij expliciet gevraagd.
 4. Markeer onbekenden, ontbrekende tests en risico's eerlijk. Werk status, taakacceptatie en beslissingen bij wanneer die daadwerkelijk veranderen.
+
+## Art direction en scope
+
+- De gekozen conceptrichting is vastgelegd in [gamevisie](Docs/GAME_VISION.md) en [visuele referenties](Docs/References/README.md). De volledige originele conceptafbeelding is nog niet in Git geüpload; doe niet alsof agents die al kunnen zien. Gebruik de bestaande [stijlkaart](Docs/References/STYLE_PALETTE.svg) en vraag om/gebruik de afbeelding zodra die beschikbaar is.
+- Leid nieuwe assets af van ronde cartoonkarakters, matte low-poly volumes en simpele regionale reizigerstreinen. De kleine locomotief op het conceptbord is sfeer, geen blauwdruk; UI/menus hebben geen posterlay-out nodig.
+- Eerst een tweespeler technische proef en één kleine art-test; geen ongevraagde hele treinlijn, levelgenerator of inhoudelijke uitbreidingen.
 
 ## Ontwerpregels
 
