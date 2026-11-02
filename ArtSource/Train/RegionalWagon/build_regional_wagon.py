@@ -45,6 +45,11 @@ DOOR_TOP = 1.86
 WIN_Y = (1.00, 1.68)
 WINDOWS = [(-3.24, -2.42), (-2.24, -1.42), (-1.24, -0.42), (1.30, 2.12), (2.32, 3.14)]
 LOCK = (DOOR[0] - 0.36, 0.72)
+WALL = 0.10                # wanddikte (holle bak, beloopbaar interieur)
+SILL_Y = Y0 + CH           # onderkant van deuropeningen (vlak deel van de bak)
+END_DOOR = 0.45            # halve breedte kopse doorgang
+END_TOP = 1.92
+WINDOWS_FAR = WINDOWS + [(-0.02, 0.80)]
 BOGIE_X = 2.30
 RAIL_Y = -0.62
 
@@ -56,10 +61,23 @@ def box(x0, x1, y0, y1, z0, z1, r, mat, div=1, sharp=True):
     return m
 
 
-def frame(x0, x1, y0, y1, w, z0, z1, r, mat):
-    """Dik, afgeschuind kader rond een opening."""
-    return mk.merge(box(x0 - w, x1 + w, y1, y1 + w, z0, z1, r, mat), box(x0 - w, x1 + w, y0 - w, y0, z0, z1, r, mat),
-                    box(x0 - w, x0, y0, y1, z0, z1, r, mat), box(x1, x1 + w, y0, y1, z0, z1, r, mat))
+def frame(x0, x1, y0, y1, w, z0, z1, r, mat, open_bottom=False):
+    """Dik, afgeschuind kader rond een opening, uit één stuk (verstekhoeken; geen losse latten)."""
+    return mk.frame_ring(x0, x1, y0, y1, w, z0, z1, min(r, w * 0.4), mat=mat, open_bottom=open_bottom)
+
+
+def mirror_far(m):
+    """Spiegel een onderdeel van de perronkant (z = 0) naar de overkant (z = -W)."""
+    return m.transform(s=(1, 1, -1), t=(0, 0, -W))
+
+
+def end_frame(sgn, u0, u1, y0, y1, w, d0, d1, r, mat, open_bottom=True):
+    """Kader op een kopse kant (x = ±L/2): gebouwd in het XY-vlak en naar het YZ-vlak gedraaid."""
+    if sgn > 0:
+        f = frame(-u1, -u0, y0, y1, w, d0, d1, r, mat, open_bottom).transform(R=mk.rot_y(math.pi / 2))
+    else:
+        f = frame(u0, u1, y0, y1, w, d0, d1, r, mat, open_bottom).transform(R=mk.rot_y(-math.pi / 2))
+    return f.transform(t=(XC + sgn * L / 2, 0, 0))
 
 
 def glass(x0, x1, y0, y1, z):
@@ -85,17 +103,36 @@ def octagon_lamp(r, depth, axis="x"):
 
 
 def build_body():
-    """Bak: één afgeschuinde box met fijn raster (voor gebakken variatie) en echte gaten voor ramen en deur."""
-    sx, sy, sz = L, Y1 - Y0, W
-    cx, cy, cz = XC, (Y0 + Y1) / 2, ZC
-    holes = [(2, 1, a - cx, b - cx, WIN_Y[0] - cy, WIN_Y[1] - cy) for (a, b) in WINDOWS]
-    holes.append((2, 1, DOOR[0] - cx, DOOR[1] - cx, Y0 + 0.02 - cy, DOOR_TOP - cy))
-    cuts = (sorted({v - cx for (a, b) in WINDOWS + [DOOR] for v in (a, b)}),
-            sorted({WIN_Y[0] - cy, WIN_Y[1] - cy, DOOR_TOP - cy, Y0 + 0.02 - cy, 0.86 - cy}), ())
-    m = mk.rounded_box_grid(sx, sy, sz, CH, div=1, step=0.22, cuts=cuts, holes=holes, mat="M_Train_Red")
-    m = m.transform(t=(cx, cy, cz))
-    m.sharp = True
-    return m
+    """Holle bak uit één stuk: buiten- en binnenwand met dagkanten voor ramen, zijdeur en kopse doorgangen."""
+    outer = (XC - L / 2, XC + L / 2, Y0, Y1, ZC - W / 2, ZC + W / 2)
+    inner = (XC - L / 2 + WALL, XC + L / 2 - WALL, Y0 + FLOOR, Y1 - WALL, ZC - W / 2 + WALL, ZC + W / 2 - WALL)
+    holes = [(2, 1, a, b, WIN_Y[0], WIN_Y[1]) for (a, b) in WINDOWS]
+    holes += [(2, -1, a, b, WIN_Y[0], WIN_Y[1]) for (a, b) in WINDOWS_FAR]
+    holes.append((2, 1, DOOR[0], DOOR[1], SILL_Y, DOOR_TOP))
+    for sgn in (1, -1):
+        holes.append((0, sgn, SILL_Y, END_TOP, ZC - END_DOOR, ZC + END_DOOR))
+    return mk.hollow_box(outer, inner, holes, radius=CH, step=0.24, mat="M_Train_Red", inner_mat="M_Train_Inner")
+
+
+def bench(x, facing, z0, z1):
+    """Bank (zitting + rugleuning) uit één stuk; 'facing' = +1/-1 kijkrichting langs X."""
+    prof = [(-0.12, Y0 + FLOOR), (0.46, Y0 + FLOOR), (0.46, 0.50), (0.04, 0.50), (0.0, 1.04), (-0.12, 1.04)]
+    m = mk.prism(mk.chamfer_poly(prof, 0.035), z0, z1, 0.03, mat="M_Train_Seat")
+    if facing < 0:
+        m = m.transform(s=(-1, 1, 1))
+    return m.transform(t=(x, 0, 0))
+
+
+def build_interior():
+    zin0, zin1 = ZC - W / 2 + WALL, ZC + W / 2 - WALL
+    parts = [box(XC - L / 2 + WALL, XC + L / 2 - WALL, Y0 + FLOOR - 0.01, Y0 + FLOOR + 0.02, zin0, zin1, 0.008, "M_Train_Floor")]
+    seats = [(-3.37, 1), (-2.45, -1), (-2.21, 1), (-1.45, -1), (-1.21, 1), (-0.32, -1), (1.20, 1), (2.10, -1), (2.34, 1), (3.37, -1)]
+    for (x, f) in seats:
+        for (za, zb) in ((zin0 + 0.02, ZC - END_DOOR - 0.05), (ZC + END_DOOR + 0.05, zin1 - 0.02)):
+            if za > zb:
+                continue
+            parts.append(bench(x, f, za, zb))
+    return mk.merge(*parts)
 
 
 def build_wheel(x, z):
@@ -119,30 +156,38 @@ def build_wagon():
                 opts={"flat": 0.5, "rim": 0.25, "paint": 0.3})
     sc.material("M_Train_GlassShine", R_["sky"][2], R_["sky"], 0.70, ramp_shift=-0.05, opts={"flat": 0.85, "rim": 0, "paint": 0})
     sc.material("M_Train_Interact", R_["accent_yellow"][2], R_["accent_yellow"], 0.30)
+    sc.material("M_Train_Inner", R_["cab_interior"][3], R_["cab_interior"], 0.15, ramp_shift=0.05)
+    sc.material("M_Train_Floor", R_["interior_wood"][1], R_["interior_wood"], 0.15, ramp_shift=-0.12)
+    sc.material("M_Train_Seat", R_["interior_wood"][3], R_["interior_wood"], 0.15, ramp_shift=0.04)
     sc.material("M_Train_Lamp", R_["headlight"][2], R_["headlight"], 0.50, emissive=R_["headlight"][3],
                 opts={"emissive": 0.85, "rim": 0.0, "paint": 0})
     sc.add(mk.Part("RegionalWagon", None))
     sc.add(mk.Part("Body", build_body(), (0, 0, 0), "RegionalWagon"))
 
-    # ramen: dik donker kader + donker glas met luchtreflectie
+    sc.add(mk.Part("Interior", build_interior(), (0, 0, 0), "RegionalWagon"))
+
+    # ramen (beide kanten): kader uit één stuk + donker glas met luchtreflectie in de dagkant
     win = []
     for (a, b) in WINDOWS:
-        win.append(frame(a, b, WIN_Y[0], WIN_Y[1], 0.075, -0.20, 0.045, 0.022, "M_Train_Trim"))
-        win.append(glass(a, b, WIN_Y[0], WIN_Y[1], -0.06))
-    # kopraam (+X)
-    ex = XC + L / 2
-    win.append(box(ex - 0.02, ex + 0.05, 1.04, 1.66, ZC - 0.46, ZC + 0.46, 0.02, "M_Train_Trim"))
-    win.append(box(ex + 0.03, ex + 0.07, 1.10, 1.60, ZC - 0.38, ZC + 0.38, 0.004, "M_Train_Glass"))
+        win.append(frame(a, b, WIN_Y[0], WIN_Y[1], 0.075, -0.01, 0.045, 0.022, "M_Train_Trim"))
+        win.append(glass(a, b, WIN_Y[0], WIN_Y[1], -0.035))
+    for (a, b) in WINDOWS_FAR:
+        win.append(mirror_far(frame(a, b, WIN_Y[0], WIN_Y[1], 0.075, -0.01, 0.045, 0.022, "M_Train_Trim")))
+        win.append(mirror_far(glass(a, b, WIN_Y[0], WIN_Y[1], -0.035)))
     sc.add(mk.Part("Windows", mk.merge(*win), (0, 0, 0), "RegionalWagon"))
 
-    # livrei: lichtere inzetpanelen onder de ramen, gouden bies, donkere dakrand
-    liv = []
+    # livrei (beide kanten): lichtere inzetpanelen, gouden bies, donkere band boven deur/ramen
+    liv, far = [], []
     for (a, b) in ((-3.40, -1.86), (-1.74, -0.36), (1.16, 2.22), (2.34, 3.40)):
-        liv.append(box(a, b, 0.20, 0.76, -0.02, 0.028, 0.02, "M_Train_RedPanel"))
-    for (a, b) in ((XC - L / 2 + 0.10, DOOR[0] - 0.10), (DOOR[1] + 0.10, XC + L / 2 - 0.10)):
+        liv.append(box(a, b, 0.24, 0.76, -0.02, 0.028, 0.02, "M_Train_RedPanel"))
+    for (a, b) in ((-3.40, -1.86), (-1.74, -0.36), (-0.24, 1.04), (1.16, 2.22), (2.34, 3.40)):
+        far.append(box(a, b, 0.24, 0.76, -0.02, 0.028, 0.02, "M_Train_RedPanel"))
+    for (a, b) in ((XC - L / 2 + 0.12, DOOR[0] - 0.17), (DOOR[1] + 0.17, XC + L / 2 - 0.12)):
         liv.append(box(a, b, 0.845, 0.895, -0.02, 0.035, 0.012, "M_Train_Gold"))
-    liv.append(box(XC - L / 2 + 0.05, XC + L / 2 - 0.05, 1.86, 1.94, -0.02, 0.03, 0.015, "M_Train_RedLow"))
-    sc.add(mk.Part("Livery", mk.merge(*liv), (0, 0, 0), "RegionalWagon"))
+    far.append(box(XC - L / 2 + 0.12, XC + L / 2 - 0.12, 0.845, 0.895, -0.02, 0.035, 0.012, "M_Train_Gold"))
+    for lst in (liv, far):
+        lst.append(box(XC - L / 2 + 0.12, XC + L / 2 - 0.12, 1.97, 2.05, -0.02, 0.03, 0.015, "M_Train_RedLow"))
+    sc.add(mk.Part("Livery", mk.merge(*liv, *[mirror_far(m) for m in far]), (0, 0, 0), "RegionalWagon"))
 
     # dak: dikke, overstekende afgeschuinde plaat + verhoging en ventilatiekastjes
     roof = [box(XC - L / 2 - 0.16, XC + L / 2 + 0.16, Y1 - 0.06, Y1 + 0.30, ZC - W / 2 - 0.16, ZC + W / 2 + 0.16, 0.13, "M_Train_Roof"),
@@ -151,28 +196,29 @@ def build_wagon():
         roof.append(box(vx - 0.32, vx + 0.32, Y1 + 0.44, Y1 + 0.58, ZC - 0.32, ZC + 0.32, 0.05, "M_Train_Trim"))
     sc.add(mk.Part("Roof", mk.merge(*roof), (0, 0, 0), "RegionalWagon"))
 
-    # deur: twee rode bladen met raampje, donkere naad en kader; geel = grepen (interactie)
-    sc.add(mk.Part("DoorFrame", frame(DOOR[0], DOOR[1], Y0 + 0.02, DOOR_TOP, 0.07, -0.20, 0.045, 0.022, "M_Train_Trim"),
-                   (0, 0, 0), "RegionalWagon"))
+    # zijdeur: kader uit één stuk (U-vorm op de drempel), twee rode bladen in de dagkant, gele grepen
+    sc.add(mk.Part("DoorFrame", frame(DOOR[0], DOOR[1], Y0 + 0.08, DOOR_TOP, 0.07, -0.01, 0.045, 0.022, "M_Train_Trim",
+                                      open_bottom=True), (0, 0, 0), "RegionalWagon"))
     half = (DOOR[1] - DOOR[0]) / 2
+    leaf_h = DOOR_TOP - SILL_Y + 0.08
     for nm, cx, sgn in (("DoorLeaf_L", DOOR[0] + half / 2, -1), ("DoorLeaf_R", DOOR[1] - half / 2, 1)):
         hw = half / 2 - 0.008
-        leaf = [box(-hw, hw, 0.0, DOOR_TOP - FLOOR + 0.06, -0.035, 0.035, 0.025, "M_Train_Red")]
-        leaf.append(frame(-hw + 0.10, hw - 0.10, 0.95, 1.55, 0.05, 0.0, 0.05, 0.015, "M_Train_Trim"))
-        leaf.append(glass(-hw + 0.10, hw - 0.10, 0.95, 1.55, 0.03))
-        leaf.append(box(-hw + 0.08, hw - 0.08, 0.18, 0.62, 0.02, 0.05, 0.015, "M_Train_RedPanel"))
+        leaf = [box(-hw, hw, 0.0, leaf_h, -0.03, 0.03, 0.022, "M_Train_Red")]
+        leaf.append(frame(-hw + 0.13, hw - 0.13, 0.86, 1.42, 0.05, 0.0, 0.05, 0.015, "M_Train_Trim"))
+        leaf.append(glass(-hw + 0.13, hw - 0.13, 0.86, 1.42, 0.035))
+        leaf.append(box(-hw + 0.08, hw - 0.08, 0.14, 0.56, 0.02, 0.048, 0.015, "M_Train_RedPanel"))
         gx = -sgn * (hw - 0.07)
-        leaf.append(mk.capsule_between((gx, 0.62, 0.07), (gx, 1.05, 0.07), 0.022, 0.022, 8, 1, mat="M_Train_Interact"))
-        sc.add(mk.Part(nm, mk.merge(*leaf), (cx, FLOOR - 0.06, -0.08), "RegionalWagon"))
-    sill = mk.merge(box(DOOR[0] - 0.06, DOOR[1] + 0.06, Y0 - 0.02, Y0 + 0.05, -0.22, 0.10, 0.02, "M_Train_Trim"),
-                    box(DOOR[0], DOOR[1], Y0 + 0.035, Y0 + 0.06, 0.0, 0.10, 0.008, "M_Train_Interact"))
+        leaf.append(mk.capsule_between((gx, 0.52, 0.065), (gx, 0.95, 0.065), 0.022, 0.022, 8, 1, mat="M_Train_Interact"))
+        sc.add(mk.Part(nm, mk.merge(*leaf), (cx, SILL_Y - 0.04, -0.05), "RegionalWagon"))
+    sill = mk.merge(box(DOOR[0] - 0.10, DOOR[1] + 0.10, Y0 + 0.06, SILL_Y + 0.02, -0.14, 0.11, 0.025, "M_Train_Trim"),
+                    box(DOOR[0], DOOR[1], SILL_Y + 0.01, SILL_Y + 0.03, 0.0, 0.10, 0.008, "M_Train_Interact"))
     sc.add(mk.Part("DoorSill", sill, (0, 0, 0), "RegionalWagon"))
-    # buitengrepen naast de deur
+    # buitengrepen naast de deur: één gebogen stang (staander + steunen) per kant
     rails = []
-    for gx in (DOOR[0] - 0.16, DOOR[1] + 0.16):
-        rails.append(mk.capsule_between((gx, 0.42, 0.11), (gx, 1.58, 0.11), 0.026, 0.026, 8, 1, mat="M_Train_Interact"))
-        for gy in (0.48, 1.52):
-            rails.append(box(gx - 0.03, gx + 0.03, gy - 0.03, gy + 0.03, 0.0, 0.11, 0.01, "M_Train_Trim"))
+    for gx in (DOOR[0] - 0.17, DOOR[1] + 0.17):
+        rails += [mk.capsule_between((gx, 0.40, -0.01), (gx, 0.40, 0.11), 0.026, 0.026, 8, 1, mat="M_Train_Interact"),
+                  mk.capsule_between((gx, 0.40, 0.11), (gx, 1.60, 0.11), 0.026, 0.026, 8, 1, mat="M_Train_Interact"),
+                  mk.capsule_between((gx, 1.60, 0.11), (gx, 1.60, -0.01), 0.026, 0.026, 8, 1, mat="M_Train_Interact")]
     sc.add(mk.Part("GrabRails", mk.merge(*rails), (0, 0, 0), "RegionalWagon"))
     lock = mk.merge(box(-0.09, 0.09, -0.12, 0.12, -0.01, 0.045, 0.03, "M_Train_Interact"),
                     mk.cylinder(0.032, 0.02, 8, 0.004, mat="M_Train_Trim", axis="z").transform(t=(0, 0.025, 0.052)),
@@ -191,19 +237,27 @@ def build_wagon():
             under.append(box(bx - 0.22, bx + 0.22, -0.36, -0.10, zs - 0.06, zs + 0.06, 0.02, "M_Train_RedLow"))
     sc.add(mk.Part("Underframe", mk.merge(*under), (0, 0, 0), "RegionalWagon"))
 
-    # kopse kanten: achthoekige koplampen, buffers, koppeling
+    # kopse kanten: open doorgang met kader, balkonnetje (beloopbaar) met gele relingen, lampen, buffers, koppeling
     ends = []
     for sgn in (1, -1):
         ex = XC + sgn * L / 2
+        ends.append(end_frame(sgn, ZC - END_DOOR, ZC + END_DOOR, Y0 + 0.08, END_TOP, 0.07, -0.01, 0.045, 0.022, "M_Train_Trim"))
+        ends.append(box(min(ex - sgn * 0.05, ex + sgn * 0.32), max(ex - sgn * 0.05, ex + sgn * 0.32), Y0 + 0.02, SILL_Y + 0.02,
+                        ZC - 0.62, ZC + 0.62, 0.03, "M_Train_Trim", div=1))
+        ends.append(box(min(ex, ex + sgn * 0.30), max(ex, ex + sgn * 0.30), SILL_Y + 0.01, SILL_Y + 0.03,
+                        ZC - END_DOOR, ZC + END_DOOR, 0.006, "M_Train_Interact"))
+        for dz in (-0.58, 0.58):
+            xo = ex + sgn * 0.28
+            ends += [mk.capsule_between((ex - sgn * 0.02, 1.08, ZC + dz), (xo, 1.08, ZC + dz), 0.026, 0.026, 8, 1, mat="M_Train_Interact"),
+                     mk.capsule_between((xo, 1.08, ZC + dz), (xo, SILL_Y + 0.02, ZC + dz), 0.026, 0.026, 8, 1, mat="M_Train_Interact")]
         for dz in (-0.80, 0.80):
-            if sgn > 0:
-                ends.append(octagon_lamp(0.17, 0.14).transform(t=(ex + 0.06, 0.66, ZC + dz)))
+            ends.append(octagon_lamp(0.15, 0.12).transform(R=None if sgn > 0 else mk.rot_y(math.pi), t=(ex + sgn * 0.05, 0.80, ZC + dz)))
             buf = mk.cylinder(0.07, 0.30, 8, 0.015, mat="M_Train_Trim")
-            plate = mk.cylinder(0.17, 0.06, 8, 0.02, mat="M_Train_Trim")
+            plate = mk.cylinder(0.16, 0.06, 8, 0.02, mat="M_Train_Trim")
             buf.sharp = plate.sharp = True
-            ends.append(buf.transform(t=(ex + sgn * 0.15, 0.24, ZC + dz)))
-            ends.append(plate.transform(t=(ex + sgn * 0.30, 0.24, ZC + dz)))
-        ends.append(box(min(ex, ex + sgn * 0.34), max(ex, ex + sgn * 0.34), 0.12, 0.32, ZC - 0.13, ZC + 0.13, 0.04, "M_Train_Trim"))
+            ends.append(buf.transform(t=(ex + sgn * 0.15, 0.17, ZC + dz)))
+            ends.append(plate.transform(t=(ex + sgn * 0.30, 0.17, ZC + dz)))
+        ends.append(box(min(ex, ex + sgn * 0.36), max(ex, ex + sgn * 0.36), -0.18, -0.02, ZC - 0.12, ZC + 0.12, 0.04, "M_Train_Trim"))
     sc.add(mk.Part("Ends", mk.merge(*ends), (0, 0, 0), "RegionalWagon"))
     for p in sc.parts:
         p.gradient = 0.25

@@ -282,7 +282,7 @@ def loco_sheet():
     ty = 320 + cc.height
     sheet.alpha_composite(tx, (rx + 24, ty))
     d.text((rx + 24, ty + tx.height + 10), "3D-model (render)", font=font(20, False), fill=MUTED)
-    notes = ["Kortere ronde ketelneus, smalle ronde bufferbalk, brede wielen",
+    notes = ["Doorloopbaar: cabine-achterdeur → loopplaat → kolenwagen → wagon",
              "Achthoekige rookkastring met 4 gouden bouten, lens geel → oranje",
              "Ruime cabine met kooloventje (gloeiend deurtje, drukmeter, hendel)",
              "Kolenwagen: rode bak, gouden rand/hoekstrips, panelen met klinknagels",
@@ -315,10 +315,10 @@ def loco_sheet():
             d.rounded_rectangle([x + j * 36, y + 28, x + j * 36 + 31, y + 54], 5, fill=c)
     st = mats["stats"]
     tst = json.load(open(os.path.join(ROOT, "ArtSource", "Exports", "Tender_Blockout.materials.json"), encoding="utf-8"))["stats"]
-    info = [f"Loc ≈ 6,8 m · cabine 2,6 m · vloer 0,74 m · kolenwagen 3,4 m",
+    info = [f"Loc ≈ 6,8 m · cabine 2,6 m · vloer 0,74 m · kolenwagen 3,8 m",
             f"Loc {st['tris']:,} · kolenwagen {tst['tris']:,} driehoeken".replace(",", "."),
             "Low-poly: effen platte vlakken, schaduw per facet, donkere inzetpanelen",
-            "Onderdelen kolenwagen: Frame, Body › Coal/Ladder/TailLights, Wheels",
+            "Kolenwagen: Frame, Body › Coal/Ladder/TailLights/DeckRails, FallPlate, Wheels",
             "Bron: ArtSource/Train/{Locomotive,Tender}/build_*.py → *_Blockout.fbx"]
     for k, t in enumerate(info):
         d.text((1560, ly + 70 + k * 40), "•  " + t, font=font(20, False), fill=SUB)

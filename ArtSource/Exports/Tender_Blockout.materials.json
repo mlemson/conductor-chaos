@@ -1,10 +1,10 @@
 {
   "model": "Tender_Blockout",
   "stats": {
-    "parts": 7,
-    "tris": 23056,
-    "verts": 11838,
-    "materials": 9
+    "parts": 9,
+    "tris": 19932,
+    "verts": 10252,
+    "materials": 10
   },
   "materials": {
     "M_Tender_Red": {
@@ -123,6 +123,22 @@
       "opts": {
         "paint": 0.8,
         "edge": 1.4,
+        "grime": 1.0
+      }
+    },
+    "M_Tender_Interact": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "paint": 0.6,
         "grime": 1.0
       }
     },

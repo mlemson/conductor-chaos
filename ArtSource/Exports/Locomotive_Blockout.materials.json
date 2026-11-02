@@ -2,8 +2,8 @@
   "model": "Locomotive_Blockout",
   "stats": {
     "parts": 13,
-    "tris": 39540,
-    "verts": 20026,
+    "tris": 35492,
+    "verts": 18854,
     "materials": 14
   },
   "materials": {

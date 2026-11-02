@@ -384,6 +384,219 @@ def rounded_box_grid(sx, sy, sz, radius, div=4, step=0.2, cuts=((), (), ()), hol
     return m
 
 
+# ------------------------------------------------- uit één stuk: kaders, holle bakken, prisma's
+def _signed_volume(V, F):
+    vol = 0.0
+    for f in F:
+        p0 = V[f[0]]
+        for k in range(1, len(f) - 1):
+            vol += np.dot(p0, np.cross(V[f[k]], V[f[k + 1]]))
+    return vol / 6.0
+
+
+def _orient_closed(m):
+    if _signed_volume(m.V, m.F) < 0:
+        m.F = [tuple(reversed(f)) for f in m.F]
+    return m
+
+
+def _offset_poly(P, d):
+    """Verschuif een gesloten polygoon (CCW) d naar binnen (miter per hoek)."""
+    P = np.asarray(P, float)
+    n = len(P)
+    out = []
+    for i in range(n):
+        a, b, c = P[i - 1], P[i], P[(i + 1) % n]
+        e1 = (b - a) / np.linalg.norm(b - a)
+        e2 = (c - b) / np.linalg.norm(c - b)
+        n1 = np.array([-e1[1], e1[0]])
+        n2 = np.array([-e2[1], e2[0]])
+        m = n1 + n2
+        m /= np.linalg.norm(m)
+        out.append(b + m * d / max(np.dot(m, n1), 0.3))
+    return np.array(out)
+
+
+def _poly_area(P):
+    P = np.asarray(P, float)
+    return 0.5 * np.sum(P[:, 0] * np.roll(P[:, 1], -1) - np.roll(P[:, 0], -1) * P[:, 1])
+
+
+def _earclip(P):
+    """Driehoeken voor een eenvoudige CCW-polygoon (indices)."""
+    idx = list(range(len(P)))
+    tris = []
+
+    def inside(p, a, b, c):
+        def s(p1, p2, p3):
+            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
+        d1, d2, d3 = s(p, a, b), s(p, b, c), s(p, c, a)
+        return not ((d1 < -1e-12 or d2 < -1e-12 or d3 < -1e-12) and (d1 > 1e-12 or d2 > 1e-12 or d3 > 1e-12))
+    guard = 0
+    while len(idx) > 3 and guard < 10000:
+        guard += 1
+        for k in range(len(idx)):
+            i0, i1, i2 = idx[k - 1], idx[k], idx[(k + 1) % len(idx)]
+            a, b, c = P[i0], P[i1], P[i2]
+            if (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]) <= 1e-12:
+                continue
+            if any(inside(P[j], a, b, c) for j in idx if j not in (i0, i1, i2)):
+                continue
+            tris.append((i0, i1, i2))
+            idx.pop(k)
+            break
+    tris.append(tuple(idx))
+    return tris
+
+
+def chamfer_poly(points, c):
+    """Vervang elke hoek door een kleine afschuining (low-poly 'bevel'), ook bij binnenhoeken."""
+    P = np.asarray(points, float)
+    out = []
+    n = len(P)
+    for i in range(n):
+        a, b, cc = P[i - 1], P[i], P[(i + 1) % n]
+        da, db = np.linalg.norm(b - a), np.linalg.norm(cc - b)
+        out.append(b + (a - b) / da * min(c, da * 0.45))
+        out.append(b + (cc - b) / db * min(c, db * 0.45))
+    return out
+
+
+def prism(profile_xy, z0, z1, c=0.04, mat="Default"):
+    """Polygoon in XY (mag hol/stapvormig zijn) geëxtrudeerd langs Z met afgeschuinde zijranden: één gesloten stuk."""
+    P = np.asarray(profile_xy, float)
+    if _poly_area(P) < 0:
+        P = P[::-1]
+    Pi = _offset_poly(P, c)
+    rings = [(Pi, z0), (P, z0 + c), (P, z1 - c), (Pi, z1)]
+    V, F = [], []
+    n = len(P)
+    for (Q, z) in rings:
+        V += [(q[0], q[1], z) for q in Q]
+    for r in range(3):
+        for i in range(n):
+            j = (i + 1) % n
+            F.append((r * n + i, r * n + j, (r + 1) * n + j, (r + 1) * n + i))
+    for (a, b, cc) in _earclip(Pi):
+        F.append((a, cc, b))
+        F.append((3 * n + a, 3 * n + b, 3 * n + cc))
+    m = Mesh(np.array(V, float), F, [mat] * len(F))
+    m.sharp = True
+    return _orient_closed(m)
+
+
+def frame_ring(x0, x1, y0, y1, w, z0, z1, c=0.02, mat="Default", open_bottom=False):
+    """Kader rond een opening [x0,x1]x[y0,y1] in het XY-vlak, diepte z0..z1, uit één stuk (verstekhoeken).
+
+    open_bottom=True: U-vorm voor een deur (geen onderregel, staanders eindigen op y0)."""
+    prof = [(0.0, z0), (0.0, z1 - c), (c, z1), (w - c, z1), (w, z1 - c), (w, z0)]
+    if open_bottom:
+        path = [((x0 - w, y0), (1, 0)), ((x0 - w, y1 + w), (1, -1)), ((x1 + w, y1 + w), (-1, -1)), ((x1 + w, y0), (-1, 0))]
+    else:
+        path = [((x0 - w, y0 - w), (1, 1)), ((x1 + w, y0 - w), (-1, 1)), ((x1 + w, y1 + w), (-1, -1)), ((x0 - w, y1 + w), (1, -1))]
+    V, F = [], []
+    npf = len(prof)
+    for (px, py), (ix, iy) in path:
+        V += [(px + d * ix, py + d * iy, z) for (d, z) in prof]
+    segs = len(path) if not open_bottom else len(path) - 1
+    for k in range(segs):
+        k2 = (k + 1) % len(path)
+        for j in range(npf):
+            j2 = (j + 1) % npf
+            F.append((k * npf + j, k * npf + j2, k2 * npf + j2, k2 * npf + j))
+    if open_bottom:
+        last = (len(path) - 1) * npf
+        for j in range(1, npf - 1):
+            F.append((0, j + 1, j))
+            F.append((last, last + j, last + j + 1))
+    m = Mesh(np.array(V, float), F, [mat] * len(F))
+    m.sharp = True
+    return _orient_closed(m)
+
+
+def hollow_box(outer, inner, holes=(), radius=0.1, inner_radius=0.005, step=0.25, div=1, mat="Default",
+               inner_mat=None, jamb_mat=None):
+    """Holle afgeschuinde bak uit één stuk: buitenschil + binnenschil + dagkanten (doorgangen) ertussen.
+
+    outer/inner: (x0, x1, y0, y1, z0, z1) in absolute coördinaten (binnen moet in buiten liggen).
+    holes: (as, teken, u0, u1, v0, v1[, iu0, iu1, iv0, iv1]) — opening in het vlak loodrecht op 'as' aan kant
+           'teken'; u/v = de twee overige assen in oplopende volgorde (absolute coördinaten). De optionele
+           binnenrechthoek maakt een rand (bv. open bovenkant). Openingen moeten in het vlakke deel liggen.
+    """
+    ob, ib = np.array(outer, float).reshape(3, 2), np.array(inner, float).reshape(3, 2)
+    co, Ho = ob.mean(1), (ob[:, 1] - ob[:, 0]) / 2
+    ci, Hi = ib.mean(1), (ib[:, 1] - ib[:, 0]) / 2
+    H6 = [tuple(h) if len(h) == 10 else tuple(h) + tuple(h[2:6]) for h in holes]
+
+    def local(hs, c, inner_side):
+        out, cuts = [], [set(), set(), set()]
+        for h in hs:
+            ax, sg = h[0], h[1]
+            u_ax, v_ax = [a for a in (0, 1, 2) if a != ax]
+            u0, u1, v0, v1 = h[6:10] if inner_side else h[2:6]
+            r = (u0 - c[u_ax], u1 - c[u_ax], v0 - c[v_ax], v1 - c[v_ax])
+            out.append((ax, sg) + r)
+            cuts[u_ax] |= {r[0], r[1]}
+            cuts[v_ax] |= {r[2], r[3]}
+        return out, tuple(sorted(x) for x in cuts)
+
+    ho, cuto = local(H6, co, False)
+    hi, cuti = local(H6, ci, True)
+    om = rounded_box_grid(*(2 * Ho), radius, div=div, step=step, cuts=cuto, holes=ho, mat=mat).transform(t=co)
+    im = rounded_box_grid(*(2 * Hi), inner_radius, div=1, step=step, cuts=cuti, holes=hi,
+                          mat=inner_mat or mat).transform(t=ci)
+    im.F = [tuple(reversed(f)) for f in im.F]
+    prisms = []
+    for h in H6:
+        ax, sg = h[0], h[1]
+        u_ax, v_ax = [a for a in (0, 1, 2) if a != ax]
+        a_o, a_i = co[ax] + sg * Ho[ax], ci[ax] + sg * Hi[ax]
+        prisms.append((ax, u_ax, v_ax, max(h[2], h[6]), min(h[3], h[7]), max(h[4], h[8]), min(h[5], h[9]),
+                       min(a_o, a_i), max(a_o, a_i)))
+
+    def solid(p):
+        if np.any(p < ob[:, 0]) or np.any(p > ob[:, 1]):
+            return False
+        if np.all(p > ib[:, 0]) and np.all(p < ib[:, 1]):
+            return False
+        for (ax, ua, va, u0, u1, v0, v1, a0, a1) in prisms:
+            if u0 < p[ua] < u1 and v0 < p[va] < v1 and a0 - 1e-6 <= p[ax] <= a1 + 1e-6:
+                return False
+        return True
+
+    V, F = [], []
+    for h in H6:
+        ax, sg = h[0], h[1]
+        u_ax, v_ax = [a for a in (0, 1, 2) if a != ax]
+        a_o, a_i = co[ax] + sg * Ho[ax], ci[ax] + sg * Hi[ax]
+
+        def P(a, u, v):
+            q = np.zeros(3)
+            q[ax], q[u_ax], q[v_ax] = a, u, v
+            return q
+        ro = [(h[2], h[4]), (h[3], h[4]), (h[3], h[5]), (h[2], h[5])]
+        ri = [(h[6], h[8]), (h[7], h[8]), (h[7], h[9]), (h[6], h[9])]
+        for k in range(4):
+            k2 = (k + 1) % 4
+            q = [P(a_o, *ro[k]), P(a_o, *ro[k2]), P(a_i, *ri[k2]), P(a_i, *ri[k])]
+            if np.linalg.norm(q[0] - q[3]) < 1e-9 and np.linalg.norm(q[1] - q[2]) < 1e-9:
+                continue
+            n = np.cross(q[1] - q[0], q[3] - q[0])
+            if np.linalg.norm(n) < 1e-12:
+                n = np.cross(q[2] - q[1], q[0] - q[1])
+            n /= np.linalg.norm(n)
+            mid = np.mean(q, 0)
+            if solid(mid + n * 2e-3):
+                q = q[::-1]
+            F.append(tuple(range(len(V), len(V) + 4)))
+            V += q
+    jm = Mesh(np.array(V, float).reshape(-1, 3), F, [jamb_mat or mat] * len(F))
+    out = merge(om, im, jm)
+    out.sharp = True
+    out.FS = None
+    return out
+
+
 def cylinder(r, length, seg=24, bevel=0.0, mat="Default", axis="x"):
     """Cilinder (optioneel afgeschuinde randen) langs een as, gecentreerd."""
     b = min(bevel, r * 0.5, length * 0.5)

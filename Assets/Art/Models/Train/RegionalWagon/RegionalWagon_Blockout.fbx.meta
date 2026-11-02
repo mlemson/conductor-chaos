@@ -57,6 +57,21 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Train_Inner
+    second: {fileID: 2100000, guid: 1b27a558a72d38ed9977b968995a64cf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Floor
+    second: {fileID: 2100000, guid: 7e40ddacf23360a77545fb37dbc7af73, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Seat
+    second: {fileID: 2100000, guid: b4eb32992cb2c0397f559e8c44b89ece, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Train_Lamp
     second: {fileID: 2100000, guid: 1affa8a8b371fdf17af828f8d7da7d66, type: 2}
   materials:

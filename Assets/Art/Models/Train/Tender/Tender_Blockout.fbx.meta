@@ -42,6 +42,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Tender_Interact
+    second: {fileID: 2100000, guid: e77a0302ff28b7c4ef8b4b7930d48d21, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Tender_Coal
     second: {fileID: 2100000, guid: 32207dcdf79affac2c5a69fddbf88830, type: 2}
   - first:

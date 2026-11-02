@@ -31,7 +31,7 @@
         {
           "url": "../Exports/RegionalWagon_Blockout.glb",
           "pos": [
-            -10.45,
+            -11.2,
             0,
             0.05
           ]
@@ -39,7 +39,7 @@
         {
           "url": "../Exports/Tender_Blockout.glb",
           "pos": [
-            -4.7,
+            -4.9,
             0,
             0
           ]
@@ -118,7 +118,7 @@
         {
           "url": "../Exports/Tender_Blockout.glb",
           "pos": [
-            -4.7,
+            -4.9,
             0,
             0
           ]
@@ -170,7 +170,7 @@
         {
           "url": "../Exports/Tender_Blockout.glb",
           "pos": [
-            -4.7,
+            -4.9,
             0,
             0
           ]
@@ -238,7 +238,7 @@
       "pitch": 16,
       "dist": 7.5,
       "fov": 32,
-      "target": "-4.7,0.75,-1.35",
+      "target": "-4.9,0.75,-1.35",
       "lightAz": -30,
       "lightEl": 55,
       "groundShadowOnly": 1,
@@ -247,7 +247,7 @@
         {
           "url": "../Exports/Tender_Blockout.glb",
           "pos": [
-            -4.7,
+            -4.9,
             0,
             0
           ]

@@ -1,10 +1,10 @@
 {
   "model": "RegionalWagon_Blockout",
   "stats": {
-    "parts": 14,
-    "tris": 18842,
-    "verts": 9854,
-    "materials": 11
+    "parts": 15,
+    "tris": 26322,
+    "verts": 14424,
+    "materials": 14
   },
   "materials": {
     "M_Train_Red": {
@@ -165,6 +165,51 @@
       ],
       "rampShift": 0.0,
       "smoothness": 0.3,
+      "opts": {
+        "grime": 1.0
+      }
+    },
+    "M_Train_Inner": {
+      "base": "#723F29",
+      "ramp": [
+        "#462A21",
+        "#553022",
+        "#593323",
+        "#723F29",
+        "#A66739"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.15,
+      "opts": {
+        "grime": 1.0
+      }
+    },
+    "M_Train_Floor": {
+      "base": "#814C32",
+      "ramp": [
+        "#6C422A",
+        "#814C32",
+        "#8D543A",
+        "#A56945",
+        "#E59843"
+      ],
+      "rampShift": -0.12,
+      "smoothness": 0.15,
+      "opts": {
+        "grime": 1.0
+      }
+    },
+    "M_Train_Seat": {
+      "base": "#A56945",
+      "ramp": [
+        "#6C422A",
+        "#814C32",
+        "#8D543A",
+        "#A56945",
+        "#E59843"
+      ],
+      "rampShift": 0.04,
+      "smoothness": 0.15,
       "opts": {
         "grime": 1.0
       }

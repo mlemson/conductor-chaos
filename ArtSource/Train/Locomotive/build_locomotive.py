@@ -121,45 +121,44 @@ def build_headlight():
 
 
 # ------------------------------------------------------------------- cabine
+REAR_DOOR = 0.42            # halve breedte doorgang in de achterwand (naar de kolenwagen)
+REAR_DOOR_TOP = ROOF_Y - 0.40
+
+
 def build_cab():
+    """Cabine uit één stuk: holle schaal (vloerbak, borstweringen, stijlen, bovenregels) met open bovenkant,
+    zijopeningen, open voorkant (ketel) en een doorgang in de achterwand naar de kolenwagen."""
     z_out, z_in = ZC + CAB_W / 2, ZC - CAB_W / 2
     x0, x1 = CAB
-    parts = [
-        rbox(x0, x1, FRAME[3] - 0.02, CAB_FLOOR, z_in, z_out, 0.07, "M_Loco_Red", 0.5),                     # vloerbak
-        rbox(x0, x1, CAB_FLOOR - 0.02, WALL_TOP, z_out - 0.20, z_out, 0.07, "M_Loco_Red", 0.5),            # borstwering perronkant
-        rbox(x0, x1, CAB_FLOOR - 0.02, WALL_TOP, z_in, z_in + 0.20, 0.07, "M_Loco_Red", 0.5),              # borstwering overkant
-        rbox(x0, x0 + 0.20, CAB_FLOOR - 0.02, ROOF_Y, z_in, z_out, 0.07, "M_Loco_Red", 0.5),               # achterwand
-    ]
-    # gouden sierlijst op de borstweringen
-    for (za, zb) in ((z_out - 0.23, z_out + 0.03), (z_in - 0.03, z_in + 0.23)):
-        parts.append(rbox(x0 + 0.05, x1 - 0.05, WALL_TOP - 0.02, WALL_TOP + 0.06, za, zb, 0.03, "M_Loco_Gold"))
-    parts.append(rbox(x0 - 0.03, x0 + 0.23, WALL_TOP - 0.02, WALL_TOP + 0.06, z_in + 0.05, z_out - 0.05, 0.03, "M_Loco_Gold"))
+    p, t, r = 0.26, 0.20, 0.07
+    top = ROOF_Y + 0.02
+    outer = (x0, x1, FRAME[3] - 0.02, top, z_in, z_out)
+    inner = (x0 + t, x1 - t, CAB_FLOOR, top, z_in + t, z_out - t)
+    win = (x0 + p, x1 - p, WALL_TOP, ROOF_Y - 0.26)
+    holes = [(1, 1, x0 + r, x1 - r, z_in + r, z_out - r, x0 + t, x1 - t, z_in + t, z_out - t),   # open bovenkant (dak los)
+             (2, 1) + win, (2, -1) + win,
+             (0, 1, CAB_FLOOR, ROOF_Y - 0.26, z_in + p, z_out - p),                               # voorkant: ketel
+             (0, -1, CAB_FLOOR, REAR_DOOR_TOP, ZC - REAR_DOOR, ZC + REAR_DOOR)]                   # achterdeur
+    parts = [mk.hollow_box(outer, inner, holes, radius=r, step=0.25, div=2, mat="M_Loco_Red", inner_mat="M_Loco_Interior")]
+    # gouden kaders uit één stuk rond de zijopeningen en de achterdoorgang
+    side = mk.frame_ring(*win, 0.06, -0.012, 0.04, 0.02, mat="M_Loco_Gold")
+    parts += [side.transform(t=(0, 0, z_out)), side.transform(s=(1, 1, -1), t=(0, 0, z_in))]
+    rear = mk.frame_ring(ZC - REAR_DOOR, ZC + REAR_DOOR, CAB_FLOOR - 0.05, REAR_DOOR_TOP, 0.06, -0.012, 0.04, 0.02,
+                         mat="M_Loco_Gold", open_bottom=True)
+    parts.append(rear.transform(R=mk.rot_y(-math.pi / 2), t=(x0, 0, 0)))
     # geschilderde panelen ('vierkantjes', concept): dun, bijna vlak op de cabinewanden, doffer rood
     for zf, sgn in ((z_out, 1), (z_in, -1)):
         za, zb = (zf - 0.01, zf + 0.012) if sgn > 0 else (zf - 0.012, zf + 0.01)
         for (pa, pb) in ((x0 + 0.36, x0 + 1.22), (x0 + 1.40, x1 - 0.36)):
-            parts.append(rbox(pa, pb, CAB_FLOOR + 0.06, WALL_TOP - 0.12, za, zb, 0.008, "M_Loco_Panel", div=2))
-        za, zb = (zf - 0.01, zf + 0.012) if sgn > 0 else (zf - 0.012, zf + 0.01)
+            parts.append(rbox(pa, pb, CAB_FLOOR + 0.06, WALL_TOP - 0.16, za, zb, 0.008, "M_Loco_Panel", div=2))
         parts.append(rbox(x0 + 0.36, x1 - 0.36, FRAME[3] + 0.06, CAB_FLOOR - 0.08, za, zb, 0.008, "M_Loco_Panel", div=2))
-    # deurpaneel op de achterwand
-    parts.append(rbox(x0 - 0.03, x0 + 0.02, CAB_FLOOR + 0.12, ROOF_Y - 0.22, ZC - 0.42, ZC + 0.42, 0.03, "M_Loco_RedDark"))
-    # vier dikke stijlen met voet en kapiteel
-    p = 0.26
-    for xs in (x0, x1 - p):
-        for zs in (z_in, z_out - p):
-            parts.append(rbox(xs, xs + p, CAB_FLOOR, ROOF_Y + 0.02, zs, zs + p, 0.06, "M_Loco_Red"))
-            for (y0, y1) in ((WALL_TOP - 0.02, WALL_TOP + 0.14), (ROOF_Y - 0.16, ROOF_Y + 0.02)):
-                parts.append(rbox(xs - 0.04, xs + p + 0.04, y0, y1, zs - 0.04, zs + p + 0.04, 0.05, "M_Loco_Red"))
-    # bovenregel voorkant (boven de ketel)
-    parts.append(rbox(x1 - p, x1, ROOF_Y - 0.26, ROOF_Y + 0.02, z_in, z_out, 0.06, "M_Loco_Red", 0.6))
-    # gewelfd dak met royaal overstek (donkerbruin)
+    for (za, zb) in ((z_in + 0.14, ZC - REAR_DOOR - 0.16), (ZC + REAR_DOOR + 0.16, z_out - 0.14)):
+        parts.append(rbox(x0 - 0.012, x0 + 0.01, CAB_FLOOR + 0.06, WALL_TOP - 0.16, za, zb, 0.008, "M_Loco_Panel", div=2))
+    # gewelfd dak met royaal overstek (donkerbruin) + donker plafond
     rz0, rz1 = ZC - CAB_W / 2 - 0.26, ZC + CAB_W / 2 + 0.26
     roof_prof = mk.superellipse_arch(rz0, rz1, ROOF_Y + 0.14, ROOF_Y + 0.46, ROOF_Y, n=3.2, seg=22, fillet=0.06)
     roof = mk.extrude_profile(roof_prof, x0 - 0.30, x1 + 0.34, nx=10, round0=0.10, round1=0.10, rings=3, mat="M_Loco_Roof")
-    # donker interieur (diepte in de opening)
-    parts.append(rbox(x0 + 0.20, x0 + 0.24, CAB_FLOOR, ROOF_Y, z_in + 0.2, z_out - 0.2, 0.01, "M_Loco_Interior"))
-    parts.append(rbox(x0 + 0.20, x1 - 0.05, CAB_FLOOR - 0.01, CAB_FLOOR + 0.01, z_in + 0.2, z_out - 0.2, 0.005, "M_Loco_Interior"))
-    roof = mk.merge(roof, rbox(x0 + 0.2, x1 - 0.2, ROOF_Y - 0.02, ROOF_Y + 0.02, z_in + 0.2, z_out - 0.2, 0.005, "M_Loco_Interior"))
+    roof = mk.merge(roof, rbox(x0 + t, x1 - t, ROOF_Y - 0.04, ROOF_Y + 0.015, z_in + t, z_out - t, 0.005, "M_Loco_Interior"))
     return mk.merge(*parts), roof
 
 
@@ -236,14 +235,15 @@ def build_firebox():
                            mat="M_Loco_Gold"))
     rng = np.random.default_rng(3)
     lumps = []
-    for k in range(26):
+    for k in range(16):
         sx, sy, sz = rng.uniform(0.07, 0.12), rng.uniform(0.05, 0.08), rng.uniform(0.07, 0.11)
         lump = mk.ellipsoid(sx, sy, sz, 7, 4, mat="M_Loco_Coal")
         lump.sharp = True                                   # facetjes = steenkool
         lumps.append(lump.transform(R=mk.rot_y(rng.uniform(0, math.pi)) @ mk.rot_x(rng.uniform(-0.4, 0.4)),
-                                    t=(x0 + 0.32 + rng.uniform(0, 0.38), CAB_FLOOR + 0.40 + rng.uniform(-0.01, 0.06),
-                                       ZC - 0.42 + rng.uniform(0, 0.84))))
-    bin_ = mk.merge(rbox(x0 + 0.22, x0 + 0.80, CAB_FLOOR - 0.01, CAB_FLOOR + 0.42, ZC - 0.55, ZC + 0.55, 0.05, "M_Loco_RedDark", div=3),
+                                    t=(x0 + 0.34 + rng.uniform(0, 0.36), CAB_FLOOR + 0.40 + rng.uniform(-0.01, 0.06),
+                                       ZC - 0.98 + rng.uniform(0, 0.42))))
+    # schepbak in de hoek (overkant), zodat de doorgang naar de kolenwagen vrij blijft
+    bin_ = mk.merge(rbox(x0 + 0.22, x0 + 0.80, CAB_FLOOR - 0.01, CAB_FLOOR + 0.42, ZC - 1.04, ZC - 0.50, 0.05, "M_Loco_RedDark", div=3),
                     *lumps)
     return mk.merge(stove, top, pipe, gauge), bin_, (fx0, fx1)
 
