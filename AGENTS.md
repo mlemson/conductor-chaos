@@ -2,6 +2,15 @@
 
 **CRITICAL – MULTIPLAYER FIRST:** This is a cooperative multiplayer game, not a singleplayer game with multiplayer added later. Every new gameplay feature, interaction, physics object, animation and train system must be designed and tested for networked play. Never introduce local-only gameplay state for shared interactions. Preserve existing multiplayer functionality when modifying code. Test changes with at least two connected players whenever possible.
 
+## Verplichte live taakregistratie (alle agents)
+
+- **Begin niet met implementeren zonder een GitHub Issue** voor het werk. Kijk eerst naar het [live ontwikkelbord](Docs/PROJECT_BOARD.md) en [werkafspraken](Docs/DEVELOPMENT_WORKFLOW.md). Maak zo nodig een issue met P0/P1/P2, doel en toetsbare criteria.
+- Claim je taak via assignee of een draft PR met `Refs #nummer`; meld de actieve issue in je werkbeschrijving. Andere agents mogen die taak niet stilzwijgend dupliceren.
+- Bij betekenisvolle commits/update: werk de issue/PR bij met werkelijke voortgang, relevante tests, resterende TODO's en blockers. Commit ≠ gereed. Een groene compilatie ≠ multiplayer-validatie.
+- Maak een gerichte PR en vermeld `Refs #nummer` tijdens werk; gebruik `Closes #nummer` alleen wanneer de volledige issue na review en merge kan worden gesloten.
+- **Wijzig `Docs/PROJECT_BOARD.md` niet handmatig.** Het bord is afgeleid van issues/PR's en wordt door GitHub Actions opnieuw gegenereerd na merges en issue-/PR-wijzigingen. Bij workflowproblemen blijft de issue de bron van waarheid.
+- Houd [ROADMAP.md](Docs/ROADMAP.md) en [TESTPLAN.md](Docs/TESTPLAN.md) alleen inhoudelijk bij wanneer scope, testbewijs of afhankelijkheden daadwerkelijk wijzigen.
+
 ## Start elke taak
 
 1. Lees [status](Docs/AI/UnityProjectContext.md), [gamevisie](Docs/GAME_VISION.md), [architectuur](Docs/ARCHITECTURE.md), [roadmap](Docs/ROADMAP.md), relevante guide en recente wijzigingen.
