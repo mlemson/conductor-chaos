@@ -1,5 +1,8 @@
 # Roadmap en taken voor agents
 
+> **Projectstatus:** volg het [live ontwikkelbord](PROJECT_BOARD.md) en de individuele [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues). De onderstaande vakjes beschrijven inhoudelijke test-/ontwikkelfasen, maar worden **niet automatisch** bij iedere commit bijgewerkt. Sluit taken pas af via geverifieerde issues/PR's. Zie [samenwerkingsafspraken](DEVELOPMENT_WORKFLOW.md).
+
+
 Alle taken zijn open. Afhankelijkheden en acceptatie zijn verplicht; tests met twee spelers zijn nodig voor netwerkgedrag. Mijlpalen beschrijven toekomstig werk, niet huidige functionaliteit.
 
 ## P0 — technisch fundament
