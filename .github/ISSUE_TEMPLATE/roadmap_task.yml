@@ -1,0 +1,41 @@
+name: Roadmap task
+description: Functionele, technische of visuele taak voor Conductor Chaos
+body:
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Fase
+      description: Gebruik dezelfde [P0], [P1] of [P2] ook in de titel.
+      options: [P0, P1, P2]
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Onderdeel
+      options: [Foundation, Multiplayer, Train, Interactions, Physics, Gameplay, World, Art, QA, Polish, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Doel
+      description: Wat moet zichtbaar of aantoonbaar veranderen?
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptatiecriteria
+      description: Wat moet werken? Noem host en aparte client als het multiplayer raakt.
+      value: |
+        - [ ] Functionaliteit werkt volgens beschrijving
+        - [ ] Relevante tests en beperkingen gedocumenteerd
+        - [ ] Bestaande onderdelen blijven werken
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Afhankelijkheden en risico's
+      description: Andere issues, blocking dependencies en overige informatie
