@@ -12,6 +12,10 @@ Een warme, speelse co-opgame in ontwikkeling: 1–6 spelers proberen samen een t
 4. [Multiplayer-testplan](Docs/TESTPLAN.md) en [risicoregister](Docs/RISKS.md).
 5. [Gamevisie en ontwerpprioriteiten](Docs/GAME_VISION.md), [art style guide](Docs/ART_STYLE_GUIDE.md), [visuele referenties](Docs/References/README.md) en [assetchecklist](Docs/ASSET_CHECKLIST.md).
 
+## Eerstvolgende agenttaak
+
+Gebruik de afgebakende [P0-01 prompt voor de volgende agent](Docs/AI/NEXT_AGENT_TASK.md). Begin niet met allerlei gameplay voordat de Unity-import is gevalideerd.
+
 ## Project openen
 
 Open de hoofdmap in Unity Hub met **6000.5.7f1**, laat packages oplossen en lees Console en Package Manager. Het project is nog niet met de editor gevalideerd; werk [setup-taak P0-01](Docs/ROADMAP.md) af voordat je daarop vertrouwt. Er staan bewust geen scènes in Build Settings. De URP-configuratiebestanden zijn technische instellingen uit de Unity-template, geen spelassets. Netcode, Relay en Lobby zijn nog niet geïnstalleerd of geconfigureerd.
