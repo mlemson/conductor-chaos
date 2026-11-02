@@ -302,6 +302,7 @@ def build_scene(arm_angle_deg=66.0):
             p.ao_group = "body"
         if p.name == "Prop_Key":
             p.ao_group, p.gradient = "key", 0.0
+    sc.style_all(cells=0.0)   # boonvormig personage: glad, geen vlakken
     sc.bake_shading(density=4500, radius=0.10, noise_freq=5.0, edge_range=(14.0, 45.0))
     return sc
 

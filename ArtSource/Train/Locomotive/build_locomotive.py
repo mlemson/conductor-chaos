@@ -336,6 +336,7 @@ def build_locomotive():
             p.ao_group = "body"
     sc.get("Wheels").gradient = 0.12
     sc.facet_all()
+    sc.style_all(grime=1.0)
     sc.bake_shading(density=1100, radius=0.30, noise_freq=1.3, edge_range=(4.0, 16.0))
     return sc
 

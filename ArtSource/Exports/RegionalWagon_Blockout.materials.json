@@ -19,7 +19,8 @@
       "rampShift": 0.0,
       "smoothness": 0.25,
       "opts": {
-        "paint": 1.5
+        "paint": 1.5,
+        "grime": 1.0
       }
     },
     "M_Train_RedPanel": {
@@ -34,7 +35,8 @@
       "rampShift": 0.06,
       "smoothness": 0.25,
       "opts": {
-        "paint": 1.5
+        "paint": 1.5,
+        "grime": 1.0
       }
     },
     "M_Train_RedLow": {
@@ -49,7 +51,8 @@
       "rampShift": -0.18,
       "smoothness": 0.25,
       "opts": {
-        "paint": 1.3
+        "paint": 1.3,
+        "grime": 1.0
       }
     },
     "M_Train_Roof": {
@@ -64,7 +67,8 @@
       "rampShift": -0.18,
       "smoothness": 0.2,
       "opts": {
-        "paint": 1.6
+        "paint": 1.6,
+        "grime": 1.0
       }
     },
     "M_Train_Trim": {
@@ -79,7 +83,8 @@
       "rampShift": 0.0,
       "smoothness": 0.2,
       "opts": {
-        "paint": 1.2
+        "paint": 1.2,
+        "grime": 1.0
       }
     },
     "M_Train_Wheel": {
@@ -94,7 +99,8 @@
       "rampShift": 0.0,
       "smoothness": 0.3,
       "opts": {
-        "paint": 0.8
+        "paint": 0.8,
+        "grime": 1.0
       }
     },
     "M_Train_Gold": {
@@ -108,7 +114,9 @@
       ],
       "rampShift": 0.0,
       "smoothness": 0.4,
-      "opts": {}
+      "opts": {
+        "grime": 1.0
+      }
     },
     "M_Train_Glass": {
       "base": "#34335B",
@@ -124,7 +132,8 @@
       "opts": {
         "flat": 0.5,
         "rim": 0.25,
-        "paint": 0.3
+        "paint": 0.3,
+        "grime": 1.0
       }
     },
     "M_Train_GlassShine": {
@@ -141,7 +150,8 @@
       "opts": {
         "flat": 0.85,
         "rim": 0,
-        "paint": 0
+        "paint": 0,
+        "grime": 1.0
       }
     },
     "M_Train_Interact": {
@@ -155,7 +165,9 @@
       ],
       "rampShift": 0.0,
       "smoothness": 0.3,
-      "opts": {}
+      "opts": {
+        "grime": 1.0
+      }
     },
     "M_Train_Lamp": {
       "base": "#FEECA1",
@@ -171,7 +183,8 @@
       "opts": {
         "emissive": 0.85,
         "rim": 0.0,
-        "paint": 0
+        "paint": 0,
+        "grime": 1.0
       }
     }
   }

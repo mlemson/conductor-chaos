@@ -62,7 +62,11 @@ Pas vormen of maten aan in de `build_*.py`-scripts, niet in de FBX. Kleuren kome
   (`Scene.bake_shading`): **R** = occlusie (hoeken, onder randen, onderkant iets donkerder), **G** = randlicht op
   afrondingen, **B** = verfvlekken (fBm, 0,5 = neutraal; staat in de render **uit**, `noise=1` zet hem aan ter vergelijking).
   De shader verschuift hiermee de positie in de kleurramp. **Low-poly:** trein en decor hebben harde normalen per vlak
-  (`Scene.facet_all`), zodat elk vlak één effen tint krijgt. De conducteur blijft glad (boonvorm). In Unity leest de toekomstige Shader Graph dit via de
+  (`Scene.facet_all`), zodat elk vlak één effen tint krijgt. De conducteur blijft glad (boonvorm).
+  **Vlakken en vuil:** de shader legt een 3D-Voronoi over het model: elke cel krijgt een licht andere tint.
+  Treinen worden naar onderen vuiler, per cel. Dit gaat via shaderhints per materiaal (`Scene.style_all`):
+  `cells`, `cellSize`, `grime` en `grimeY` (staan ook in `*.materials.json`). In Unity wordt dit een Voronoi in de
+  Shader Graph (objectruimte). In Unity leest de toekomstige Shader Graph dit via de
   *Vertex Color*-node. URP Lit negeert vertexkleuren.
 - Materialen heten `M_<Asset>_<Deel>`. In `*.materials.json` staan per materiaal de ramp (5 tinten),
   `rampShift` en shaderhints (`flat`, `noShadow`, `emissive`) voor de toekomstige stylized-lit Shader Graph.

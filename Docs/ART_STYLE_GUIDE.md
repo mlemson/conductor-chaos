@@ -220,7 +220,9 @@ Een prop moet al herkenbaar zijn als silhouette, nog vóór textuur of detail.
 
 ## Materiaalrichting
 - mat tot satijn: zacht "klei/vinyl-speelgoed"-gevoel, brede zachte highlight, geen scherpe spiegeling
-- **low-poly met effen vlakken** (besluit @mlemson): elk vlak/facet heeft één effen tint, bepaald door zijn richting (boven licht, zijkant midden, onder donker). Variatie komt van **grote vormen**: facetten, afschuiningen en ingezette panelen, niet van ruis, vlekken of penseeltextuur. Alleen een zachte occlusie in hoeken en naar de onderkant (vertexkleur R) en lichte randjes (G). Trein en decor: harde normalen; personages blijven glad. Zie [ArtSource](../ArtSource/README.md)
+- **low-poly met effen vlakken** (besluit @mlemson): elk vlak/facet heeft één effen tint, bepaald door zijn richting (boven licht, zijkant midden, onder donker). Variatie komt van **grote vormen**: facetten, afschuiningen en ingezette panelen, niet van ruis, vlekken of penseeltextuur. Alleen een zachte occlusie in hoeken en naar de onderkant (vertexkleur R) en lichte randjes (G). Trein en decor: harde normalen; personages blijven glad.
+- **grote vlakken met iets andere tint** (referentie @mlemson): een Voronoi-patroon met cellen van ongeveer 0,45 m (decor 1,1 m), elke cel effen en een fractie lichter of donkerder, met harde randen en zonder ruis
+- **onderin viezer:** treinen worden naar de onderkant donkerder en bruiner (vuilkleur `wagon_brown[0]`), ook per cel, dus het vuil bestaat ook uit vlakken. Zie [ArtSource](../ArtSource/README.md)
 - geschilderde **inzetpanelen**: een iets donkerder vlak (dezelfde ramp, lagere positie) zonder lichte rand, zoals op de concept-loc. Gebruik ze spaarzaam op grote wanden, eventueel met gouden klinknagels
 - koele rimlight langs de randen (zie Lighting)
 - geen heavy realism

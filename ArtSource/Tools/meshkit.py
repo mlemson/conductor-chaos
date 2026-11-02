@@ -511,6 +511,12 @@ class Scene:
             M = M @ L
         return M
 
+    def style_all(self, **opts):
+        """Zet shaderhints (cells, cellSize, grime, grimeY) voor alle materialen, tenzij een materiaal ze zelf heeft."""
+        for m in self.materials.values():
+            for k, v in opts.items():
+                m["opts"].setdefault(k, v)
+
     def facet_all(self, skip=()):
         """Low-poly look: alle vlakken plat (harde normalen), behalve onderdelen in `skip`."""
         for p in self.parts:
