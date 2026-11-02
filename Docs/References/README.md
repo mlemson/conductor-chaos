@@ -5,9 +5,11 @@ De gekozen conceptafbeelding is de **primaire referentie** voor characters, kleu
 | Bestand | Wat |
 |---|---|
 | [conductor-chaos-concept.png](conductor-chaos-concept.png) | De originele conceptafbeelding (1536×1024). Altijd eerst bekijken. |
-| [STYLE_PALETTE.svg](STYLE_PALETTE.svg) | Stijlkaart v2: kernprincipes, licht/schaduw per materiaal, 33 kleurramps met bronuitsnede, vormentaal personages, URP-vertaling. |
+| [STYLE_PALETTE.svg](STYLE_PALETTE.svg) | Stijlkaart v2: kernprincipes, licht/schaduw per materiaal, 34 kleurramps met bronuitsnede, vormentaal personages, URP-vertaling. |
 | [palette.json](palette.json) | Dezelfde ramps machine-leesbaar, voor scripts, materialen en agents. |
 | [tools/build_style_card.py](tools/build_style_card.py) | Genereert SVG en JSON uit één bron. Pas ramps alleen hier aan. |
+
+Uitgewerkte designs (ontwerpblad conducteur, art check bij de wagondeur, vergelijking met dit concept) staan in [Docs/Art](../Art/).
 
 Alle kleuren zijn **gemeten** in de conceptafbeelding (per materiaalgebied, percentielen van schaduw naar licht), niet geschat. Regels staan in de [art style guide](../ART_STYLE_GUIDE.md).
 

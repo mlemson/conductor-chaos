@@ -95,6 +95,16 @@
           "#E0C9C0",
           "#FBF0E3"
         ]
+      },
+      "mouth": {
+        "name": "Mondholte & tong",
+        "ramp": [
+          "#50221A",
+          "#662C23",
+          "#AB4337",
+          "#B84A3C",
+          "#C15648"
+        ]
       }
     },
     "Trein": {

@@ -1,0 +1,134 @@
+{
+  "model": "Conductor",
+  "height_m": 1.25,
+  "stats": {
+    "parts": 19,
+    "tris": 10980,
+    "verts": 5552,
+    "materials": 9
+  },
+  "materials": {
+    "M_Conductor_Skin": {
+      "base": "#DB9966",
+      "ramp": [
+        "#BA7756",
+        "#D28658",
+        "#DB9966",
+        "#E7A773",
+        "#EFB27C"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {}
+    },
+    "M_Conductor_Uniform": {
+      "base": "#3E3D70",
+      "ramp": [
+        "#1D1C2D",
+        "#34335B",
+        "#3E3D70",
+        "#454377",
+        "#565191"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.22,
+      "opts": {}
+    },
+    "M_Conductor_UniformDark": {
+      "base": "#34335B",
+      "ramp": [
+        "#1D1C2D",
+        "#34335B",
+        "#3E3D70",
+        "#454377",
+        "#565191"
+      ],
+      "rampShift": -0.22,
+      "smoothness": 0.22,
+      "opts": {}
+    },
+    "M_Conductor_Gold": {
+      "base": "#DA993A",
+      "ramp": [
+        "#9D662F",
+        "#AD7031",
+        "#DA993A",
+        "#FBBA39",
+        "#FCCF53"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.4,
+      "opts": {}
+    },
+    "M_Conductor_EyeWhite": {
+      "base": "#FDEEDC",
+      "ramp": [
+        "#352F3C",
+        "#BDABC1",
+        "#DCC7C5",
+        "#FDEEDC",
+        "#FDF6E8"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.35,
+      "opts": {
+        "flat": 0.45,
+        "noShadow": true
+      }
+    },
+    "M_Conductor_Pupil": {
+      "base": "#0D0B0C",
+      "ramp": [
+        "#1C0F0E",
+        "#291D1B",
+        "#351B13",
+        "#382520",
+        "#5A4038"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.45,
+      "opts": {
+        "noShadow": true
+      }
+    },
+    "M_Conductor_Mouth": {
+      "base": "#662C23",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": -0.55,
+      "smoothness": 0.2,
+      "opts": {}
+    },
+    "M_Conductor_Tongue": {
+      "base": "#B84A3C",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {}
+    },
+    "M_Conductor_Shoe": {
+      "base": "#33303B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {}
+    }
+  }
+}

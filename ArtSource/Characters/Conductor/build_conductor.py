@@ -1,0 +1,295 @@
+"""Conducteur — basismodel (P0 art proof, issue #9).
+
+Bouwt het conducteurpersonage parametrisch uit de maten van de conceptafbeelding
+(`Docs/References/conductor-chaos-concept.png`, 'The Crew', conducteur links) en
+kleurt het met de gemeten ramps uit `Docs/References/palette.json`.
+
+Gemeten in het concept (pixels, conducteur 190 px hoog incl. pet):
+  pet-top 803 · oogmidden 866 · mondmidden 897 · kraag 913 · schoudel ~920
+  knopen 930/945 · jasonderkant ~970 · schoenzool 993 · lijfbreedte ~83 px
+  ogen Ø ~32 px en raken elkaar · handen Ø ~28 px · petkroon ~1,3x lijfbreedte
+Schaal: totale hoogte 1,25 m -> 1 px ≈ 6,6 mm.
+
+Uitvoer (relatief aan de repo-root):
+  Assets/Art/Models/Characters/Conductor/Conductor.fbx   Unity (FBX 7.4 ASCII)
+  ArtSource/Exports/Conductor.glb                        Blender/preview
+  ArtSource/Exports/Conductor.materials.json             ramps per materiaal
+
+Gebruik:  python ArtSource/Characters/Conductor/build_conductor.py
+"""
+import json
+import math
+import os
+import sys
+
+import numpy as np
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
+sys.path.insert(0, os.path.join(ROOT, "ArtSource", "Tools"))
+import meshkit as mk  # noqa: E402
+import unity_assets  # noqa: E402
+
+PALETTE = json.load(open(os.path.join(ROOT, "Docs", "References", "palette.json"), encoding="utf-8"))
+RAMPS = {k: v["ramp"] for g in PALETTE["groups"].values() for k, v in g.items()}
+
+# ------------------------------------------------------------------ maten (m)
+H_TOTAL = 1.25
+BODY_R = 0.28           # halve lijfbreedte
+BODY_DEPTH = 0.86       # diepte t.o.v. breedte (iets platte voorkant)
+BODY_N = 2.6            # superellips-doorsnede: zacht vierkant, 'speelgoed'
+Y_BOTTOM = 0.15         # onderkant jas
+Y_DOME = 0.80           # begin van de koepel
+Y_TOP = 1.02            # kruin (zit onder de pet)
+Y_COLLAR = 0.53         # grens huid/uniform
+EYE_Y, EYE_R, EYE_X = 0.835, 0.106, 0.099
+EYE_DEPTH = 0.55         # bolling van het oog (t.o.v. straal)
+MOUTH_Y = 0.632
+SHOULDER = (0.245, 0.485, 0.0)
+HIP_Y = 0.20
+LEG_X = 0.115
+
+SEG = 32                # omtrek-segmenten lijf (rond silhouet, nog steeds low-poly)
+
+
+def body_radius(y):
+    """Straalfactor van het lijf op hoogte y (1.0 = BODY_R)."""
+    if y >= Y_DOME:
+        t = min(1.0, (y - Y_DOME) / (Y_TOP - Y_DOME))
+        return max(0.0, (1 - t ** 2.4)) ** (1 / 2.4) * 0.965
+    # lichte taps: jas onderaan 3% breder dan het hoofd
+    return 0.965 + 0.035 * (1 - (y - Y_BOTTOM) / (Y_DOME - Y_BOTTOM))
+
+
+def body_surface(x, y):
+    """z-coördinaat van de voorkant van het lijf op (x, y) + oppervlaktenormaal."""
+    a = BODY_R * body_radius(y)
+    b = a * BODY_DEPTH
+    u = min(abs(x) / a, 0.999)
+    z = b * (1 - u ** BODY_N) ** (1 / BODY_N)
+    n = np.array([np.sign(x) * u ** (BODY_N - 1) / a, 0.0, (z / b) ** (BODY_N - 1) / b])
+    # helling in y meenemen (koepel)
+    dy = 0.004
+    a2 = BODY_R * body_radius(y + dy)
+    z2 = a2 * BODY_DEPTH * (1 - min(abs(x) / a2, 0.999) ** BODY_N) ** (1 / BODY_N)
+    n[1] = -(z2 - z) / dy * n[2]
+    return z, n / np.linalg.norm(n)
+
+
+def face_frame(nrm):
+    """Rotatiematrix die lokale +Z op de oppervlaktenormaal legt (Y blijft ~omhoog)."""
+    z = nrm / np.linalg.norm(nrm)
+    x = np.cross([0, 1, 0], z)
+    x /= np.linalg.norm(x)
+    y = np.cross(z, x)
+    return np.stack([x, y, z], axis=1)
+
+
+# ------------------------------------------------------------------- onderdelen
+def build_body():
+    prof = [(0.0, Y_BOTTOM)]
+    fil = 0.07
+    for k in range(0, 6):
+        th = math.pi / 2 * k / 5
+        r = (BODY_R - fil + fil * math.sin(th)) / BODY_R
+        y = Y_BOTTOM + fil - fil * math.cos(th)
+        prof.append((r * body_radius(y) / body_radius(Y_BOTTOM + fil), y))
+    ys = list(np.linspace(Y_BOTTOM + fil + 0.04, Y_DOME, 16)) + [Y_COLLAR]
+    ys = sorted(set(round(v, 4) for v in ys))
+    prof += [(body_radius(y), y) for y in ys]
+    for k in range(1, 9):
+        y = Y_DOME + (Y_TOP - Y_DOME) * (k / 8) ** 0.8
+        prof.append((body_radius(y) if k < 8 else 0.0, y))
+    m = mk.lathe(prof, SEG, BODY_R, BODY_R * BODY_DEPTH, BODY_N, mat="M_Conductor_Skin")
+    # materiaalsplitsing op de kraaglijn
+    m.M = ["M_Conductor_Uniform" if m.V[list(f)][:, 1].mean() < Y_COLLAR else "M_Conductor_Skin" for f in m.F]
+    # jas-split tussen de benen: klein inkepinkje aan de voorkant is niet nodig in low-poly; benen tonen het al
+    return m
+
+
+def build_collar():
+    """Kraag: zachte rol rond de hals + twee revers in V-vorm."""
+    a = BODY_R * body_radius(Y_COLLAR)
+    roll = mk.torus(1.0, 0.016, SEG, 6, mat="M_Conductor_Uniform", a=a + 0.004, b=a * BODY_DEPTH + 0.004, n=BODY_N)
+    roll = roll.transform(t=(0, Y_COLLAR + 0.004, 0))
+    parts = [roll]
+    for sx in (-1, 1):
+        x = sx * 0.042
+        z, nrm = body_surface(x, Y_COLLAR - 0.03)
+        lap = mk.rounded_box(0.085, 0.055, 0.022, 0.009, 2, mat="M_Conductor_Uniform")
+        R = face_frame(nrm) @ mk.rot_z(sx * math.radians(38))
+        parts.append(lap.transform(R=R, t=(x, Y_COLLAR - 0.022, z + 0.004)))
+    return mk.merge(*parts)
+
+
+def build_buttons():
+    parts = []
+    for y in (0.425, 0.325):
+        z, nrm = body_surface(0.0, y)
+        b = mk.ellipsoid(0.022, 0.022, 0.011, 12, 6, mat="M_Conductor_Gold")
+        parts.append(b.transform(R=face_frame(nrm), t=(0, y, z)))
+    return mk.merge(*parts)
+
+
+def build_eye():
+    """Oogwit: licht verticale, bolle ellipsoïde."""
+    return mk.ellipsoid(EYE_R, EYE_R * 1.08, EYE_R * EYE_DEPTH, 24, 12, mat="M_Conductor_EyeWhite")
+
+
+def build_pupil(side):
+    """Pupil + glimlicht, op het oogoppervlak, licht naar binnen kijkend (zoals concept)."""
+    px, py = -side * 0.022, 0.006
+    ez = EYE_R * EYE_DEPTH * math.sqrt(max(0.0, 1 - (px / EYE_R) ** 2 - (py / (EYE_R * 1.08)) ** 2))
+    pupil = mk.ellipsoid(0.029, 0.041, 0.011, 14, 8, mat="M_Conductor_Pupil").transform(t=(px, py, ez - 0.002))
+    gx, gy = px + 0.011, py + 0.016
+    gz = EYE_R * EYE_DEPTH * math.sqrt(max(0.0, 1 - (gx / EYE_R) ** 2 - (gy / (EYE_R * 1.08)) ** 2))
+    glint = mk.ellipsoid(0.0075, 0.0075, 0.004, 8, 4, mat="M_Conductor_EyeWhite").transform(t=(gx, gy, gz + 0.006))
+    return mk.merge(pupil, glint)
+
+
+def build_mouth(kind):
+    if kind == "Neutral":   # kleine, rustige ovale mond
+        inner = mk.ellipsoid(0.040, 0.020, 0.014, 16, 8, mat="M_Conductor_Mouth")
+        return inner
+    if kind == "Happy":     # brede, open lach met tong
+        inner = mk.ellipsoid(0.078, 0.046, 0.020, 20, 10, mat="M_Conductor_Mouth").transform(t=(0, -0.006, 0))
+        tongue = mk.ellipsoid(0.042, 0.020, 0.012, 14, 6, mat="M_Conductor_Tongue").transform(t=(0, -0.030, 0.010))
+        return mk.merge(inner, tongue)
+    # Surprised (concept): grote open O-mond met tong
+    inner = mk.ellipsoid(0.074, 0.080, 0.022, 20, 10, mat="M_Conductor_Mouth")
+    tongue = mk.ellipsoid(0.048, 0.028, 0.014, 14, 6, mat="M_Conductor_Tongue").transform(t=(0.006, -0.044, 0.010))
+    return mk.merge(inner, tongue)
+
+
+def build_cap():
+    """Pet: bolle kroon (~1,3x lijfbreedte), gouden band, donkere klep, embleem.
+    Lokale oorsprong = onderkant band, midden van het hoofd."""
+    band_a = BODY_R * 1.0 + 0.012
+    band_b = band_a * BODY_DEPTH + 0.02
+    BAND_H = 0.066
+    band = mk.lathe([(0.0, 0.0), (0.96, 0.0), (1.0, 0.009), (1.0, BAND_H - 0.009), (0.96, BAND_H), (0.0, BAND_H)],
+                    SEG, band_a, band_b, 2.3, mat="M_Conductor_Gold")
+    # kroon: bolt boven de band ruim uit (~1,28x) en loopt hoog door tot een zachte, platte bovenkant
+    crown_prof = [(0.0, BAND_H - 0.004), (0.97, BAND_H - 0.004)]
+    for k in range(1, 9):
+        t = k / 8
+        crown_prof.append((0.97 + 0.31 * math.sin(t * math.pi / 2) ** 0.9, BAND_H + 0.11 * t))
+    for k in range(1, 4):
+        crown_prof.append((1.28 + 0.01 * math.sin(k / 3 * math.pi), BAND_H + 0.11 + 0.06 * k / 3))
+    for k in range(1, 9):
+        th = math.pi / 2 * k / 8
+        crown_prof.append((1.28 * math.cos(th) ** 0.5 if k < 8 else 0.0, BAND_H + 0.17 + 0.085 * math.sin(th)))
+    crown = mk.lathe(crown_prof, SEG, band_a, band_b * 1.04, 2.2, mat="M_Conductor_Uniform")
+    crown = crown.transform(t=(0, 0, 0.02))  # kroon iets naar voren: 'peaked' silhouet
+    under = mk.lathe([(0.0, -0.012), (1.02, -0.012), (1.03, 0.0), (0.0, 0.0)], SEG, band_a, band_b, 2.3,
+                     mat="M_Conductor_UniformDark")
+    # klep: platte ellipsoïde die vóór de band uitsteekt, licht omlaag gekanteld
+    brim = mk.ellipsoid(band_a * 0.96, 0.02, 0.22, 28, 6, mat="M_Conductor_UniformDark")
+    brim = brim.transform(R=mk.rot_x(math.radians(16)), t=(0, -0.002, band_b - 0.05))
+    # embleem: rond, goud, half op de band (concept)
+    badge = mk.ellipsoid(0.060, 0.044, 0.024, 16, 8, mat="M_Conductor_Gold")
+    badge = badge.transform(R=mk.rot_x(math.radians(-14)), t=(0, BAND_H + 0.035, band_b * 1.13 + 0.02))
+    return mk.merge(band, crown, under, brim, badge)
+
+
+def build_arm():
+    """Mouw vanaf schouder-pivot; wijst in rust langs lokale -Y."""
+    sleeve = mk.capsule_between((0, 0.02, 0), (0, -0.165, 0), 0.066, 0.058, 16, 4, mat="M_Conductor_Uniform")
+    return sleeve
+
+
+def build_hand():
+    return mk.ellipsoid(0.088, 0.092, 0.082, 18, 10, mat="M_Conductor_Skin")
+
+
+def build_key():
+    """Conducteurssleutel (prop, standaard verborgen): ring in de hand, schacht langs lokale -Y."""
+    ring = mk.torus(0.030, 0.010, 16, 6, mat="M_Conductor_Gold").transform(R=mk.rot_x(math.pi / 2), t=(0, 0.0, 0.0))
+    shaft = mk.capsule_between((0, -0.03, 0), (0, -0.19, 0), 0.011, 0.011, 8, 2, mat="M_Conductor_Gold")
+    bit = mk.rounded_box(0.035, 0.03, 0.012, 0.005, 1, mat="M_Conductor_Gold").transform(t=(0.02, -0.17, 0))
+    return mk.merge(ring, shaft, bit).transform(t=(0, -0.02, 0.05))
+
+
+def build_leg():
+    """Broekspijp + schoen; pivot = heup. Lokale y=0 ligt op HIP_Y."""
+    trouser = mk.rounded_box(0.135, 0.15, 0.145, 0.045, 2, mat="M_Conductor_Uniform").transform(t=(0, 0.17 - HIP_Y - 0.02, -0.005))
+    shoe = mk.rounded_box(0.165, 0.095, 0.225, 0.042, 2, mat="M_Conductor_Shoe").transform(t=(0, 0.0475 - HIP_Y, 0.025))
+    return mk.merge(trouser, shoe)
+
+
+# ----------------------------------------------------------------------- scène
+def build_scene(arm_angle_deg=32.0):
+    sc = mk.Scene("Conductor")
+    R_ = RAMPS
+    sc.material("M_Conductor_Skin", R_["skin"][2], R_["skin"], 0.30)
+    sc.material("M_Conductor_Uniform", R_["uniform_navy"][2], R_["uniform_navy"], 0.22)
+    sc.material("M_Conductor_UniformDark", R_["uniform_navy"][1], R_["uniform_navy"], 0.22, ramp_shift=-0.22)
+    sc.material("M_Conductor_Gold", R_["gold_trim"][2], R_["gold_trim"], 0.40)
+    sc.material("M_Conductor_EyeWhite", R_["wool"][3], R_["wool"], 0.35, ramp_shift=0.30,
+                opts={"flat": 0.45, "noShadow": True})
+    sc.material("M_Conductor_Pupil", R_["face"][0], R_["ink"], 0.45, ramp_shift=-0.30, opts={"noShadow": True})
+    sc.material("M_Conductor_Mouth", R_["mouth"][1], R_["mouth"], 0.20, ramp_shift=-0.55)
+    sc.material("M_Conductor_Tongue", R_["mouth"][3], R_["mouth"], 0.25, ramp_shift=0.05)
+    sc.material("M_Conductor_Shoe", R_["ui_bg"][2], R_["ui_bg"], 0.25)
+
+    hip = np.array([0.0, HIP_Y, 0.0])
+    sc.add(mk.Part("Conductor", None))
+    sc.add(mk.Part("Body", build_body().transform(t=-hip), tuple(hip), "Conductor"))
+    sc.add(mk.Part("Collar", build_collar().transform(t=-hip), (0, 0, 0), "Body"))
+    sc.add(mk.Part("Buttons", build_buttons().transform(t=-hip), (0, 0, 0), "Body"))
+
+    for side, nm in ((1, "L"), (-1, "R")):
+        x = side * EYE_X
+        z, nrm = body_surface(x, EYE_Y)
+        Rf = face_frame(nrm)
+        eye_pos = np.array([x, EYE_Y, z - EYE_R * 0.20]) - hip
+        sc.add(mk.Part("Eye_" + nm, build_eye(), tuple(eye_pos), "Body", Rf))
+        sc.add(mk.Part("Pupil_" + nm, build_pupil(side), (0, 0, 0), "Eye_" + nm))
+
+    zm, nm_ = body_surface(0.0, MOUTH_Y)
+    for kind in ("Neutral", "Surprised", "Happy"):
+        sc.add(mk.Part("Mouth_" + kind, build_mouth(kind), (0, MOUTH_Y - HIP_Y, zm - 0.004), "Body",
+                       face_frame(nm_), visible=(kind == "Neutral")))
+
+    cap_pivot = (0.0, 0.905 - HIP_Y, 0.0)
+    sc.add(mk.Part("Cap", build_cap(), cap_pivot, "Body", mk.rot_x(math.radians(-10)) @ mk.rot_z(math.radians(4))))
+
+    for side, nm in ((1, "L"), (-1, "R")):
+        sh = np.array([side * SHOULDER[0], SHOULDER[1], SHOULDER[2]]) - hip
+        Ra = mk.rot_z(side * math.radians(arm_angle_deg))
+        sc.add(mk.Part("Arm_" + nm, build_arm(), tuple(sh), "Body", Ra))
+        sc.add(mk.Part("Hand_" + nm, build_hand(), (0, -0.205, 0.0), "Arm_" + nm))
+    sc.add(mk.Part("Prop_Key", build_key(), (0, 0, 0), "Hand_L", visible=False))
+
+    for side, nm in ((1, "L"), (-1, "R")):
+        sc.add(mk.Part("Leg_" + nm, build_leg(), (side * LEG_X, HIP_Y, 0.0), "Conductor"))
+    return sc
+
+
+def main():
+    sc = build_scene()
+    fbx_dir = os.path.join(ROOT, "Assets", "Art", "Models", "Characters", "Conductor")
+    exp_dir = os.path.join(ROOT, "ArtSource", "Exports")
+    os.makedirs(fbx_dir, exist_ok=True)
+    os.makedirs(exp_dir, exist_ok=True)
+    sc.write_fbx_ascii(os.path.join(fbx_dir, "Conductor.fbx"))
+    sc.write_glb(os.path.join(exp_dir, "Conductor.glb"))
+    unity_assets.export_unity(ROOT, sc, "Assets/Art/Models/Characters/Conductor/Conductor.fbx", "Assets/Art/Materials/Characters/Conductor")
+    mats = {k: {"base": v["base"], "ramp": v["ramp"], "rampShift": v["ramp_shift"], "smoothness": v["smoothness"], "opts": v["opts"]}
+            for k, v in sc.materials.items()}
+    json.dump({"model": "Conductor", "height_m": H_TOTAL, "stats": sc.stats(), "materials": mats},
+              open(os.path.join(exp_dir, "Conductor.materials.json"), "w", encoding="utf-8"), indent=2)
+    # bounding box in wereldruimte
+    pts = []
+    for p in sc.parts:
+        if p.mesh is None or not p.visible:
+            continue
+        M = sc.world_matrix(p)
+        pts.append(p.mesh.V @ M[:3, :3].T + M[:3, 3])
+    P = np.vstack(pts)
+    print("stats", sc.stats())
+    print("bbox min", P.min(0).round(3), "max", P.max(0).round(3))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,180 @@
+[
+ {
+  "name": "artcheck_wide",
+  "params": {
+   "w": 1536,
+   "h": 1024,
+   "ss": 1.5,
+   "fov": 34,
+   "yaw": 38,
+   "pitch": 5,
+   "dist": 9.5,
+   "target": "0.4,1.5,0.0",
+   "lightAz": -38,
+   "lightEl": 44,
+   "shadowSize": 9,
+   "ground": "0",
+   "fogNear": 14,
+   "fogFar": 95,
+   "items": [
+    {
+     "url": "../Exports/ArtCheck_Environment.glb"
+    },
+    {
+     "url": "../Exports/WagonCorner_Blockout.glb"
+    },
+    {
+     "url": "../Exports/Conductor.glb",
+     "pos": [
+      -0.657,
+      0,
+      0.472
+     ],
+     "rotY": 40,
+     "pose": {
+      "Prop_Key": {
+       "visible": true
+      },
+      "Mouth_Neutral": {
+       "visible": false
+      },
+      "Mouth_Happy": {
+       "visible": true
+      },
+      "Arm_R": {
+       "rot": [
+        -10,
+        0,
+        -38
+       ]
+      },
+      "Body": {
+       "addRot": [
+        0,
+        0,
+        5
+       ]
+      },
+      "Cap": {
+       "addRot": [
+        0,
+        0,
+        -4
+       ]
+      },
+      "Pupil_L": {
+       "addPos": [
+        0.02,
+        0.0,
+        0
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        0.02,
+        0.0,
+        0
+       ]
+      }
+     },
+     "aim": {
+      "Arm_L": [
+       -0.33,
+       0.74,
+       0.045
+      ]
+     }
+    }
+   ]
+  }
+ },
+ {
+  "name": "artcheck_close",
+  "params": {
+   "w": 1536,
+   "h": 1024,
+   "ss": 1.5,
+   "fov": 30,
+   "yaw": 22,
+   "pitch": 7,
+   "dist": 5.2,
+   "target": "-0.15,0.95,0.15",
+   "lightAz": -38,
+   "lightEl": 44,
+   "shadowSize": 7,
+   "ground": "0",
+   "fogNear": 14,
+   "fogFar": 95,
+   "items": [
+    {
+     "url": "../Exports/ArtCheck_Environment.glb"
+    },
+    {
+     "url": "../Exports/WagonCorner_Blockout.glb"
+    },
+    {
+     "url": "../Exports/Conductor.glb",
+     "pos": [
+      -0.657,
+      0,
+      0.472
+     ],
+     "rotY": 40,
+     "pose": {
+      "Prop_Key": {
+       "visible": true
+      },
+      "Mouth_Neutral": {
+       "visible": false
+      },
+      "Mouth_Happy": {
+       "visible": true
+      },
+      "Arm_R": {
+       "rot": [
+        -10,
+        0,
+        -38
+       ]
+      },
+      "Body": {
+       "addRot": [
+        0,
+        0,
+        5
+       ]
+      },
+      "Cap": {
+       "addRot": [
+        0,
+        0,
+        -4
+       ]
+      },
+      "Pupil_L": {
+       "addPos": [
+        0.02,
+        0.0,
+        0
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        0.02,
+        0.0,
+        0
+       ]
+      }
+     },
+     "aim": {
+      "Arm_L": [
+       -0.33,
+       0.74,
+       0.045
+      ]
+     }
+    }
+   ]
+  }
+ }
+]

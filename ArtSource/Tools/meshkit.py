@@ -1,0 +1,598 @@
+"""meshkit — kleine, afhankelijkheidsvrije (numpy) toolkit om gestileerde
+low-poly game-assets parametrisch op te bouwen en te exporteren.
+
+Waarom zelf bouwen: de art-source moet reproduceerbaar zijn vanuit Git, zonder
+Blender of andere DCC-software. Alle vormen zijn simpele, ronde primitieven
+(lathe, superellips, afgeronde box, ellipsoïde) met schone quad-topologie.
+
+Exports:
+  * FBX 7.4 ASCII  -> Unity (Y-up, voorkant +Z, 1 unit = 1 meter)
+  * glTF 2.0 .glb   -> Blender / viewers / previews
+
+Conventies
+  * Y omhoog, het model kijkt naar +Z. Linkerkant van het personage = +X.
+  * Elke Part heeft een pivot (lokale oorsprong) en een parent; vertices staan
+    in lokale coördinaten relatief aan die pivot.
+"""
+from __future__ import annotations
+
+import json
+import math
+import struct
+from dataclasses import dataclass, field
+
+import numpy as np
+
+
+# --------------------------------------------------------------------- utils
+def srgb_hex(h: str):
+    h = h.lstrip("#")
+    return tuple(int(h[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
+
+
+def srgb_to_linear(c):
+    return tuple((x / 12.92) if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c)
+
+
+def spow(x, p):
+    return np.sign(x) * np.abs(x) ** p
+
+
+def rot_x(a):
+    c, s = math.cos(a), math.sin(a)
+    return np.array([[1, 0, 0], [0, c, -s], [0, s, c]])
+
+
+def rot_y(a):
+    c, s = math.cos(a), math.sin(a)
+    return np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
+
+
+def rot_z(a):
+    c, s = math.cos(a), math.sin(a)
+    return np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
+
+
+def euler_xyz_deg(R):
+    """Rotatiematrix -> Euler XYZ in graden (FBX 'eEulerXYZ': R = Rz*Ry*Rx)."""
+    sy = -R[2, 0]
+    sy = max(-1.0, min(1.0, sy))
+    y = math.asin(sy)
+    if abs(sy) < 0.99999:
+        x = math.atan2(R[2, 1], R[2, 2])
+        z = math.atan2(R[1, 0], R[0, 0])
+    else:
+        x = math.atan2(-R[1, 2], R[1, 1])
+        z = 0.0
+    return tuple(math.degrees(v) for v in (x, y, z))
+
+
+def quat_from_matrix(R):
+    t = np.trace(R)
+    if t > 0:
+        s = math.sqrt(t + 1.0) * 2
+        w = 0.25 * s
+        x = (R[2, 1] - R[1, 2]) / s
+        y = (R[0, 2] - R[2, 0]) / s
+        z = (R[1, 0] - R[0, 1]) / s
+    elif R[0, 0] > R[1, 1] and R[0, 0] > R[2, 2]:
+        s = math.sqrt(1.0 + R[0, 0] - R[1, 1] - R[2, 2]) * 2
+        w = (R[2, 1] - R[1, 2]) / s
+        x = 0.25 * s
+        y = (R[0, 1] + R[1, 0]) / s
+        z = (R[0, 2] + R[2, 0]) / s
+    elif R[1, 1] > R[2, 2]:
+        s = math.sqrt(1.0 + R[1, 1] - R[0, 0] - R[2, 2]) * 2
+        w = (R[0, 2] - R[2, 0]) / s
+        x = (R[0, 1] + R[1, 0]) / s
+        y = 0.25 * s
+        z = (R[1, 2] + R[2, 1]) / s
+    else:
+        s = math.sqrt(1.0 + R[2, 2] - R[0, 0] - R[1, 1]) * 2
+        w = (R[1, 0] - R[0, 1]) / s
+        x = (R[0, 2] + R[2, 0]) / s
+        y = (R[1, 2] + R[2, 1]) / s
+        z = 0.25 * s
+    return [x, y, z, w]
+
+
+def _ascii_fbx_detectable(text):
+    """Bootst de ASCII-detectie van three.js FBXLoader na (posities 0,1,3,6,10,...)."""
+    magic = "Kaydara\\FBX\\Binary\\\\"
+    pos = 0
+    for i, ch in enumerate(magic):
+        if pos >= len(text) or text[pos] == ch:
+            return False
+        pos += i + 1
+    return True
+
+
+# ---------------------------------------------------------------------- mesh
+@dataclass
+class Mesh:
+    V: np.ndarray = field(default_factory=lambda: np.zeros((0, 3)))
+    F: list = field(default_factory=list)      # lijst van tuples (tri/quad)
+    M: list = field(default_factory=list)      # materiaalnaam per face
+    sharp: bool = False                        # True = platte normalen per face
+
+    def copy(self):
+        return Mesh(self.V.copy(), list(self.F), list(self.M), self.sharp)
+
+    def transform(self, R=None, t=(0, 0, 0), s=None):
+        V = self.V
+        if s is not None:
+            V = V * np.asarray(s, float)
+        if R is not None:
+            V = V @ np.asarray(R).T
+        V = V + np.asarray(t, float)
+        out = self.copy()
+        out.V = V
+        if s is not None and np.prod(np.sign(s)) < 0:      # spiegelen -> winding omdraaien
+            out.F = [tuple(reversed(f)) for f in out.F]
+        return out
+
+    def set_material(self, name):
+        self.M = [name] * len(self.F)
+        return self
+
+    def tri_count(self):
+        return sum(len(f) - 2 for f in self.F)
+
+
+def merge(*meshes):
+    out = Mesh()
+    Vs, F, M = [], [], []
+    off = 0
+    for m in meshes:
+        Vs.append(m.V)
+        F += [tuple(i + off for i in f) for f in m.F]
+        M += m.M
+        off += len(m.V)
+    out.V = np.vstack(Vs) if Vs else np.zeros((0, 3))
+    out.F, out.M = F, M
+    return out
+
+
+def vertex_normals(mesh: Mesh):
+    V = mesh.V
+    N = np.zeros_like(V)
+    for f in mesh.F:
+        p = V[list(f)]
+        # Newell-normaal (werkt voor tri én quad), area-gewogen
+        n = np.zeros(3)
+        for i in range(len(f)):
+            a, b = p[i], p[(i + 1) % len(f)]
+            n += np.array([(a[1] - b[1]) * (a[2] + b[2]),
+                           (a[2] - b[2]) * (a[0] + b[0]),
+                           (a[0] - b[0]) * (a[1] + b[1])])
+        for i in f:
+            N[i] += n
+    ln = np.linalg.norm(N, axis=1, keepdims=True)
+    ln[ln == 0] = 1
+    return N / ln
+
+
+def corner_normals(mesh: Mesh):
+    """Normaal per polygon-hoek (FBX 'ByPolygonVertex')."""
+    if mesh.sharp:
+        out = []
+        for f in mesh.F:
+            p = mesh.V[list(f)]
+            n = np.cross(p[1] - p[0], p[2] - p[0])
+            if len(f) == 4:
+                n += np.cross(p[2] - p[0], p[3] - p[0])
+            n /= (np.linalg.norm(n) or 1)
+            out += [n] * len(f)
+        return np.array(out)
+    VN = vertex_normals(mesh)
+    return np.array([VN[i] for f in mesh.F for i in f])
+
+
+# ----------------------------------------------------------------- primitives
+def lathe(profile, segments=24, a=1.0, b=1.0, n=2.0, closed=False, mat="Default", phase=0.0):
+    """Draai een profiel [(r, y), ...] rond de Y-as.
+
+    Doorsnede = superellips met halve assen a (X) en b (Z) en exponent n
+    (n=2 cirkel, n>2 'squircle'). r=0 aan het begin/einde wordt een pool.
+    closed=True: het profiel is een gesloten lus (bv. torus-buis).
+    """
+    prof = list(profile)
+    V, F = [], []
+    ring_idx = []
+    ang = [phase + 2 * math.pi * k / segments for k in range(segments)]
+    cs = [(spow(math.cos(t), 2.0 / n), spow(math.sin(t), 2.0 / n)) for t in ang]
+    for (r, y) in prof:
+        if r <= 1e-9 and not closed:
+            ring_idx.append([len(V)])
+            V.append((0.0, y, 0.0))
+        else:
+            idx = []
+            for (c, s) in cs:
+                idx.append(len(V))
+                V.append((a * r * c, y, b * r * s))
+            ring_idx.append(idx)
+    rings = ring_idx + ([ring_idx[0]] if closed else [])
+    for r0, r1 in zip(rings[:-1], rings[1:]):
+        if len(r0) == 1 and len(r1) == 1:
+            continue
+        for k in range(segments):
+            k2 = (k + 1) % segments
+            if len(r0) == 1:
+                F.append((r0[0], r1[k2], r1[k]))
+            elif len(r1) == 1:
+                F.append((r0[k], r0[k2], r1[0]))
+            else:
+                F.append((r0[k], r0[k2], r1[k2], r1[k]))
+    m = Mesh(np.array(V, float), F, [mat] * len(F))
+    return orient_outward(m)
+
+
+def orient_outward(m: Mesh):
+    """Zorg dat faces naar buiten wijzen (t.o.v. het zwaartepunt)."""
+    c = m.V.mean(axis=0)
+    flip = 0
+    for f in m.F[: min(len(m.F), 200)]:
+        p = m.V[list(f)]
+        n = np.cross(p[1] - p[0], p[2] - p[0])
+        if np.dot(n, p.mean(0) - c) < 0:
+            flip += 1
+    if flip > min(len(m.F), 200) / 2:
+        m.F = [tuple(reversed(f)) for f in m.F]
+    return m
+
+
+def ellipsoid(rx, ry, rz, seg=20, rings=12, mat="Default", n=2.0):
+    prof = []
+    for i in range(rings + 1):
+        t = -math.pi / 2 + math.pi * i / rings
+        prof.append((spow(math.cos(t), 2.0 / n) if i not in (0, rings) else 0.0, ry * spow(math.sin(t), 2.0 / n)))
+    return lathe(prof, seg, rx, rz, 2.0, mat=mat)
+
+
+def torus(R, r, seg=24, tube=8, mat="Default", a=1.0, b=1.0, n=2.0, ry=None):
+    ry = r if ry is None else ry
+    prof = [(R + r * math.cos(2 * math.pi * i / tube), ry * math.sin(2 * math.pi * i / tube)) for i in range(tube)]
+    # lathe met r als absolute straal -> a,b als extra schaal
+    return lathe([(p[0], p[1]) for p in prof], seg, a, b, n, closed=True, mat=mat)
+
+
+def rounded_box(sx, sy, sz, radius, div=3, mat="Default"):
+    """Afgeronde box met echte ronde randen: grid per zijvlak, randen op de boog gesampled."""
+    H = np.array([sx, sy, sz]) / 2.0
+    h = H - radius
+
+    def axis_samples(Hk, hk):
+        arc = [-hk - radius * math.cos(math.pi / 2 * j / div) for j in range(div + 1)]  # -H .. -h
+        return arc + [-v for v in reversed(arc)]  # -H..-h, h..H
+
+    S = [axis_samples(H[k], h[k]) for k in range(3)]
+    V, F, index = [], [], {}
+
+    def vid(p):
+        key = tuple(np.round(p, 6))
+        if key not in index:
+            index[key] = len(V)
+            V.append(np.array(p, float))
+        return index[key]
+
+    for ax in range(3):
+        for sg in (-1, 1):
+            u_ax, v_ax = [a for a in (0, 1, 2) if a != ax]
+            us, vs = S[u_ax], S[v_ax]
+            grid = np.zeros((len(us), len(vs)), int)
+            for i, u in enumerate(us):
+                for j, v in enumerate(vs):
+                    p = np.zeros(3)
+                    p[ax], p[u_ax], p[v_ax] = sg * H[ax], u, v
+                    inner = np.clip(p, -h, h)
+                    d = p - inner
+                    nd = np.linalg.norm(d)
+                    if nd < 1e-12:
+                        d = np.zeros(3); d[ax] = sg; nd = 1.0
+                    grid[i, j] = vid(inner + d / nd * radius)
+            for i in range(len(us) - 1):
+                for j in range(len(vs) - 1):
+                    q = (grid[i, j], grid[i + 1, j], grid[i + 1, j + 1], grid[i, j + 1])
+                    if len(set(q)) == 4:
+                        F.append(q)
+                    elif len(set(q)) == 3:
+                        F.append(tuple(dict.fromkeys(q)))
+    m = Mesh(np.array(V, float), F, [mat] * len(F))
+    # winding per face naar buiten (convexe vorm -> t.o.v. middelpunt)
+    fixed = []
+    for f in m.F:
+        p = m.V[list(f)]
+        n = np.cross(p[1] - p[0], p[2] - p[0])
+        fixed.append(f if np.dot(n, p.mean(0)) >= 0 else tuple(reversed(f)))
+    m.F = fixed
+    return m
+
+
+def capsule_between(p0, p1, r0, r1, seg=16, rings=6, mat="Default"):
+    """Taps toelopende capsule van p0 naar p1 (lokale Y-as langs het segment)."""
+    p0, p1 = np.asarray(p0, float), np.asarray(p1, float)
+    L = np.linalg.norm(p1 - p0)
+    prof = []
+    for i in range(rings + 1):  # onderste halve bol
+        t = -math.pi / 2 + (math.pi / 2) * i / rings
+        prof.append((r0 * math.cos(t) if i else 0.0, r0 * math.sin(t)))
+    for i in range(1, 4):
+        f = i / 4
+        prof.append((r0 + (r1 - r0) * f, L * f))
+    for i in range(rings + 1):  # bovenste halve bol
+        t = (math.pi / 2) * i / rings
+        prof.append((r1 * math.cos(t) if i < rings else 0.0, L + r1 * math.sin(t)))
+    m = lathe(prof, seg, mat=mat)
+    d = (p1 - p0) / L
+    up = np.array([0, 1.0, 0])
+    v = np.cross(up, d)
+    c = float(np.dot(up, d))
+    if np.linalg.norm(v) < 1e-9:
+        R = np.eye(3) if c > 0 else rot_x(math.pi)
+    else:
+        vx = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+        R = np.eye(3) + vx + vx @ vx * (1 / (1 + c))
+    return m.transform(R=R, t=p0)
+
+
+# --------------------------------------------------------------------- scene
+@dataclass
+class Part:
+    name: str
+    mesh: Mesh | None
+    pivot: tuple = (0, 0, 0)          # positie t.o.v. parent-pivot
+    parent: str | None = None
+    rotation: np.ndarray | None = None  # lokale rotatie (3x3) t.o.v. parent
+    visible: bool = True
+
+
+class Scene:
+    def __init__(self, name):
+        self.name = name
+        self.parts: list[Part] = []
+        self.materials: dict[str, dict] = {}
+
+    def add(self, part: Part):
+        self.parts.append(part)
+        return part
+
+    def material(self, name, base_hex, ramp=None, smoothness=0.25, emissive=None, ramp_shift=0.0, opts=None):
+        """opts = shaderhints voor de stylized-lit shader (bv. flat, noShadow, rim, spec)."""
+        self.materials[name] = dict(base=base_hex, ramp=ramp or [base_hex] * 5, smoothness=smoothness,
+                                    emissive=emissive, ramp_shift=ramp_shift, opts=opts or {})
+
+    def get(self, name):
+        return next(p for p in self.parts if p.name == name)
+
+    def world_matrix(self, part: Part):
+        M = np.eye(4)
+        chain = []
+        p = part
+        while p is not None:
+            chain.append(p)
+            p = self.get(p.parent) if p.parent else None
+        for q in reversed(chain):
+            L = np.eye(4)
+            L[:3, :3] = q.rotation if q.rotation is not None else np.eye(3)
+            L[:3, 3] = q.pivot
+            M = M @ L
+        return M
+
+    def stats(self):
+        tris = sum(p.mesh.tri_count() for p in self.parts if p.mesh)
+        verts = sum(len(p.mesh.V) for p in self.parts if p.mesh)
+        return dict(parts=len(self.parts), tris=tris, verts=verts, materials=len(self.materials))
+
+    # ------------------------------------------------------------ FBX ASCII
+    def write_fbx_ascii(self, path, creator="Conductor Chaos meshkit"):
+        uid = [100000]
+
+        def nid():
+            uid[0] += 1
+            return uid[0]
+
+        def arr(vals, fmt="{:.6f}"):
+            return ",".join(fmt.format(v) if isinstance(v, float) else str(v) for v in vals)
+
+        mat_ids = {name: nid() for name in self.materials}
+        model_ids = {p.name: nid() for p in self.parts}
+        geo_ids = {p.name: nid() for p in self.parts if p.mesh is not None}
+        out = []
+        w = out.append
+        w("; FBX 7.4.0 project file")
+        w("; Generated by %s" % creator)
+        w("FBXHeaderExtension:  {")
+        w("\tFBXHeaderVersion: 1003\n\tFBXVersion: 7400")
+        w('\tCreator: "%s"' % creator)
+        w("}")
+        w("GlobalSettings:  {\n\tVersion: 1000\n\tProperties70:  {")
+        for line in [
+            'P: "UpAxis", "int", "Integer", "",1', 'P: "UpAxisSign", "int", "Integer", "",1',
+            'P: "FrontAxis", "int", "Integer", "",2', 'P: "FrontAxisSign", "int", "Integer", "",1',
+            'P: "CoordAxis", "int", "Integer", "",0', 'P: "CoordAxisSign", "int", "Integer", "",1',
+            'P: "OriginalUpAxis", "int", "Integer", "",1', 'P: "OriginalUpAxisSign", "int", "Integer", "",1',
+            'P: "UnitScaleFactor", "double", "Number", "",100', 'P: "OriginalUnitScaleFactor", "double", "Number", "",100']:
+            w("\t\t" + line)
+        w("\t}\n}")
+        n_geo = len(geo_ids)
+        w("Definitions:  {\n\tVersion: 100\n\tCount: %d" % (1 + len(self.parts) + n_geo + len(self.materials)))
+        w('\tObjectType: "GlobalSettings" {\n\t\tCount: 1\n\t}')
+        w('\tObjectType: "Model" {\n\t\tCount: %d\n\t}' % len(self.parts))
+        w('\tObjectType: "Geometry" {\n\t\tCount: %d\n\t}' % n_geo)
+        w('\tObjectType: "Material" {\n\t\tCount: %d\n\t}' % len(self.materials))
+        w("}")
+        w("Objects:  {")
+        conns = []
+        for p in self.parts:
+            mid = model_ids[p.name]
+            kind = "Mesh" if p.mesh is not None else "Null"
+            w('\tModel: %d, "Model::%s", "%s" {' % (mid, p.name, kind))
+            w("\t\tVersion: 232\n\t\tProperties70:  {")
+            w('\t\t\tP: "RotationActive", "bool", "", "",1')
+            w('\t\t\tP: "InheritType", "enum", "", "",1')
+            w('\t\t\tP: "DefaultAttributeIndex", "int", "Integer", "",0')
+            tx, ty, tz = p.pivot
+            w('\t\t\tP: "Lcl Translation", "Lcl Translation", "", "A",%.6f,%.6f,%.6f' % (tx, ty, tz))
+            if p.rotation is not None:
+                rx, ry, rz = euler_xyz_deg(p.rotation)
+                w('\t\t\tP: "Lcl Rotation", "Lcl Rotation", "", "A",%.6f,%.6f,%.6f' % (rx, ry, rz))
+            if not p.visible:
+                w('\t\t\tP: "Visibility", "Visibility", "", "A",0')
+            w("\t\t}\n\t\tShading: T\n\t\tCulling: \"CullingOff\"\n\t}")
+            conns.append((mid, model_ids[p.parent] if p.parent else 0))
+            if p.mesh is None:
+                continue
+            m = p.mesh
+            gid = geo_ids[p.name]
+            w('\tGeometry: %d, "Geometry::%s", "Mesh" {' % (gid, p.name))
+            verts = m.V.reshape(-1).tolist()
+            w("\t\tVertices: *%d {\n\t\t\ta: %s\n\t\t} " % (len(verts), arr(verts)))
+            pvi = []
+            for f in m.F:
+                pvi += list(f[:-1]) + [-(f[-1]) - 1]
+            w("\t\tPolygonVertexIndex: *%d {\n\t\t\ta: %s\n\t\t} " % (len(pvi), arr(pvi)))
+            w("\t\tGeometryVersion: 124")
+            cn = corner_normals(m).reshape(-1).tolist()
+            w('\t\tLayerElementNormal: 0 {\n\t\t\tVersion: 102\n\t\t\tName: ""\n\t\t\tMappingInformationType: "ByPolygonVertex"\n\t\t\tReferenceInformationType: "Direct"')
+            w("\t\t\tNormals: *%d {\n\t\t\t\ta: %s\n\t\t\t} \n\t\t}" % (len(cn), arr(cn)))
+            used = []
+            for name in m.M:
+                if name not in used:
+                    used.append(name)
+            midx = [used.index(name) for name in m.M]
+            w('\t\tLayerElementMaterial: 0 {\n\t\t\tVersion: 101\n\t\t\tName: ""\n\t\t\tMappingInformationType: "%s"\n\t\t\tReferenceInformationType: "IndexToDirect"'
+              % ("ByPolygon" if len(used) > 1 else "AllSame"))
+            mi = midx if len(used) > 1 else [0]
+            w("\t\t\tMaterials: *%d {\n\t\t\t\ta: %s\n\t\t\t} \n\t\t}" % (len(mi), arr(mi)))
+            w('\t\tLayer: 0 {\n\t\t\tVersion: 100\n\t\t\tLayerElement:  {\n\t\t\t\tType: "LayerElementNormal"\n\t\t\t\tTypedIndex: 0\n\t\t\t}'
+              '\n\t\t\tLayerElement:  {\n\t\t\t\tType: "LayerElementMaterial"\n\t\t\t\tTypedIndex: 0\n\t\t\t}\n\t\t}')
+            w("\t}")
+            conns.append((gid, mid))
+            for name in used:  # volgorde = materiaalindex
+                conns.append((mat_ids[name], mid))
+        for name, md in self.materials.items():
+            r, g, b = srgb_hex(md["base"])
+            w('\tMaterial: %d, "Material::%s", "" {' % (mat_ids[name], name))
+            w('\t\tVersion: 102\n\t\tShadingModel: "lambert"\n\t\tMultiLayer: 0\n\t\tProperties70:  {')
+            w('\t\t\tP: "DiffuseColor", "Color", "", "A",%.6f,%.6f,%.6f' % (r, g, b))
+            w('\t\t\tP: "DiffuseFactor", "Number", "", "A",1')
+            if md.get("emissive"):
+                er, eg, eb = srgb_hex(md["emissive"])
+                w('\t\t\tP: "EmissiveColor", "Color", "", "A",%.6f,%.6f,%.6f' % (er, eg, eb))
+                w('\t\t\tP: "EmissiveFactor", "Number", "", "A",1')
+            w("\t\t}\n\t}")
+        w("}")
+        w("Connections:  {")
+        for a, b in conns:
+            w('\tC: "OO",%d,%d' % (a, b))
+        w("}")
+        text = "\n".join(out) + "\n"
+        # Sommige parsers (o.a. three.js FBXLoader) herkennen ASCII-FBX door tekens op vaste
+        # posities te vergelijken met de binaire header; vul de commentaarregel op tot dat niet botst.
+        pad = 0
+        while not _ascii_fbx_detectable(text) and pad < 64:
+            pad += 1
+            out[1] = "; Generated by %s%s" % (creator, " " * pad)
+            text = "\n".join(out) + "\n"
+        with open(path, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
+
+    # ----------------------------------------------------------------- GLB
+    def write_glb(self, path, include_hidden=True):
+        bin_chunks = bytearray()
+        accessors, views, meshes, nodes = [], [], [], []
+        mat_names = list(self.materials)
+        materials = []
+        for name in mat_names:
+            md = self.materials[name]
+            lin = srgb_to_linear(srgb_hex(md["base"]))
+            mat = {"name": name, "pbrMetallicRoughness": {"baseColorFactor": [*lin, 1.0], "metallicFactor": 0.0,
+                                                           "roughnessFactor": 1.0 - md["smoothness"]},
+                   "extras": {"ramp": md["ramp"], "rampShift": md["ramp_shift"], "opts": md["opts"]}}
+            if md.get("emissive"):
+                mat["emissiveFactor"] = list(srgb_to_linear(srgb_hex(md["emissive"])))
+            materials.append(mat)
+
+        def add_view(data: bytes, target=None):
+            while len(bin_chunks) % 4:
+                bin_chunks.append(0)
+            off = len(bin_chunks)
+            bin_chunks.extend(data)
+            v = {"buffer": 0, "byteOffset": off, "byteLength": len(data)}
+            if target:
+                v["target"] = target
+            views.append(v)
+            return len(views) - 1
+
+        def add_acc(arr_np, ctype, typ, target, minmax=False):
+            view = add_view(arr_np.tobytes(), target)
+            acc = {"bufferView": view, "componentType": ctype, "count": int(arr_np.shape[0]), "type": typ}
+            if minmax:
+                acc["min"] = arr_np.min(0).tolist()
+                acc["max"] = arr_np.max(0).tolist()
+            accessors.append(acc)
+            return len(accessors) - 1
+
+        name_to_node = {}
+        for p in self.parts:
+            node = {"name": p.name, "translation": [float(x) for x in p.pivot]}
+            if p.rotation is not None:
+                node["rotation"] = quat_from_matrix(p.rotation)
+            if not p.visible:
+                node["extras"] = {"hidden": True}
+            if p.mesh is not None and (p.visible or include_hidden):
+                m = p.mesh
+                # splits polygonen in driehoeken; vertices per hoek (normalen per hoek)
+                cn = corner_normals(m)
+                prims = []
+                k = 0
+                per_mat = {}
+                for f, mn in zip(m.F, m.M):
+                    corners = list(range(k, k + len(f)))
+                    k += len(f)
+                    lst = per_mat.setdefault(mn, ([], []))
+                    for i in range(1, len(f) - 1):
+                        lst[0].append((f[0], corners[0]))
+                        lst[0].append((f[i], corners[i]))
+                        lst[0].append((f[i + 1], corners[i + 1]))
+                for mn, (tri, _) in per_mat.items():
+                    # dedupliceer (vertex, normaal) combinaties
+                    keymap, pos, nor, idx = {}, [], [], []
+                    for vi, ci in tri:
+                        nkey = (vi, tuple(np.round(cn[ci], 4)))
+                        if nkey not in keymap:
+                            keymap[nkey] = len(pos)
+                            pos.append(m.V[vi])
+                            nor.append(cn[ci])
+                        idx.append(keymap[nkey])
+                    P = np.array(pos, np.float32)
+                    N = np.array(nor, np.float32)
+                    I = np.array(idx, np.uint32)
+                    prims.append({"attributes": {"POSITION": add_acc(P, 5126, "VEC3", 34962, True),
+                                                 "NORMAL": add_acc(N, 5126, "VEC3", 34962)},
+                                  "indices": add_acc(I, 5125, "SCALAR", 34963),
+                                  "material": mat_names.index(mn)})
+                meshes.append({"name": p.name, "primitives": prims})
+                node["mesh"] = len(meshes) - 1
+            nodes.append(node)
+            name_to_node[p.name] = len(nodes) - 1
+        roots = []
+        for p in self.parts:
+            if p.parent:
+                nodes[name_to_node[p.parent]].setdefault("children", []).append(name_to_node[p.name])
+            else:
+                roots.append(name_to_node[p.name])
+        while len(bin_chunks) % 4:
+            bin_chunks.append(0)
+        gltf = {"asset": {"version": "2.0", "generator": "Conductor Chaos meshkit"},
+                "scene": 0, "scenes": [{"name": self.name, "nodes": roots}], "nodes": nodes,
+                "meshes": meshes, "materials": materials, "accessors": accessors, "bufferViews": views,
+                "buffers": [{"byteLength": len(bin_chunks)}]}
+        js = json.dumps(gltf, separators=(",", ":")).encode()
+        while len(js) % 4:
+            js += b" "
+        total = 12 + 8 + len(js) + 8 + len(bin_chunks)
+        with open(path, "wb") as fh:
+            fh.write(struct.pack("<III", 0x46546C67, 2, total))
+            fh.write(struct.pack("<II", len(js), 0x4E4F534A) + js)
+            fh.write(struct.pack("<II", len(bin_chunks), 0x004E4942) + bytes(bin_chunks))
