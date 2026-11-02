@@ -11,8 +11,8 @@
 
 ## Art direction en scope
 
-- De gekozen conceptrichting is vastgelegd in [gamevisie](Docs/GAME_VISION.md) en [visuele referenties](Docs/References/README.md). De volledige originele conceptafbeelding is nog niet in Git geüpload; doe niet alsof agents die al kunnen zien. Gebruik de bestaande [stijlkaart](Docs/References/STYLE_PALETTE.svg) en vraag om/gebruik de afbeelding zodra die beschikbaar is.
-- Leid nieuwe assets af van ronde cartoonkarakters, matte low-poly volumes en simpele regionale reizigerstreinen. De kleine locomotief op het conceptbord is sfeer, geen blauwdruk; UI/menus hebben geen posterlay-out nodig.
+- De gekozen conceptrichting is vastgelegd in [gamevisie](Docs/GAME_VISION.md) en [visuele referenties](Docs/References/README.md). De originele [conceptafbeelding](Docs/References/conductor-chaos-concept.png) staat in Git en is leidend voor kwaliteit en stijl. Gebruik de gemeten kleurramps uit de [stijlkaart](Docs/References/STYLE_PALETTE.svg) / [palette.json](Docs/References/palette.json); verzin geen losse tinten.
+- Leid nieuwe assets af van boonvormige cartoonkarakters, zachte ronde low-poly volumes (warm licht, koele blauw-violette schaduw) en simpele regionale reizigerstreinen. De kleine locomotief op het conceptbord is sfeer, geen blauwdruk; UI/menus hebben geen posterlay-out nodig.
 - Eerst een tweespeler technische proef en één kleine art-test; geen ongevraagde hele treinlijn, levelgenerator of inhoudelijke uitbreidingen.
 
 ## Ontwerpregels

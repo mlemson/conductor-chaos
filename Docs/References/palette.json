@@ -1,0 +1,357 @@
+{
+  "name": "Conductor Chaos",
+  "version": 2,
+  "source": "Docs/References/conductor-chaos-concept.png",
+  "note": "Gemeten met k-means/percentielen per materiaalgebied in de conceptafbeelding; enkele uiterste tinten (diepste schaduw of hoogste licht) zijn handmatig doorgetrokken waar het concept te weinig pixels had.",
+  "ramp_order": "index 0 = diepste schaduw ... index 4 = hoogste licht (index 4 bij 'vest' en 'cloth_dark' is een tweede materiaal, zie name)",
+  "groups": {
+    "Personages": {
+      "skin": {
+        "name": "Huid (warm, ook in schaduw)",
+        "ramp": [
+          "#BA7756",
+          "#D28658",
+          "#DB9966",
+          "#E7A773",
+          "#EFB27C"
+        ]
+      },
+      "uniform_navy": {
+        "name": "Conducteur-uniform & pet",
+        "ramp": [
+          "#1D1C2D",
+          "#34335B",
+          "#3E3D70",
+          "#454377",
+          "#565191"
+        ]
+      },
+      "gold_trim": {
+        "name": "Petband, knopen, embleem",
+        "ramp": [
+          "#9D662F",
+          "#AD7031",
+          "#DA993A",
+          "#FBBA39",
+          "#FCCF53"
+        ]
+      },
+      "helmet": {
+        "name": "Bouwhelm monteur",
+        "ramp": [
+          "#B57326",
+          "#E59C2F",
+          "#F5B038",
+          "#FDBF40",
+          "#FDC443"
+        ]
+      },
+      "vest": {
+        "name": "Veiligheidshesje",
+        "ramp": [
+          "#B5531F",
+          "#DA6B2C",
+          "#E2722B",
+          "#EA7931",
+          "#B79282"
+        ]
+      },
+      "beanie": {
+        "name": "Muts passagier",
+        "ramp": [
+          "#5A457E",
+          "#7958AF",
+          "#7A59B0",
+          "#A370D2",
+          "#B17BDD"
+        ]
+      },
+      "scarf": {
+        "name": "Sjaal passagier",
+        "ramp": [
+          "#783638",
+          "#9C4140",
+          "#A44543",
+          "#B24946",
+          "#B64B48"
+        ]
+      },
+      "cloth_dark": {
+        "name": "Broek, schoenen, cream shirt",
+        "ramp": [
+          "#393540",
+          "#4E3F3F",
+          "#BB9A89",
+          "#D1B29E",
+          "#E8D3C2"
+        ]
+      },
+      "face": {
+        "name": "Oogwit, pupil, mond",
+        "ramp": [
+          "#0D0B0C",
+          "#662C23",
+          "#B84A3C",
+          "#E0C9C0",
+          "#FBF0E3"
+        ]
+      }
+    },
+    "Trein": {
+      "train_red": {
+        "name": "Treinrood (livrei)",
+        "ramp": [
+          "#5E271F",
+          "#8D3432",
+          "#C54D3E",
+          "#DA523F",
+          "#FC7C69"
+        ]
+      },
+      "train_trim": {
+        "name": "Donkere trim, onderstel",
+        "ramp": [
+          "#3B2524",
+          "#482826",
+          "#4B1F18",
+          "#634330",
+          "#7A5A48"
+        ]
+      },
+      "wagon_brown": {
+        "name": "Goederenwagon / tweede tint",
+        "ramp": [
+          "#503330",
+          "#995F53",
+          "#A3685D",
+          "#B27261",
+          "#BB8472"
+        ]
+      },
+      "headlight": {
+        "name": "Koplamp & warm licht",
+        "ramp": [
+          "#F9DA7C",
+          "#FDE080",
+          "#FEECA1",
+          "#FEF2B0",
+          "#FFF8DA"
+        ]
+      },
+      "metal": {
+        "name": "Metaal, sleutel, wijzers",
+        "ramp": [
+          "#6F696E",
+          "#7B7582",
+          "#8E8796",
+          "#958E9C",
+          "#B5AAAC"
+        ]
+      }
+    },
+    "Omgeving": {
+      "sky": {
+        "name": "Lucht (verloop naar horizon)",
+        "ramp": [
+          "#6E83BA",
+          "#7D99D5",
+          "#85A4EC",
+          "#92BAF8",
+          "#98C4FC"
+        ]
+      },
+      "cloud_snow": {
+        "name": "Wolken & sneeuw",
+        "ramp": [
+          "#C2CAEA",
+          "#C7D0F0",
+          "#DFDDEE",
+          "#E7E1EA",
+          "#FDF2EB"
+        ]
+      },
+      "mountain": {
+        "name": "Bergrots (koel, blauw-violet)",
+        "ramp": [
+          "#5D6EAC",
+          "#6475B3",
+          "#747FB3",
+          "#8187B4",
+          "#878EBC"
+        ]
+      },
+      "pine": {
+        "name": "Dennen (blauwgroen, nooit puur groen)",
+        "ramp": [
+          "#2B3B37",
+          "#395251",
+          "#3D5655",
+          "#466162",
+          "#5B7A7A"
+        ]
+      },
+      "grass": {
+        "name": "Gras & mos (geelgroen)",
+        "ramp": [
+          "#566D3A",
+          "#6B7F38",
+          "#8B9F3B",
+          "#A1B044",
+          "#ADBC4A"
+        ]
+      },
+      "cliff": {
+        "name": "Klifrots (warm)",
+        "ramp": [
+          "#6A4C4B",
+          "#906959",
+          "#AC7F75",
+          "#BE907B",
+          "#CA957A"
+        ]
+      },
+      "track_wood": {
+        "name": "Bielzen & schraagwerk",
+        "ramp": [
+          "#885642",
+          "#9A6146",
+          "#DB945C",
+          "#EBA462",
+          "#F4B06C"
+        ]
+      },
+      "water": {
+        "name": "Watervallen",
+        "ramp": [
+          "#6B8CB6",
+          "#83C2EB",
+          "#8EC7EC",
+          "#9ACCEC",
+          "#ADD7ED"
+        ]
+      },
+      "warning": {
+        "name": "Waarschuwingsbord & hekken",
+        "ramp": [
+          "#853A33",
+          "#C28C2F",
+          "#C6902F",
+          "#F2B23A",
+          "#FABF34"
+        ]
+      }
+    },
+    "Interieur & cargo": {
+      "interior_wood": {
+        "name": "Wagoninterieur hout",
+        "ramp": [
+          "#6C422A",
+          "#814C32",
+          "#8D543A",
+          "#A56945",
+          "#E59843"
+        ]
+      },
+      "cab_interior": {
+        "name": "Cabine / dashboard",
+        "ramp": [
+          "#462A21",
+          "#553022",
+          "#593323",
+          "#723F29",
+          "#A66739"
+        ]
+      },
+      "crate": {
+        "name": "Kratten & koffers",
+        "ramp": [
+          "#684029",
+          "#C9813B",
+          "#DE913F",
+          "#F5AC4A",
+          "#F9B44F"
+        ]
+      },
+      "wool": {
+        "name": "Schaap (lavendel schaduw)",
+        "ramp": [
+          "#352F3C",
+          "#BDABC1",
+          "#DCC7C5",
+          "#FDEEDC",
+          "#FDF6E8"
+        ]
+      },
+      "haze_purple": {
+        "name": "Paarse rook / sfeer",
+        "ramp": [
+          "#6B4269",
+          "#684E6B",
+          "#A7689C",
+          "#B297B8",
+          "#D2BCD0"
+        ]
+      }
+    },
+    "UI & logo": {
+      "ui_bg": {
+        "name": "Achtergrond (pruim-grafiet)",
+        "ramp": [
+          "#2A2730",
+          "#302629",
+          "#33303B",
+          "#403E4B",
+          "#4A4852"
+        ]
+      },
+      "parchment": {
+        "name": "Perkament-labels",
+        "ramp": [
+          "#9C8978",
+          "#CAA791",
+          "#F2D8BB",
+          "#F4DCC0",
+          "#FAECDC"
+        ]
+      },
+      "ink": {
+        "name": "Inkt / tekst (warm, nooit zwart)",
+        "ramp": [
+          "#1C0F0E",
+          "#291D1B",
+          "#351B13",
+          "#382520",
+          "#5A4038"
+        ]
+      },
+      "title_red": {
+        "name": "Logo-rood 'Chaos'",
+        "ramp": [
+          "#9E3A22",
+          "#B8432A",
+          "#CD4C2C",
+          "#E06A48",
+          "#E79E80"
+        ]
+      },
+      "accent_yellow": {
+        "name": "Accentgeel (actiestreepjes)",
+        "ramp": [
+          "#C68C2C",
+          "#F6BC33",
+          "#FABF34",
+          "#FBC838",
+          "#FDDB78"
+        ]
+      }
+    }
+  },
+  "lighting": {
+    "Directional light": "#FFE3BC",
+    "Ambient (gradient) – lucht": "#85A4EC",
+    "Schaduwkleur / toon-ramp": "#5D5A8C",
+    "Mist / atmosfeer": "#91A8E6",
+    "Rim light (koel)": "#B2C5F3",
+    "Koplamp / lampen": "#FEF2B0"
+  }
+}

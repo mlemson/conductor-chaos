@@ -1,22 +1,34 @@
 # Visuele referentie voor agents
 
-De gekozen conceptafbeelding uit de ontwerpchat is de **primaire inspiratie** voor characters, kleurgebruik, licht en speelse uitstraling. GitHub-agents hebben niet vanzelf toegang tot chatbijlagen.
+De gekozen conceptafbeelding is de **primaire referentie** voor characters, kleurgebruik, licht en speelse uitstraling. Het doel is dat de game qua kwaliteit en stijl zo dicht mogelijk bij dit beeld komt.
 
-**Belangrijk:** de volledige gekozen PNG moet nog worden toegevoegd als `Docs/References/conductor-chaos-concept.png`. Totdat die bestaat, gebruik [STYLE_PALETTE.svg](STYLE_PALETTE.svg) als beperkte kleur- en vormreferentie en de [art style guide](../ART_STYLE_GUIDE.md) voor regels. Doe niet alsof de originele afbeelding hier al aanwezig is.
+| Bestand | Wat |
+|---|---|
+| [conductor-chaos-concept.png](conductor-chaos-concept.png) | De originele conceptafbeelding (1536×1024). Altijd eerst bekijken. |
+| [STYLE_PALETTE.svg](STYLE_PALETTE.svg) | Stijlkaart v2: kernprincipes, licht/schaduw per materiaal, 33 kleurramps met bronuitsnede, vormentaal personages, URP-vertaling. |
+| [palette.json](palette.json) | Dezelfde ramps machine-leesbaar, voor scripts, materialen en agents. |
+| [tools/build_style_card.py](tools/build_style_card.py) | Genereert SVG en JSON uit één bron. Pas ramps alleen hier aan. |
+
+Alle kleuren zijn **gemeten** in de conceptafbeelding (per materiaalgebied, percentielen van schaduw naar licht), niet geschat. Regels staan in de [art style guide](../ART_STYLE_GUIDE.md).
 
 ## Wat wél overnemen
-- Ronde, kleine poppetjes met grote witte ogen en eenvoudige mond; expressieve, net wat stijve beweging.
-- Matte low-poly 3D, zachte facetten, chunky silhouette, weinig texturen en geen realistische reflecties.
-- Warm rood/oranje, petrol/marine, crème en zacht geel, met rustige blauwgroene natuurkleuren.
-- Vriendelijke zachte verlichting en kleurrijke routes, ook als de situaties gevaarlijk worden.
-- Simpele iconen en compacte analoge, sticker-achtige UI.
+- Boonvormige poppetjes (hoofd en romp één vorm) met grote witte ogen, kleine puntpupillen en een simpele ovale mond; expressieve, net wat stijve beweging.
+- Zachte, ronde, chunky 3D-vormen met afgeronde randen; zachte facetten op rots en landschap.
+- Warm licht met **koele blauw-violette schaduwen**; nooit grijs of zwart in de schaduw.
+- Geschilderde verlopen op grote vlakken, weinig textuur, geen realistische reflecties.
+- Treinrood, marineblauw, goud, perkament/crème; blauwgroene dennen tegenover geelgroen gras; blauw-violette bergen.
+- Simpele iconen en perkament-achtige, sticker-UI.
 
 ## Wat níet letterlijk overnemen
-- De afbeelding toont een kleine rode locomotief; de eerste gameplay gaat over een **regionale reizigerstrein** met werkende deuren en een begaanbaar interieur.
+- De afbeelding toont een kleine rode locomotief; de eerste gameplay gaat over een **regionale reizigerstrein** met werkende deuren en een begaanbaar interieur, in dezelfde vormentaal en livreikleuren.
 - De poster is promotiemateriaal. Imiteer niet alle tekstvakken of de volle opmaak in de HUD.
-- Beelden zijn inspiratie, geen technische maattekening, niet direct ingame gerenderd.
+- Beelden zijn inspiratie, geen technische maattekening.
 
 ## Praktische art check
-Maak eerst een Unity-screenshot met één conducteur naast of in een deur van een eenvoudige wagon. Controleer silhouette, oogvorm, materiaalglans, warm/koud licht, kleurhiërarchie en leesbaarheid van interacties. Laat de art check goedkeuren voordat er tientallen varianten gemaakt worden.
+Maak eerst een Unity-screenshot met één conducteur naast of in een deur van een eenvoudige wagon. Leg die naast de conceptafbeelding en controleer: silhouet en proporties, oogvorm, materiaalglans, warm licht/koele schaduw, kleurhiërarchie en leesbaarheid van interacties. Laat de art check goedkeuren voordat er tientallen varianten gemaakt worden.
 
-Om het originele beeld toe te voegen: download de PNG uit de ontwerpchat en commit onder de genoemde padnaam. Gebruik eventueel een kleine webpreview naast het originele bestand. Zet geen externe tijdelijke chat-URL in README of code.
+## Stijlkaart bijwerken
+```
+python Docs/References/tools/build_style_card.py
+```
+Vereist Python 3 + Pillow. Schrijft `STYLE_PALETTE.svg` en `palette.json` opnieuw zodat kaart en data gelijk blijven.

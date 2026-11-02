@@ -8,6 +8,7 @@
 - Unity 6000.5.7f1 gekozen omdat deze lokaal aanwezig is. Projectstructuur afgeleid van lokaal aanwezige URP-template; import nog te valideren.
 - Eerste technische proef: bewegende wagon, twee spelers, gedeelde deur en koffer. Deze oplevering bouwt deze proef nog niet.
 - Project en stijl zijn afzonderlijk van bestaande SPOOR/Rijssen-werkzaamheden.
+- Art direction: de [conceptafbeelding](References/conductor-chaos-concept.png) staat in Git en is leidend voor kwaliteit en stijl. Kleuren zijn gemeten in die afbeelding en vastgelegd als ramps in [stijlkaart v2](References/STYLE_PALETTE.svg) en [palette.json](References/palette.json). Personages: boonvorm, grote witte ogen, geen neus/wenkbrauwen. Licht: warm key-light, koele blauw-violette schaduw, koele rim. URP-startwaarden in de [art style guide](ART_STYLE_GUIDE.md).
 
 ## Open
 
