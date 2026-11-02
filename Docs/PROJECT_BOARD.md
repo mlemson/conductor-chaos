@@ -1,12 +1,12 @@
 # 🚂 Conductor Chaos — live ontwikkelbord
 
-> **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Automatisch gegenereerde momentopname; verander taken in Issues.
+> **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand.
 
 **Voortgang: 0/16 afgerond (0%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 15 | 0 | 1 | 0 | 0 |
+| 16 | 0 | 0 | 0 | 0 |
 
 ## 🗺️ Mijlpalen
 
@@ -26,7 +26,7 @@ flowchart LR
 
 ## 📋 Taken per status
 
-### 📝 Te doen (15)
+### 📝 Te doen (16)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -38,6 +38,7 @@ flowchart LR
 | P0 | [#7 Netwerk-koffer oppakken, dragen en loslaten](https://github.com/mlemson/conductor-chaos/issues/7) | Physics | — | — |
 | P0 | [#8 Multiplayer stressproef voor eerste technische slice](https://github.com/mlemson/conductor-chaos/issues/8) | QA | — | — |
 | P0 | [#9 Eerste in-engine artproof: conducteur en wagonhoek](https://github.com/mlemson/conductor-chaos/issues/9) | Art | — | — |
+| P0 | [#17 Visueel ontwikkelbord en automatische statusupdates](https://github.com/mlemson/conductor-chaos/issues/17) | Foundation | — | — |
 | P1 | [#10 Reizigers, tickets en eerste conducteur-taakloop](https://github.com/mlemson/conductor-chaos/issues/10) | Gameplay | — | — |
 | P1 | [#11 Klein station, korte route en eerste incident](https://github.com/mlemson/conductor-chaos/issues/11) | Gameplay | — | — |
 | P1 | [#12 Echte physics-ontsporing van één wagon](https://github.com/mlemson/conductor-chaos/issues/12) | Physics | — | — |
@@ -50,11 +51,9 @@ flowchart LR
 
 *Geen taken in deze kolom.*
 
-### 👀 Klaar voor review (1)
+### 👀 Klaar voor review (0)
 
-| Fase | Taak | Onderdeel | Eigenaar | Pull request |
-| :-- | :-- | :-- | :-- | :-- |
-| P0 | [#17 Visueel ontwikkelbord en automatische statusupdates](https://github.com/mlemson/conductor-chaos/issues/17) | Foundation | — | [#18](https://github.com/mlemson/conductor-chaos/pull/18) |
+*Geen taken in deze kolom.*
 
 ### ⛔ Geblokkeerd (0)
 
@@ -70,11 +69,11 @@ Alle open PR's zijn gekoppeld of er zijn geen open PR's.
 
 ## 🤝 Samenwerken met mensen en agents
 
-1. Maak of kies een issue en wijs een eigenaar toe zodra werk begint.
-2. Open een branch/PR met `Refs #nummer` of `Closes #nummer`.
-3. Draft PR = **Bezig**, review-ready PR = **Review**; gesloten issue = **Klaar**.
-4. Het dashboard wordt ververst na issue/PR-events en pushes naar `main`, zodra de workflow is gemerged.
+1. Kies of maak een issue en wijs een eigenaar toe zodra het werk begint.
+2. Maak een branch en verwijs in de PR-omschrijving naar `Refs #nummer` tijdens ontwikkeling, of `Closes #nummer` als de volledige taak is opgelost.
+3. Draft PR = **Bezig**; review-ready PR = **Review**; gesloten issue = **Klaar**. Label `status:blocked` gaat vóór andere open statussen.
+4. Het bord wordt automatisch ververst bij issue/PR-events en pushes naar `main` zodra de workflow naar main is gemerged.
 
-**Let op:** een losse commit is geen bewijs dat een taak voltooid is.
+**Let op:** één commit of geslaagde build betekent niet dat een hele taak is afgerond.
 
 Zie [samenwerkingsregels](DEVELOPMENT_WORKFLOW.md) en [technische roadmap](ROADMAP.md).
