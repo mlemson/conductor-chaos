@@ -2,17 +2,17 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Automatisch gegenereerde momentopname; verander taken in Issues.
 
-**Voortgang: 0/15 afgerond (0%)**
+**Voortgang: 0/16 afgerond (0%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 15 | 0 | 0 | 0 | 0 |
+| 15 | 0 | 1 | 0 | 0 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
-    P0["P0 · Technisch fundament + stijltest · 0/8 klaar"]
+    P0["P0 · Technisch fundament + stijltest · 0/9 klaar"]
     P1["P1 · Eerste speelbare co-opervaring · 0/4 klaar"]
     P2["P2 · Bergavontuur en chaos · 0/3 klaar"]
     P0 --> P1 --> P2
@@ -20,7 +20,7 @@ flowchart LR
 
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
-| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/8 | Technisch fundament + stijltest |
+| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/9 | Technisch fundament + stijltest |
 | **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/4 | Eerste speelbare co-opervaring |
 | **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/3 | Bergavontuur en chaos |
 
@@ -50,9 +50,11 @@ flowchart LR
 
 *Geen taken in deze kolom.*
 
-### 👀 Klaar voor review (0)
+### 👀 Klaar voor review (1)
 
-*Geen taken in deze kolom.*
+| Fase | Taak | Onderdeel | Eigenaar | Pull request |
+| :-- | :-- | :-- | :-- | :-- |
+| P0 | [#17 Visueel ontwikkelbord en automatische statusupdates](https://github.com/mlemson/conductor-chaos/issues/17) | Foundation | — | [#18](https://github.com/mlemson/conductor-chaos/pull/18) |
 
 ### ⛔ Geblokkeerd (0)
 
