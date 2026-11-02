@@ -17,5 +17,9 @@ Nog niet uitgevoerd. Voor elke testrun: datum/commit, Unity/packageversies, plat
 | T11 | Reconnect, netwerkuitval en hostverlies | werkt volgens expliciete afspraak, anders nette fout en opruiming | NOT RUN |
 | T12 | Vertraging, jitter en packet loss | geen blijvende divergentie; meet waar correctie onacceptabel wordt | NOT RUN |
 | T13 | 4 spelers, later 6 | join/leave, simultane taken en belasting gemeten | NOT RUN |
+| T14 | Wagon ontspoort bij kapot spoor | rijdt van de rails en reageert in serverphysics; geen vooraf afgespeelde pose | NOT RUN |
+| T15 | Variatie in snelheid, obstakel en impacthoek | relevante crashes verschillen en lichte impact kan minder ernstige gevolgen hebben | NOT RUN |
+| T16 | 2 gekoppelde wagons, één ontspoort | koppelingskrachten/breuk en afzonderlijke wagonbeweging zijn fysiek plausibel | NOT RUN |
+| T17 | 2 spelers + koffer tijdens crash, late join | iedereen deelt dezelfde crashuitkomst; spelers/cargo blijven fysiek correct, late join ziet wreckage | NOT RUN |
 
 Aanvullende tests: relevante EditMode-tests voor zuivere regels; PlayMode/integratietests voor sessies, race conditions en toestandsoverdracht. Automatiseer wanneer infrastructuur bestaat. Bij tests van echte online services: geen joincodes, account-ID's of tokens in publieke logs.

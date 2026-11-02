@@ -12,6 +12,8 @@ Alle taken zijn open. Afhankelijkheden en acceptatie zijn verplicht; tests met t
 - [ ] **P0-06 Koffer:** server bepaalt vrij/gedragen/losgelaten; oppakken, dragen, doorgeven, vallen, botsing en vertrek van drager. Twee gelijktijdige verzoeken mogen geen dubbele houder opleveren.
 - [ ] **P0-07 Netwerkproef:** herhaal P0-03–06 met gesimuleerde vertraging/verlies en twee afzonderlijke instanties; documenteer instellingen, platform, waarnemingen, faalgevallen en reproduceerbaarheid. Scherpe acceptatietoleranties op basis van meting afspreken.
 
+- [ ] **P0-08 Art-direction proof (parallel met netwerkproef):** maak op een aparte taak/branch een minimale stylized conducteur en één wagonhoek, alleen nadat Unity import schoon werkt. Vergelijk in-engine screenshots met [gamevisie](GAME_VISION.md) en [visuele referenties](References/README.md); geen massaproductie vóór goedkeuring. Doel is een beeldtest, geen extra gameplay.
+
 ## P1 — co-op uitbreiden
 
 - [ ] Vier spelers testen; taakverdeling, deurbediening en passagierscontrole tegelijk.
@@ -19,11 +21,14 @@ Alle taken zijn open. Afhankelijkheden en acceptatie zijn verplicht; tests met t
 - [ ] Hostvriendelijke online lobby, uitnodiging, foutmeldingen en waar mogelijk reconnect; singleplayer blijft leuk.
 - [ ] Zes spelers als afzonderlijk schaaldoel testen, inclusief belasting en join/leave.
 
+- [ ] **P1-physics proof (na P0):** laat één wagon gecontroleerd bij een breuk in het spoor écht fysiek ontsporen; behoud snelheid/impuls, test de effecten op twee spelers en een koffer en synchroniseer de eindpositie via host + remote client. Vergelijk begeleide beweging met overgang naar Rigidbody versus track constraints. Zie [derailment-ontwerp](DERAILMENT_PHYSICS.md) en T14–T17 in [testplan](TESTPLAN.md).
+
 ## P2 — meer chaos en productie
 
-- [ ] Gezamenlijke reparaties, complexere physics, gelijktijdige incidenten en extra wagons.
+- [ ] Gezamenlijke reparaties, gelijktijdige incidenten en extra wagons.
+- [ ] **P2-derailment-productie:** meerdere aangekoppelde wagons kunnen afzonderlijk kantelen/ontsporen of een koppeling breken; crashes bij bruggen, grote obstakels en beschadigd spoor; synchroniseer speler-/bagagephysics en test tot 6 spelers. Niet animatie-only. Zie [DERAILMENT_PHYSICS.md](DERAILMENT_PHYSICS.md).
 - [ ] Routes, omgeving, UI, audio, VFX en assets volgens [checklist](ASSET_CHECKLIST.md); prestaties en accessibility beoordelen.
 
 ## Volgende agent
 
-Start met P0-01; rapporteer concrete Console- en packagebevindingen. Werk P0-02 daarna af. Bouw pas op expliciete opdracht gameplay of assets. Bespreek ontwerponbekenden in [besluiten](DECISIONS.md), zonder openstaande taken als gereed te markeren.
+Start met P0-01; rapporteer concrete Console- en packagebevindingen. Werk P0-02 daarna af. Voer P0-08 eventueel parallel uit na succesvolle import. Bouw pas op expliciete opdracht gameplay of assets. Bespreek ontwerponbekenden in [besluiten](DECISIONS.md), zonder openstaande taken als gereed te markeren.

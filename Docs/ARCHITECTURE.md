@@ -29,6 +29,10 @@ Client selecteert een kandidaat en verzendt intentie met doel en actie. Server c
 - Clients interpoleren zichtbare snapshots; bepaal met metingen of voorspelling nodig is. Houd serverphysics leidend; realistische krachten zijn ondergeschikt aan een stabiele, begrijpelijke uitkomst. Botsingen en schommelingen moeten voor alle spelers consistent zijn, niet bit-identiek.
 - Meet jitter, penetratie, correcties en latentie bij beweging, remmen en stilstand. Definieer haalbare toleranties tijdens de proef; nog geen onbewezen prestatiedoelen claimen.
 
+## Echte botsingen en ontsporingen
+
+De trein moet van het spoor kunnen raken door botsingen, beschadigde rails, overspeed of een instorting; dit is een server-besliste **fysieke uitkomst**, geen vooraf afgespeelde crashanimatie. Gebruik de [specificatie voor train crashes en derailment](DERAILMENT_PHYSICS.md) bij elke spoor-, trein-, player-physics- en netwerksysteemkeuze. P0 blijft een bewegende wagon zonder crash, maar de architectuur mag 6-DOF beweging, loskomende wagons, echte impacts en transitie van treinruimte naar wereldruimte niet blokkeren. Gewone beweging efficiënt begeleiden is toegestaan; het spoor mag geen onverbreekbare constraint zijn. Synchroniseer locomotie, status, aangrenzende wagoncontacten en impactgevolgen vanaf één host/serverbron.
+
 ## Sessie en herstel
 
 Initieer services en authenticatie zonder geheimen in Git. Scheid aanmaken/joinen, transport, spawn en gameplay-ready. Server stuurt bij late join een samenhangende actuele snapshot; actuele toestanden mogen niet alleen uit vluchtige events bestaan. Bij wegvallende speler ruimt server diens interactieclaims op en laat/plaatst voorwerpen veilig los. Reconnect, timeouts, hostverlies en migratie vereisen expliciete productbeslissingen en tests; tot die tijd netjes afsluiten en duidelijke foutmelding. Singleplayer gebruikt dezelfde autoritatieve code met lokale host of aantoonbaar gelijkwaardige route.

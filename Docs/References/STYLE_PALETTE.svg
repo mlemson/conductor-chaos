@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" role="img" aria-label="Conductor Chaos concept style palette">
+<rect width="1000" height="500" fill="#F6EBD9"/>
+<rect x="0" y="0" width="1000" height="62" fill="#292C44"/>
+<text x="36" y="42" font-family="Verdana,sans-serif" font-weight="700" font-size="29" fill="#FFF6E7">CONDUCTOR CHAOS — visual direction</text>
+<g transform="translate(72 100)">
+<rect width="380" height="260" rx="35" fill="#B9D8DE"/>
+<path d="M0 200 L100 95 167 180 245 80 380 230 380 260 0 260Z" fill="#92AE91"/>
+<path d="M20 220 L130 140 190 220 260 130 380 235 380 260 20 260Z" fill="#6A8D85"/>
+<rect x="42" y="175" width="285" height="62" rx="20" fill="#D45B42"/>
+<rect x="73" y="143" width="225" height="73" rx="25" fill="#CF543F"/>
+<rect x="93" y="150" width="58" height="41" rx="7" fill="#F5E4B1"/>
+<rect x="167" y="150" width="58" height="41" rx="7" fill="#F5E4B1"/>
+<rect x="236" y="150" width="45" height="41" rx="7" fill="#F5E4B1"/>
+<circle cx="100" cy="233" r="18" fill="#292C44"/><circle cx="272" cy="233" r="18" fill="#292C44"/>
+</g>
+<g transform="translate(555 98)">
+<rect x="18" y="5" width="200" height="248" rx="92" fill="#E8BD76"/>
+<rect x="58" y="137" width="130" height="120" rx="44" fill="#273956"/>
+<rect x="35" y="27" width="164" height="133" rx="69" fill="#E7A473"/>
+<ellipse cx="76" cy="91" rx="20" ry="28" fill="#FFF8E9"/><ellipse cx="142" cy="91" rx="20" ry="28" fill="#FFF8E9"/>
+<ellipse cx="81" cy="93" rx="8" ry="15" fill="#202B3A"/><ellipse cx="147" cy="93" rx="8" ry="15" fill="#202B3A"/>
+<path d="M110 118 Q118 137 135 118" fill="none" stroke="#5C3C31" stroke-width="7" stroke-linecap="round"/>
+<path d="M38 58 Q117 -10 197 58 L197 22 Q120 -15 38 22Z" fill="#273956"/>
+<rect x="42" y="43" width="154" height="21" rx="10" fill="#273956"/>
+<rect x="104" y="20" width="28" height="21" rx="8" fill="#E6B64D"/>
+<rect x="29" y="154" width="30" height="80" rx="15" fill="#273956"/>
+<rect x="181" y="154" width="30" height="80" rx="15" fill="#273956"/>
+</g>
+<text x="45" y="405" font-family="Verdana,sans-serif" font-weight="600" font-size="19" fill="#292C44">MATTE • CHUNKY • PLAYFUL • READABLE</text>
+<g transform="translate(45 422)">
+<rect width="126" height="35" rx="6" fill="#292C44"/><rect x="137" width="126" height="35" rx="6" fill="#D45B42"/>
+<rect x="274" width="126" height="35" rx="6" fill="#E6B64D"/><rect x="411" width="126" height="35" rx="6" fill="#89A88B"/>
+<rect x="548" width="126" height="35" rx="6" fill="#B9D8DE"/><rect x="685" width="126" height="35" rx="6" fill="#E7A473"/>
+</g>
+<text x="45" y="484" font-family="Verdana,sans-serif" font-size="12" fill="#6A6369">Simple illustrative style card; not the original generated concept board.</text>
+</svg>

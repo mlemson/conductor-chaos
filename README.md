@@ -8,9 +8,13 @@ Een warme, speelse co-opgame in ontwikkeling: 1–6 spelers proberen samen een t
 
 1. [Agentinstructies](AGENTS.md) en [projectstatus](Docs/AI/UnityProjectContext.md).
 2. [Architectuur en netwerkafspraken](Docs/ARCHITECTURE.md), inclusief autoriteit en de bewegende trein.
-3. [Eerste technische proef en taakvolgorde](Docs/ROADMAP.md).
+3. [Eerste technische proef en taakvolgorde](Docs/ROADMAP.md), plus [echte ontsporingen en netwerkphysics](Docs/DERAILMENT_PHYSICS.md) voor toekomstige implementatie.
 4. [Multiplayer-testplan](Docs/TESTPLAN.md) en [risicoregister](Docs/RISKS.md).
-5. [Art style guide](Docs/ART_STYLE_GUIDE.md) en [assetchecklist](Docs/ASSET_CHECKLIST.md).
+5. [Gamevisie en ontwerpprioriteiten](Docs/GAME_VISION.md), [art style guide](Docs/ART_STYLE_GUIDE.md), [visuele referenties](Docs/References/README.md) en [assetchecklist](Docs/ASSET_CHECKLIST.md).
+
+## Eerstvolgende agenttaak
+
+Gebruik de afgebakende [P0-01 prompt voor de volgende agent](Docs/AI/NEXT_AGENT_TASK.md). Begin niet met allerlei gameplay voordat de Unity-import is gevalideerd.
 
 ## Project openen
 

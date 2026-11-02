@@ -1,5 +1,8 @@
 # 1. Art Style Guide – Conducteur / Train Co-op Game
 
+**Visuele referentie:** zie [conceptstijl en instructies](References/README.md) en [kleur-/vormkaart](References/STYLE_PALETTE.svg). De originele conceptposter is nog niet in Git en moet als afzonderlijk PNG-bestand worden toegevoegd. Deze gids is geen instructie om letterlijk de kleine locomotief van het beeld te kopiëren: de eerste gameplay betreft een begaanbare regionale reizigerstrein met deuren. Zie ook de [gamevisie](GAME_VISION.md).
+
+
 ## Werknaam stijl
 **Stylized Cozy Low-Poly Cartoon**
 
