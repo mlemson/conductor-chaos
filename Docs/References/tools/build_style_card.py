@@ -21,6 +21,7 @@ P = {
     ("scarf", "Sjaal passagier", ["#783638", "#9C4140", "#A44543", "#B24946", "#B64B48"], (290, 880, 410, 960)),
     ("cloth_dark", "Broek, schoenen, cream shirt", ["#393540", "#4E3F3F", "#BB9A89", "#D1B29E", "#E8D3C2"], (300, 920, 410, 1005)),
     ("face", "Oogwit, pupil, mond", ["#0D0B0C", "#662C23", "#B84A3C", "#E0C9C0", "#FBF0E3"], (650, 100, 790, 240)),
+    ("mouth", "Mondholte & tong", ["#50221A", "#662C23", "#AB4337", "#B84A3C", "#C15648"], (660, 180, 730, 240)),
   ],
   "Trein": [
     ("train_red", "Treinrood (livrei)", ["#5E271F", "#8D3432", "#C54D3E", "#DA523F", "#FC7C69"], (420, 250, 800, 440)),
@@ -217,7 +218,7 @@ text(fx + 60, fy + 312, "~2 koppen hoog · geen nek", 15, "#DAC3B2", 400, "middl
 
 rules_do = [
   "Boonvormig capsule-lijf: hoofd en romp zijn één vorm",
-  "Grote ronde ogen dicht bij elkaar (≈ 35–40% van de breedte)",
+  "Grote ronde ogen die elkaar raken (elk ≈ 37% van de breedte)",
   "Pupillen klein en puntvormig, één wit glimlicht",
   "Stompe armen zonder ellebogen, ronde mitten-handen",
   "Korte blokvormige benen, brede schoenen",

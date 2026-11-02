@@ -27,3 +27,8 @@
 .DS_Store
 Thumbs.db
 sysinfo.txt
+
+# Art source (ArtSource/): lokale render-afhankelijkheden en tussenresultaten
+ArtSource/Render/three
+ArtSource/Render/out/
+__pycache__/

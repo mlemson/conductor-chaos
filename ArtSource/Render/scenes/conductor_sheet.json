@@ -1,0 +1,279 @@
+[
+ {
+  "name": "turn_front",
+  "params": {
+   "w": 560,
+   "h": 860,
+   "yaw": 0,
+   "pitch": 3,
+   "dist": 6,
+   "ortho": 0.74,
+   "target": "0,0.62,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1
+  }
+ },
+ {
+  "name": "turn_34",
+  "params": {
+   "w": 560,
+   "h": 860,
+   "yaw": -38,
+   "pitch": 3,
+   "dist": 6,
+   "ortho": 0.74,
+   "target": "0,0.62,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1
+  }
+ },
+ {
+  "name": "turn_side",
+  "params": {
+   "w": 560,
+   "h": 860,
+   "yaw": -90,
+   "pitch": 3,
+   "dist": 6,
+   "ortho": 0.74,
+   "target": "0,0.62,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1
+  }
+ },
+ {
+  "name": "turn_back",
+  "params": {
+   "w": 560,
+   "h": 860,
+   "yaw": 180,
+   "pitch": 3,
+   "dist": 6,
+   "ortho": 0.74,
+   "target": "0,0.62,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1
+  }
+ },
+ {
+  "name": "expr_neutral",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -14,
+   "pitch": 2,
+   "dist": 2.2,
+   "fov": 20,
+   "target": "0,0.78,0",
+   "lightRel": 1,
+   "ground": "0"
+  }
+ },
+ {
+  "name": "expr_surprised",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -14,
+   "pitch": 2,
+   "dist": 2.2,
+   "fov": 20,
+   "target": "0,0.78,0",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/Conductor.glb",
+     "pose": {
+      "Mouth_Neutral": {
+       "visible": false
+      },
+      "Mouth_Surprised": {
+       "visible": true
+      },
+      "Pupil_L": {
+       "scale": [
+        0.85,
+        0.85,
+        1
+       ]
+      },
+      "Pupil_R": {
+       "scale": [
+        0.85,
+        0.85,
+        1
+       ]
+      }
+     }
+    }
+   ]
+  }
+ },
+ {
+  "name": "expr_happy",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -14,
+   "pitch": 2,
+   "dist": 2.2,
+   "fov": 20,
+   "target": "0,0.78,0",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/Conductor.glb",
+     "pose": {
+      "Mouth_Neutral": {
+       "visible": false
+      },
+      "Mouth_Happy": {
+       "visible": true
+      }
+     }
+    }
+   ]
+  }
+ },
+ {
+  "name": "expr_look",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -14,
+   "pitch": 2,
+   "dist": 2.2,
+   "fov": 20,
+   "target": "0,0.78,0",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/Conductor.glb",
+     "pose": {
+      "Pupil_L": {
+       "addPos": [
+        0.03,
+        0.012,
+        -0.006
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        0.03,
+        0.012,
+        0.004
+       ]
+      },
+      "Cap": {
+       "addRot": [
+        0,
+        0,
+        -6
+       ]
+      },
+      "Body": {
+       "addRot": [
+        0,
+        0,
+        4
+       ]
+      }
+     }
+    }
+   ]
+  }
+ },
+ {
+  "name": "hero",
+  "params": {
+   "w": 900,
+   "h": 1100,
+   "yaw": -30,
+   "pitch": 9,
+   "dist": 4.4,
+   "fov": 24,
+   "target": "0,0.64,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Conductor.glb",
+     "pose": {
+      "Mouth_Neutral": {
+       "visible": false
+      },
+      "Mouth_Surprised": {
+       "visible": true
+      },
+      "Arm_R": {
+       "rot": [
+        0,
+        0,
+        -128
+       ]
+      },
+      "Hand_R": {
+       "addRot": [
+        0,
+        0,
+        0
+       ]
+      },
+      "Arm_L": {
+       "rot": [
+        -25,
+        0,
+        22
+       ]
+      },
+      "Body": {
+       "addRot": [
+        0,
+        0,
+        -4
+       ]
+      },
+      "Cap": {
+       "addRot": [
+        -4,
+        0,
+        8
+       ]
+      },
+      "Leg_L": {
+       "addRot": [
+        -8,
+        0,
+        0
+       ]
+      },
+      "Leg_R": {
+       "addRot": [
+        10,
+        0,
+        0
+       ]
+      },
+      "Pupil_L": {
+       "addPos": [
+        -0.012,
+        0.01,
+        0.0
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        -0.012,
+        0.01,
+        0.0
+       ]
+      }
+     }
+    }
+   ]
+  }
+ }
+]

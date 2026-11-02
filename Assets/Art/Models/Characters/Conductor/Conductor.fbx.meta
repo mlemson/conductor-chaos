@@ -1,0 +1,75 @@
+fileFormatVersion: 2
+guid: 8e9dd3c1696440229abdde0846267308
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Conductor_Skin
+    second: {fileID: 2100000, guid: 9ca9ee5e9c5891b07fec3bd0c2188f75, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Conductor_Uniform
+    second: {fileID: 2100000, guid: 4b50c12a7a6583fdc52a65eedddc3cc1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Conductor_UniformDark
+    second: {fileID: 2100000, guid: 071e060d0e06c4127309c1e19f413c7c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Conductor_Gold
+    second: {fileID: 2100000, guid: 5673febb290d1f2aca7ab6557252fe8a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Conductor_EyeWhite
+    second: {fileID: 2100000, guid: 316d7d31f372abeb77c5f412457fe803, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Conductor_Pupil
+    second: {fileID: 2100000, guid: 3a64b87d77d811f200ac5157608bf991, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Conductor_Mouth
+    second: {fileID: 2100000, guid: e6b1db93e77a0a86bc2aea5608029370, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Conductor_Tongue
+    second: {fileID: 2100000, guid: 5c40c106f1a17a31db2f09c835738b93, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Conductor_Shoe
+    second: {fileID: 2100000, guid: a682e92be6d5445f86064faca69dcf48, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

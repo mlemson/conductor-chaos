@@ -1,0 +1,80 @@
+fileFormatVersion: 2
+guid: b446a25ed3739e5a4885e9fc53b44247
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Red
+    second: {fileID: 2100000, guid: fa1d70fdc540e70e20478581d5575fde, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Trim
+    second: {fileID: 2100000, guid: 060d94acf20f35b616f59eaf3dc543af, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Roof
+    second: {fileID: 2100000, guid: 92f7510194b99f52bcd0441e305eb8d0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Glass
+    second: {fileID: 2100000, guid: 698990292d88525ade880484c45b748c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Interior
+    second: {fileID: 2100000, guid: 7fb027891798502ccedcb9a5d99522ea, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Floor
+    second: {fileID: 2100000, guid: 3f3ff253d3006ee4cd88f11369ac4d3d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Seat
+    second: {fileID: 2100000, guid: 66791b37c9f05ac206915d2e1f10cab5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Interact
+    second: {fileID: 2100000, guid: 84f8a21089c7aee1c518275bad3bc4a1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Lamp
+    second: {fileID: 2100000, guid: 24ce52bb47cc35bbb1405aa725c94333, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Metal
+    second: {fileID: 2100000, guid: 04e08182c127e39481a3cad5bc81e381, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

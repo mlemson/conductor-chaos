@@ -100,14 +100,21 @@ Richtlijn:
 - korte blokvormige benen met brede schoenen
 
 ## Gezicht
-- grote ronde witte ogen (`#FBF0E3`), dicht bij elkaar, samen ≈ 35–40% van de lijfbreedte
-- kleine puntpupillen (`#0D0B0C`) met één wit glimlicht
-- mond: simpele ovale opening (binnen `#662C23`, rand `#B84A3C`), geen tanden
+- grote, bolle, ronde witte ogen (`#FBF0E3`) die elkaar **raken**; elk oog ≈ 35–40% van de lijfbreedte (samen ≈ 75%), licht verticaal ovaal; gemeten in het concept en zo gebouwd in het [conducteur-basismodel](Art/Conductor_DesignSheet.png)
+- kleine, licht verticale pupillen (`#0D0B0C`, ≈ 25% van de oogbreedte) iets naar binnen/omhoog gericht, met één klein glimlicht
+- mond: simpele ovale opening (mondholte en tong: ramp `mouth` in palette.json, `#50221A` → `#C15648`), geen tanden
 - geen neus, oren of wenkbrauwen
 - expressie via:
   - oogrichting en pupilgrootte
   - mondvorm (dicht, open, O-vorm)
   - hele lichaamshouding en hoofdkanteling
+
+## Basismodel conducteur (P0 art proof, issue #9)
+Maatvoering, gemeten in het concept en vastgelegd in het [ontwerpblad](Art/Conductor_DesignSheet.png) en het [art-check-beeld](Art/ArtCheck_WagonCorner.png):
+- totaal **1,25 m** incl. pet; lijf 0,56 m breed (superellips-doorsnede, iets platte voorkant); kraaglijn 0,53 m; ogen op 0,835 m
+- pet = silhouet-sleutel: bolle kroon ≈ 1,3× lijfbreedte, gouden band met rond embleem, donkere klep die net boven de ogen valt
+- handen ≈ oog-grootte; schoudels op 0,49 m → **interactiepunten (sloten, knoppen) op ca. 0,6–0,8 m** zodat de korte armpjes erbij kunnen
+- bron en regeneratie: [`ArtSource/`](../ArtSource/README.md); Unity-model `Assets/Art/Models/Characters/Conductor/Conductor.fbx`
 
 ## Variatie in personages
 Werk vanuit **1 basismodel** met variaties:
