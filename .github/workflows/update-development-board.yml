@@ -1,0 +1,60 @@
+name: Update development board
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened, assigned, unassigned, labeled, unlabeled, deleted, transferred]
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited, ready_for_review, converted_to_draft, closed]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: conductor-chaos-development-board
+  cancel-in-progress: false
+
+jobs:
+  regenerate:
+    name: Generate issue-driven roadmap snapshot
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[board-update]')
+    steps:
+      # Security: always execute the script from main, never untrusted PR code.
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Generate board from GitHub issues and PR metadata
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/generate_development_board.py
+      - name: Commit updated board only when changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- Docs/PROJECT_BOARD.md; then
+            echo "No board changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Docs/PROJECT_BOARD.md
+          git commit -m "docs: refresh live development board [board-update]"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push conflicted, retrying ($attempt)"
+            sleep 2
+          done
+          echo "Could not push board. Check branch protections and Actions write access."
+          exit 1
