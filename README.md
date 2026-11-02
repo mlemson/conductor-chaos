@@ -10,7 +10,7 @@ Een warme, speelse co-opgame in ontwikkeling: 1–6 spelers proberen samen een t
 2. [Architectuur en netwerkafspraken](Docs/ARCHITECTURE.md), inclusief autoriteit en de bewegende trein.
 3. [Eerste technische proef en taakvolgorde](Docs/ROADMAP.md).
 4. [Multiplayer-testplan](Docs/TESTPLAN.md) en [risicoregister](Docs/RISKS.md).
-5. [Art style guide](Docs/ART_STYLE_GUIDE.md) en [assetchecklist](Docs/ASSET_CHECKLIST.md).
+5. [Gamevisie en ontwerpprioriteiten](Docs/GAME_VISION.md), [art style guide](Docs/ART_STYLE_GUIDE.md), [visuele referenties](Docs/References/README.md) en [assetchecklist](Docs/ASSET_CHECKLIST.md).
 
 ## Project openen
 
