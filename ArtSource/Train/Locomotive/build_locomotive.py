@@ -88,7 +88,8 @@ def build_boiler():
     panels = []
     for zf, sgn in ((z1, 1), (z0, -1)):
         zz = (zf - 0.02, zf + 0.035) if sgn > 0 else (zf - 0.035, zf + 0.02)
-        panels.append(rbox(BOILER[0] + 0.95, BOILER[1] - 0.70, 0.48, 0.84, zz[0], zz[1], 0.025, "M_Loco_RedDark"))
+        zz = (zf - 0.01, zf + 0.012) if sgn > 0 else (zf - 0.012, zf + 0.01)
+        panels.append(rbox(BOILER[0] + 0.75, BOILER[1] - 0.70, 0.46, 0.84, zz[0], zz[1], 0.008, "M_Loco_Panel", div=2))
     # gouden kapje bovenop de neus + fluitje bij de cabine
     cap = rbox(BOILER[1] - 0.42, BOILER[1] - 0.04, BOILER_TOP - 0.08, BOILER_TOP + 0.07, ZC - 0.30, ZC + 0.30, 0.05,
                "M_Loco_Gold")
@@ -133,6 +134,13 @@ def build_cab():
     for (za, zb) in ((z_out - 0.23, z_out + 0.03), (z_in - 0.03, z_in + 0.23)):
         parts.append(rbox(x0 + 0.05, x1 - 0.05, WALL_TOP - 0.02, WALL_TOP + 0.06, za, zb, 0.03, "M_Loco_Gold"))
     parts.append(rbox(x0 - 0.03, x0 + 0.23, WALL_TOP - 0.02, WALL_TOP + 0.06, z_in + 0.05, z_out - 0.05, 0.03, "M_Loco_Gold"))
+    # geschilderde panelen ('vierkantjes', concept): dun, bijna vlak op de cabinewanden, doffer rood
+    for zf, sgn in ((z_out, 1), (z_in, -1)):
+        za, zb = (zf - 0.01, zf + 0.012) if sgn > 0 else (zf - 0.012, zf + 0.01)
+        for (pa, pb) in ((x0 + 0.36, x0 + 1.22), (x0 + 1.40, x1 - 0.36)):
+            parts.append(rbox(pa, pb, CAB_FLOOR + 0.06, WALL_TOP - 0.12, za, zb, 0.008, "M_Loco_Panel", div=2))
+        za, zb = (zf - 0.01, zf + 0.012) if sgn > 0 else (zf - 0.012, zf + 0.01)
+        parts.append(rbox(x0 + 0.36, x1 - 0.36, FRAME[3] + 0.06, CAB_FLOOR - 0.08, za, zb, 0.008, "M_Loco_Panel", div=2))
     # deurpaneel op de achterwand
     parts.append(rbox(x0 - 0.03, x0 + 0.02, CAB_FLOOR + 0.12, ROOF_Y - 0.22, ZC - 0.42, ZC + 0.42, 0.03, "M_Loco_RedDark"))
     # vier dikke stijlen met voet en kapiteel
@@ -292,6 +300,7 @@ def build_locomotive():
     R_ = RAMPS
     sc.material("M_Loco_Red", R_["train_red"][2], R_["train_red"], 0.25, opts={"paint": 1.4, "edge": 1.2})
     sc.material("M_Loco_RedDark", R_["train_red"][1], R_["train_red"], 0.25, ramp_shift=-0.26, opts={"paint": 1.3, "edge": 1.2})
+    sc.material("M_Loco_Panel", R_["train_red"][1], R_["train_red"], 0.20, ramp_shift=-0.22, opts={"paint": 1.6, "edge": 0.0})
     sc.material("M_Loco_Roof", R_["wagon_brown"][1], R_["wagon_brown"], 0.20, ramp_shift=-0.14, opts={"paint": 1.4, "edge": 1.2})
     sc.material("M_Loco_Gold", R_["gold_trim"][3], R_["gold_trim"], 0.40, ramp_shift=0.04, opts={"paint": 0.8, "edge": 1.4})
     sc.material("M_Loco_Frame", R_["ui_bg"][2], R_["ui_bg"], 0.25, ramp_shift=0.06, opts={"paint": 1.0, "edge": 1.4})

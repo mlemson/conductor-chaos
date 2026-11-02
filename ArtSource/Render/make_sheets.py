@@ -258,7 +258,7 @@ def loco_sheet():
     W, H = 3000, 2180
     sheet = Image.new("RGBA", (W, H), BG + (255,))
     d = ImageDraw.Draw(sheet)
-    label(d, (60, 40), "Locomotief · ontwerpblad v2", 56)
+    label(d, (60, 40), "Locomotief + kolenwagen · ontwerpblad v2.1", 56)
     d.text((64, 148), "P0 art proof (issue #22) · v2 na art review: rondere neus, geïntegreerde koplamp, stevigere cabine, sierlijsten · kleuren uit palette.json",
            font=font(25, False), fill=SUB)
     hero = sky(load("loco_hero").size)
@@ -266,7 +266,7 @@ def loco_sheet():
     hw = 1640
     hh = int(hero.height * hw / hero.width)
     sheet.alpha_composite(hero.resize((hw, hh), Image.LANCZOS), (60, 200))
-    label(d, (84, 216), "In het spel: conducteur leunt uit de cabine", 28)
+    label(d, (84, 216), "In het spel: loc, kolenwagen en regionale wagon", 28)
     # textuur naast het concept
     concept = Image.open(os.path.join(ROOT, "Docs", "References", "conductor-chaos-concept.png")).convert("RGBA")
     rx = 60 + hw + 40
@@ -285,16 +285,17 @@ def loco_sheet():
     notes = ["Kortere ronde ketelneus, smalle ronde bufferbalk, brede wielen",
              "Achthoekige rookkastring met 4 gouden bouten, lens geel → oranje",
              "Ruime cabine met kooloventje (gloeiend deurtje, drukmeter, hendel)",
-             "Geschilderd: boven licht, onder donker, lichte randjes, zachte vlekken"]
+             "Kolenwagen: rode bak, gouden rand/hoekstrips, panelen met klinknagels",
+             "Geschilderd: verftextuur (penseeltoetsen) + donkere ingezette panelen"]
     for k, t in enumerate(notes):
         d.text((rx + 24, ty + tx.height + 50 + k * 32), "•  " + t, font=font(19, False), fill=SUB)
     # aanzichten
     by = 200 + hh + 30
     d.rounded_rectangle([60, by, W - 50, by + 560], 22, fill=PANEL)
     label(d, (84, by + 14), "Aanzichten", 30)
-    views = [("loco_front34", "Voor 3/4"), ("loco_side", "Zijaanzicht"), ("loco_rear34", "Achter 3/4"),
-             ("loco_cab", "Cabine: kooloventje, hendel, kolenbak")]
-    cw = (W - 170) // 4
+    views = [("loco_front34", "Voor 3/4"), ("loco_side", "Zijaanzicht met kolenwagen"), ("loco_rear34", "Achter 3/4"),
+             ("tender_front34", "Kolenwagen: ladder, sluitlampen"), ("loco_cab", "Cabine: kooloventje")]
+    cw = (W - 170) // 5
     for i, (n, cap) in enumerate(views):
         im = fit(crop_alpha(load(n)), cw - 40, 430)
         x = 90 + i * cw + (cw - im.width) // 2
@@ -313,10 +314,12 @@ def loco_sheet():
             c = tuple(int(hx[k:k + 2], 16) for k in (1, 3, 5))
             d.rounded_rectangle([x + j * 36, y + 28, x + j * 36 + 31, y + 54], 5, fill=c)
     st = mats["stats"]
-    info = [f"≈ 6,8 m lang · cabine 2,6 m · vloer 0,74 m · borstwering 1,36 m",
-            f"{st['tris']:,} driehoeken · {st['materials']} materialen · geen textures (variatie in vertexkleur)".replace(",", "."),
-            "Onderdelen: Frame, Cab, Boiler, HeadLight, Wheels, Cylinders, Firebox › FireboxDoor/Regulator, CoalBin",
-            "Bron: ArtSource/Train/Locomotive/build_locomotive.py → Locomotive_Blockout.fbx"]
+    tst = json.load(open(os.path.join(ROOT, "ArtSource", "Exports", "Tender_Blockout.materials.json"), encoding="utf-8"))["stats"]
+    info = [f"Loc ≈ 6,8 m · cabine 2,6 m · vloer 0,74 m · kolenwagen 3,4 m",
+            f"Loc {st['tris']:,} · kolenwagen {tst['tris']:,} driehoeken".replace(",", "."),
+            "Variatie: vertexkleur (AO/randen) + verftextuur T_PaintStrokes (triplanair)",
+            "Onderdelen kolenwagen: Frame, Body › Coal/Ladder/TailLights, Wheels",
+            "Bron: ArtSource/Train/{Locomotive,Tender}/build_*.py → *_Blockout.fbx"]
     for k, t in enumerate(info):
         d.text((1560, ly + 70 + k * 40), "•  " + t, font=font(20, False), fill=SUB)
     sheet.convert("RGB").save(os.path.join(DOCS, "Locomotive_DesignSheet.png"), optimize=True)

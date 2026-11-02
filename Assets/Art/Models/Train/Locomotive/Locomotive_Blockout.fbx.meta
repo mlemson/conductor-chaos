@@ -17,6 +17,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Loco_Panel
+    second: {fileID: 2100000, guid: 604a3a66117ca10baf8448fbded94887, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Loco_Roof
     second: {fileID: 2100000, guid: fa7db24a46b5afe19277be2260e53b12, type: 2}
   - first:

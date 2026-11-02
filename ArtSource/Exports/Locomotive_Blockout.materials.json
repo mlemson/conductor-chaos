@@ -2,9 +2,9 @@
   "model": "Locomotive_Blockout",
   "stats": {
     "parts": 13,
-    "tris": 37740,
-    "verts": 19114,
-    "materials": 13
+    "tris": 39540,
+    "verts": 20026,
+    "materials": 14
   },
   "materials": {
     "M_Loco_Red": {
@@ -37,6 +37,22 @@
       "opts": {
         "paint": 1.3,
         "edge": 1.2
+      }
+    },
+    "M_Loco_Panel": {
+      "base": "#8D3432",
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "rampShift": -0.22,
+      "smoothness": 0.2,
+      "opts": {
+        "paint": 1.6,
+        "edge": 0.0
       }
     },
     "M_Loco_Roof": {
