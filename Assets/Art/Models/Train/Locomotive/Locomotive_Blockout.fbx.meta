@@ -17,6 +17,21 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Loco_Roof
+    second: {fileID: 2100000, guid: fa7db24a46b5afe19277be2260e53b12, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Gold
+    second: {fileID: 2100000, guid: 5b8bef6b876983c702e71a3065a60ea6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Frame
+    second: {fileID: 2100000, guid: 3d29fc911f3f831f5e21184e7653a499, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Loco_Trim
     second: {fileID: 2100000, guid: 65e64c2a43d560a89ff45aaa3b3e9945, type: 2}
   - first:

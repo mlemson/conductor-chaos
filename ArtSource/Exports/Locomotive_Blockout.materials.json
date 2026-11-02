@@ -2,9 +2,9 @@
   "model": "Locomotive_Blockout",
   "stats": {
     "parts": 7,
-    "tris": 15796,
-    "verts": 8038,
-    "materials": 7
+    "tris": 27824,
+    "verts": 14102,
+    "materials": 10
   },
   "materials": {
     "M_Loco_Red": {
@@ -19,8 +19,8 @@
       "rampShift": 0.0,
       "smoothness": 0.25,
       "opts": {
-        "paint": 1.6,
-        "edge": 1.5
+        "paint": 1.4,
+        "edge": 1.2
       }
     },
     "M_Loco_RedDark": {
@@ -32,11 +32,59 @@
         "#DA523F",
         "#FC7C69"
       ],
-      "rampShift": -0.3,
+      "rampShift": -0.26,
       "smoothness": 0.25,
       "opts": {
-        "paint": 1.5,
-        "edge": 1.5
+        "paint": 1.3,
+        "edge": 1.2
+      }
+    },
+    "M_Loco_Roof": {
+      "base": "#995F53",
+      "ramp": [
+        "#503330",
+        "#995F53",
+        "#A3685D",
+        "#B27261",
+        "#BB8472"
+      ],
+      "rampShift": -0.14,
+      "smoothness": 0.2,
+      "opts": {
+        "paint": 1.4,
+        "edge": 1.2
+      }
+    },
+    "M_Loco_Gold": {
+      "base": "#FBBA39",
+      "ramp": [
+        "#9D662F",
+        "#AD7031",
+        "#DA993A",
+        "#FBBA39",
+        "#FCCF53"
+      ],
+      "rampShift": 0.04,
+      "smoothness": 0.4,
+      "opts": {
+        "paint": 0.8,
+        "edge": 1.4
+      }
+    },
+    "M_Loco_Frame": {
+      "base": "#33303B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.06,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.0,
+        "edge": 1.4
       }
     },
     "M_Loco_Trim": {
@@ -48,11 +96,11 @@
         "#634330",
         "#7A5A48"
       ],
-      "rampShift": -0.12,
+      "rampShift": -0.05,
       "smoothness": 0.2,
       "opts": {
         "paint": 1.2,
-        "edge": 1.5
+        "edge": 1.4
       }
     },
     "M_Loco_Interior": {
@@ -83,7 +131,7 @@
       "smoothness": 0.3,
       "opts": {
         "paint": 0.8,
-        "edge": 1.5
+        "edge": 1.4
       }
     },
     "M_Loco_Interact": {

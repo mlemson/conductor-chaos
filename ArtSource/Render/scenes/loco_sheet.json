@@ -42,11 +42,11 @@
     {
      "url": "../Exports/Conductor.glb",
      "pos": [
-      -0.62,
-      0.98,
-      -0.4
+      -1.02,
+      1.02,
+      -0.34
      ],
-     "rotY": 58,
+     "rotY": 62,
      "pose": {
       "Mouth_Neutral": {
        "visible": false
@@ -78,9 +78,9 @@
      },
      "aim": {
       "Arm_R": [
-       2.2,
-       2.1,
-       0.9
+       1.0,
+       2.25,
+       1.1
       ]
      }
     }

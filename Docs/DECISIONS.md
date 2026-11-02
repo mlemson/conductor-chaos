@@ -26,7 +26,8 @@
 
 ## Locomotief — 2026-11-02 (issue #22, voorstel ter review)
 
-- Locomotief naar de concept-loc: open cabine met dikke afgeschuinde stijlen en een dik dak (personages leunen eruit), een lage brede kap met grote facetten en één donkerder inzetpaneel, een achthoekige koplamp met gloeiende lens, buitenliggende wielen met drijfstang. Bewust weinig onderdelen, elk afgewerkt.
+- **v2 (art review @mlemson, ontwerpblad v2):** een rondere ketelneus (rechte zijkanten en een ronde bovenkant) met een goudoranje sierlijst en een inzetpaneel; een geïntegreerde achthoekige rookkastring met vier gouden bouten en een achthoekige lens; een gewelfd donkerbruin dak; stijlen met voet en kapiteel; een gouden sierlijst op de borstwering; een donker frame met rode bovenrand en gouden hoeken; blokbuffers; een gouden drijfstang. Overal zachte ronde afrondingen in plaats van harde facetten. Ongeveer 28k driehoeken.
+- v1 (vervangen): locomotief naar de concept-loc: open cabine met dikke afgeschuinde stijlen en een dik dak (personages leunen eruit), een lage brede kap met grote facetten en één donkerder inzetpaneel, een achthoekige koplamp met gloeiende lens, buitenliggende wielen met drijfstang. Bewust weinig onderdelen, elk afgewerkt.
 - Cabinevloer op 0,74 m en borstwering op 1,36 m, zodat de conducteur (1,25 m) over de kap kijkt en op de borstwering leunt.
 - Geschilderde textuur: naar boven gerichte vlakken zijn duidelijk lichter, brede zachte verfvlekken in plaats van fijne korrel, en een lens die van een geel midden naar een oranje rand verloopt. Dit is aangepast in de gedeelde stylized shader en geldt dus voor alle assets.
 - `meshkit.merge` behoudt nu per vlak of het een facet is (plat) of glad. Voorheen werden samengevoegde facet-onderdelen per ongeluk glad gerenderd.

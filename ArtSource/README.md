@@ -12,8 +12,8 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 |---|---|
 | `Characters/Conductor/build_conductor.py` | Conducteur-basismodel, parametrisch opgebouwd uit maten van het concept |
 | `Train/RegionalWagon/build_regional_wagon.py` | Regionale wagon in facetstijl (deur, slot, grepen, ramen, draaistellen, koplampen) + art-check-decor |
-| `Train/Locomotive/build_locomotive.py` | Locomotief in facetstijl (open cabine, kap, achthoekige koplamp, wielen met drijfstang) — issue #22 |
-| `Tools/meshkit.py` | Kleine numpy-toolkit: lathe/superellips, afgeronde box, ellipsoïde, capsule; export naar FBX (ASCII) en glTF (.glb) |
+| `Train/Locomotive/build_locomotive.py` | Locomotief v2 (ronde ketelneus, rookkastring met lamp, gewelfd dak, sierlijsten, drijfstang) — issue #22 |
+| `Tools/meshkit.py` | Kleine numpy-toolkit: lathe/superellips, afgeronde box, ellipsoïde, capsule, profielextrusie (ketel/dak); export naar FBX (ASCII) en glTF (.glb) |
 | `Tools/unity_assets.py` | Schrijft URP Lit-materialen (`.mat`) en `.meta`-bestanden met stabiele GUID's |
 | `Render/render.html`, `render.cjs` | Headless stijlrender (three.js + Playwright) met de stylized ramp-shader |
 | `Render/scenes/*.json` | Camera's, poses en expressies van alle renders |

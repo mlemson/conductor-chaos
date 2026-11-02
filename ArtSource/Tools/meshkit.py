@@ -823,3 +823,100 @@ class Scene:
             fh.write(struct.pack("<III", 0x46546C67, 2, total))
             fh.write(struct.pack("<II", len(js), 0x4E4F534A) + js)
             fh.write(struct.pack("<II", len(bin_chunks), 0x004E4942) + bytes(bin_chunks))
+
+
+# ------------------------------------------------------------------ extrusie
+def extrude_profile(profile, x0, x1, nx=12, round0=0.0, round1=0.0, rings=4, mat_fn=None, mat="Default"):
+    """Trek een gesloten 2D-doorsnede [(z, y), ...] (tegen de klok in) langs X van x0 naar x1.
+
+    round0/round1: straal van de afgeronde begin/eindrand (doorsnede krimpt langs een kwartcirkel),
+    daarna een vlakke kap. mat_fn(i) -> materiaal voor strook i (tussen profielpunt i en i+1),
+    bijvoorbeeld voor een sierlijst langs de lengte. Gladde normalen (sharp=False).
+    """
+    P = np.array(profile, float)
+    n = len(P)
+    c = P.mean(axis=0)
+    # 2D-vertexnormalen (naar buiten) voor het insnoeren van de rand
+    N2 = np.zeros_like(P)
+    for i in range(n):
+        a, b = P[i - 1], P[(i + 1) % n]
+        t = b - a
+        nn = np.array([t[1], -t[0]])
+        if np.dot(nn, P[i] - c) < 0:
+            nn = -nn
+        N2[i] = nn / (np.linalg.norm(nn) or 1)
+    stations = []          # (x, inset)
+    for k in range(rings + 1):
+        th = math.pi / 2 * k / rings
+        if round0 > 0:
+            stations.append((x0 + round0 - round0 * math.sin(th), round0 * (1 - math.cos(th))))
+    stations = list(reversed(stations))
+    xa, xb = x0 + round0, x1 - round1
+    for k in range(nx + 1):
+        stations.append((xa + (xb - xa) * k / nx, 0.0))
+    for k in range(1, rings + 1):
+        th = math.pi / 2 * k / rings
+        if round1 > 0:
+            stations.append((xb + round1 * math.sin(th), round1 * (1 - math.cos(th))))
+    # dubbele stations (zonder afronding) weghalen
+    clean = []
+    for s in stations:
+        if not clean or abs(s[0] - clean[-1][0]) > 1e-9 or abs(s[1] - clean[-1][1]) > 1e-9:
+            clean.append(s)
+    V, F, M = [], [], []
+    for (x, inset) in clean:
+        Q = P - N2 * inset
+        for (z, y) in Q:
+            V.append((x, y, z))
+    for r in range(len(clean) - 1):
+        for i in range(n):
+            j = (i + 1) % n
+            a, b = r * n + i, r * n + j
+            F.append((a, (r + 1) * n + i, (r + 1) * n + j, b))
+            M.append(mat_fn(i) if mat_fn else mat)
+    # kappen
+    for r, sgn in ((0, -1), (len(clean) - 1, 1)):
+        x, inset = clean[r]
+        ci = len(V)
+        cc = (P - N2 * inset).mean(axis=0)
+        V.append((x, cc[1], cc[0]))
+        for i in range(n):
+            j = (i + 1) % n
+            F.append((r * n + i, r * n + j, ci) if sgn < 0 else (r * n + j, r * n + i, ci))
+            M.append(mat_fn(i) if (mat_fn and False) else (mat if not mat_fn else mat_fn(-1)))
+    m = Mesh(np.array(V, float), F, M)
+    # winding naar buiten (per face t.o.v. de lokale doorsnede-as)
+    fixed = []
+    for f in m.F:
+        p = m.V[list(f)]
+        nrm = np.cross(p[1] - p[0], p[2] - p[0])
+        cen = p.mean(0)
+        axis_pt = np.array([cen[0], c[1], c[0]])
+        out = cen - axis_pt
+        if len(f) == 3 and abs(cen[0] - x0) < 1e-6 or len(f) == 3 and abs(cen[0] - x1) < 1e-6:
+            out = np.array([np.sign(cen[0] - (x0 + x1) / 2), 0, 0])
+        fixed.append(f if np.dot(nrm, out) >= 0 else tuple(reversed(f)))
+    m.F = fixed
+    return m
+
+
+def superellipse_arch(z0, z1, y_base, y_top, y_bottom, n=2.6, seg=20, fillet=0.06, fseg=3):
+    """Doorsnede 'ketel': rechte zijkanten van y_bottom tot y_base, daarboven een superellips-boog tot y_top.
+    Onderhoeken afgerond met fillet. Tegen de klok in (gezien vanaf +X), punten als (z, y)."""
+    zc, a = (z0 + z1) / 2, (z1 - z0) / 2
+    b = y_top - y_base
+    pts = []
+    # rechter onderhoek (z1, y_bottom) -> fillet
+    for k in range(fseg + 1):
+        th = -math.pi / 2 + math.pi / 2 * k / fseg
+        pts.append((z1 - fillet + fillet * math.cos(th), y_bottom + fillet + fillet * math.sin(th)))
+    # boog van rechts (z1, y_base) over de top naar links
+    for k in range(seg + 1):
+        th = math.pi * k / seg
+        cz, sy = math.cos(th), math.sin(th)
+        pts.append((zc + a * np.sign(cz) * abs(cz) ** (2 / n), y_base + b * abs(sy) ** (2 / n)))
+    for k in range(fseg + 1):
+        th = math.pi + math.pi / 2 * k / fseg
+        pts.append((z0 + fillet + fillet * math.cos(th), y_bottom + fillet + fillet * math.sin(th)))
+    # tegen de klok in gezien vanaf +X: z rechts, y omhoog -> volgorde rechts-onder, top, links-onder is CCW
+    return pts
