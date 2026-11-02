@@ -45,9 +45,10 @@ Y_COLLAR = 0.53         # grens huid/uniform
 EYE_Y, EYE_R, EYE_X = 0.835, 0.106, 0.099
 EYE_DEPTH = 0.55         # bolling van het oog (t.o.v. straal)
 MOUTH_Y = 0.632
-SHOULDER = (0.245, 0.485, 0.0)
+SHOULDER = (0.240, 0.475, 0.0)   # mouw komt hoog en dik uit de bovenkant van de jas (concept)
+HAND_OFFSET = 0.165
 HIP_Y = 0.20
-LEG_X = 0.115
+LEG_X = 0.108
 
 SEG = 32                # omtrek-segmenten lijf (rond silhouet, nog steeds low-poly)
 
@@ -107,18 +108,27 @@ def build_body():
     return m
 
 
+def conform(mesh, lift=0.003):
+    """Leg een dun, plat (XY) onderdeel tegen de voorkant van het lijf: z_lokaal + oppervlakte-z."""
+    out = mesh.copy()
+    for i, (x, y, z) in enumerate(out.V):
+        zs, _ = body_surface(x, y)
+        out.V[i, 2] = zs + lift + z
+    return out
+
+
 def build_collar():
-    """Kraag: zachte rol rond de hals + twee revers in V-vorm."""
+    """Kraag (concept): smalle jasrand rond de hals + twee platte revers die in een V samenkomen."""
     a = BODY_R * body_radius(Y_COLLAR)
-    roll = mk.torus(1.0, 0.016, SEG, 6, mat="M_Conductor_Uniform", a=a + 0.004, b=a * BODY_DEPTH + 0.004, n=BODY_N)
-    roll = roll.transform(t=(0, Y_COLLAR + 0.004, 0))
+    roll = mk.torus(1.0, 0.011, SEG, 6, mat="M_Conductor_Uniform", a=a + 0.002, b=a * BODY_DEPTH + 0.002, n=BODY_N)
+    roll = roll.transform(t=(0, Y_COLLAR + 0.002, 0))
     parts = [roll]
+    v_y = Y_COLLAR - 0.062          # punt van de V
     for sx in (-1, 1):
-        x = sx * 0.042
-        z, nrm = body_surface(x, Y_COLLAR - 0.03)
-        lap = mk.rounded_box(0.085, 0.055, 0.022, 0.009, 2, mat="M_Conductor_Uniform")
-        R = face_frame(nrm) @ mk.rot_z(sx * math.radians(38))
-        parts.append(lap.transform(R=R, t=(x, Y_COLLAR - 0.022, z + 0.004)))
+        ang = math.atan2(0.066, 0.092)
+        lap = mk.rounded_box(0.118, 0.054, 0.016, 0.010, 2, mat="M_Conductor_Uniform").transform(t=(0, 0, 0.008))
+        lap = lap.transform(R=mk.rot_z(sx * ang), t=(sx * 0.048, v_y + 0.031, 0.0))
+        parts.append(conform(lap, 0.002))
     return mk.merge(*parts)
 
 
@@ -187,19 +197,23 @@ def build_cap():
     brim = mk.ellipsoid(band_a * 0.96, 0.02, 0.22, 28, 6, mat="M_Conductor_UniformDark")
     brim = brim.transform(R=mk.rot_x(math.radians(16)), t=(0, -0.002, band_b - 0.05))
     # embleem: rond, goud, half op de band (concept)
-    badge = mk.ellipsoid(0.060, 0.044, 0.024, 16, 8, mat="M_Conductor_Gold")
-    badge = badge.transform(R=mk.rot_x(math.radians(-14)), t=(0, BAND_H + 0.035, band_b * 1.13 + 0.02))
+    # embleem (concept): grote, bolle gouden knop op de voorkant van de kroon, net boven de band
+    t_b = 0.55
+    r_b = 0.97 + 0.31 * math.sin(t_b * math.pi / 2) ** 0.9
+    z_b = band_b * 1.04 * r_b + 0.02
+    badge = mk.ellipsoid(0.072, 0.050, 0.040, 20, 10, mat="M_Conductor_Gold", n=2.3)
+    badge = badge.transform(R=mk.rot_x(math.radians(-12)), t=(0, BAND_H + 0.11 * t_b, z_b - 0.014))
     return mk.merge(band, crown, under, brim, badge)
 
 
 def build_arm():
     """Mouw vanaf schouder-pivot; wijst in rust langs lokale -Y."""
-    sleeve = mk.capsule_between((0, 0.02, 0), (0, -0.165, 0), 0.066, 0.058, 16, 4, mat="M_Conductor_Uniform")
+    sleeve = mk.capsule_between((0, 0.03, 0), (0, -0.105, 0), 0.076, 0.071, 18, 4, mat="M_Conductor_Uniform")
     return sleeve
 
 
 def build_hand():
-    return mk.ellipsoid(0.088, 0.092, 0.082, 18, 10, mat="M_Conductor_Skin")
+    return mk.ellipsoid(0.094, 0.097, 0.088, 20, 12, mat="M_Conductor_Skin")
 
 
 def build_key():
@@ -211,18 +225,19 @@ def build_key():
 
 
 def build_leg():
-    """Broekspijp + schoen; pivot = heup. Lokale y=0 ligt op HIP_Y."""
-    trouser = mk.rounded_box(0.135, 0.15, 0.145, 0.045, 2, mat="M_Conductor_Uniform").transform(t=(0, 0.17 - HIP_Y - 0.02, -0.005))
-    shoe = mk.rounded_box(0.165, 0.095, 0.225, 0.042, 2, mat="M_Conductor_Shoe").transform(t=(0, 0.0475 - HIP_Y, 0.025))
-    return mk.merge(trouser, shoe)
+    """Dik, kort beentje + ronde 'kiezel'-voet met platte zool (concept); pivot = heup (lokale y=0 op HIP_Y)."""
+    leg = mk.capsule_between((0, 0.10 - HIP_Y, 0), (0, 0.24 - HIP_Y, 0), 0.084, 0.084, 16, 3, mat="M_Conductor_Uniform")
+    foot = mk.ellipsoid(0.104, 0.078, 0.132, 20, 10, mat="M_Conductor_Shoe", n=2.5).transform(t=(0, 0.062 - HIP_Y, 0.03))
+    foot.V[:, 1] = np.maximum(foot.V[:, 1], -HIP_Y)   # platte zool op de grond
+    return mk.merge(leg, foot)
 
 
 # ----------------------------------------------------------------------- scène
-def build_scene(arm_angle_deg=32.0):
+def build_scene(arm_angle_deg=50.0):
     sc = mk.Scene("Conductor")
     R_ = RAMPS
-    sc.material("M_Conductor_Skin", R_["skin"][2], R_["skin"], 0.30)
-    sc.material("M_Conductor_Uniform", R_["uniform_navy"][2], R_["uniform_navy"], 0.22)
+    sc.material("M_Conductor_Skin", R_["skin"][2], R_["skin"], 0.30, opts={"paint": 1.1})
+    sc.material("M_Conductor_Uniform", R_["uniform_navy"][2], R_["uniform_navy"], 0.22, opts={"paint": 1.3})
     sc.material("M_Conductor_UniformDark", R_["uniform_navy"][1], R_["uniform_navy"], 0.22, ramp_shift=-0.22)
     sc.material("M_Conductor_Gold", R_["gold_trim"][2], R_["gold_trim"], 0.40)
     sc.material("M_Conductor_EyeWhite", R_["wool"][3], R_["wool"], 0.35, ramp_shift=0.30,
@@ -257,12 +272,22 @@ def build_scene(arm_angle_deg=32.0):
     for side, nm in ((1, "L"), (-1, "R")):
         sh = np.array([side * SHOULDER[0], SHOULDER[1], SHOULDER[2]]) - hip
         Ra = mk.rot_z(side * math.radians(arm_angle_deg))
-        sc.add(mk.Part("Arm_" + nm, build_arm(), tuple(sh), "Body", Ra))
-        sc.add(mk.Part("Hand_" + nm, build_hand(), (0, -0.205, 0.0), "Arm_" + nm))
+        sc.add(mk.Part("Arm_" + nm, build_arm(), tuple(sh), "Body", Ra, ao_group="arm_" + nm, gradient=0.0))
+        sc.add(mk.Part("Hand_" + nm, build_hand(), (0, -HAND_OFFSET, 0.0), "Arm_" + nm, ao_group="arm_" + nm))
     sc.add(mk.Part("Prop_Key", build_key(), (0, 0, 0), "Hand_L", visible=False))
 
     for side, nm in ((1, "L"), (-1, "R")):
-        sc.add(mk.Part("Leg_" + nm, build_leg(), (side * LEG_X, HIP_Y, 0.0), "Conductor"))
+        sc.add(mk.Part("Leg_" + nm, build_leg(), (side * LEG_X, HIP_Y, 0.0), "Conductor",
+                       ao_group="leg_" + nm, ao_receive=("body",), gradient=0.25))
+    # ogen en pupillen blijven helder (concept): eigen AO-groep zonder occluders
+    for p in sc.parts:
+        if p.name.startswith(("Eye_", "Pupil_")):
+            p.ao_group, p.gradient = "eyes", 0.0
+        elif p.name in ("Body", "Collar", "Buttons", "Cap") or p.name.startswith("Mouth_"):
+            p.ao_group = "body"
+        if p.name == "Prop_Key":
+            p.ao_group, p.gradient = "key", 0.0
+    sc.bake_shading(density=4500, radius=0.10, noise_freq=5.0, edge_range=(14.0, 45.0))
     return sc
 
 

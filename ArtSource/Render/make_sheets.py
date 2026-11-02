@@ -79,7 +79,7 @@ def crop_alpha(im, pad=10):
 
 # ------------------------------------------------------------- design sheet
 def design_sheet():
-    W, H = 3000, 1740
+    W, H = 3000, 1820
     sheet = Image.new("RGBA", (W, H), BG + (255,))
     d = ImageDraw.Draw(sheet)
     label(d, (60, 50), "Conducteur · ontwerpblad v1", 58)
@@ -161,7 +161,8 @@ def design_sheet():
         "Ogen raken elkaar: elk oog ≈ 37% van de lijfbreedte, bol, warm-wit; kleine verticale pupillen",
         "Geen neus, oren of wenkbrauwen; expressie via mond, pupillen, pet en houding",
         "Pet = silhouet-sleutel: bolle kroon ≈ 1,3× lijfbreedte, gouden band + embleem, donkere klep",
-        "Stompe mouwen, ronde mitten-handen (≈ oog-grootte), korte benen met brede schoenen",
+        "Dikke mouwen hoog uit de schouder, grote ronde handen; korte dikke beentjes met ronde kiezelvoeten",
+        "Kraag: platte revers in V-vorm; pet-embleem = bolle gouden knop op de kroon",
     ]
     for k, t in enumerate(colL):
         d.text((90, by + 96 + k * 40), "✓  " + t, font=font(22, False), fill=TXT)
@@ -171,6 +172,7 @@ def design_sheet():
         f"{st['tris']:,} driehoeken (incl. 2 verborgen monden + sleutel) · {st['materials']} materialen · geen textures".replace(",", "."),
         "Hiërarchie: Body › Cap, Eye_L/R › Pupil, Mouth_*, Arm_L/R › Hand › Prop_Key · Leg_L/R",
         "Starre 'poppen'-rig: elk onderdeel draait om zijn eigen pivot (schouder, heup, pet)",
+        "Geschilderde variatie gebakken in vertexkleur: R occlusie · G randlicht · B verfvlekken",
         "Bron: ArtSource/Characters/Conductor/build_conductor.py → Conductor.fbx (Unity)",
     ]
     for k, t in enumerate(colR):
@@ -203,7 +205,7 @@ def art_check():
     d.text((cw + 100, 220 + wh), "Wijd shot: schaal t.o.v. wagon en landschap", font=font(22), fill=TXT)
     notes = ["Conducteur 1,25 m · deur 1,70 m hoog, 1,15 m breed",
              "Slot op 0,72 m: binnen bereik van de korte armpjes",
-             "Pocketdeuren met donkere rubberrand; geel alleen voor slot, paal, drempel",
+             "Ruime afrondingen, tweekleurig rood; verfvariatie gebakken",
              "Deurlamp boven de deur = warm 'open'-signaal",
              "Decor (perron, bergen, dennen) alleen voor deze render",
              "Render = doel-look (ramp-shader), nog geen Unity-screenshot"]
@@ -241,7 +243,7 @@ def vs_concept(close_rgb):
               ("Ogen", "✓ groot, rakend, kleine pupillen"),
               ("Kleuren", "✓ gemeten ramps; geen #000/#FFF"),
               ("Licht", "✓ warm key, koele rim; schaduw → violet"),
-              ("Materiaal", "~ satijn ok; nog geen penseelstructuur"),
+              ("Materiaal", "✓ geschilderd: AO, randlicht, verfvlekken"),
               ("Interactie leesbaar", "✓ geel = slot, paal, drempel"),
               ("Unity in-engine", "✗ NOT RUN (vereist Editor)")]
     for k, (a, b) in enumerate(checks):

@@ -2,9 +2,9 @@
   "model": "WagonCorner_Blockout",
   "stats": {
     "parts": 11,
-    "tris": 12712,
-    "verts": 6434,
-    "materials": 10
+    "tris": 19756,
+    "verts": 9958,
+    "materials": 11
   },
   "materials": {
     "M_Train_Red": {
@@ -18,7 +18,24 @@
       ],
       "rampShift": 0.0,
       "smoothness": 0.25,
-      "opts": {}
+      "opts": {
+        "paint": 1.8
+      }
+    },
+    "M_Train_RedLow": {
+      "base": "#8D3432",
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "rampShift": -0.22,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.8
+      }
     },
     "M_Train_Trim": {
       "base": "#482826",
@@ -31,7 +48,9 @@
       ],
       "rampShift": 0.0,
       "smoothness": 0.2,
-      "opts": {}
+      "opts": {
+        "paint": 1.4
+      }
     },
     "M_Train_Roof": {
       "base": "#8E8796",
@@ -44,7 +63,9 @@
       ],
       "rampShift": 0.0,
       "smoothness": 0.2,
-      "opts": {}
+      "opts": {
+        "paint": 1.6
+      }
     },
     "M_Train_Glass": {
       "base": "#6E83BA",

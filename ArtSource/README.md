@@ -54,6 +54,11 @@ Pas vormen of maten aan in de `build_*.py`-scripts, niet in de FBX. Kleuren kome
   Standaard verborgen: `Mouth_Surprised`, `Mouth_Happy`, `Prop_Key`.
 - Wagonhoek: `DoorLeaf_L/R` schuiven langs lokale X (dicht = +0,475 / −0,475). `KeyLock` (0,72 m) en
   `DoorSill` zijn de interactie-ankers voor P0-05.
+- **Geschilderde variatie** (zodat niets één effen kleur is) is per vertex gebakken in de vertexkleur
+  (`Scene.bake_shading`): **R** = occlusie (hoeken, onder randen, onderkant iets donkerder), **G** = randlicht op
+  afrondingen, **B** = verfvlekken (fBm, 0,5 = neutraal). De shader verschuift hiermee de positie in de kleurramp;
+  daarbovenop komt een fijne penseelruis in wereldruimte. In Unity leest de toekomstige Shader Graph dit via de
+  *Vertex Color*-node. URP Lit negeert vertexkleuren.
 - Materialen heten `M_<Asset>_<Deel>`. In `*.materials.json` staan per materiaal de ramp (5 tinten),
   `rampShift` en shaderhints (`flat`, `noShadow`, `emissive`) voor de toekomstige stylized-lit Shader Graph.
 

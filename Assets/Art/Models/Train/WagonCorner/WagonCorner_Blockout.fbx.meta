@@ -12,6 +12,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Train_RedLow
+    second: {fileID: 2100000, guid: 5ba463da9de8b49174a20838409cf192, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Train_Trim
     second: {fileID: 2100000, guid: 060d94acf20f35b616f59eaf3dc543af, type: 2}
   - first:
