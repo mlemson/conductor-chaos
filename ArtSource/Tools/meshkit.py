@@ -115,9 +115,14 @@ class Mesh:
     M: list = field(default_factory=list)      # materiaalnaam per face
     sharp: bool = False                        # True = platte normalen per face
     C: np.ndarray | None = None                # optioneel: per-vertex 'shade' RGBA (zie Scene.bake_shading)
+    FS: list | None = None                     # optioneel: per face 'plat' (facet) — blijft behouden bij merge
 
     def copy(self):
-        return Mesh(self.V.copy(), list(self.F), list(self.M), self.sharp, None if self.C is None else self.C.copy())
+        return Mesh(self.V.copy(), list(self.F), list(self.M), self.sharp, None if self.C is None else self.C.copy(),
+                    None if self.FS is None else list(self.FS))
+
+    def face_sharp(self):
+        return list(self.FS) if self.FS is not None else [self.sharp] * len(self.F)
 
     def transform(self, R=None, t=(0, 0, 0), s=None):
         V = self.V
@@ -151,6 +156,12 @@ def merge(*meshes):
         off += len(m.V)
     out.V = np.vstack(Vs) if Vs else np.zeros((0, 3))
     out.F, out.M = F, M
+    fs = []
+    for m in meshes:
+        fs += m.face_sharp()
+    if any(fs):
+        out.FS = fs
+        out.sharp = all(fs)
     return out
 
 
@@ -174,19 +185,21 @@ def vertex_normals(mesh: Mesh):
 
 
 def corner_normals(mesh: Mesh):
-    """Normaal per polygon-hoek (FBX 'ByPolygonVertex')."""
-    if mesh.sharp:
-        out = []
-        for f in mesh.F:
+    """Normaal per polygon-hoek (FBX 'ByPolygonVertex'); platte (facet) faces krijgen hun vlaknormaal."""
+    fs = mesh.face_sharp()
+    VN = vertex_normals(mesh) if not all(fs) else None
+    out = []
+    for f, sh in zip(mesh.F, fs):
+        if sh:
             p = mesh.V[list(f)]
             n = np.cross(p[1] - p[0], p[2] - p[0])
             if len(f) == 4:
                 n += np.cross(p[2] - p[0], p[3] - p[0])
             n /= (np.linalg.norm(n) or 1)
             out += [n] * len(f)
-        return np.array(out)
-    VN = vertex_normals(mesh)
-    return np.array([VN[i] for f in mesh.F for i in f])
+        else:
+            out += [VN[i] for i in f]
+    return np.array(out)
 
 
 # ----------------------------------------------------------------- primitives

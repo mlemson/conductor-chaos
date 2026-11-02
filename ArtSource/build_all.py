@@ -26,6 +26,7 @@ def run(*args, **kw):
 def main():
     run(PY, os.path.join(HERE, "Characters", "Conductor", "build_conductor.py"))
     run(PY, os.path.join(HERE, "Train", "RegionalWagon", "build_regional_wagon.py"))
+    run(PY, os.path.join(HERE, "Train", "Locomotive", "build_locomotive.py"))
     if "--models" in sys.argv:
         return
     if not os.path.exists(os.path.join(HERE, "Render", "three", "build", "three.module.js")):
@@ -38,7 +39,7 @@ def main():
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     base = f"http://127.0.0.1:{srv.server_address[1]}/Render/render.html"
     out = os.path.join(HERE, "Render", "out")
-    for scenes in ("conductor_sheet.json", "art_check.json"):
+    for scenes in ("conductor_sheet.json", "art_check.json", "loco_sheet.json"):
         run("node", os.path.join(HERE, "Render", "render.cjs"), os.path.join(HERE, "Render", "scenes", scenes), out, base)
     srv.shutdown()
     run(PY, os.path.join(HERE, "Render", "make_sheets.py"))

@@ -253,8 +253,77 @@ def vs_concept(close_rgb):
     sheet.convert("RGB").save(os.path.join(DOCS, "ArtCheck_vs_Concept.png"), optimize=True)
 
 
+# --------------------------------------------------------------- locomotief
+def loco_sheet():
+    W, H = 3000, 2180
+    sheet = Image.new("RGBA", (W, H), BG + (255,))
+    d = ImageDraw.Draw(sheet)
+    label(d, (60, 40), "Locomotief · ontwerpblad v1", 56)
+    d.text((64, 148), "P0 art proof (issue #22) · facetstijl van de concept-loc · weinig onderdelen, elk afgewerkt · kleuren uit palette.json",
+           font=font(25, False), fill=SUB)
+    hero = sky(load("loco_hero").size)
+    hero.alpha_composite(load("loco_hero"))
+    hw = 1640
+    hh = int(hero.height * hw / hero.width)
+    sheet.alpha_composite(hero.resize((hw, hh), Image.LANCZOS), (60, 200))
+    label(d, (84, 216), "In het spel: conducteur leunt uit de cabine", 28)
+    # textuur naast het concept
+    concept = Image.open(os.path.join(ROOT, "Docs", "References", "conductor-chaos-concept.png")).convert("RGBA")
+    rx = 60 + hw + 40
+    rw = W - rx - 50
+    d.rounded_rectangle([rx, 200, W - 50, 200 + hh], 22, fill=PANEL)
+    d.text((rx + 24, 222), "Textuur naast het concept", font=font(28), fill=YEL)
+    cc = fit(concept.crop((400, 250, 900, 440)), rw - 48, 400)
+    sheet.alpha_composite(cc, (rx + 24, 270))
+    d.text((rx + 24, 280 + cc.height), "concept", font=font(20, False), fill=MUTED)
+    tex = sky(load("loco_tex").size)
+    tex.alpha_composite(load("loco_tex"))
+    tx = fit(tex.crop((0, int(tex.height * 0.22), tex.width, int(tex.height * 0.80))), rw - 48, 400)
+    ty = 320 + cc.height
+    sheet.alpha_composite(tx, (rx + 24, ty))
+    d.text((rx + 24, ty + tx.height + 10), "3D-model (render)", font=font(20, False), fill=MUTED)
+    notes = ["Elk vlak een eigen toon: boven licht, zijkant middel, onder donker",
+             "Lichte randjes op elke facet, zachte brede verfvlekken",
+             "Achthoekige lamp: dikke donkere rand, lens geel → oranje"]
+    for k, t in enumerate(notes):
+        d.text((rx + 24, ty + tx.height + 50 + k * 34), "•  " + t, font=font(20, False), fill=SUB)
+    # aanzichten
+    by = 200 + hh + 30
+    d.rounded_rectangle([60, by, W - 50, by + 560], 22, fill=PANEL)
+    label(d, (84, by + 14), "Aanzichten", 30)
+    views = [("loco_front34", "Voor 3/4"), ("loco_side", "Zijaanzicht"), ("loco_rear34", "Achter 3/4")]
+    cw = (W - 170) // 3
+    for i, (n, cap) in enumerate(views):
+        im = fit(crop_alpha(load(n)), cw - 40, 430)
+        x = 90 + i * cw + (cw - im.width) // 2
+        sheet.alpha_composite(im, (x, by + 80 + (430 - im.height) // 2))
+        d.text((90 + i * cw + cw // 2, by + 520), cap, font=font(24), fill=TXT, anchor="ma")
+    # onderste strook: materialen + bouw
+    ly = by + 590
+    d.rounded_rectangle([60, ly, W - 50, H - 40], 22, fill=PANEL)
+    mats = json.load(open(os.path.join(ROOT, "ArtSource", "Exports", "Locomotive_Blockout.materials.json"), encoding="utf-8"))
+    d.text((90, ly + 24), "Materialen (ramp schaduw → licht)", font=font(24), fill=YEL)
+    for i, (name, m) in enumerate(mats["materials"].items()):
+        x = 90 + (i % 4) * 330
+        y = ly + 70 + (i // 4) * 80
+        d.text((x, y), name.replace("M_Loco_", ""), font=font(19), fill=TXT)
+        for j, hx in enumerate(m["ramp"]):
+            c = tuple(int(hx[k:k + 2], 16) for k in (1, 3, 5))
+            d.rounded_rectangle([x + j * 50, y + 28, x + j * 50 + 44, y + 56], 6, fill=c)
+    st = mats["stats"]
+    info = [f"≈ 6,9 m lang · cabinevloer 0,74 m · borstwering 1,36 m (conducteur leunt erop)",
+            f"{st['tris']:,} driehoeken · {st['materials']} materialen · geen textures (variatie in vertexkleur)".replace(",", "."),
+            "Onderdelen: Frame, Cab, Hood, HeadLight, Wheels, GrabRails (starre hiërarchie)",
+            "Bron: ArtSource/Train/Locomotive/build_locomotive.py → Locomotive_Blockout.fbx"]
+    for k, t in enumerate(info):
+        d.text((1450, ly + 70 + k * 40), "•  " + t, font=font(21, False), fill=SUB)
+    sheet.convert("RGB").save(os.path.join(DOCS, "Locomotive_DesignSheet.png"), optimize=True)
+
+
 if __name__ == "__main__":
     design_sheet()
     c = art_check()
     vs_concept(c)
+    if os.path.exists(os.path.join(OUT, "loco_hero.png")):
+        loco_sheet()
     print("ok ->", DOCS)

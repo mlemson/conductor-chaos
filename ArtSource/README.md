@@ -12,6 +12,7 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 |---|---|
 | `Characters/Conductor/build_conductor.py` | Conducteur-basismodel, parametrisch opgebouwd uit maten van het concept |
 | `Train/RegionalWagon/build_regional_wagon.py` | Regionale wagon in facetstijl (deur, slot, grepen, ramen, draaistellen, koplampen) + art-check-decor |
+| `Train/Locomotive/build_locomotive.py` | Locomotief in facetstijl (open cabine, kap, achthoekige koplamp, wielen met drijfstang) — issue #22 |
 | `Tools/meshkit.py` | Kleine numpy-toolkit: lathe/superellips, afgeronde box, ellipsoïde, capsule; export naar FBX (ASCII) en glTF (.glb) |
 | `Tools/unity_assets.py` | Schrijft URP Lit-materialen (`.mat`) en `.meta`-bestanden met stabiele GUID's |
 | `Render/render.html`, `render.cjs` | Headless stijlrender (three.js + Playwright) met de stylized ramp-shader |
@@ -24,8 +25,9 @@ Gegenereerde uitvoer:
 
 - `Assets/Art/Models/Characters/Conductor/Conductor.fbx` (+ `.meta`)
 - `Assets/Art/Models/Train/RegionalWagon/RegionalWagon_Blockout.fbx` (+ `.meta`)
+- `Assets/Art/Models/Train/Locomotive/Locomotive_Blockout.fbx` (+ `.meta`)
 - `Assets/Art/Materials/...` URP Lit-materialen (middentoon van elke ramp)
-- `Docs/Art/Conductor_DesignSheet.png`, `ArtCheck_Wagon.png`, `ArtCheck_vs_Concept.png`
+- `Docs/Art/Conductor_DesignSheet.png`, `ArtCheck_Wagon.png`, `ArtCheck_vs_Concept.png`, `Locomotive_DesignSheet.png`
 
 ## Opnieuw bouwen
 

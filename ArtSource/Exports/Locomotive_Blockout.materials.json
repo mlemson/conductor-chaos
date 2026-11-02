@@ -1,0 +1,122 @@
+{
+  "model": "Locomotive_Blockout",
+  "stats": {
+    "parts": 7,
+    "tris": 15796,
+    "verts": 8038,
+    "materials": 7
+  },
+  "materials": {
+    "M_Loco_Red": {
+      "base": "#C54D3E",
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.6,
+        "edge": 1.5
+      }
+    },
+    "M_Loco_RedDark": {
+      "base": "#8D3432",
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.5,
+        "edge": 1.5
+      }
+    },
+    "M_Loco_Trim": {
+      "base": "#482826",
+      "ramp": [
+        "#3B2524",
+        "#482826",
+        "#4B1F18",
+        "#634330",
+        "#7A5A48"
+      ],
+      "rampShift": -0.12,
+      "smoothness": 0.2,
+      "opts": {
+        "paint": 1.2,
+        "edge": 1.5
+      }
+    },
+    "M_Loco_Interior": {
+      "base": "#462A21",
+      "ramp": [
+        "#462A21",
+        "#553022",
+        "#593323",
+        "#723F29",
+        "#A66739"
+      ],
+      "rampShift": -0.25,
+      "smoothness": 0.1,
+      "opts": {
+        "paint": 0.6
+      }
+    },
+    "M_Loco_Wheel": {
+      "base": "#33303B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "paint": 0.8,
+        "edge": 1.5
+      }
+    },
+    "M_Loco_Interact": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "paint": 0.6
+      }
+    },
+    "M_Loco_Lamp": {
+      "base": "#FEECA1",
+      "ramp": [
+        "#E59C2F",
+        "#F5B038",
+        "#FDE080",
+        "#FEF2B0",
+        "#FFF8DA"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.5,
+      "opts": {
+        "emissive": 1.0,
+        "rim": 0.0,
+        "paint": 0.2
+      }
+    }
+  }
+}
