@@ -12,6 +12,8 @@ Alle taken zijn open. Afhankelijkheden en acceptatie zijn verplicht; tests met t
 - [ ] **P0-06 Koffer:** server bepaalt vrij/gedragen/losgelaten; oppakken, dragen, doorgeven, vallen, botsing en vertrek van drager. Twee gelijktijdige verzoeken mogen geen dubbele houder opleveren.
 - [ ] **P0-07 Netwerkproef:** herhaal P0-03–06 met gesimuleerde vertraging/verlies en twee afzonderlijke instanties; documenteer instellingen, platform, waarnemingen, faalgevallen en reproduceerbaarheid. Scherpe acceptatietoleranties op basis van meting afspreken.
 
+- [ ] **P0-08 Art-direction proof (parallel met netwerkproef):** maak op een aparte taak/branch een minimale stylized conducteur en één wagonhoek, alleen nadat Unity import schoon werkt. Vergelijk in-engine screenshots met [gamevisie](GAME_VISION.md) en [visuele referenties](References/README.md); geen massaproductie vóór goedkeuring. Doel is een beeldtest, geen extra gameplay.
+
 ## P1 — co-op uitbreiden
 
 - [ ] Vier spelers testen; taakverdeling, deurbediening en passagierscontrole tegelijk.
@@ -26,4 +28,4 @@ Alle taken zijn open. Afhankelijkheden en acceptatie zijn verplicht; tests met t
 
 ## Volgende agent
 
-Start met P0-01; rapporteer concrete Console- en packagebevindingen. Werk P0-02 daarna af. Bouw pas op expliciete opdracht gameplay of assets. Bespreek ontwerponbekenden in [besluiten](DECISIONS.md), zonder openstaande taken als gereed te markeren.
+Start met P0-01; rapporteer concrete Console- en packagebevindingen. Werk P0-02 daarna af. Voer P0-08 eventueel parallel uit na succesvolle import. Bouw pas op expliciete opdracht gameplay of assets. Bespreek ontwerponbekenden in [besluiten](DECISIONS.md), zonder openstaande taken als gereed te markeren.
