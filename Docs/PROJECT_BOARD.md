@@ -2,17 +2,17 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand.
 
-**Voortgang: 0/16 afgerond (0%)**
+**Voortgang: 0/17 afgerond (0%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 15 | 1 | 0 | 0 | 0 |
+| 16 | 1 | 0 | 0 | 0 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
-    P0["P0 · Technisch fundament + stijltest · 0/9 klaar"]
+    P0["P0 · Technisch fundament + stijltest · 0/10 klaar"]
     P1["P1 · Eerste speelbare co-opervaring · 0/4 klaar"]
     P2["P2 · Bergavontuur en chaos · 0/3 klaar"]
     P0 --> P1 --> P2
@@ -20,13 +20,13 @@ flowchart LR
 
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
-| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/9 | Technisch fundament + stijltest |
+| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/10 | Technisch fundament + stijltest |
 | **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/4 | Eerste speelbare co-opervaring |
 | **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/3 | Bergavontuur en chaos |
 
 ## 📋 Taken per status
 
-### 📝 Te doen (15)
+### 📝 Te doen (16)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -38,6 +38,7 @@ flowchart LR
 | P0 | [#7 Netwerk-koffer oppakken, dragen en loslaten](https://github.com/mlemson/conductor-chaos/issues/7) | Physics | — | — |
 | P0 | [#8 Multiplayer stressproef voor eerste technische slice](https://github.com/mlemson/conductor-chaos/issues/8) | QA | — | — |
 | P0 | [#17 Visueel ontwikkelbord en automatische statusupdates](https://github.com/mlemson/conductor-chaos/issues/17) | Foundation | — | — |
+| P0 | [#22 Art proof: locomotief in conceptstijl](https://github.com/mlemson/conductor-chaos/issues/22) | Art | — | — |
 | P1 | [#10 Reizigers, tickets en eerste conducteur-taakloop](https://github.com/mlemson/conductor-chaos/issues/10) | Gameplay | — | — |
 | P1 | [#11 Klein station, korte route en eerste incident](https://github.com/mlemson/conductor-chaos/issues/11) | Gameplay | — | — |
 | P1 | [#12 Echte physics-ontsporing van één wagon](https://github.com/mlemson/conductor-chaos/issues/12) | Physics | — | — |
