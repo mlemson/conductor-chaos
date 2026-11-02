@@ -53,13 +53,13 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
     sh.uniforms.uPaint = { value: opts.paint ?? 1.0 };
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
-        attribute vec4 color; varying vec4 vShade; varying vec3 vWorldPos;`)
+        attribute vec4 color; varying vec4 vShade; varying vec3 vWorldPos; varying vec3 vLocalPos;`)
       .replace('#include <fog_vertex>', `#include <fog_vertex>
-        vShade = color; vWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;`);
+        vShade = color; vWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz; vLocalPos = transformed;`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
         uniform vec3 uRamp[5]; uniform float uShift; uniform vec3 uFog; uniform vec2 uFogRange; uniform float uEmissive;
-        uniform float uHasShade; uniform float uPaint; varying vec4 vShade; varying vec3 vWorldPos;
+        uniform float uHasShade; uniform float uPaint; varying vec4 vShade; varying vec3 vWorldPos; varying vec3 vLocalPos;
         float hash13(vec3 p){ p = fract(p*0.1031); p += dot(p, p.zyx+31.32); return fract((p.x+p.y)*p.z); }
         float vnoise(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
           return mix(mix(mix(hash13(i),hash13(i+vec3(1,0,0)),f.x), mix(hash13(i+vec3(0,1,0)),hash13(i+vec3(1,1,0)),f.x),f.y),
@@ -70,22 +70,27 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
       .replace('#include <opaque_fragment>', `
         // outgoingLight.r = NdotL * schaduw voor het witte key-light (geen ambient in de scene)
         float lit = clamp(outgoingLight.r, 0., 1.);
-        float band = smoothstep(0.04, 0.36, lit);                // zachte terminator
+        float band = smoothstep(0.0, 0.5, lit);                  // zachte, geschilderde terminator
         vec3 N = normalize(normal);
         vec3 V = normalize(vViewPosition);
         vec3 upV = normalize((viewMatrix * vec4(0.,1.,0.,0.)).xyz);
         float up = dot(N, upV)*0.5+0.5;                          // hemel-vulling in de schaduw
-        float tShadow = mix(0.08, 0.40, up);
-        float tLit = mix(0.62, 0.80, up);
+        float tShadow = mix(0.07, 0.38, up);
+        float tLit = mix(0.68, 0.86, up);
         vec4 sh4 = uHasShade > 0.5 ? vShade : vec4(1., 0., 0.5, 1.);
         float ao = sh4.r, edgeV = sh4.g, paint = sh4.b;
         band *= mix(0.45, 1.0, smoothstep(0.15, 0.9, ao));        // holtes vallen in de schaduwkant
         float t = mix(tShadow, tLit, band);
-        t -= (1. - ao) * 0.24;                                     // occlusie: dieper in de ramp
+        t -= (1. - ao) * 0.17;                                     // occlusie: dieper in de ramp
         t += edgeV * mix(0.05, 0.13, band);                        // geschilderde lichte randjes op bevels
         t += (paint - 0.5) * 0.17 * uPaint;                        // verfvlekken (lage frequentie)
-        float brush = vnoise(vWorldPos * 13.0) * 0.6 + vnoise(vWorldPos * 31.0) * 0.4;
-        t += (brush - 0.5) * 0.05 * uPaint;                        // fijne penseelstructuur
+        // geschilderde textuur in objectruimte (beweegt mee met het object):
+        vec3 lp = vLocalPos + vec3(13.1, 7.7, 3.3);
+        float blot = vnoise(lp * 1.1) * 0.55 + vnoise(lp * 2.7) * 0.30 + vnoise(lp * 6.0) * 0.15;   // grote vlekken
+        float stroke = vnoise(vec3(lp.x * 4.0, lp.y * 10.0, lp.z * 4.0)) * 0.6
+                     + vnoise(vec3(lp.x * 9.0, lp.y * 19.0, lp.z * 9.0)) * 0.4;                    // penseelstreken
+        float grain = vnoise(lp * 55.0);                                                             // fijne korrel
+        t += ((blot - 0.5) * 0.15 + (stroke - 0.5) * 0.035 + (grain - 0.5) * 0.03) * uPaint;
         #if NUM_DIR_LIGHTS > 0
           vec3 L = directionalLights[0].direction;
           float spec = pow(max(dot(N, normalize(L+V)),0.), 18.) * band;
@@ -93,6 +98,8 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
         #endif
         t = mix(t + uShift, 0.5 + uShift, uFlat);
         vec3 col = sampleRamp(t);
+        // lichte warm/koel-wisseling tussen de vlekken (zoals verf, niet alleen licht/donker)
+        col *= mix(vec3(0.975, 0.99, 1.035), vec3(1.03, 1.0, 0.965), clamp(blot * 1.2 - 0.1, 0., 1.)) * uPaint + (1. - uPaint);
         float fr = pow(1. - max(dot(N, V), 0.), 3.0);
         col = mix(col, uRim, clamp(fr * uRimStrength * (1.15 - band*0.75), 0., 1.));
         col = mix(col, sampleRamp(0.92 + uShift), uEmissive);

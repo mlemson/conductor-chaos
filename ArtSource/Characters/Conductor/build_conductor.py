@@ -42,13 +42,17 @@ Y_BOTTOM = 0.15         # onderkant jas
 Y_DOME = 0.80           # begin van de koepel
 Y_TOP = 1.02            # kruin (zit onder de pet)
 Y_COLLAR = 0.53         # grens huid/uniform
-EYE_Y, EYE_R, EYE_X = 0.835, 0.106, 0.099
+JACKET_STEP = 0.030     # hoogte van de jasrand-overgang (schouderrand)
+HEAD_R = 0.97           # gezicht iets smaller dan de jas
+JACKET_FLARE = 0.08     # jas loopt naar de zoom 8% verder uit
+EYE_Y, EYE_R, EYE_X = 0.812, 0.108, 0.100
 EYE_DEPTH = 0.55         # bolling van het oog (t.o.v. straal)
-MOUTH_Y = 0.632
-SHOULDER = (0.240, 0.475, 0.0)   # mouw komt hoog en dik uit de bovenkant van de jas (concept)
-HAND_OFFSET = 0.165
+MOUTH_Y = 0.625
+SHOULDER = (0.250, 0.468, 0.0)   # mouw komt hoog en dik uit de bovenkant van de jas (concept)
+HAND_OFFSET = 0.215
+CROWN_BULGE = 0.20      # kroon ≈ 1,2x de petrand (concept: ronde, bolle kroon — geen platte schijf)
 HIP_Y = 0.20
-LEG_X = 0.108
+LEG_X = 0.128
 
 SEG = 32                # omtrek-segmenten lijf (rond silhouet, nog steeds low-poly)
 
@@ -57,9 +61,15 @@ def body_radius(y):
     """Straalfactor van het lijf op hoogte y (1.0 = BODY_R)."""
     if y >= Y_DOME:
         t = min(1.0, (y - Y_DOME) / (Y_TOP - Y_DOME))
-        return max(0.0, (1 - t ** 2.4)) ** (1 / 2.4) * 0.965
-    # lichte taps: jas onderaan 3% breder dan het hoofd
-    return 0.965 + 0.035 * (1 - (y - Y_BOTTOM) / (Y_DOME - Y_BOTTOM))
+        return max(0.0, (1 - t ** 2.4)) ** (1 / 2.4) * HEAD_R
+    if y >= Y_COLLAR:
+        return HEAD_R                                  # hoofd/gezicht
+    if y >= Y_COLLAR - JACKET_STEP:                    # jasrand: zachte overgang = schouders
+        t = (Y_COLLAR - y) / JACKET_STEP
+        return HEAD_R + (1.0 - HEAD_R) * math.sin(t * math.pi / 2)
+    # jas: klokvorm, duidelijk wijder naar de zoom (concept: jas ≈ 1,2x zo breed als het gezicht)
+    t = 1 - (y - Y_BOTTOM) / (Y_COLLAR - JACKET_STEP - Y_BOTTOM)
+    return 1.0 + JACKET_FLARE * max(0.0, t) ** 1.2
 
 
 def body_surface(x, y):
@@ -95,7 +105,8 @@ def build_body():
         r = (BODY_R - fil + fil * math.sin(th)) / BODY_R
         y = Y_BOTTOM + fil - fil * math.cos(th)
         prof.append((r * body_radius(y) / body_radius(Y_BOTTOM + fil), y))
-    ys = list(np.linspace(Y_BOTTOM + fil + 0.04, Y_DOME, 16)) + [Y_COLLAR]
+    ys = list(np.linspace(Y_BOTTOM + fil + 0.04, Y_DOME, 16)) + [Y_COLLAR, Y_COLLAR + 0.012] + \
+        [Y_COLLAR - JACKET_STEP * k / 4 for k in range(1, 5)]
     ys = sorted(set(round(v, 4) for v in ys))
     prof += [(body_radius(y), y) for y in ys]
     for k in range(1, 9):
@@ -123,12 +134,12 @@ def build_collar():
     roll = mk.torus(1.0, 0.011, SEG, 6, mat="M_Conductor_Uniform", a=a + 0.002, b=a * BODY_DEPTH + 0.002, n=BODY_N)
     roll = roll.transform(t=(0, Y_COLLAR + 0.002, 0))
     parts = [roll]
-    v_y = Y_COLLAR - 0.062          # punt van de V
+    v_y = Y_COLLAR - 0.075          # punt van de V
     for sx in (-1, 1):
-        ang = math.atan2(0.066, 0.092)
-        lap = mk.rounded_box(0.118, 0.054, 0.016, 0.010, 2, mat="M_Conductor_Uniform").transform(t=(0, 0, 0.008))
-        lap = lap.transform(R=mk.rot_z(sx * ang), t=(sx * 0.048, v_y + 0.031, 0.0))
-        parts.append(conform(lap, 0.002))
+        ang = math.atan2(0.085, 0.105)
+        lap = mk.rounded_box(0.150, 0.072, 0.022, 0.014, 2, mat="M_Conductor_Uniform").transform(t=(0, 0, 0.011))
+        lap = lap.transform(R=mk.rot_z(sx * ang), t=(sx * 0.058, v_y + 0.040, 0.0))
+        parts.append(conform(lap, 0.004))
     return mk.merge(*parts)
 
 
@@ -150,7 +161,7 @@ def build_pupil(side):
     """Pupil + glimlicht, op het oogoppervlak, licht naar binnen kijkend (zoals concept)."""
     px, py = -side * 0.022, 0.006
     ez = EYE_R * EYE_DEPTH * math.sqrt(max(0.0, 1 - (px / EYE_R) ** 2 - (py / (EYE_R * 1.08)) ** 2))
-    pupil = mk.ellipsoid(0.029, 0.041, 0.011, 14, 8, mat="M_Conductor_Pupil").transform(t=(px, py, ez - 0.002))
+    pupil = mk.ellipsoid(0.034, 0.048, 0.012, 14, 8, mat="M_Conductor_Pupil").transform(t=(px, py, ez - 0.002))
     gx, gy = px + 0.011, py + 0.016
     gz = EYE_R * EYE_DEPTH * math.sqrt(max(0.0, 1 - (gx / EYE_R) ** 2 - (gy / (EYE_R * 1.08)) ** 2))
     glint = mk.ellipsoid(0.0075, 0.0075, 0.004, 8, 4, mat="M_Conductor_EyeWhite").transform(t=(gx, gy, gz + 0.006))
@@ -166,54 +177,58 @@ def build_mouth(kind):
         tongue = mk.ellipsoid(0.042, 0.020, 0.012, 14, 6, mat="M_Conductor_Tongue").transform(t=(0, -0.030, 0.010))
         return mk.merge(inner, tongue)
     # Surprised (concept): grote open O-mond met tong
-    inner = mk.ellipsoid(0.074, 0.080, 0.022, 20, 10, mat="M_Conductor_Mouth")
-    tongue = mk.ellipsoid(0.048, 0.028, 0.014, 14, 6, mat="M_Conductor_Tongue").transform(t=(0.006, -0.044, 0.010))
+    inner = mk.ellipsoid(0.088, 0.094, 0.026, 20, 10, mat="M_Conductor_Mouth")
+    tongue = mk.ellipsoid(0.058, 0.034, 0.016, 14, 6, mat="M_Conductor_Tongue").transform(t=(0.006, -0.052, 0.012))
     return mk.merge(inner, tongue)
 
 
 def build_cap():
-    """Pet: bolle kroon (~1,3x lijfbreedte), gouden band, donkere klep, embleem.
-    Lokale oorsprong = onderkant band, midden van het hoofd."""
-    band_a = BODY_R * 1.0 + 0.012
-    band_b = band_a * BODY_DEPTH + 0.02
-    BAND_H = 0.066
-    band = mk.lathe([(0.0, 0.0), (0.96, 0.0), (1.0, 0.009), (1.0, BAND_H - 0.009), (0.96, BAND_H), (0.0, BAND_H)],
-                    SEG, band_a, band_b, 2.3, mat="M_Conductor_Gold")
-    # kroon: bolt boven de band ruim uit (~1,28x) en loopt hoog door tot een zachte, platte bovenkant
-    crown_prof = [(0.0, BAND_H - 0.004), (0.97, BAND_H - 0.004)]
-    for k in range(1, 9):
-        t = k / 8
-        crown_prof.append((0.97 + 0.31 * math.sin(t * math.pi / 2) ** 0.9, BAND_H + 0.11 * t))
-    for k in range(1, 4):
-        crown_prof.append((1.28 + 0.01 * math.sin(k / 3 * math.pi), BAND_H + 0.11 + 0.06 * k / 3))
-    for k in range(1, 9):
-        th = math.pi / 2 * k / 8
-        crown_prof.append((1.28 * math.cos(th) ** 0.5 if k < 8 else 0.0, BAND_H + 0.17 + 0.085 * math.sin(th)))
-    crown = mk.lathe(crown_prof, SEG, band_a, band_b * 1.04, 2.2, mat="M_Conductor_Uniform")
-    crown = crown.transform(t=(0, 0, 0.02))  # kroon iets naar voren: 'peaked' silhouet
-    under = mk.lathe([(0.0, -0.012), (1.02, -0.012), (1.03, 0.0), (0.0, 0.0)], SEG, band_a, band_b, 2.3,
-                     mat="M_Conductor_UniformDark")
-    # klep: platte ellipsoïde die vóór de band uitsteekt, licht omlaag gekanteld
-    brim = mk.ellipsoid(band_a * 0.96, 0.02, 0.22, 28, 6, mat="M_Conductor_UniformDark")
-    brim = brim.transform(R=mk.rot_x(math.radians(16)), t=(0, -0.002, band_b - 0.05))
-    # embleem: rond, goud, half op de band (concept)
-    # embleem (concept): grote, bolle gouden knop op de voorkant van de kroon, net boven de band
-    t_b = 0.55
-    r_b = 0.97 + 0.31 * math.sin(t_b * math.pi / 2) ** 0.9
-    z_b = band_b * 1.04 * r_b + 0.02
-    badge = mk.ellipsoid(0.072, 0.050, 0.040, 20, 10, mat="M_Conductor_Gold", n=2.3)
-    badge = badge.transform(R=mk.rot_x(math.radians(-12)), t=(0, BAND_H + 0.11 * t_b, z_b - 0.014))
-    return mk.merge(band, crown, under, brim, badge)
+    """Pet (concept): navy petrand op het hoofd, smalle gouden streep, ronde bolle kroon die naar achter
+    afloopt, grote donkere klep naar voren en een ovale gouden knop op de voorkant van de kroon.
+    Lokale oorsprong = onderkant petrand, midden van het hoofd."""
+    base_a = BODY_R * 1.0 + 0.010
+    base_b = base_a * BODY_DEPTH + 0.02
+    BASE_H, GOLD_H = 0.050, 0.030
+    # navy petrand + gouden streep
+    base = mk.lathe([(0.0, 0.0), (0.97, 0.0), (1.0, 0.008), (1.0, BASE_H), (0.0, BASE_H)],
+                    SEG, base_a, base_b, 2.3, mat="M_Conductor_UniformDark")
+    gold = mk.lathe([(0.0, BASE_H - 0.002), (1.012, BASE_H - 0.002), (1.02, BASE_H + 0.006),
+                     (1.02, BASE_H + GOLD_H - 0.006), (1.012, BASE_H + GOLD_H), (0.0, BASE_H + GOLD_H)],
+                    SEG, base_a, base_b, 2.3, mat="M_Conductor_Gold")
+    # kroon: ronde bol (geen platte schijf), loopt over de streep heen uit tot ~1,2x en is bovenop gewelfd
+    y0 = BASE_H + GOLD_H - 0.004
+    prof = [(0.0, y0), (1.0, y0)]
+    for k in range(1, 7):
+        t = k / 6
+        prof.append((1.0 + CROWN_BULGE * math.sin(t * math.pi / 2), y0 + 0.07 * t))
+    top = 1.0 + CROWN_BULGE
+    for k in range(1, 11):
+        th = math.pi / 2 * k / 10
+        prof.append((top * math.cos(th) ** 0.75 if k < 10 else 0.0, y0 + 0.07 + 0.16 * math.sin(th) ** 0.85))
+    crown = mk.lathe(prof, SEG, base_a, base_b * 1.06, 2.15, mat="M_Conductor_Uniform")
+    # voorkant van de kroon hoger dan de achterkant (klassieke 'peaked cap')
+    V = crown.V
+    lift = np.clip(V[:, 2] / (base_b * top), -1, 1)
+    V[:, 1] = np.where(V[:, 1] > y0 + 0.02, V[:, 1] + 0.05 * lift * (V[:, 1] - y0) / 0.23, V[:, 1])
+    V[:, 2] += 0.015
+    # klep: groot, donker, naar voren en licht omlaag
+    brim = mk.ellipsoid(base_a * 1.02, 0.022, 0.235, 30, 6, mat="M_Conductor_UniformDark", n=2.2)
+    brim = brim.transform(R=mk.rot_x(math.radians(20)), t=(0, 0.004, base_b - 0.03))
+    # ovale gouden knop op de voorkant van de kroon, net boven de goudstreep
+    zc = base_b * 1.06 * (1.0 + CROWN_BULGE * math.sin(0.5 * math.pi / 2)) + 0.015
+    badge = mk.ellipsoid(0.064, 0.042, 0.030, 20, 10, mat="M_Conductor_Gold", n=2.3)
+    badge = badge.transform(R=mk.rot_x(math.radians(-22)), t=(0, y0 + 0.042, zc - 0.012))
+    return mk.merge(base, gold, crown, brim, badge)
 
 
 def build_arm():
     """Mouw vanaf schouder-pivot; wijst in rust langs lokale -Y."""
-    sleeve = mk.capsule_between((0, 0.03, 0), (0, -0.105, 0), 0.076, 0.071, 18, 4, mat="M_Conductor_Uniform")
+    sleeve = mk.capsule_between((0, 0.03, 0), (0, -0.150, 0), 0.088, 0.082, 18, 4, mat="M_Conductor_Uniform")
     return sleeve
 
 
 def build_hand():
-    return mk.ellipsoid(0.094, 0.097, 0.088, 20, 12, mat="M_Conductor_Skin")
+    return mk.ellipsoid(0.108, 0.110, 0.100, 20, 12, mat="M_Conductor_Skin")
 
 
 def build_key():
@@ -226,14 +241,14 @@ def build_key():
 
 def build_leg():
     """Dik, kort beentje + ronde 'kiezel'-voet met platte zool (concept); pivot = heup (lokale y=0 op HIP_Y)."""
-    leg = mk.capsule_between((0, 0.10 - HIP_Y, 0), (0, 0.24 - HIP_Y, 0), 0.084, 0.084, 16, 3, mat="M_Conductor_Uniform")
-    foot = mk.ellipsoid(0.104, 0.078, 0.132, 20, 10, mat="M_Conductor_Shoe", n=2.5).transform(t=(0, 0.062 - HIP_Y, 0.03))
+    leg = mk.capsule_between((0, 0.10 - HIP_Y, 0), (0, 0.25 - HIP_Y, 0), 0.100, 0.100, 16, 3, mat="M_Conductor_Uniform")
+    foot = mk.ellipsoid(0.126, 0.086, 0.158, 20, 10, mat="M_Conductor_Shoe", n=2.5).transform(t=(0, 0.066 - HIP_Y, 0.035))
     foot.V[:, 1] = np.maximum(foot.V[:, 1], -HIP_Y)   # platte zool op de grond
     return mk.merge(leg, foot)
 
 
 # ----------------------------------------------------------------------- scène
-def build_scene(arm_angle_deg=50.0):
+def build_scene(arm_angle_deg=66.0):
     sc = mk.Scene("Conductor")
     R_ = RAMPS
     sc.material("M_Conductor_Skin", R_["skin"][2], R_["skin"], 0.30, opts={"paint": 1.1})
@@ -266,8 +281,8 @@ def build_scene(arm_angle_deg=50.0):
         sc.add(mk.Part("Mouth_" + kind, build_mouth(kind), (0, MOUTH_Y - HIP_Y, zm - 0.004), "Body",
                        face_frame(nm_), visible=(kind == "Neutral")))
 
-    cap_pivot = (0.0, 0.905 - HIP_Y, 0.0)
-    sc.add(mk.Part("Cap", build_cap(), cap_pivot, "Body", mk.rot_x(math.radians(-10)) @ mk.rot_z(math.radians(4))))
+    cap_pivot = (0.0, 0.912 - HIP_Y, 0.0)
+    sc.add(mk.Part("Cap", build_cap(), cap_pivot, "Body", mk.rot_x(math.radians(-15)) @ mk.rot_z(math.radians(8))))
 
     for side, nm in ((1, "L"), (-1, "R")):
         sh = np.array([side * SHOULDER[0], SHOULDER[1], SHOULDER[2]]) - hip

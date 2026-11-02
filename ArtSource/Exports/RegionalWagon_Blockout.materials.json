@@ -1,0 +1,178 @@
+{
+  "model": "RegionalWagon_Blockout",
+  "stats": {
+    "parts": 14,
+    "tris": 18842,
+    "verts": 9854,
+    "materials": 11
+  },
+  "materials": {
+    "M_Train_Red": {
+      "base": "#C54D3E",
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.5
+      }
+    },
+    "M_Train_RedPanel": {
+      "base": "#DA523F",
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "rampShift": 0.06,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.5
+      }
+    },
+    "M_Train_RedLow": {
+      "base": "#8D3432",
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "rampShift": -0.18,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.3
+      }
+    },
+    "M_Train_Roof": {
+      "base": "#995F53",
+      "ramp": [
+        "#503330",
+        "#995F53",
+        "#A3685D",
+        "#B27261",
+        "#BB8472"
+      ],
+      "rampShift": -0.18,
+      "smoothness": 0.2,
+      "opts": {
+        "paint": 1.6
+      }
+    },
+    "M_Train_Trim": {
+      "base": "#482826",
+      "ramp": [
+        "#3B2524",
+        "#482826",
+        "#4B1F18",
+        "#634330",
+        "#7A5A48"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.2,
+      "opts": {
+        "paint": 1.2
+      }
+    },
+    "M_Train_Wheel": {
+      "base": "#33303B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "paint": 0.8
+      }
+    },
+    "M_Train_Gold": {
+      "base": "#DA993A",
+      "ramp": [
+        "#9D662F",
+        "#AD7031",
+        "#DA993A",
+        "#FBBA39",
+        "#FCCF53"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.4,
+      "opts": {}
+    },
+    "M_Train_Glass": {
+      "base": "#34335B",
+      "ramp": [
+        "#1D1C2D",
+        "#34335B",
+        "#3E3D70",
+        "#454377",
+        "#565191"
+      ],
+      "rampShift": -0.1,
+      "smoothness": 0.7,
+      "opts": {
+        "flat": 0.5,
+        "rim": 0.25,
+        "paint": 0.3
+      }
+    },
+    "M_Train_GlassShine": {
+      "base": "#85A4EC",
+      "ramp": [
+        "#6E83BA",
+        "#7D99D5",
+        "#85A4EC",
+        "#92BAF8",
+        "#98C4FC"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.7,
+      "opts": {
+        "flat": 0.85,
+        "rim": 0,
+        "paint": 0
+      }
+    },
+    "M_Train_Interact": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {}
+    },
+    "M_Train_Lamp": {
+      "base": "#FEECA1",
+      "ramp": [
+        "#F9DA7C",
+        "#FDE080",
+        "#FEECA1",
+        "#FEF2B0",
+        "#FFF8DA"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.5,
+      "opts": {
+        "emissive": 0.85,
+        "rim": 0.0,
+        "paint": 0
+      }
+    }
+  }
+}

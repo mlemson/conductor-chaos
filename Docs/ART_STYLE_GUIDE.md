@@ -110,7 +110,7 @@ Richtlijn:
   - hele lichaamshouding en hoofdkanteling
 
 ## Basismodel conducteur (P0 art proof, issue #9)
-Maatvoering, gemeten in het concept en vastgelegd in het [ontwerpblad](Art/Conductor_DesignSheet.png) en het [art-check-beeld](Art/ArtCheck_WagonCorner.png):
+Maatvoering, gemeten in het concept en vastgelegd in het [ontwerpblad](Art/Conductor_DesignSheet.png) en het [art-check-beeld](Art/ArtCheck_Wagon.png):
 - totaal **1,25 m** incl. pet; lijf 0,56 m breed (superellips-doorsnede, iets platte voorkant); kraaglijn 0,53 m; ogen op 0,835 m
 - pet = silhouet-sleutel: bolle kroon ≈ 1,3× lijfbreedte, gouden band met rond embleem, donkere klep die net boven de ogen valt
 - handen ≈ oog-grootte; schoudels op 0,49 m → **interactiepunten (sloten, knoppen) op ca. 0,6–0,8 m** zodat de korte armpjes erbij kunnen
@@ -313,7 +313,7 @@ Licht moet warmte, sfeer en leesbaarheid geven.
 | Rim light | `#B2C5F3`, sterkte ≈ 0.3 | smalle fresnel |
 | Lampen | `#FEF2B0` emissive | lichte bloom (threshold ≈ 1.0, lage intensiteit) |
 
-Aanpak: één gedeelde stylized-lit shader (Shader Graph) met zachte 2–3-staps lichtramp, schaduwtint en rim, plus per materiaal een basiskleur uit de ramp. Eerst valideren in de art-test (één conducteur + één wagonhoek) voordat er meer assets komen. Dit zijn startwaarden: stem af door de Unity-screenshot naast de conceptafbeelding te leggen.
+Aanpak: één gedeelde stylized-lit shader (Shader Graph) met zachte 2–3-staps lichtramp, schaduwtint en rim, plus per materiaal een basiskleur uit de ramp. Eerst valideren in de art-test (één conducteur + één wagon) voordat er meer assets komen. Dit zijn startwaarden: stem af door de Unity-screenshot naast de conceptafbeelding te leggen.
 
 ## Per type gebied
 ### Startgebieden

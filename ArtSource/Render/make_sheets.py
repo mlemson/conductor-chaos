@@ -1,7 +1,7 @@
 """Stelt de ontwerpbladen samen uit de renders (ArtSource/Render/out) -> Docs/Art/.
 
   Docs/Art/Conductor_DesignSheet.png   turnaround, expressies, pose, ramps, proporties
-  Docs/Art/ArtCheck_WagonCorner.png    conducteur bij de deur (dicht shot) + wijd shot
+  Docs/Art/ArtCheck_Wagon.png          conducteur bij de wagondeur (dicht shot) + wijd shot
   Docs/Art/ArtCheck_vs_Concept.png     render naast de conceptafbeelding
 """
 import json
@@ -196,22 +196,23 @@ def art_check():
     sheet = Image.new("RGBA", (W, H), BG + (255,))
     d = ImageDraw.Draw(sheet)
     label(d, (60, 40), "Art check · conducteur bij de wagondeur", 50)
-    d.text((64, 140), "Blockout regionale wagon (P0) · sleutelslot en gele drempel = interactie-ankers voor de gedeelde deur (P0-05)",
+    d.text((64, 140), "Regionale wagon in facetstijl (P0 blockout) · geel = interactie: sleutelslot, grepen, drempel (anker voor P0-05)",
            font=font(24, False), fill=SUB)
     sheet.alpha_composite(close_rgb.resize((cw, ch), Image.LANCZOS), (60, 200))
     ww = W - cw - 160
     wh = int(bgw.height * ww / bgw.width)
     sheet.alpha_composite(bgw.resize((ww, wh), Image.LANCZOS), (cw + 100, 200))
     d.text((cw + 100, 220 + wh), "Wijd shot: schaal t.o.v. wagon en landschap", font=font(22), fill=TXT)
-    notes = ["Conducteur 1,25 m · deur 1,70 m hoog, 1,15 m breed",
+    notes = ["Facetstijl zoals de concept-locomotief: afgeschuinde blokken, vlakken met eigen toon",
+             "Conducteur 1,25 m · wagon 7,2 m · deur 1,76 m hoog, 1,20 m breed",
              "Slot op 0,72 m: binnen bereik van de korte armpjes",
-             "Ruime afrondingen, tweekleurig rood; verfvariatie gebakken",
+             "Livrei: treinrood, lichtere inzetpanelen, gouden bies, donkerbruin dak",
              "Deurlamp boven de deur = warm 'open'-signaal",
              "Decor (perron, bergen, dennen) alleen voor deze render",
              "Render = doel-look (ramp-shader), nog geen Unity-screenshot"]
     for k, t in enumerate(notes):
         d.text((cw + 100, 280 + wh + k * 40), "•  " + t, font=font(22, False), fill=SUB)
-    sheet.convert("RGB").save(os.path.join(DOCS, "ArtCheck_WagonCorner.png"), optimize=True)
+    sheet.convert("RGB").save(os.path.join(DOCS, "ArtCheck_Wagon.png"), optimize=True)
     return close_rgb
 
 

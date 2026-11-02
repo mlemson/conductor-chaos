@@ -139,6 +139,12 @@ def export_unity(root, scene, fbx_rel, mat_dir_rel):
     folder_meta(root, os.path.dirname(fbx_rel))
     folder_meta(root, mat_dir_rel)
     guids = {}
+    mat_abs = os.path.join(root, mat_dir_rel)
+    for f in os.listdir(mat_abs) if os.path.isdir(mat_abs) else []:   # verouderde materialen opruimen
+        if f.endswith(".mat") and f[:-4] not in scene.materials:
+            os.remove(os.path.join(mat_abs, f))
+            if os.path.exists(os.path.join(mat_abs, f + ".meta")):
+                os.remove(os.path.join(mat_abs, f + ".meta"))
     for name, md in scene.materials.items():
         guids[name] = material(root, f"{mat_dir_rel}/{name}.mat", name, md["base"], md["smoothness"], md.get("emissive"))
     model_meta(root, fbx_rel, guids)

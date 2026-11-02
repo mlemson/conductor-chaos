@@ -309,6 +309,90 @@ def rounded_box(sx, sy, sz, radius, div=3, mat="Default"):
     return m
 
 
+def rounded_box_grid(sx, sy, sz, radius, div=4, step=0.2, cuts=((), (), ()), holes=(), mat="Default"):
+    """Afgeronde box met regelmatig rooster op de vlakke delen (voor gebakken variatie) en echte gaten.
+
+    cuts:  extra rasterlijnen per as (x, y, z) zodat gatranden precies op het raster vallen.
+    holes: [(as, teken, u0, u1, v0, v1), ...] — rechthoek op het vlak loodrecht op 'as' (0/1/2) aan kant
+           'teken' (+1/-1), in de twee overige assen (oplopende volgorde) — die faces worden weggelaten.
+    """
+    H = np.array([sx, sy, sz]) / 2.0
+    h = H - radius
+
+    def samples(k):
+        arc = [-h[k] - radius * math.cos(math.pi / 2 * j / div) for j in range(div + 1)]
+        n = max(1, int(math.ceil(2 * h[k] / step)))
+        mid = set(np.round(np.linspace(-h[k], h[k], n + 1), 6))
+        mid |= {round(c, 6) for c in cuts[k] if -h[k] < c < h[k]}
+        return arc[:-1] + sorted(mid) + [-v for v in reversed(arc[:-1])]
+
+    S = [samples(k) for k in range(3)]
+    V, F, index = [], [], {}
+
+    def vid(p):
+        key = tuple(np.round(p, 6))
+        if key not in index:
+            index[key] = len(V)
+            V.append(np.array(p, float))
+        return index[key]
+
+    for ax in range(3):
+        for sg in (-1, 1):
+            u_ax, v_ax = [a for a in (0, 1, 2) if a != ax]
+            us, vs = S[u_ax], S[v_ax]
+            grid = np.zeros((len(us), len(vs)), int)
+            for i, u in enumerate(us):
+                for j, v in enumerate(vs):
+                    p = np.zeros(3)
+                    p[ax], p[u_ax], p[v_ax] = sg * H[ax], u, v
+                    inner = np.clip(p, -h, h)
+                    d = p - inner
+                    nd = np.linalg.norm(d)
+                    if nd < 1e-12:
+                        d = np.zeros(3); d[ax] = sg; nd = 1.0
+                    grid[i, j] = vid(inner + d / nd * radius)
+            for i in range(len(us) - 1):
+                for j in range(len(vs) - 1):
+                    cu, cv = (us[i] + us[i + 1]) / 2, (vs[j] + vs[j + 1]) / 2
+                    if any(hx == ax and hs == sg and u0 < cu < u1 and v0 < cv < v1 for (hx, hs, u0, u1, v0, v1) in holes):
+                        continue
+                    q = (grid[i, j], grid[i + 1, j], grid[i + 1, j + 1], grid[i, j + 1])
+                    if len(set(q)) == 4:
+                        F.append(q)
+                    elif len(set(q)) == 3:
+                        F.append(tuple(dict.fromkeys(q)))
+    m = Mesh(np.array(V, float), F, [mat] * len(F))
+    fixed = []
+    for f in m.F:
+        p = m.V[list(f)]
+        n = np.cross(p[1] - p[0], p[2] - p[0])
+        fixed.append(f if np.dot(n, p.mean(0)) >= 0 else tuple(reversed(f)))
+    m.F = fixed
+    return m
+
+
+def cylinder(r, length, seg=24, bevel=0.0, mat="Default", axis="x"):
+    """Cilinder (optioneel afgeschuinde randen) langs een as, gecentreerd."""
+    b = min(bevel, r * 0.5, length * 0.5)
+    prof = [(0.0, -length / 2), (r - b, -length / 2)]
+    if b > 0:
+        for k in range(1, 4):
+            th = math.pi / 2 * k / 3
+            prof.append((r - b + b * math.sin(th), -length / 2 + b - b * math.cos(th)))
+        for k in range(0, 4):
+            th = math.pi / 2 * k / 3
+            prof.append((r - b + b * math.cos(th), length / 2 - b + b * math.sin(th)))
+    else:
+        prof += [(r, -length / 2), (r, length / 2)]
+    prof += [(r - b, length / 2), (0.0, length / 2)]
+    m = lathe(prof, seg, mat=mat)
+    if axis == "x":
+        m = m.transform(R=rot_z(math.pi / 2))
+    elif axis == "z":
+        m = m.transform(R=rot_x(math.pi / 2))
+    return m
+
+
 def capsule_between(p0, p1, r0, r1, seg=16, rings=6, mat="Default"):
     """Taps toelopende capsule van p0 naar p1 (lokale Y-as langs het segment)."""
     p0, p1 = np.asarray(p0, float), np.asarray(p1, float)
@@ -348,6 +432,7 @@ class Part:
     ao_group: str = "main"            # onderdelen in dezelfde groep beschaduwen elkaar
     ao_receive: tuple = ()            # extra groepen waarvan dit onderdeel occlusie ontvangt
     gradient: float = 0.18            # sterkte van 'onderkant donkerder' (0 = uit)
+    edges: bool = True                # randlicht op afrondingen/facetranden bakken
 
 
 def _value_noise(P, seed=0):
@@ -491,7 +576,7 @@ class Scene:
             e0, e1 = edge_range
             edge = np.clip((kv - e0) / (e1 - e0), 0, 1)
             edge = edge * edge * (3 - 2 * edge)
-            if p.mesh.sharp:
+            if not p.edges:
                 edge[:] = 0
             nz = fbm(Vw, noise_freq, 3, seed)
             nz = np.clip((nz - 0.5) * 1.8 + 0.5, 0, 1)

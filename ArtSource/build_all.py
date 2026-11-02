@@ -25,7 +25,7 @@ def run(*args, **kw):
 
 def main():
     run(PY, os.path.join(HERE, "Characters", "Conductor", "build_conductor.py"))
-    run(PY, os.path.join(HERE, "Train", "WagonCorner", "build_wagon_corner.py"))
+    run(PY, os.path.join(HERE, "Train", "RegionalWagon", "build_regional_wagon.py"))
     if "--models" in sys.argv:
         return
     if not os.path.exists(os.path.join(HERE, "Render", "three", "build", "three.module.js")):

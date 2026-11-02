@@ -3,7 +3,7 @@
 Bronbestanden voor 3D-assets en ontwerpbladen. Dit staat bewust **buiten `Assets/`**, zodat Unity
 het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd.
 
-> **Status (issue #9, P0 art proof):** conducteur-basismodel + wagonhoek-blockout + ontwerpbladen.
+> **Status (issue #9, P0 art proof):** conducteur-basismodel + regionale wagon (blockout) + ontwerpbladen.
 > De renders tonen de **doel-look** (ramp-shader). Een in-engine Unity-screenshot is nog **NOT RUN**.
 
 ## Wat staat waar
@@ -11,7 +11,7 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 | Pad | Wat |
 |---|---|
 | `Characters/Conductor/build_conductor.py` | Conducteur-basismodel, parametrisch opgebouwd uit maten van het concept |
-| `Train/WagonCorner/build_wagon_corner.py` | Wagonhoek-blockout (deur, slot, ramen, interieurstukje) + art-check-decor |
+| `Train/RegionalWagon/build_regional_wagon.py` | Regionale wagon in facetstijl (deur, slot, grepen, ramen, draaistellen, koplampen) + art-check-decor |
 | `Tools/meshkit.py` | Kleine numpy-toolkit: lathe/superellips, afgeronde box, ellipsoïde, capsule; export naar FBX (ASCII) en glTF (.glb) |
 | `Tools/unity_assets.py` | Schrijft URP Lit-materialen (`.mat`) en `.meta`-bestanden met stabiele GUID's |
 | `Render/render.html`, `render.cjs` | Headless stijlrender (three.js + Playwright) met de stylized ramp-shader |
@@ -23,9 +23,9 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 Gegenereerde uitvoer:
 
 - `Assets/Art/Models/Characters/Conductor/Conductor.fbx` (+ `.meta`)
-- `Assets/Art/Models/Train/WagonCorner/WagonCorner_Blockout.fbx` (+ `.meta`)
+- `Assets/Art/Models/Train/RegionalWagon/RegionalWagon_Blockout.fbx` (+ `.meta`)
 - `Assets/Art/Materials/...` URP Lit-materialen (middentoon van elke ramp)
-- `Docs/Art/Conductor_DesignSheet.png`, `ArtCheck_WagonCorner.png`, `ArtCheck_vs_Concept.png`
+- `Docs/Art/Conductor_DesignSheet.png`, `ArtCheck_Wagon.png`, `ArtCheck_vs_Concept.png`
 
 ## Opnieuw bouwen
 
@@ -52,7 +52,7 @@ Pas vormen of maten aan in de `build_*.py`-scripts, niet in de FBX. Kleuren kome
   Er is geen skinning; die volgt alleen als een animatie erom vraagt.
 - Hiërarchie conducteur: `Conductor › Body › (Collar, Buttons, Eye_L/R › Pupil_L/R, Mouth_Neutral|Surprised|Happy, Cap, Arm_L/R › Hand_L/R › Prop_Key)`, `Leg_L/R`.
   Standaard verborgen: `Mouth_Surprised`, `Mouth_Happy`, `Prop_Key`.
-- Wagonhoek: `DoorLeaf_L/R` schuiven langs lokale X (dicht = +0,475 / −0,475). `KeyLock` (0,72 m) en
+- Regionale wagon: `DoorLeaf_L/R` schuiven langs lokale X (dicht = +0,475 / −0,475). `KeyLock` (0,72 m) en
   `DoorSill` zijn de interactie-ankers voor P0-05.
 - **Geschilderde variatie** (zodat niets één effen kleur is) is per vertex gebakken in de vertexkleur
   (`Scene.bake_shading`): **R** = occlusie (hoeken, onder randen, onderkant iets donkerder), **G** = randlicht op
