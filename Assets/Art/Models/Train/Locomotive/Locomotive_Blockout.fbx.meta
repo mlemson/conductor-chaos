@@ -1,0 +1,100 @@
+fileFormatVersion: 2
+guid: be4f91ddba50d4456773e24ad3d719bb
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Red
+    second: {fileID: 2100000, guid: d3a1f787b79e0f9922f54dc5d38c1860, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_RedDark
+    second: {fileID: 2100000, guid: 58c4d7c725521e6ca7ec641e2350c883, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Panel
+    second: {fileID: 2100000, guid: 604a3a66117ca10baf8448fbded94887, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Roof
+    second: {fileID: 2100000, guid: fa7db24a46b5afe19277be2260e53b12, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Gold
+    second: {fileID: 2100000, guid: 5b8bef6b876983c702e71a3065a60ea6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Frame
+    second: {fileID: 2100000, guid: 3d29fc911f3f831f5e21184e7653a499, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Trim
+    second: {fileID: 2100000, guid: 65e64c2a43d560a89ff45aaa3b3e9945, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Interior
+    second: {fileID: 2100000, guid: 324af2c70dd1685473175a3eeb73ff30, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Wheel
+    second: {fileID: 2100000, guid: cc04c3f8ad9de66d9d552594fae7d0f3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Interact
+    second: {fileID: 2100000, guid: 2b177864e23a6cb9a47da3d06d0474cb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Lamp
+    second: {fileID: 2100000, guid: 32ee380fdeca86a42b8ff215cccaa262, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Fire
+    second: {fileID: 2100000, guid: 311070a1bf51d704e72a12e5547d99d8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Coal
+    second: {fileID: 2100000, guid: 04066adc70d4512daad84f9efa2ad233, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Dial
+    second: {fileID: 2100000, guid: 73771d8c7e7ea8b522eb31e933a72f76, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
