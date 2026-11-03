@@ -4,7 +4,7 @@
 
 ## Zo start je een issue (kort)
 
-1. Kies **één open klein issue**; sla over wanneer iemand anders eraan werkt (let op #44: loopbug is toegewezen). Brede issues met `<!-- conductor-chaos-epic -->` zijn **geen uitvoeropdrachten**: kies een gekoppeld kind.
+1. Kies **één open klein issue**; sla over wanneer iemand anders eraan werkt (controleer #44: loopbug is inmiddels afgesloten; dubbel werk vermijden). Brede issues met `<!-- conductor-chaos-epic -->` zijn **geen uitvoeropdrachten**: kies een gekoppeld kind.
 2. Check de actuele `main`, open PR's en bestaande scripts/assets. Het project is verder dan de oude P0-README: er bestaan **TrainPlayground**, een NGO-proef, UI-componenten en veel gegenereerde modellen. Bouw dit niet dubbel.
 3. Lees **alleen** `AGENTS.md`, de issue, dit document en de 1–2 relevante bestanden. Lees specialistische documenten alleen indien nodig: [gamevisie](../GAME_VISION.md), [physics](../DERAILMENT_PHYSICS.md), [UI](../UI_STYLE_GUIDE.md), [art](../ART_STYLE_GUIDE.md), [physics playground](PHYSICS_PLAYGROUND.md). Niet alles standaard in één keer.
 4. Kies een branch voor die ene issue; wijzig alleen relevante bestanden. Gebruik bestaande `ArtSource/` bij procedural assets, `Assets/Scripts/Playground` bij beweging/physics en `Assets/Scripts/UI/` bij HUD/menus. Houd de bestaande Unity 6000.5.7f1-config, NGO en .meta-GUID's.
