@@ -1,0 +1,161 @@
+{
+  "model": "CattleWagon_Blockout",
+  "stats": {
+    "parts": 10,
+    "tris": 26714,
+    "verts": 19265,
+    "materials": 10
+  },
+  "materials": {
+    "M_Cattle_Red": {
+      "base": "#C54D3E",
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "rampShift": -0.04,
+      "smoothness": 0.25,
+      "opts": {
+        "grime": 1.0
+      }
+    },
+    "M_Cattle_Slat": {
+      "base": "#8D543A",
+      "ramp": [
+        "#6C422A",
+        "#814C32",
+        "#8D543A",
+        "#A56945",
+        "#E59843"
+      ],
+      "rampShift": 0.02,
+      "smoothness": 0.15,
+      "opts": {
+        "grime": 1.0
+      }
+    },
+    "M_Cattle_Plank": {
+      "base": "#A56945",
+      "ramp": [
+        "#6C422A",
+        "#814C32",
+        "#8D543A",
+        "#A56945",
+        "#E59843"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.15,
+      "opts": {
+        "grime": 1.0
+      }
+    },
+    "M_Cattle_Inner": {
+      "base": "#723F29",
+      "ramp": [
+        "#462A21",
+        "#553022",
+        "#593323",
+        "#723F29",
+        "#A66739"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.1,
+      "opts": {
+        "grime": 1.0
+      }
+    },
+    "M_Cattle_Roof": {
+      "base": "#995F53",
+      "ramp": [
+        "#503330",
+        "#995F53",
+        "#A3685D",
+        "#B27261",
+        "#BB8472"
+      ],
+      "rampShift": -0.18,
+      "smoothness": 0.2,
+      "opts": {
+        "grime": 1.0
+      }
+    },
+    "M_Cattle_Trim": {
+      "base": "#482826",
+      "ramp": [
+        "#3B2524",
+        "#482826",
+        "#4B1F18",
+        "#634330",
+        "#7A5A48"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.2,
+      "opts": {
+        "grime": 1.0
+      }
+    },
+    "M_Cattle_Wheel": {
+      "base": "#33303B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "grime": 1.0
+      }
+    },
+    "M_Cattle_Gold": {
+      "base": "#FBBA39",
+      "ramp": [
+        "#9D662F",
+        "#AD7031",
+        "#DA993A",
+        "#FBBA39",
+        "#FCCF53"
+      ],
+      "rampShift": 0.04,
+      "smoothness": 0.4,
+      "opts": {
+        "grime": 1.0
+      }
+    },
+    "M_Cattle_Straw": {
+      "base": "#DB945C",
+      "ramp": [
+        "#885642",
+        "#9A6146",
+        "#DB945C",
+        "#EBA462",
+        "#F4B06C"
+      ],
+      "rampShift": 0.02,
+      "smoothness": 0.05,
+      "opts": {
+        "grime": 1.0
+      }
+    },
+    "M_Cattle_Interact": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "grime": 1.0
+      }
+    }
+  }
+}
