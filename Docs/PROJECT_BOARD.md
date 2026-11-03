@@ -69,7 +69,7 @@ flowchart LR
 
 ## 🔗 Open pull requests zonder gekoppelde roadmap-taak
 
-- [#43 Feature/30 environment kit v2](https://github.com/mlemson/conductor-chaos/pull/43) — verwijs in de PR-omschrijving naar `Refs #nummer` of `Closes #nummer`.
+Alle open PR's zijn gekoppeld of er zijn geen open PR's.
 
 ## 🤝 Samenwerken met mensen en agents
 
