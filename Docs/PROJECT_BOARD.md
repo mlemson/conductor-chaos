@@ -6,7 +6,7 @@
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 21 | 0 | 0 | 0 | 0 |
+| 20 | 1 | 0 | 0 | 0 |
 
 ## 🗺️ Mijlpalen
 
@@ -26,7 +26,7 @@ flowchart LR
 
 ## 📋 Taken per status
 
-### 📝 Te doen (21)
+### 📝 Te doen (20)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -43,7 +43,6 @@ flowchart LR
 | P0 | [#28 Physics-proef: conducteur, trein en grijpen](https://github.com/mlemson/conductor-chaos/issues/28) | Overig | — | — |
 | P0 | [#36 Voorkom armclippen, rig benen en herstel loslaten](https://github.com/mlemson/conductor-chaos/issues/36) | Overig | — | — |
 | P0 | [#39 UI foundation: menu, HUD en lobbyconcept volgens referenties 1 en 3](https://github.com/mlemson/conductor-chaos/issues/39) | Art | — | — |
-| P0 | [#44 Conducteur valt voorover zodra hij loopt (wrijving romp vs. rechtop-motor)](https://github.com/mlemson/conductor-chaos/issues/44) | Overig | — | — |
 | P1 | [#10 Reizigers, tickets en eerste conducteur-taakloop](https://github.com/mlemson/conductor-chaos/issues/10) | Gameplay | — | — |
 | P1 | [#11 Klein station, korte route en eerste incident](https://github.com/mlemson/conductor-chaos/issues/11) | Gameplay | — | — |
 | P1 | [#12 Echte physics-ontsporing van één wagon](https://github.com/mlemson/conductor-chaos/issues/12) | Physics | — | — |
@@ -52,9 +51,11 @@ flowchart LR
 | P2 | [#15 Bergtrajecten met bruggen, tunnels en gevaren](https://github.com/mlemson/conductor-chaos/issues/15) | World | — | — |
 | P2 | [#16 HUD, menu, audio en performance polish](https://github.com/mlemson/conductor-chaos/issues/16) | Polish | — | — |
 
-### 🔧 Bezig (0)
+### 🔧 Bezig (1)
 
-*Geen taken in deze kolom.*
+| Fase | Taak | Onderdeel | Eigenaar | Pull request |
+| :-- | :-- | :-- | :-- | :-- |
+| P0 | [#44 Conducteur valt voorover zodra hij loopt (wrijving romp vs. rechtop-motor)](https://github.com/mlemson/conductor-chaos/issues/44) | Overig | @RZandvoort | — |
 
 ### 👀 Klaar voor review (0)
 
