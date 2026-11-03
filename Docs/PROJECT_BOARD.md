@@ -2,31 +2,31 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand.
 
-**Voortgang: 0/67 afgerond (0%)**
+**Voortgang: 1/69 afgerond (1%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 66 | 1 | 0 | 0 | 0 |
+| 68 | 0 | 0 | 0 | 1 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
-    P0["P0 · Technisch fundament + stijltest · 0/26 klaar"]
-    P1["P1 · Eerste speelbare co-opervaring · 0/35 klaar"]
-    P2["P2 · Bergavontuur en chaos · 0/6 klaar"]
+    P0["P0 · Technisch fundament + stijltest · 1/26 klaar"]
+    P1["P1 · Eerste speelbare co-opervaring · 0/36 klaar"]
+    P2["P2 · Bergavontuur en chaos · 0/7 klaar"]
     P0 --> P1 --> P2
 ```
 
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
-| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/26 | Technisch fundament + stijltest |
-| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/35 | Eerste speelbare co-opervaring |
-| **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/6 | Bergavontuur en chaos |
+| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 1/26 | Technisch fundament + stijltest |
+| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/36 | Eerste speelbare co-opervaring |
+| **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/7 | Bergavontuur en chaos |
 
 ## 📋 Taken per status
 
-### 📝 Te doen (66)
+### 📝 Te doen (68)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -90,18 +90,18 @@ flowchart LR
 | P1 | [#85 Koe op het spoor: eenvoudige stop/obstakelreactie](https://github.com/mlemson/conductor-chaos/issues/85) | Gameplay | — | — |
 | P1 | [#87 Kapotte rail: één herkenbaar beschadigd spoorsegment](https://github.com/mlemson/conductor-chaos/issues/87) | Physics | — | — |
 | P1 | [#88 Één wagon kan van spoorgeleiding naar Rigidbody-physics](https://github.com/mlemson/conductor-chaos/issues/88) | Physics | — | — |
+| P1 | [#91 Online uitnodigen: eenvoudige joincode of vriendenlink](https://github.com/mlemson/conductor-chaos/issues/91) | Multiplayer | — | — |
 | P2 | [#14 Meerdere wagons koppelen en afzonderlijk laten ontsporen](https://github.com/mlemson/conductor-chaos/issues/14) | Physics | — | — |
 | P2 | [#15 Bergtrajecten met bruggen, tunnels en gevaren](https://github.com/mlemson/conductor-chaos/issues/15) | World | — | — |
 | P2 | [#16 HUD, menu, audio en performance polish](https://github.com/mlemson/conductor-chaos/issues/16) | Polish | — | — |
 | P2 | [#86 Rotsval: één vallende rots als treinincident](https://github.com/mlemson/conductor-chaos/issues/86) | Gameplay | — | — |
 | P2 | [#89 Één ontsporing synchroniseren tussen host en client](https://github.com/mlemson/conductor-chaos/issues/89) | Multiplayer | — | — |
 | P2 | [#90 Koppeling kan breken bij hoge impact](https://github.com/mlemson/conductor-chaos/issues/90) | Physics | — | — |
+| P2 | [#92 Optionele mijlpaalcheck: sessie met vier en later zes spelers](https://github.com/mlemson/conductor-chaos/issues/92) | QA | — | — |
 
-### 🔧 Bezig (1)
+### 🔧 Bezig (0)
 
-| Fase | Taak | Onderdeel | Eigenaar | Pull request |
-| :-- | :-- | :-- | :-- | :-- |
-| P0 | [#44 Conducteur valt voorover zodra hij loopt (wrijving romp vs. rechtop-motor)](https://github.com/mlemson/conductor-chaos/issues/44) | Overig | @RZandvoort | — |
+*Geen taken in deze kolom.*
 
 ### 👀 Klaar voor review (0)
 
@@ -111,9 +111,11 @@ flowchart LR
 
 *Geen taken in deze kolom.*
 
-### ✅ Afgerond (0)
+### ✅ Afgerond (1)
 
-*Geen taken in deze kolom.*
+| Fase | Taak | Onderdeel | Eigenaar | Pull request |
+| :-- | :-- | :-- | :-- | :-- |
+| P0 | [#44 Conducteur valt voorover zodra hij loopt (wrijving romp vs. rechtop-motor)](https://github.com/mlemson/conductor-chaos/issues/44) | Overig | @RZandvoort | — |
 
 ## 🔗 Open pull requests zonder gekoppelde roadmap-taak
 
