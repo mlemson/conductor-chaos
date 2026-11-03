@@ -1,7 +1,9 @@
 // Conductor Chaos — gestileerd terrein: TerrainLayers uit de grondtextures en een startterrein (issue #38).
-// Menu: Conductor Chaos > Art > Terrain > Create Stylized Terrain / Add Layers To Selected Terrain / Create Terrain Layers.
-// Daarna schilder je met Unity's eigen Terrain-tools (Paint Texture: gras, bloemetjes, grond, stenen pad, rots;
-// Raise/Lower en Smooth voor heuvels). Bomen, rotsen en kliffen erop zet je met de Prop Painter.
+// Menu: Conductor Chaos > Art > Terrain > Create Flat Terrain (sculpt + paint) / Create Stylized Terrain (gentle hills) /
+// Flatten Selected Terrain / Add Layers To Selected Terrain / Add Flat Test Layers / Create Terrain Layers.
+// Daarna vorm en schilder je met Unity's eigen Terrain-tools: Raise or Lower (omhoog/omlaag trekken), Smooth, Set Height,
+// en Paint Texture (gras, bloemetjes, grond, stenen pad, rots). Vlakke grond ligt op y = 0 met 10 m ruimte omlaag.
+// Bomen, rotsen en kliffen erop zet je met de Prop Painter.
 // Statisch decor; de TerrainCollider wordt later de ondergrond voor beweging (host-autoritatief, zie ARCHITECTURE).
 using System.Collections.Generic;
 using System.Linq;
@@ -79,15 +81,25 @@ namespace ConductorChaos.EditorTools
             return list.ToArray();
         }
 
-        [MenuItem("Conductor Chaos/Art/Terrain/Create Stylized Terrain")]
-        public static void CreateTerrain()
+        // Hoogte-instellingen: het terrein is 40 m hoog; de vlakke grond ligt op 25 % (10 m), zodat je
+        // tot 10 m kunt uitgraven (rivier, ravijn) en tot 30 m kunt ophogen (heuvels, bergflanken).
+        // Het object staat zo dat de vlakke grond precies op wereldhoogte 0 ligt (hoogte van het spoor).
+        const float TerrainHeight = 40f;
+        const float BaseFraction = 0.25f;
+
+        [MenuItem("Conductor Chaos/Art/Terrain/Create Flat Terrain (sculpt + paint)")]
+        public static void CreateFlatTerrain() => CreateTerrain(false);
+
+        [MenuItem("Conductor Chaos/Art/Terrain/Create Stylized Terrain (gentle hills)")]
+        public static void CreateHillyTerrain() => CreateTerrain(true);
+
+        static void CreateTerrain(bool hills)
         {
             var layers = EnsureLayers();
             var data = new TerrainData { heightmapResolution = 257, alphamapResolution = 512 };
-            data.size = new Vector3(120f, 40f, 120f);
+            data.size = new Vector3(120f, TerrainHeight, 120f);
             data.terrainLayers = layers;
 
-            // zachte golving als start (basis 1,6 m boven de onderkant, zodat je ook kunt verlagen)
             int res = data.heightmapResolution;
             var h = new float[res, res];
             float ox = Random.Range(0f, 100f), oz = Random.Range(0f, 100f);
@@ -95,7 +107,8 @@ namespace ConductorChaos.EditorTools
                 for (int x = 0; x < res; x++)
                 {
                     float nx = x / (float)res, nz = z / (float)res;
-                    h[z, x] = 0.04f + 0.025f * Mathf.PerlinNoise(ox + nx * 3f, oz + nz * 3f) + 0.01f * Mathf.PerlinNoise(ox + nx * 9f, oz + nz * 9f);
+                    h[z, x] = BaseFraction + (hills ? 0.025f * Mathf.PerlinNoise(ox + nx * 3f, oz + nz * 3f) +
+                                                      0.01f * Mathf.PerlinNoise(ox + nx * 9f, oz + nz * 9f) - 0.0175f : 0f);
                 }
             data.SetHeights(0, 0, h);
 
@@ -112,15 +125,44 @@ namespace ConductorChaos.EditorTools
 
             var go = Terrain.CreateTerrainGameObject(data);
             go.name = "StylizedTerrain";
-            float baseY = 0.04f * data.size.y + 0.0125f * data.size.y;
-            go.transform.position = new Vector3(-data.size.x / 2f, -baseY, -data.size.z / 2f);
+            go.transform.position = new Vector3(-data.size.x / 2f, -BaseFraction * TerrainHeight, -data.size.z / 2f);
             var t = go.GetComponent<Terrain>();
             t.basemapDistance = 1000f;                               // textures scherp houden op afstand
             t.drawInstanced = true;
             Undo.RegisterCreatedObjectUndo(go, "Create Stylized Terrain");
             Selection.activeGameObject = go;
-            Debug.Log($"[Terrain] Terrein gemaakt ({path}). Schilder lagen via Terrain > Paint Texture; " +
-                      "zet bomen/rotsen/kliffen met Conductor Chaos > Art > Prop Painter.");
+            Debug.Log($"[Terrain] Terrein gemaakt ({path}). " + SculptHelp);
+        }
+
+        const string SculptHelp =
+            "Vormen: Terrain-component > Paint Terrain > 'Raise or Lower Terrain' (klik = omhoog, Shift+klik = omlaag), " +
+            "'Smooth Height' om af te ronden, 'Set Height' voor vlakke plateaus (bv. onder het spoor). " +
+            "Kleuren: 'Paint Texture' en kies een laag. Brush Size/Opacity bepalen grootte en kracht.";
+
+        [MenuItem("Conductor Chaos/Art/Terrain/Flatten Selected Terrain")]
+        public static void FlattenSelected()
+        {
+            var t = Selection.activeGameObject ? Selection.activeGameObject.GetComponent<Terrain>() : null;
+            if (t == null) { Debug.LogWarning("[Terrain] Selecteer eerst een Terrain."); return; }
+            if (!EditorUtility.DisplayDialog("Terrein vlak maken",
+                    $"Alle hoogteverschillen van '{t.name}' worden weggehaald (de geschilderde lagen blijven). " +
+                    "De grond komt op wereldhoogte 0 te liggen, met 10 m ruimte omlaag en 30 m omhoog.", "Vlak maken", "Annuleren"))
+                return;
+            var data = t.terrainData;
+            Undo.RegisterCompleteObjectUndo(data, "Flatten terrain");
+            Undo.RecordObject(t.transform, "Flatten terrain");
+            var size = data.size;
+            data.size = new Vector3(size.x, TerrainHeight, size.z);
+            int res = data.heightmapResolution;
+            var h = new float[res, res];
+            for (int z = 0; z < res; z++)
+                for (int x = 0; x < res; x++)
+                    h[z, x] = BaseFraction;
+            data.SetHeights(0, 0, h);
+            var p = t.transform.position;
+            t.transform.position = new Vector3(p.x, -BaseFraction * TerrainHeight, p.z);
+            EditorUtility.SetDirty(data);
+            Debug.Log($"[Terrain] {t.name} is vlak. " + SculptHelp, t);
         }
 
         [MenuItem("Conductor Chaos/Art/Terrain/Add Layers To Selected Terrain")]
