@@ -220,7 +220,7 @@ Een prop moet al herkenbaar zijn als silhouette, nog vóór textuur of detail.
 
 ## Materiaalrichting
 - mat tot satijn: zacht "klei/vinyl-speelgoed"-gevoel, brede zachte highlight, geen scherpe spiegeling
-- zacht verloop over grote vlakken (geschilderd, niet fotografisch)
+- zacht verloop over grote vlakken (geschilderd, niet fotografisch); **nooit één effen kleur**: donkerder in hoeken en naar de onderkant, lichte randjes op afrondingen, lichte verfvlekken. In de assets gebakken als vertexkleur (R occlusie, G randlicht, B verfvariatie), zie [ArtSource](../ArtSource/README.md)
 - koele rimlight langs de randen (zie Lighting)
 - geen heavy realism
 

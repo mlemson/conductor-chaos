@@ -13,6 +13,8 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 | `Characters/Conductor/build_conductor.py` | Conducteur-basismodel, parametrisch opgebouwd uit maten van het concept |
 | `Train/WagonCorner/build_wagon_corner.py` | Wagonhoek-blockout (deur, slot, ramen, interieurstukje) + art-check-decor |
 | `Tools/meshkit.py` | Kleine numpy-toolkit: lathe/superellips, afgeronde box, ellipsoïde, capsule; export naar FBX (ASCII) en glTF (.glb) |
+| `Tools/spatial_fallback.py` | NumPy-terugval voor de straalzoekopdracht bij het bakken van vertexkleur als SciPy ontbreekt |
+| `Tools/implicit_body.py` | Bouwt het lijf met broek en voeten als één verbonden oppervlak met een echte opening tussen de benen |
 | `Tools/unity_assets.py` | Schrijft URP Lit-materialen (`.mat`) en `.meta`-bestanden met stabiele GUID's |
 | `Render/render.html`, `render.cjs` | Headless stijlrender (three.js + Playwright) met de stylized ramp-shader |
 | `Render/scenes/*.json` | Camera's, poses en expressies van alle renders |
@@ -34,6 +36,8 @@ python ArtSource/build_all.py --models   # alleen FBX/GLB/.mat (Python 3 + numpy
 python ArtSource/build_all.py            # + renders en ontwerpbladen
 ```
 
+Voor de snelste generatie van vertexkleuren wordt SciPy gebruikt; als dat niet is geïnstalleerd gebruikt meshkit de meegeleverde NumPy-terugval, die trager kan zijn. De oudere instructie dat alleen NumPy nodig was beschreef de SciPy-afhankelijkheid niet volledig.
+
 Voor renders: Node.js met Playwright (Chromium) en three.js **r187** in `ArtSource/Render/three` (staat in `.gitignore`):
 
 ```
@@ -47,13 +51,19 @@ Pas vormen of maten aan in de `build_*.py`-scripts, niet in de FBX. Kleuren kome
 ## Conventies
 
 - Y omhoog, het model kijkt naar **+Z**, 1 unit = **1 meter**. De linkerkant van een personage ligt op +X.
-- **Starre poppen-rig:** elk onderdeel is een eigen node met een pivot op het gewricht (heup, schouder, pet, ogen).
-  Animatie = transforms roteren. Dit past bij de stijve, klungelige stijl en is eenvoudig te synchroniseren.
-  Er is geen skinning; die volgt alleen als een animatie erom vraagt.
-- Hiërarchie conducteur: `Conductor › Body › (Collar, Buttons, Eye_L/R › Pupil_L/R, Mouth_Neutral|Surprised|Happy, Cap, Arm_L/R › Hand_L/R › Prop_Key)`, `Leg_L/R`.
+- **Rigstatus:** de armen blijven aparte nodes en de sleutel kan aan `Hand_L` worden bevestigd. Per arm zijn mouw en hand nu één oppervlak met twee materialen. Lijf, broekspijpen en donker schoeisel vormen samen één verbonden `Body`-mesh. `Leg_L/R` zijn voorlopig lege plaatsaanduidingen: draaien van die nodes animeert de benen niet. Voor loopanimaties moet nog een huid-/bottenrig of een andere passende oplossing worden ontworpen en getest.
+- **Conceptstudie v5:** de klep en kroon van de pet bedekken de gouden band niet meer. De mouwen sluiten onder de uniformrand aan; handen hebben meer geleidelijke afronding. De tweede knoop is kleiner en donkerder en het strookje erachter is afgerond. De ronde benen en opening uit v4 blijven behouden. De oudere ontwerpbladen en v2/v3/v4-vergelijkingen tonen vorige modelversies; zie `Docs/Art/Conductor_ConceptStudy_v5.png` voor de huidige voorlopige vormvergelijking. Unity-import en materiaalweergave moeten nog worden getest; de meshdichtheid moet voor meerdere personages worden beoordeeld.
+- `python ArtSource/Tests/test_conductor_body.py` controleert onder meer of het lijf een enkele gesloten mesh is en de ruimte tussen de benen echt open is.
+- `python ArtSource/Tests/test_conductor_finish.py` controleert de vrije gouden band en de aansluiting van mouwen op het uniform.
+- Hiërarchie conducteur: `Conductor › Body › (Neckline, Collar, Buttons, Eye_L/R › Pupil_L/R, Mouth_Neutral|Surprised|Happy, Cap, Arm_L/R › Hand_L/R › Prop_Key)`, plus lege `Leg_L/R`-ankers.
   Standaard verborgen: `Mouth_Surprised`, `Mouth_Happy`, `Prop_Key`.
 - Wagonhoek: `DoorLeaf_L/R` schuiven langs lokale X (dicht = +0,475 / −0,475). `KeyLock` (0,72 m) en
   `DoorSill` zijn de interactie-ankers voor P0-05.
+- **Geschilderde variatie** (zodat niets één effen kleur is) is per vertex gebakken in de vertexkleur
+  (`Scene.bake_shading`): **R** = occlusie (hoeken, onder randen, onderkant iets donkerder), **G** = randlicht op
+  afrondingen, **B** = verfvlekken (fBm, 0,5 = neutraal). De shader verschuift hiermee de positie in de kleurramp;
+  daarbovenop komt een fijne penseelruis in wereldruimte. In Unity leest de toekomstige Shader Graph dit via de
+  *Vertex Color*-node. URP Lit negeert vertexkleuren.
 - Materialen heten `M_<Asset>_<Deel>`. In `*.materials.json` staan per materiaal de ramp (5 tinten),
   `rampShift` en shaderhints (`flat`, `noShadow`, `emissive`) voor de toekomstige stylized-lit Shader Graph.
 
@@ -68,3 +78,4 @@ Pas vormen of maten aan in de `build_*.py`-scripts, niet in de FBX. Kleuren kome
   Pipeline/Lit* toe.
 - URP Lit met alleen een basiskleur benadert de look maar haalt hem niet: de warme/koele ramp, de rim en de
   vlakke ogen vragen de geplande stylized-lit Shader Graph (zie `Docs/ART_STYLE_GUIDE.md`, Lighting).
+

@@ -39,7 +39,7 @@ DOOR = (-0.20, 0.95)    # deuropening (x)
 DOOR_TOP = 1.80
 WIN_Y = (0.95, 1.62)
 WIDTH = 2.6
-T = 0.10                # wanddikte
+T = 0.16                # wanddikte (dik genoeg voor ruime, zachte afrondingen)
 LOCK_Y = 0.72           # sleutelslot op reikhoogte van de conducteur (schouder ~0,49 m)
 
 
@@ -51,9 +51,10 @@ def box(x0, x1, y0, y1, z0, z1, r, mat, div=2):
 def build_wagon():
     sc = mk.Scene("WagonCorner_Blockout")
     R_ = RAMPS
-    sc.material("M_Train_Red", R_["train_red"][2], R_["train_red"], 0.25)
-    sc.material("M_Train_Trim", R_["train_trim"][1], R_["train_trim"], 0.20)
-    sc.material("M_Train_Roof", R_["metal"][2], R_["metal"], 0.20)
+    sc.material("M_Train_Red", R_["train_red"][2], R_["train_red"], 0.25, opts={"paint": 1.8})
+    sc.material("M_Train_RedLow", R_["train_red"][1], R_["train_red"], 0.25, ramp_shift=-0.22, opts={"paint": 1.8})
+    sc.material("M_Train_Trim", R_["train_trim"][1], R_["train_trim"], 0.20, opts={"paint": 1.4})
+    sc.material("M_Train_Roof", R_["metal"][2], R_["metal"], 0.20, opts={"paint": 1.6})
     sc.material("M_Train_Glass", R_["sky"][0], R_["sky"], 0.60, ramp_shift=-0.30, opts={"rim": 0.45, "spec": 1.4})
     sc.material("M_Train_Interior", R_["parchment"][2], R_["parchment"], 0.15)
     sc.material("M_Train_Floor", R_["cab_interior"][2], R_["cab_interior"], 0.15)
@@ -65,27 +66,28 @@ def build_wagon():
     z_out, z_in = 0.0, -T
     shell = []
     # onderstel / skirt (donkere trim) en vloer
-    shell.append(box(X0, X1, -0.42, FLOOR + 0.02, -WIDTH + 0.12, -0.06, 0.08, "M_Train_Trim"))
+    shell.append(box(X0, X1, -0.42, FLOOR + 0.02, -WIDTH + 0.12, -0.04, 0.15, "M_Train_Trim", 3))
     # onderste rode band (met deuropening)
     for (a, b) in ((X0, DOOR[0]), (DOOR[1], X1)):
-        shell.append(box(a, b, FLOOR, WIN_Y[0], z_in, z_out, 0.04, "M_Train_Red"))
+        shell.append(box(a, b, FLOOR, WIN_Y[0], z_in, z_out, 0.075, "M_Train_RedLow", 3))
     # raamstijlen
     wins = [(-3.25, -2.05), (-1.80, -0.55)]
     pill = [(X0, wins[0][0]), (wins[0][1], wins[1][0]), (wins[1][1], DOOR[0])]
     for (a, b) in pill:
-        shell.append(box(a, b, WIN_Y[0] - 0.02, WIN_Y[1] + 0.02, z_in, z_out, 0.04, "M_Train_Red"))
+        shell.append(box(a, b, WIN_Y[0] - 0.02, WIN_Y[1] + 0.02, z_in, z_out, 0.075, "M_Train_Red", 3))
     # bovenband boven de ramen, boven de deur, kopsectie
-    shell.append(box(X0, DOOR[0] + 0.02, WIN_Y[1], WALL_TOP, z_in, z_out, 0.04, "M_Train_Red"))
-    shell.append(box(DOOR[0] - 0.02, DOOR[1] + 0.02, DOOR_TOP, WALL_TOP, z_in, z_out, 0.04, "M_Train_Red"))
-    shell.append(box(DOOR[1], X1, WIN_Y[0] - 0.02, WALL_TOP, z_in, z_out, 0.04, "M_Train_Red"))
+    shell.append(box(X0, DOOR[0] + 0.02, WIN_Y[1], WALL_TOP, z_in, z_out, 0.075, "M_Train_Red", 3))
+    shell.append(box(DOOR[0] - 0.02, DOOR[1] + 0.02, DOOR_TOP, WALL_TOP, z_in, z_out, 0.075, "M_Train_Red", 3))
+    shell.append(box(DOOR[1], X1, WIN_Y[0] - 0.02, WALL_TOP, z_in, z_out, 0.075, "M_Train_Red", 3))
     # donkere raamband-lijn (livrei-accent) onder de ramen
     shell.append(box(X0, DOOR[0] - 0.01, WIN_Y[0] - 0.13, WIN_Y[0] - 0.06, z_out - 0.005, z_out + 0.022, 0.012, "M_Train_Trim"))
     shell.append(box(DOOR[1] + 0.01, X1, WIN_Y[0] - 0.13, WIN_Y[0] - 0.06, z_out - 0.005, z_out + 0.022, 0.012, "M_Train_Trim"))
     # kopwand (de 'hoek'): afgeronde eindstijl die naar achter loopt
-    shell.append(box(X1 - 0.14, X1 + 0.06, FLOOR, WALL_TOP, -WIDTH + 0.02, z_out, 0.09, "M_Train_Red", 3))
+    shell.append(box(X1 - 0.62, X1 + 0.08, FLOOR + 0.02, WALL_TOP + 0.02, -WIDTH + 0.02, z_out + 0.03, 0.30, "M_Train_Red", 5))
+    shell.append(box(X1 - 0.60, X1 + 0.10, -0.40, FLOOR + 0.04, -WIDTH + 0.10, -0.02, 0.18, "M_Train_Trim", 4))
     # dak: brede, bolle kap
-    roof = mk.rounded_box(X1 - X0 + 0.16, 0.42, WIDTH + 0.12, 0.2, 3, mat="M_Train_Roof")
-    shell.append(roof.transform(t=((X0 + X1) / 2, WALL_TOP + 0.13, -WIDTH / 2)))
+    roof = mk.rounded_box(X1 - X0 + 0.24, 0.50, WIDTH + 0.22, 0.25, 4, mat="M_Train_Roof")
+    shell.append(roof.transform(t=((X0 + X1) / 2 + 0.04, WALL_TOP + 0.17, -WIDTH / 2 + 0.01)))
     sc.add(mk.Part("WagonCorner", None))
     sc.add(mk.Part("Shell", mk.merge(*shell), (0, 0, 0), "WagonCorner"))
     # ramen (glas iets verzonken) + kopraam
@@ -95,7 +97,7 @@ def build_wagon():
     for (a, b) in wins:
         for (x0, x1, y0, y1) in ((a, b, WIN_Y[0] - 0.02, WIN_Y[0] + 0.05), (a, b, WIN_Y[1] - 0.05, WIN_Y[1] + 0.02),
                                  (a - 0.02, a + 0.05, WIN_Y[0], WIN_Y[1]), (b - 0.05, b + 0.02, WIN_Y[0], WIN_Y[1])):
-            frames.append(box(x0, x1, y0, y1, z_in + 0.03, z_out + 0.012, 0.02, "M_Train_Trim"))
+            frames.append(box(x0, x1, y0, y1, z_in + 0.05, z_out + 0.02, 0.034, "M_Train_Trim", 3))
     sc.add(mk.Part("Windows", mk.merge(*glass, *frames), (0, 0, 0), "WagonCorner"))
     # interieur (door de deur zichtbaar)
     inner = [
@@ -145,7 +147,7 @@ def build_env():
     random.seed(4)
     sc = mk.Scene("ArtCheck_Environment")
     R_ = RAMPS
-    sc.material("M_Env_Platform", R_["parchment"][1], R_["parchment"], 0.1, ramp_shift=-0.30)
+    sc.material("M_Env_Platform", R_["parchment"][1], R_["parchment"], 0.1, ramp_shift=-0.30, opts={"paint": 1.5})
     sc.material("M_Env_PlatformEdge", R_["accent_yellow"][2], R_["accent_yellow"], 0.2)
     sc.material("M_Env_Ballast", R_["cliff"][1], R_["cliff"], 0.1, ramp_shift=-0.1)
     sc.material("M_Env_Sleeper", R_["track_wood"][2], R_["track_wood"], 0.1)
@@ -159,7 +161,7 @@ def build_env():
     sc.material("M_Env_Lamp", R_["headlight"][2], R_["headlight"], 0.5, opts={"emissive": 0.8, "rim": 0})
     sc.material("M_Env_Post", R_["train_trim"][1], R_["train_trim"], 0.2)
     sc.add(mk.Part("ArtCheck_Environment", None))
-    plat = mk.merge(box(-9, 7, -0.75, 0.0, 0.10, 4.2, 0.05, "M_Env_Platform"),
+    plat = mk.merge(box(-9, 7, -0.75, 0.0, 0.10, 4.2, 0.12, "M_Env_Platform", 3),
                     box(-9, 7, -0.02, 0.008, 0.36, 0.50, 0.01, "M_Env_PlatformEdge"))
     sc.add(mk.Part("Platform", plat, (0, 0, 0), "ArtCheck_Environment"))
     # spoor onder de wagon (deels zichtbaar aan de kop)
@@ -212,6 +214,10 @@ def build_env():
 def main():
     wag = build_wagon()
     env = build_env()
+    for p in env.parts:   # grote vlakken: geen 'onderkant donkerder'
+        p.gradient = 0.0 if p.name in ("Ground", "Platform", "Mountains") else 0.15
+    wag.bake_shading(density=900, radius=0.35, noise_freq=1.6, edge_range=(5.0, 16.0))
+    env.bake_shading(density=60, radius=1.2, noise_freq=0.45, edge_range=(4.0, 14.0), max_samples=60000)
     out_dir = os.path.join(ROOT, "Assets", "Art", "Models", "Train", "WagonCorner")
     exp_dir = os.path.join(ROOT, "ArtSource", "Exports")
     os.makedirs(out_dir, exist_ok=True)

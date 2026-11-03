@@ -19,6 +19,7 @@
 - **Expressies** als wisselbare mond-nodes (neutraal, verbaasd, blij), plus pupilpositie en petkanteling. Geen blendshapes in P0.
 - **Deuren:** pocket-schuifdeuren met een donkere rubberrand; geel blijft gereserveerd voor interactie (slot, paal, drempel).
 - **Nieuwe ramp `mouth`** (mondholte en tong), gemeten in het concept en toegevoegd aan `palette.json`.
+- **Geschilderde variatie** wordt per vertex gebakken in de vertexkleur (R occlusie, G randlicht, B verfvlekken), niet in textures. Daarvoor zijn geen UV's of textures nodig, het blijft licht en is reproduceerbaar; de stylized-lit shader moet de vertexkleur lezen.
 - **Doel-look** is vastgelegd met een ramp-shader-render. De Unity-tegenhanger (stylized-lit Shader Graph) is een vervolgtaak en is nog niet gemaakt.
 
 ## Open

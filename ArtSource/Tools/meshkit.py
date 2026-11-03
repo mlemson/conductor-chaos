@@ -114,9 +114,12 @@ class Mesh:
     F: list = field(default_factory=list)      # lijst van tuples (tri/quad)
     M: list = field(default_factory=list)      # materiaalnaam per face
     sharp: bool = False                        # True = platte normalen per face
+    C: np.ndarray | None = None                # optioneel: per-vertex 'shade' RGBA (zie Scene.bake_shading)
+    N: np.ndarray | None = None                # optionele gladde per-vertex normalen
 
     def copy(self):
-        return Mesh(self.V.copy(), list(self.F), list(self.M), self.sharp)
+        return Mesh(self.V.copy(), list(self.F), list(self.M), self.sharp, None if self.C is None else self.C.copy(),
+                    None if self.N is None else self.N.copy())
 
     def transform(self, R=None, t=(0, 0, 0), s=None):
         V = self.V
@@ -127,6 +130,12 @@ class Mesh:
         V = V + np.asarray(t, float)
         out = self.copy()
         out.V = V
+        if out.N is not None:
+            if s is not None:
+                out.N = out.N / np.asarray(s, float)
+            if R is not None:
+                out.N = out.N @ np.asarray(R).T
+            out.N /= np.maximum(np.linalg.norm(out.N, axis=1, keepdims=True), 1e-12)
         if s is not None and np.prod(np.sign(s)) < 0:      # spiegelen -> winding omdraaien
             out.F = [tuple(reversed(f)) for f in out.F]
         return out
@@ -154,6 +163,8 @@ def merge(*meshes):
 
 
 def vertex_normals(mesh: Mesh):
+    if mesh.N is not None:
+        return mesh.N.copy()
     V = mesh.V
     N = np.zeros_like(V)
     for f in mesh.F:
@@ -344,6 +355,40 @@ class Part:
     parent: str | None = None
     rotation: np.ndarray | None = None  # lokale rotatie (3x3) t.o.v. parent
     visible: bool = True
+    ao_group: str = "main"            # onderdelen in dezelfde groep beschaduwen elkaar
+    ao_receive: tuple = ()            # extra groepen waarvan dit onderdeel occlusie ontvangt
+    gradient: float = 0.18            # sterkte van 'onderkant donkerder' (0 = uit)
+
+
+def _value_noise(P, seed=0):
+    """Gladde 3D value noise (0..1) op punten P (N,3)."""
+    rng = np.random.default_rng(seed)
+    perm = rng.permutation(256)
+    vals = rng.random(256)
+    Pi = np.floor(P).astype(np.int64)
+    f = P - Pi
+    u = f * f * (3 - 2 * f)
+
+    def h(ix, iy, iz):
+        return vals[perm[(perm[(perm[ix & 255] + iy) & 255] + iz) & 255]]
+
+    x0, y0, z0 = Pi[:, 0], Pi[:, 1], Pi[:, 2]
+    acc = 0
+    for dx in (0, 1):
+        for dy in (0, 1):
+            for dz in (0, 1):
+                w = (u[:, 0] if dx else 1 - u[:, 0]) * (u[:, 1] if dy else 1 - u[:, 1]) * (u[:, 2] if dz else 1 - u[:, 2])
+                acc = acc + w * h(x0 + dx, y0 + dy, z0 + dz)
+    return acc
+
+
+def fbm(P, freq=1.0, octaves=3, seed=0):
+    tot, amp, norm = 0.0, 1.0, 0.0
+    for o in range(octaves):
+        tot = tot + amp * _value_noise(P * freq * (2.03 ** o) + 17.1 * o, seed + o)
+        norm += amp
+        amp *= 0.5
+    return tot / norm
 
 
 class Scene:
@@ -377,6 +422,93 @@ class Scene:
             L[:3, 3] = q.pivot
             M = M @ L
         return M
+
+    def bake_shading(self, density=3000.0, radius=0.12, noise_freq=4.0, edge_range=(9.0, 30.0), seed=1,
+                     max_samples=120000):
+        """Bak 'geschilderde' variatie per vertex in mesh.C = (R occlusie, G randlicht, B verfvariatie, A 1).
+
+        R: 1 = open, 0 = diep in een hoek/onder een rand; inclusief zacht donkerder naar de onderkant.
+        G: kromming (afgeronde randen) -> lichter randje, zoals de geschilderde bevels in het concept.
+        B: lage-frequentie verfvlekken (fBm), 0.5 = neutraal.
+        De stylized-lit shader (render.html, later Shader Graph) leest deze kanalen.
+        """
+        try:
+            from scipy.spatial import cKDTree
+        except ImportError:
+            from spatial_fallback import cKDTree
+        rng = np.random.default_rng(seed)
+        parts = [p for p in self.parts if p.mesh is not None]
+        world = {}
+        for p in parts:
+            M = self.world_matrix(p)
+            Vw = p.mesh.V @ M[:3, :3].T + M[:3, 3]
+            Nw = vertex_normals(p.mesh) @ M[:3, :3].T
+            world[p.name] = (Vw, Nw)
+        # oppervlakte-samples per groep (alleen zichtbare onderdelen werpen occlusie)
+        groups = {}
+        for p in parts:
+            if not p.visible:
+                continue
+            Vw, _ = world[p.name]
+            tris = [(f[0], f[i], f[i + 1]) for f in p.mesh.F for i in range(1, len(f) - 1)]
+            T = np.array(tris)
+            a, b, c = Vw[T[:, 0]], Vw[T[:, 1]], Vw[T[:, 2]]
+            area = 0.5 * np.linalg.norm(np.cross(b - a, c - a), axis=1)
+            n = int(min(max_samples, max(50, area.sum() * density)))
+            idx = rng.choice(len(T), n, p=area / area.sum())
+            r1, r2 = rng.random(n), rng.random(n)
+            sq = np.sqrt(r1)
+            pts = (1 - sq)[:, None] * a[idx] + (sq * (1 - r2))[:, None] * b[idx] + (sq * r2)[:, None] * c[idx]
+            groups.setdefault(p.ao_group, []).append(pts)
+        trees = {g: cKDTree(np.vstack(v)) for g, v in groups.items()}
+        for p in parts:
+            Vw, Nw = world[p.name]
+            Nn = Nw / np.maximum(np.linalg.norm(Nw, axis=1, keepdims=True), 1e-9)
+            occ = np.zeros(len(Vw))
+            cnt = np.zeros(len(Vw))
+            for g in (p.ao_group,) + tuple(p.ao_receive):
+                if g not in trees:
+                    continue
+                tree = trees[g]
+                origin = Vw + Nn * radius * 0.04
+                k = min(96, tree.n)
+                d, ii = tree.query(origin, k=k, distance_upper_bound=radius)
+                ok = np.isfinite(d)
+                ii = np.where(ok, ii, 0)
+                Q = tree.data[ii]
+                D = Q - origin[:, None, :]
+                L = np.maximum(np.linalg.norm(D, axis=2), 1e-9)
+                cosv = np.einsum("nkd,nd->nk", D / L[:, :, None], Nn)
+                w = np.clip(cosv - 0.25, 0, None) * (1 - np.clip(L / radius, 0, 1)) * ok
+                occ += w.sum(1)
+                cnt += ok.sum(1)
+            frac = occ / np.maximum(cnt, 1)
+            ao = 1 - np.clip(frac * 3.2, 0, 1) ** 0.9
+            if p.gradient > 0:
+                ys = Vw[:, 1]
+                h = (ys - ys.min()) / max(1e-6, ys.max() - ys.min())
+                ao = ao * (1 - p.gradient * (1 - np.clip(h / 0.7, 0, 1)) ** 1.5)
+            # kromming via randen
+            E = {}
+            for f in p.mesh.F:
+                for i in range(len(f)):
+                    a_, b_ = f[i], f[(i + 1) % len(f)]
+                    E[(min(a_, b_), max(a_, b_))] = 1
+            Ei = np.array(list(E.keys()))
+            VN = vertex_normals(p.mesh)
+            k_e = np.linalg.norm(VN[Ei[:, 0]] - VN[Ei[:, 1]], axis=1) / np.maximum(
+                np.linalg.norm(p.mesh.V[Ei[:, 0]] - p.mesh.V[Ei[:, 1]], axis=1), 1e-6)
+            kv = np.zeros(len(Vw))
+            np.maximum.at(kv, Ei[:, 0], k_e)
+            np.maximum.at(kv, Ei[:, 1], k_e)
+            e0, e1 = edge_range
+            edge = np.clip((kv - e0) / (e1 - e0), 0, 1)
+            edge = edge * edge * (3 - 2 * edge)
+            if p.mesh.sharp:
+                edge[:] = 0
+            nz = fbm(Vw, noise_freq, 3, seed)
+            nz = np.clip((nz - 0.5) * 1.8 + 0.5, 0, 1)
+            p.mesh.C = np.stack([ao, edge, nz, np.ones(len(Vw))], axis=1).astype(np.float32)
 
     def stats(self):
         tris = sum(p.mesh.tri_count() for p in self.parts if p.mesh)
@@ -455,6 +587,10 @@ class Scene:
             cn = corner_normals(m).reshape(-1).tolist()
             w('\t\tLayerElementNormal: 0 {\n\t\t\tVersion: 102\n\t\t\tName: ""\n\t\t\tMappingInformationType: "ByPolygonVertex"\n\t\t\tReferenceInformationType: "Direct"')
             w("\t\t\tNormals: *%d {\n\t\t\t\ta: %s\n\t\t\t} \n\t\t}" % (len(cn), arr(cn)))
+            if m.C is not None:
+                cc = np.array([m.C[i] for f in m.F for i in f]).reshape(-1).tolist()
+                w('\t\tLayerElementColor: 0 {\n\t\t\tVersion: 101\n\t\t\tName: "Shade"\n\t\t\tMappingInformationType: "ByPolygonVertex"\n\t\t\tReferenceInformationType: "Direct"')
+                w("\t\t\tColors: *%d {\n\t\t\t\ta: %s\n\t\t\t} \n\t\t}" % (len(cc), arr(cc, "{:.4f}")))
             used = []
             for name in m.M:
                 if name not in used:
@@ -465,7 +601,8 @@ class Scene:
             mi = midx if len(used) > 1 else [0]
             w("\t\t\tMaterials: *%d {\n\t\t\t\ta: %s\n\t\t\t} \n\t\t}" % (len(mi), arr(mi)))
             w('\t\tLayer: 0 {\n\t\t\tVersion: 100\n\t\t\tLayerElement:  {\n\t\t\t\tType: "LayerElementNormal"\n\t\t\t\tTypedIndex: 0\n\t\t\t}'
-              '\n\t\t\tLayerElement:  {\n\t\t\t\tType: "LayerElementMaterial"\n\t\t\t\tTypedIndex: 0\n\t\t\t}\n\t\t}')
+              + ('\n\t\t\tLayerElement:  {\n\t\t\t\tType: "LayerElementColor"\n\t\t\t\tTypedIndex: 0\n\t\t\t}' if m.C is not None else '')
+              + '\n\t\t\tLayerElement:  {\n\t\t\t\tType: "LayerElementMaterial"\n\t\t\t\tTypedIndex: 0\n\t\t\t}\n\t\t}')
             w("\t}")
             conns.append((gid, mid))
             for name in used:  # volgorde = materiaalindex
@@ -557,19 +694,24 @@ class Scene:
                         lst[0].append((f[i + 1], corners[i + 1]))
                 for mn, (tri, _) in per_mat.items():
                     # dedupliceer (vertex, normaal) combinaties
-                    keymap, pos, nor, idx = {}, [], [], []
+                    keymap, pos, nor, idx, col = {}, [], [], [], []
                     for vi, ci in tri:
                         nkey = (vi, tuple(np.round(cn[ci], 4)))
                         if nkey not in keymap:
                             keymap[nkey] = len(pos)
                             pos.append(m.V[vi])
                             nor.append(cn[ci])
+                            if m.C is not None:
+                                col.append(m.C[vi])
                         idx.append(keymap[nkey])
                     P = np.array(pos, np.float32)
                     N = np.array(nor, np.float32)
                     I = np.array(idx, np.uint32)
-                    prims.append({"attributes": {"POSITION": add_acc(P, 5126, "VEC3", 34962, True),
-                                                 "NORMAL": add_acc(N, 5126, "VEC3", 34962)},
+                    attrs = {"POSITION": add_acc(P, 5126, "VEC3", 34962, True),
+                             "NORMAL": add_acc(N, 5126, "VEC3", 34962)}
+                    if col:
+                        attrs["COLOR_0"] = add_acc(np.array(col, np.float32), 5126, "VEC4", 34962)
+                    prims.append({"attributes": attrs,
                                   "indices": add_acc(I, 5125, "SCALAR", 34963),
                                   "material": mat_names.index(mn)})
                 meshes.append({"name": p.name, "primitives": prims})
@@ -596,3 +738,4 @@ class Scene:
             fh.write(struct.pack("<III", 0x46546C67, 2, total))
             fh.write(struct.pack("<II", len(js), 0x4E4F534A) + js)
             fh.write(struct.pack("<II", len(bin_chunks), 0x004E4942) + bytes(bin_chunks))
+
