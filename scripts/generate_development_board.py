@@ -92,6 +92,7 @@ def state(issue: dict, related: list[dict]) -> str:
 
 def render(issues: list[dict], prs: list[dict], repo: str) -> str:
     tasks = []
+    epics = []
     for issue in issues:
         if issue.get("pull_request"):
             continue
@@ -99,8 +100,15 @@ def render(issues: list[dict], prs: list[dict], repo: str) -> str:
         if not meta:
             continue
         related = linked(issue, prs)
-        tasks.append(dict(issue=issue, phase=meta[0], area=meta[1],
-                          related=related, state=state(issue, related)))
+        item = dict(issue=issue, phase=meta[0], area=meta[1],
+                    related=related, state=state(issue, related))
+        # Broad themes remain visible but do not inflate completion percentages.
+        # Agents must pick a linked small task, not implement the full epic at once.
+        if "<!-- conductor-chaos-epic -->" in (issue.get("body") or ""):
+            epics.append(item)
+        else:
+            tasks.append(item)
+    epics.sort(key=lambda x: (PHASES.index(x["phase"]), int(x["issue"]["number"])))
     tasks.sort(key=lambda x: (PHASES.index(x["phase"]), int(x["issue"]["number"])))
     counts = Counter(t["state"] for t in tasks)
     done = counts["Klaar"]
@@ -109,7 +117,8 @@ def render(issues: list[dict], prs: list[dict], repo: str) -> str:
         "# 🚂 Conductor Chaos — live ontwikkelbord", "",
         "> **Bron van waarheid:** [GitHub Issues](https://github.com/" + repo +
         "/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde "
-        "momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand.", "",
+        "momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand. "
+        "Brede epics tellen niet als uitvoertaak.", "",
         f"**Voortgang: {done}/{total} afgerond ({round(done * 100 / total) if total else 0}%)**", "",
         "| 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |",
         "| :---: | :---: | :---: | :---: | :---: |",
@@ -128,6 +137,21 @@ def render(issues: list[dict], prs: list[dict], repo: str) -> str:
         completed = sum(t["state"] == "Klaar" for t in selected)
         filled = round(10 * completed / len(selected)) if selected else 0
         lines.append(f"| **{phase}** | {'🟩' * filled + '⬜' * (10-filled)} {completed}/{len(selected)} | {DESCRIPTIONS[phase]} |")
+    lines.extend(["", "## 🧩 Overkoepelende onderwerpen (geen uitvoertaken)", "",
+                  "Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; "
+                  "ze tellen niet mee in de voortgang. Zie "
+                  "[de kleine taken](AI/SMALL_TASK_INDEX.md).", ""])
+    if epics:
+        lines.extend(["| Onderwerp | Fase | Deelissues |",
+                      "| :-- | :-- | :-- |"])
+        for e in epics:
+            issue = e["issue"]
+            refs = re.findall(r"(?m)^- #([0-9]+)\b", issue.get("body") or "")
+            count = len(refs)
+            lines.append(f"| [#{issue['number']} {text(issue['title'])}]({issue['html_url']}) "
+                         f"| {e['phase']} | {count} |")
+    else:
+        lines.append("Nog geen overkoepelende issues.")
     lines.extend(["", "## 📋 Taken per status", ""])
     headers = {
         "Te doen": "📝 Te doen", "Bezig": "🔧 Bezig",
@@ -154,7 +178,7 @@ def render(issues: list[dict], prs: list[dict], repo: str) -> str:
                 f"| {t['phase']} | [#{issue['number']} {text(title)}]({issue['html_url']}) "
                 f"| {text(t['area'])} | {text(ownership)} | {linked_prs} |")
         lines.append("")
-    tracked = {int(t["issue"]["number"]) for t in tasks}
+    tracked = {int(t["issue"]["number"]) for t in tasks + epics}
     unlinked = [p for p in prs if p.get("state") == "open" and
                 not ({int(n) for n in PR_LINK.findall(
                     (p.get("body") or "") + " " + (p.get("title") or ""))} & tracked)]
