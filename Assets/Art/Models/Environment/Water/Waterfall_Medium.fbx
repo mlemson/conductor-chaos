@@ -99,25 +99,7 @@ Objects:  {
 			}
 		}
 	}
-	Material: 100001, "Material::M_Env_Water", "" {
-		Version: 102
-		ShadingModel: "lambert"
-		MultiLayer: 0
-		Properties70:  {
-			P: "DiffuseColor", "Color", "", "A",0.556863,0.780392,0.925490
-			P: "DiffuseFactor", "Number", "", "A",1
-		}
-	}
-	Material: 100002, "Material::M_Env_WaterLight", "" {
-		Version: 102
-		ShadingModel: "lambert"
-		MultiLayer: 0
-		Properties70:  {
-			P: "DiffuseColor", "Color", "", "A",0.678431,0.843137,0.929412
-			P: "DiffuseFactor", "Number", "", "A",1
-		}
-	}
-	Material: 100003, "Material::M_Env_Foam", "" {
+	Material: 100001, "Material::M_Env_Foam", "" {
 		Version: 102
 		ShadingModel: "lambert"
 		MultiLayer: 0
@@ -126,11 +108,29 @@ Objects:  {
 			P: "DiffuseFactor", "Number", "", "A",1
 		}
 	}
+	Material: 100002, "Material::M_Env_Water", "" {
+		Version: 102
+		ShadingModel: "lambert"
+		MultiLayer: 0
+		Properties70:  {
+			P: "DiffuseColor", "Color", "", "A",0.556863,0.780392,0.925490
+			P: "DiffuseFactor", "Number", "", "A",1
+		}
+	}
+	Material: 100003, "Material::M_Env_WaterLight", "" {
+		Version: 102
+		ShadingModel: "lambert"
+		MultiLayer: 0
+		Properties70:  {
+			P: "DiffuseColor", "Color", "", "A",0.678431,0.843137,0.929412
+			P: "DiffuseFactor", "Number", "", "A",1
+		}
+	}
 }
 Connections:  {
 	C: "OO",100004,0
 	C: "OO",100005,100004
-	C: "OO",100001,100004
 	C: "OO",100002,100004
 	C: "OO",100003,100004
+	C: "OO",100001,100004
 }

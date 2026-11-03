@@ -422,7 +422,7 @@ def build_all():
 
     os.makedirs(EXP_DIR, exist_ok=True)
     unity_assets.folder_meta(ROOT, MAT_DIR)
-    guids = {n: unity_assets.material(ROOT, f"{MAT_DIR}/{n}.mat", n, b, sm, None, op.get("opacity"))
+    guids = {n: unity_assets.material(ROOT, f"{MAT_DIR}/{n}.mat", n, b, sm, None, op.get("opacity"), ramp, sh, op)
              for n, (b, ramp, sm, sh, op) in MATERIALS.items()}
     manifest = {}
     for rel, (mesh, dens, rad) in A.items():

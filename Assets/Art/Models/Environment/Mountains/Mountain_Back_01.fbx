@@ -99,16 +99,7 @@ Objects:  {
 			}
 		}
 	}
-	Material: 100001, "Material::M_Env_Mountain", "" {
-		Version: 102
-		ShadingModel: "lambert"
-		MultiLayer: 0
-		Properties70:  {
-			P: "DiffuseColor", "Color", "", "A",0.454902,0.498039,0.701961
-			P: "DiffuseFactor", "Number", "", "A",1
-		}
-	}
-	Material: 100002, "Material::M_Env_Snow", "" {
+	Material: 100001, "Material::M_Env_Snow", "" {
 		Version: 102
 		ShadingModel: "lambert"
 		MultiLayer: 0
@@ -117,10 +108,19 @@ Objects:  {
 			P: "DiffuseFactor", "Number", "", "A",1
 		}
 	}
+	Material: 100002, "Material::M_Env_Mountain", "" {
+		Version: 102
+		ShadingModel: "lambert"
+		MultiLayer: 0
+		Properties70:  {
+			P: "DiffuseColor", "Color", "", "A",0.454902,0.498039,0.701961
+			P: "DiffuseFactor", "Number", "", "A",1
+		}
+	}
 }
 Connections:  {
 	C: "OO",100003,0
 	C: "OO",100004,100003
-	C: "OO",100001,100003
 	C: "OO",100002,100003
+	C: "OO",100001,100003
 }

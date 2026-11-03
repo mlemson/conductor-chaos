@@ -108,7 +108,7 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
         vec4 cl = cell3(vWorldPos / uCellSize);
         t += (cl.x - 0.5) * 0.10 * uCells;
         // vuil: onderin donkerder en bruiner, per cel (zodat ook het vuil uit vlakken bestaat)
-        float cy = mix(vWorldPos.y, cl.w * uCellSize, step(0.001, uCells));
+        float cy = mix(vWorldPos.y, cl.z * uCellSize, step(0.001, uCells));   // hoogte van het celmiddelpunt
         float grime = (1. - smoothstep(uGrimeY.x, uGrimeY.y, cy + (hash33(cl.yzw).y - 0.5) * 0.45)) * uGrime;
         t -= grime * 0.11;
         #if NUM_DIR_LIGHTS > 0
