@@ -115,9 +115,11 @@ class Mesh:
     M: list = field(default_factory=list)      # materiaalnaam per face
     sharp: bool = False                        # True = platte normalen per face
     C: np.ndarray | None = None                # optioneel: per-vertex 'shade' RGBA (zie Scene.bake_shading)
+    N: np.ndarray | None = None                # optionele gladde per-vertex normalen
 
     def copy(self):
-        return Mesh(self.V.copy(), list(self.F), list(self.M), self.sharp, None if self.C is None else self.C.copy())
+        return Mesh(self.V.copy(), list(self.F), list(self.M), self.sharp, None if self.C is None else self.C.copy(),
+                    None if self.N is None else self.N.copy())
 
     def transform(self, R=None, t=(0, 0, 0), s=None):
         V = self.V
@@ -128,6 +130,12 @@ class Mesh:
         V = V + np.asarray(t, float)
         out = self.copy()
         out.V = V
+        if out.N is not None:
+            if s is not None:
+                out.N = out.N / np.asarray(s, float)
+            if R is not None:
+                out.N = out.N @ np.asarray(R).T
+            out.N /= np.maximum(np.linalg.norm(out.N, axis=1, keepdims=True), 1e-12)
         if s is not None and np.prod(np.sign(s)) < 0:      # spiegelen -> winding omdraaien
             out.F = [tuple(reversed(f)) for f in out.F]
         return out
@@ -155,6 +163,8 @@ def merge(*meshes):
 
 
 def vertex_normals(mesh: Mesh):
+    if mesh.N is not None:
+        return mesh.N.copy()
     V = mesh.V
     N = np.zeros_like(V)
     for f in mesh.F:

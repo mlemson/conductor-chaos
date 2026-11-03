@@ -4,17 +4,33 @@ import numpy as np
 from meshkit import Mesh
 
 
-def _rounded_leg(x,y,z,cx):
-    """Rounded, elliptical cross-section with softly rounded top and sole."""
-    radial=(np.sqrt(((x-cx)/0.108)**2+(z/0.235)**2)-1.0)*0.108
-    vertical=np.abs(y-0.155)-0.155
-    radius=0.070
-    a=radial+radius; b=vertical+radius
-    return np.sqrt(np.maximum(a,0)**2+np.maximum(b,0)**2)+np.minimum(np.maximum(a,b),0)-radius
+def _body_field(x,y,z,body_radius,body_depth):
+    h=((np.abs(x)/body_radius)**2.6+(np.abs(z)/(body_radius*body_depth))**2.6)**(1/2.6)
+    above=np.maximum((y-0.8)/0.22,0)
+    head=(h**2.4+above**2.4)**(1/2.4)
+    def smooth_max(a,b,k):
+        q=np.maximum(k-np.abs(a-b),0.0)
+        return np.maximum(a,b)+q*q/(4*k)
+    # Blend the torso into two round cross-sections gradually. A hard union
+    # makes a visible horizontal groove where the old parts overlapped.
+    leg_radius=0.108
+    leg_depth=0.14
+    leg_left=(np.sqrt(((x+0.17)/leg_radius)**2+(z/leg_depth)**2)-1)*leg_radius
+    leg_right=(np.sqrt(((x-0.17)/leg_radius)**2+(z/leg_depth)**2)-1)*leg_radius
+    legs=np.minimum(leg_left,leg_right)
+    t=np.clip((y-0.08)/0.24,0,1)
+    t=t*t*(3-2*t)
+    cross_section=legs*(1-t)+(head-1)*body_radius*t
+    body=smooth_max(cross_section,-y,0.075)
+    r=0.052
+    qx=np.abs(x)-(0.067-r)
+    qy=np.abs(y-(-0.12))-(0.35-r)
+    gap=np.sqrt(np.maximum(qx,0)**2+np.maximum(qy,0)**2)+np.minimum(np.maximum(qx,qy),0)-r
+    return smooth_max(body,-gap,0.018)
 
 
 def make_body(body_radius=0.28, body_depth=0.86, collar_y=0.53, spacing=0.028):
-    """Continuous body/trousers with a real open gap; shoes remain separate.
+    """Continuous body/trousers/shoes with a real open gap.
 
     Small smooth unions join the trousers to the upper body without a skirt-like rim.
     A tetrahedral isosurface shares vertices between adjacent cells.
@@ -23,19 +39,7 @@ def make_body(body_radius=0.28, body_depth=0.86, collar_y=0.53, spacing=0.028):
     ys=np.arange(-0.035,1.06+spacing,spacing)
     zs=np.arange(-0.30,0.30+spacing,spacing)
     x,y,z=np.meshgrid(xs,ys,zs,indexing='ij')
-    h=((np.abs(x)/body_radius)**2.6+(np.abs(z)/(body_radius*body_depth))**2.6)**(1/2.6)
-    dome=0.8+0.22*np.maximum(0,1-np.minimum(h,1)**2.4)**(1/2.4)
-    torso=np.maximum.reduce(((h-1)*body_radius,0.235-y,y-dome))
-    # Two trouser legs extend into the torso; a clear gap survives between them.
-    # Continue the same outer silhouette down each leg, avoiding a projecting
-    # jacket hem or separate trousers floating inside the torso cross-section.
-    outline=(h-1)*body_radius
-    left=np.maximum(_rounded_leg(x,y,z,-0.17),outline)
-    right=np.maximum(_rounded_leg(x,y,z,0.17),outline)
-    def smooth_min(a,b,k):
-        u=np.maximum(k-np.abs(a-b),0.0)/k
-        return np.minimum(a,b)-u*u*k*0.25
-    field=smooth_min(torso,np.minimum(left,right),0.045)
+    field=_body_field(x,y,z,body_radius,body_depth)
     shape=field.shape
     offsets=np.array([(0,0,0),(1,0,0),(1,1,0),(0,1,0),(0,0,1),(1,0,1),(1,1,1),(0,1,1)])
     samples=np.stack([field[dx:shape[0]-1+dx,dy:shape[1]-1+dy,dz:shape[2]-1+dz] for dx,dy,dz in offsets],axis=-1)
@@ -99,5 +103,17 @@ def make_body(body_radius=0.28, body_depth=0.86, collar_y=0.53, spacing=0.028):
             if polygon and high is not None: polygon=clip(polygon,high,True)
             for i in range(1,len(polygon)-1):
                 cut_faces.append((polygon[0],polygon[i],polygon[i+1])); materials.append(material)
-    return Mesh(np.asarray(vertices),cut_faces,materials)
+    v=np.asarray(vertices)
+    # Compute normals from the underlying smooth surface, not from the
+    # irregular tetrahedral triangles; this avoids streaks and false ridges.
+    epsilon=0.001
+    components=[]
+    for axis in range(3):
+        delta=np.zeros(3); delta[axis]=epsilon
+        p=v+delta; m=v-delta
+        components.append((_body_field(p[:,0],p[:,1],p[:,2],body_radius,body_depth)
+                           -_body_field(m[:,0],m[:,1],m[:,2],body_radius,body_depth))/(2*epsilon))
+    normals=np.stack(components,axis=1)
+    normals/=np.maximum(np.linalg.norm(normals,axis=1,keepdims=True),1e-12)
+    return Mesh(v,cut_faces,materials,N=normals)
 

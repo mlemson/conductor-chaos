@@ -27,6 +27,16 @@ bad=Counter(n for n in edge_count.values() if n!=2)
 print('vertices',len(m.V),'faces',len(m.F),'connected components',len(components),'boundary/nonmanifold edge incidence',dict(bad),'zero area',zero,'materials',set(m.M))
 assert len(components)==1 and not bad and zero==0
 assert set(m.M)=={'M_Conductor_Uniform','M_Conductor_Skin','M_Conductor_Shoe'}
+assert m.N is not None and m.N.shape == m.V.shape and np.isfinite(m.N).all()
+assert np.allclose(np.linalg.norm(m.N,axis=1),1.0,atol=1e-5)
+rot=np.array([[0,0,1],[0,1,0],[-1,0,0]],dtype=float)
+scaled=np.array([1.2,0.8,1.1])
+transformed=m.transform(R=rot,s=scaled)
+expected=m.N/scaled
+expected=expected@rot.T
+expected/=np.linalg.norm(expected,axis=1,keepdims=True)
+assert np.allclose(transformed.N,expected,atol=1e-6)
+print('PASS: smooth normals are finite, normalized and correctly transformed.')
 
 def z_hits(x,y):
     hits=[]
