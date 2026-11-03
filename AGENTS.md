@@ -33,6 +33,12 @@
 - Bij veranderingen aan de physics-playground: HUD mag het camera-/muis-/gripsysteem niet kapen. Geen dubbele EventSystem of niet-functionerende permanente inputprompts. Test host en remote client waar relevant.
 - Documenteer wat in Unity zichtbaar en getest is en wat alleen een conceptcomponent is. Gebruik de aparte UI-preview als art-review, niet als bewijs dat online multiplayer af is.
 
+## Movement en physics-feel (verplicht voor locomotion-/physics-agents)
+
+- Lees de [physics-based movementrichtlijn](Docs/PHYSICS_MOVEMENT.md) bij iedere wijziging aan spelerbeweging, balans, ragdoll, armen/grip, camera of botsingen in een rijdende trein. Referentie: *Gang Beasts* / *Human: Fall Flat* met **directere besturing**; responsiviteit gaat boven chaos.
+- Werk verder op de bestaande physics-playground en charactercontroller. **Geen parallel movement-/gripsysteem** bouwen; gebruik de bestaande kleine issues (#28, #36, #50, #51, #56 en relevante gripissues) en voeg alleen ontbrekende afgebakende taken toe.
+- Klein contact moet meestal niet tot vallen leiden; grote impacts mogen echte fysieke gevolgen hebben. Trainruimte, serverautoriteit, camera-comfort en beperkte testkosten zijn onderdeel van de definitie van klaar. Richtwaarden in de guide zijn tuningvoorstellen, geen reeds bewezen instellingen.
+
 ## Ontwerpregels
 
 - De host/server valideert en beslist over gedeelde toestand, inclusief trein, deur, objecten en events; clients sturen intenties, geen vertrouwde uitkomsten. Lokale UI en cosmetische feedback mogen lokaal zijn.
