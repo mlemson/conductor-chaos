@@ -115,11 +115,14 @@ class Mesh:
     M: list = field(default_factory=list)      # materiaalnaam per face
     sharp: bool = False                        # True = platte normalen per face
     C: np.ndarray | None = None                # optioneel: per-vertex 'shade' RGBA (zie Scene.bake_shading)
+    N: np.ndarray | None = None                # optionele gladde per-vertex normalen
     FS: list | None = None                     # optioneel: per face 'plat' (facet) — blijft behouden bij merge
 
     def copy(self):
-        return Mesh(self.V.copy(), list(self.F), list(self.M), self.sharp, None if self.C is None else self.C.copy(),
-                    None if self.FS is None else list(self.FS))
+        return Mesh(self.V.copy(), list(self.F), list(self.M), self.sharp,
+                    None if self.C is None else self.C.copy(),
+                    N=None if self.N is None else self.N.copy(),
+                    FS=None if self.FS is None else list(self.FS))
 
     def face_sharp(self):
         return list(self.FS) if self.FS is not None else [self.sharp] * len(self.F)
@@ -133,6 +136,12 @@ class Mesh:
         V = V + np.asarray(t, float)
         out = self.copy()
         out.V = V
+        if out.N is not None:
+            if s is not None:
+                out.N = out.N / np.asarray(s, float)
+            if R is not None:
+                out.N = out.N @ np.asarray(R).T
+            out.N /= np.maximum(np.linalg.norm(out.N, axis=1, keepdims=True), 1e-12)
         if s is not None and np.prod(np.sign(s)) < 0:      # spiegelen -> winding omdraaien
             out.F = [tuple(reversed(f)) for f in out.F]
         return out
@@ -156,6 +165,8 @@ def merge(*meshes):
         off += len(m.V)
     out.V = np.vstack(Vs) if Vs else np.zeros((0, 3))
     out.F, out.M = F, M
+    if any(m.N is not None for m in meshes):
+        out.N = np.vstack([vertex_normals(m) for m in meshes])
     fs = []
     for m in meshes:
         fs += m.face_sharp()
@@ -166,6 +177,8 @@ def merge(*meshes):
 
 
 def vertex_normals(mesh: Mesh):
+    if mesh.N is not None:
+        return mesh.N.copy()
     V = mesh.V
     N = np.zeros_like(V)
     for f in mesh.F:
@@ -774,7 +787,10 @@ class Scene:
         B: lage-frequentie verfvlekken (fBm), 0.5 = neutraal.
         De stylized-lit shader (render.html, later Shader Graph) leest deze kanalen.
         """
-        from scipy.spatial import cKDTree
+        try:
+            from scipy.spatial import cKDTree
+        except ImportError:
+            from spatial_fallback import cKDTree
         rng = np.random.default_rng(seed)
         parts = [p for p in self.parts if p.mesh is not None]
         world = {}
