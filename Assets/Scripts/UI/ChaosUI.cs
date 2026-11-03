@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -27,7 +26,6 @@ namespace ConductorChaos.UI
 
         private static Font cachedFont;
         private static Sprite rounded;
-        private static readonly Dictionary<string, Sprite> RoundedCache = new Dictionary<string, Sprite>();
 
         public static Color Hex(string value)
         {
@@ -193,6 +191,7 @@ namespace ConductorChaos.UI
             UnityEngine.Events.UnityAction<float> onChange)
         {
             RectTransform baseRt = Panel(parent, "Volume track", min, max, Slate);
+            baseRt.GetComponent<Image>().raycastTarget = true;
             var slider = baseRt.gameObject.AddComponent<Slider>();
             RectTransform fillArea = Rect(baseRt, "FillArea", Vector2.zero, Vector2.one,
                 new Vector2(4, 4), new Vector2(-4, -4));
