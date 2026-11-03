@@ -29,6 +29,8 @@ document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const STYLE = {
+  noise: +(Q.get('noise') ?? 0),   // 0 = effen low-poly vlakken (gekozen stijl); 1 = gebakken verfvlekken (B) ter vergelijking
+  dirt: '#503330',                  // palette wagon_brown[0]: vuil onderin
   key: '#FFE3BC', rim: '#B2C5F3', rimStrength: +(Q.get('rim') || 0.32),
   ground: '#6A4C4B',
   fog: Q.get('fog') || '#91A8E6', fogNear: +(Q.get('fogNear') || 1e5), fogFar: +(Q.get('fogFar') || 2e5),
@@ -50,7 +52,13 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
     sh.uniforms.uFogRange = { value: new THREE.Vector2(STYLE.fogNear, STYLE.fogFar) };
     sh.uniforms.uEmissive = { value: opts.emissive ?? 0.0 };
     sh.uniforms.uHasShade = { value: opts.hasShade ? 1.0 : 0.0 };
-    sh.uniforms.uPaint = { value: opts.paint ?? 1.0 };
+    sh.uniforms.uPaint = { value: (opts.paint ?? 1.0) * STYLE.noise };
+    sh.uniforms.uEdge = { value: opts.edge ?? 1.0 };
+    sh.uniforms.uCells = { value: opts.emissive ? 0.0 : (opts.cells ?? 1.0) };   // grote vlakken met iets andere tint
+    sh.uniforms.uCellSize = { value: opts.cellSize ?? 0.45 };
+    sh.uniforms.uGrime = { value: opts.grime ?? 0.0 };                          // onderin viezer
+    sh.uniforms.uGrimeY = { value: new THREE.Vector2(...(opts.grimeY ?? [-0.35, 0.85])) };
+    sh.uniforms.uDirt = { value: hex3(STYLE.dirt) };
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
         attribute vec4 color; varying vec4 vShade; varying vec3 vWorldPos;`)
@@ -59,7 +67,16 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
         uniform vec3 uRamp[5]; uniform float uShift; uniform vec3 uFog; uniform vec2 uFogRange; uniform float uEmissive;
-        uniform float uHasShade; uniform float uPaint; varying vec4 vShade; varying vec3 vWorldPos;
+        uniform float uCells; uniform float uCellSize; uniform float uGrime; uniform vec2 uGrimeY; uniform vec3 uDirt;
+        vec3 hash33(vec3 p){ p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33);
+          return fract((p.xxy + p.yxx) * p.zyx); }
+        // Voronoi: id (willekeurig 0..1) en middelpunt van de dichtstbijzijnde cel -> harde, effen vlakken
+        vec4 cell3(vec3 p){ vec3 i = floor(p), f = fract(p); float best = 9.; vec3 bc = vec3(0.);
+          for (int x=-1;x<=1;x++) for (int y=-1;y<=1;y++) for (int z=-1;z<=1;z++) {
+            vec3 g = vec3(x,y,z); vec3 o = hash33(i + g); vec3 d = g + o - f; float dd = dot(d,d);
+            if (dd < best) { best = dd; bc = i + g + o; } }
+          return vec4(hash33(bc * 1.37 + 0.5).x, bc); }
+        uniform float uHasShade; uniform float uPaint; uniform float uEdge; varying vec4 vShade; varying vec3 vWorldPos;
         float hash13(vec3 p){ p = fract(p*0.1031); p += dot(p, p.zyx+31.32); return fract((p.x+p.y)*p.z); }
         float vnoise(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
           return mix(mix(mix(hash13(i),hash13(i+vec3(1,0,0)),f.x), mix(hash13(i+vec3(0,1,0)),hash13(i+vec3(1,1,0)),f.x),f.y),
@@ -70,22 +87,27 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
       .replace('#include <opaque_fragment>', `
         // outgoingLight.r = NdotL * schaduw voor het witte key-light (geen ambient in de scene)
         float lit = clamp(outgoingLight.r, 0., 1.);
-        float band = smoothstep(0.04, 0.36, lit);                // zachte terminator
+        float band = smoothstep(0.0, 0.5, lit);                  // zachte, geschilderde terminator
         vec3 N = normalize(normal);
         vec3 V = normalize(vViewPosition);
         vec3 upV = normalize((viewMatrix * vec4(0.,1.,0.,0.)).xyz);
         float up = dot(N, upV)*0.5+0.5;                          // hemel-vulling in de schaduw
-        float tShadow = mix(0.08, 0.40, up);
-        float tLit = mix(0.62, 0.80, up);
+        float tShadow = mix(0.05, 0.36, up);
+        float tLit = mix(0.56, 0.93, up);              // naar boven gerichte vlakken duidelijk lichter (concept)
         vec4 sh4 = uHasShade > 0.5 ? vShade : vec4(1., 0., 0.5, 1.);
         float ao = sh4.r, edgeV = sh4.g, paint = sh4.b;
         band *= mix(0.45, 1.0, smoothstep(0.15, 0.9, ao));        // holtes vallen in de schaduwkant
         float t = mix(tShadow, tLit, band);
-        t -= (1. - ao) * 0.24;                                     // occlusie: dieper in de ramp
-        t += edgeV * mix(0.05, 0.13, band);                        // geschilderde lichte randjes op bevels
-        t += (paint - 0.5) * 0.17 * uPaint;                        // verfvlekken (lage frequentie)
-        float brush = vnoise(vWorldPos * 13.0) * 0.6 + vnoise(vWorldPos * 31.0) * 0.4;
-        t += (brush - 0.5) * 0.05 * uPaint;                        // fijne penseelstructuur
+        t -= (1. - ao) * 0.17;                                     // occlusie: dieper in de ramp
+        t += edgeV * mix(0.05, 0.13, band) * uEdge;                // geschilderde lichte randjes op bevels/facetten
+        t += (paint - 0.5) * 0.10 * uPaint;                        // verfvlekken (lage frequentie)
+        // grote vlakken die lichtelijk van tint verschillen (cellen in wereldruimte; Unity: objectruimte)
+        vec4 cl = cell3(vWorldPos / uCellSize);
+        t += (cl.x - 0.5) * 0.10 * uCells;
+        // vuil: onderin donkerder en bruiner, per cel (zodat ook het vuil uit vlakken bestaat)
+        float cy = mix(vWorldPos.y, cl.w * uCellSize, step(0.001, uCells));
+        float grime = (1. - smoothstep(uGrimeY.x, uGrimeY.y, cy + (hash33(cl.yzw).y - 0.5) * 0.45)) * uGrime;
+        t -= grime * 0.11;
         #if NUM_DIR_LIGHTS > 0
           vec3 L = directionalLights[0].direction;
           float spec = pow(max(dot(N, normalize(L+V)),0.), 18.) * band;
@@ -93,9 +115,12 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
         #endif
         t = mix(t + uShift, 0.5 + uShift, uFlat);
         vec3 col = sampleRamp(t);
+        col = mix(col, uDirt, grime * 0.22);
+        col *= 1. + (cl.x - 0.5) * 0.09 * uCells;              // ook zichtbaar op lichte vlakken (ramp-top)
         float fr = pow(1. - max(dot(N, V), 0.), 3.0);
         col = mix(col, uRim, clamp(fr * uRimStrength * (1.15 - band*0.75), 0., 1.));
-        col = mix(col, sampleRamp(0.92 + uShift), uEmissive);
+        // gloeiende lens: midden licht/geel, naar de rand warmer oranje (concept-koplamp)
+        col = mix(col, sampleRamp(0.25 + 0.75 * pow(max(dot(N, V), 0.), 0.9) + uShift), uEmissive);
         float fogT = smoothstep(uFogRange.x, uFogRange.y, length(vViewPosition));
         col = mix(col, uFog, fogT * 0.85);
         gl_FragColor = vec4(col, 1.0);`);

@@ -1,0 +1,80 @@
+fileFormatVersion: 2
+guid: f20935cba768167f0713eb814a0c8348
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cattle_Red
+    second: {fileID: 2100000, guid: c6d1fa20b71c0f37473a989b9ca7b7f7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cattle_Slat
+    second: {fileID: 2100000, guid: 88a1d57cb882a173cd0da34f767111b4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cattle_Plank
+    second: {fileID: 2100000, guid: 574eef229d362790df3f0458d0d240dd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cattle_Inner
+    second: {fileID: 2100000, guid: a057e1ef3baae490bd2c4987f90dbbf1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cattle_Roof
+    second: {fileID: 2100000, guid: b08b03fccfbb03bec9e94315942f037c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cattle_Trim
+    second: {fileID: 2100000, guid: a938715487f77195cc468dfd059b47ac, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cattle_Wheel
+    second: {fileID: 2100000, guid: d9ab7c8f3be7d80e511a20d3b86a8fc8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cattle_Gold
+    second: {fileID: 2100000, guid: 64e97afc75f9021dca6e497cad730c85, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cattle_Straw
+    second: {fileID: 2100000, guid: ad3488384390df08eaea0f2b05e5a7a0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cattle_Interact
+    second: {fileID: 2100000, guid: 042c81d2812fdfee85b46c60dd367a9b, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

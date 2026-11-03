@@ -1,0 +1,100 @@
+fileFormatVersion: 2
+guid: 146a9cf244187a9141dc31475b90c38e
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Red
+    second: {fileID: 2100000, guid: dc3d00312b956b4dbca27a7caba0e12d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_RedPanel
+    second: {fileID: 2100000, guid: 6fd93fd69461f693804f954759856e90, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_RedLow
+    second: {fileID: 2100000, guid: 57822b751b046cfea4a40c19a8ffab1e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Roof
+    second: {fileID: 2100000, guid: 6d2f8a929b98a3e5a7ed9cf32dffd329, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Trim
+    second: {fileID: 2100000, guid: 59db5ebf432636b52744cc2174645869, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Wheel
+    second: {fileID: 2100000, guid: 50e1a4d5e9d6c69fc9b81330235ec02b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Gold
+    second: {fileID: 2100000, guid: ea0628d276e33e1f8993864ce91ef3ea, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Glass
+    second: {fileID: 2100000, guid: 8265221b5abda2301bf2b8a2c9617eee, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_GlassShine
+    second: {fileID: 2100000, guid: cc61242719fef0ebf045caf185b0496d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Interact
+    second: {fileID: 2100000, guid: 07a55442a2a3f0c18ff3842f80c46d24, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Inner
+    second: {fileID: 2100000, guid: 1b27a558a72d38ed9977b968995a64cf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Floor
+    second: {fileID: 2100000, guid: 7e40ddacf23360a77545fb37dbc7af73, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Seat
+    second: {fileID: 2100000, guid: b4eb32992cb2c0397f559e8c44b89ece, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Train_Lamp
+    second: {fileID: 2100000, guid: 1affa8a8b371fdf17af828f8d7da7d66, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

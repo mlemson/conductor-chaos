@@ -139,7 +139,46 @@ def export_unity(root, scene, fbx_rel, mat_dir_rel):
     folder_meta(root, os.path.dirname(fbx_rel))
     folder_meta(root, mat_dir_rel)
     guids = {}
+    mat_abs = os.path.join(root, mat_dir_rel)
+    for f in os.listdir(mat_abs) if os.path.isdir(mat_abs) else []:   # verouderde materialen opruimen
+        if f.endswith(".mat") and f[:-4] not in scene.materials:
+            os.remove(os.path.join(mat_abs, f))
+            if os.path.exists(os.path.join(mat_abs, f + ".meta")):
+                os.remove(os.path.join(mat_abs, f + ".meta"))
     for name, md in scene.materials.items():
         guids[name] = material(root, f"{mat_dir_rel}/{name}.mat", name, md["base"], md["smoothness"], md.get("emissive"))
     model_meta(root, fbx_rel, guids)
     return guids
+
+
+def texture_meta(root, rel_path, srgb=True, wrap_repeat=True):
+    """TextureImporter-meta: 'Default' textuur, optioneel lineair (data) en herhalend."""
+    text = f"""fileFormatVersion: 2
+guid: {guid_for(rel_path)}
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {{}}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    sRGBTexture: {1 if srgb else 0}
+    linearTexture: 0
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 4
+    mipBias: 0
+    wrapU: {0 if wrap_repeat else 1}
+    wrapV: {0 if wrap_repeat else 1}
+    wrapW: {0 if wrap_repeat else 1}
+  alphaUsage: 0
+  alphaIsTransparency: 0
+  textureType: 0
+  textureShape: 1
+  maxTextureSize: 1024
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+"""
+    write(os.path.join(root, rel_path + ".meta"), text)

@@ -1,0 +1,258 @@
+[
+  {
+    "name": "loco_hero",
+    "params": {
+      "w": 1536,
+      "h": 1024,
+      "ss": 1.5,
+      "fov": 36,
+      "yaw": 50,
+      "pitch": 1,
+      "dist": 8.6,
+      "target": "1.0,1.3,-0.9",
+      "lightAz": -35,
+      "lightEl": 55,
+      "shadowSize": 9,
+      "ground": "0",
+      "fogNear": 16,
+      "fogFar": 110,
+      "items": [
+        {
+          "url": "../Exports/ArtCheck_Environment.glb",
+          "pose": {
+            "Bench": {
+              "visible": false
+            },
+            "Lantern": {
+              "visible": false
+            }
+          }
+        },
+        {
+          "url": "../Exports/RegionalWagon_Blockout.glb",
+          "pos": [
+            -11.2,
+            0,
+            0.05
+          ]
+        },
+        {
+          "url": "../Exports/Tender_Blockout.glb",
+          "pos": [
+            -4.9,
+            0,
+            0
+          ]
+        },
+        {
+          "url": "../Exports/Locomotive_Blockout.glb"
+        },
+        {
+          "url": "../Exports/Conductor.glb",
+          "pos": [
+            -1.02,
+            1.02,
+            -0.34
+          ],
+          "rotY": 62,
+          "pose": {
+            "Mouth_Neutral": {
+              "visible": false
+            },
+            "Mouth_Surprised": {
+              "visible": true
+            },
+            "Body": {
+              "addRot": [
+                12,
+                0,
+                -6
+              ]
+            },
+            "Cap": {
+              "addRot": [
+                -6,
+                0,
+                8
+              ]
+            },
+            "Arm_L": {
+              "rot": [
+                30,
+                0,
+                60
+              ]
+            }
+          },
+          "aim": {
+            "Arm_R": [
+              1.0,
+              2.25,
+              1.1
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "loco_side",
+    "params": {
+      "w": 1700,
+      "h": 700,
+      "ss": 1.3,
+      "yaw": 0,
+      "pitch": 2,
+      "dist": 30,
+      "ortho": 2.45,
+      "target": "-1.5,1.05,-1.4",
+      "lightAz": -30,
+      "lightEl": 55,
+      "lightRel": 1,
+      "groundShadowOnly": 1,
+      "groundR": 6,
+      "items": [
+        {
+          "url": "../Exports/Locomotive_Blockout.glb"
+        },
+        {
+          "url": "../Exports/Tender_Blockout.glb",
+          "pos": [
+            -4.9,
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "loco_front34",
+    "params": {
+      "w": 1000,
+      "h": 800,
+      "ss": 1.3,
+      "yaw": 55,
+      "pitch": 10,
+      "dist": 10.5,
+      "fov": 32,
+      "target": "1.0,1.0,-1.4",
+      "lightAz": -35,
+      "lightEl": 55,
+      "groundShadowOnly": 1,
+      "groundR": 7,
+      "items": [
+        {
+          "url": "../Exports/Locomotive_Blockout.glb"
+        }
+      ]
+    }
+  },
+  {
+    "name": "loco_rear34",
+    "params": {
+      "w": 1000,
+      "h": 800,
+      "ss": 1.3,
+      "yaw": -140,
+      "pitch": 14,
+      "dist": 11.5,
+      "fov": 32,
+      "target": "-2.4,0.9,-1.35",
+      "lightAz": -150,
+      "lightEl": 55,
+      "groundShadowOnly": 1,
+      "groundR": 9,
+      "items": [
+        {
+          "url": "../Exports/Locomotive_Blockout.glb"
+        },
+        {
+          "url": "../Exports/Tender_Blockout.glb",
+          "pos": [
+            -4.9,
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "loco_tex",
+    "params": {
+      "w": 900,
+      "h": 700,
+      "ss": 1.5,
+      "yaw": 62,
+      "pitch": 12,
+      "dist": 5.2,
+      "fov": 30,
+      "target": "2.6,0.95,-1.2",
+      "ground": "0",
+      "lightAz": -30,
+      "lightEl": 58,
+      "shadowSize": 6,
+      "items": [
+        {
+          "url": "../Exports/Locomotive_Blockout.glb"
+        }
+      ]
+    }
+  },
+  {
+    "name": "loco_cab",
+    "params": {
+      "w": 900,
+      "h": 800,
+      "ss": 1.3,
+      "yaw": 12,
+      "pitch": 52,
+      "dist": 4.6,
+      "fov": 40,
+      "target": "-1.05,0.95,-1.3",
+      "lightAz": -30,
+      "lightEl": 62,
+      "shadowSize": 6,
+      "groundShadowOnly": 1,
+      "groundR": 6,
+      "items": [
+        {
+          "url": "../Exports/Locomotive_Blockout.glb",
+          "pose": {
+            "CabRoof": {
+              "visible": false
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "tender_front34",
+    "params": {
+      "w": 1000,
+      "h": 800,
+      "ss": 1.3,
+      "yaw": -35,
+      "pitch": 16,
+      "dist": 7.5,
+      "fov": 32,
+      "target": "-4.9,0.75,-1.35",
+      "lightAz": -30,
+      "lightEl": 55,
+      "groundShadowOnly": 1,
+      "groundR": 7,
+      "items": [
+        {
+          "url": "../Exports/Tender_Blockout.glb",
+          "pos": [
+            -4.9,
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  }
+]
