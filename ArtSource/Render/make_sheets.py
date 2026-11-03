@@ -394,6 +394,53 @@ def cattle_sheet():
     sheet.convert("RGB").save(os.path.join(DOCS, "CattleWagon_DesignSheet.png"), optimize=True)
 
 
+def env_sheet():
+    kit = json.load(open(os.path.join(ROOT, "ArtSource", "Exports", "Environment", "EnvironmentKit.json"), encoding="utf-8"))
+    assets = kit["assets"]
+    W = 3000
+    ex = sky(load("env_example").size)
+    ex.alpha_composite(load("env_example"))
+    hw = 2000
+    hh = int(ex.height * hw / ex.width)
+    cols = 7
+    rows = (len(assets) + cols - 1) // cols
+    tw, th = (W - 120 - (cols - 1) * 20) // cols, 330
+    H = 200 + hh + 40 + 70 + rows * (th + 80) + 40
+    sheet = Image.new("RGBA", (W, H), BG + (255,))
+    d = ImageDraw.Draw(sheet)
+    label(d, (60, 40), "Natuur- en achtergrondkit · v1", 56)
+    d.text((64, 148), "Modulair (issue #30) · chunky low-poly, grote leesbare vormen · warm vooraan, koel achteraan · kleuren uit palette.json",
+           font=font(25, False), fill=SUB)
+    sheet.alpha_composite(ex.resize((hw, hh), Image.LANCZOS), (60, 200))
+    label(d, (84, 216), "Voorbeeldscène: trein + omgeving in lagen", 28)
+    rx = 60 + hw + 40
+    d.rounded_rectangle([rx, 200, W - 50, 200 + hh], 22, fill=PANEL)
+    d.text((rx + 24, 222), "Lagen", font=font(28), fill=YEL)
+    notes = ["1  Bij het spoor: grasheuvel, rotsen,", "   struiken, een enkele kleine boom",
+             "2  Midden: klifmodules op een raster", "   van 2 m, in terrassen gestapeld,", "   bomen op de randen",
+             "3  Achter: beboste heuvelrug, verre", "   blauwe bergen, wolken, mist", "",
+             "Stijl", "•  grote vormen, weinig details", "•  facetten met afgeschuinde overgangen",
+             "•  bovenkant licht, onderkant donker", "•  grote kleurvlakken in de shader",
+             "•  pivot midden-onder, 1 unit = 1 m", "•  elk asset een eigen FBX + GLB"]
+    for k, t in enumerate(notes):
+        is_head = t in ("Stijl",)
+        d.text((rx + 24, 280 + k * 40), t, font=font(24 if is_head else 21, is_head), fill=YEL if is_head else SUB)
+    by = 200 + hh + 40
+    label(d, (60, by), "Kit", 30)
+    for i, (name, a) in enumerate(assets.items()):
+        x = 60 + (i % cols) * (tw + 20)
+        y = by + 70 + (i // cols) * (th + 80)
+        d.rounded_rectangle([x, y, x + tw, y + th + 60], 18, fill=PANEL)
+        im = load("env_" + name)
+        im = fit(crop_alpha(im), tw - 30, th - 20)
+        sheet.alpha_composite(im, (x + (tw - im.width) // 2, y + 10 + (th - 20 - im.height) // 2))
+        d.text((x + tw // 2, y + th + 4), name, font=font(19), fill=TXT, anchor="ma")
+        sz = [round(a["max"][k] - a["min"][k], 1) for k in range(3)]
+        d.text((x + tw // 2, y + th + 30), f"{sz[0]}×{sz[1]}×{sz[2]} m · {a['tris']} tris".replace(".", ","), font=font(16, False),
+               fill=MUTED, anchor="ma")
+    sheet.convert("RGB").save(os.path.join(DOCS, "Environment_DesignSheet.png"), optimize=True)
+
+
 if __name__ == "__main__":
     design_sheet()
     c = art_check()
@@ -402,4 +449,6 @@ if __name__ == "__main__":
         loco_sheet()
     if os.path.exists(os.path.join(OUT, "cattle_hero.png")):
         cattle_sheet()
+    if os.path.exists(os.path.join(OUT, "env_example.png")):
+        env_sheet()
     print("ok ->", DOCS)
