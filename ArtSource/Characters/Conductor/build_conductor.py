@@ -46,7 +46,7 @@ Y_COLLAR = 0.53         # grens huid/uniform
 EYE_Y, EYE_R, EYE_X = 0.835, 0.106, 0.099
 EYE_DEPTH = 0.55         # bolling van het oog (t.o.v. straal)
 MOUTH_Y = 0.632
-SHOULDER = (0.240, 0.475, 0.0)   # mouw komt hoog en dik uit de bovenkant van de jas (concept)
+SHOULDER = (0.240, 0.460, 0.0)   # bovenkant mouw sluit aan binnen de uniformrand
 HIP_Y = 0.265
 LEG_X = 0.162
 
@@ -119,11 +119,18 @@ def build_collar():
 
 
 def build_buttons():
-    parts = []
-    for y in (0.425, 0.325):
+    outline=[]
+    for cy,start in ((0.420,0.0),(0.336,math.pi)):
+        for theta in np.linspace(start,start+math.pi,13):
+            outline.append((0.011*math.cos(theta),cy+0.011*math.sin(theta),0.0))
+    v=np.array([(0,0.378,0)]+outline)
+    f=[(0,i+1,(i+1)%len(outline)+1) for i in range(len(outline))]
+    placket=mk.Mesh(v,f,["M_Conductor_UniformDark"]*len(f))
+    parts=[conform(placket,0.003)]
+    for y,r,material in ((0.425,0.022,"M_Conductor_Gold"),(0.350,0.014,"M_Conductor_GoldLow")):
         z, nrm = body_surface(0.0, y)
-        b = mk.ellipsoid(0.022, 0.022, 0.011, 12, 6, mat="M_Conductor_Gold")
-        parts.append(b.transform(R=face_frame(nrm), t=(0, y, z)))
+        b = mk.ellipsoid(r, r, r*0.5, 20, 10, mat=material)
+        parts.append(b.transform(R=face_frame(nrm), t=(0, y, z+0.009)))
     return mk.merge(*parts)
 
 
@@ -157,6 +164,29 @@ def build_mouth(kind):
     return mk.merge(inner, tongue)
 
 
+def build_brim(band_a,band_b):
+    """Thin crescent attached below the band; no hidden rear half crossing it."""
+    vertices=[]; faces=[]; segments=40; section=12
+    for i in range(segments+1):
+        angle=-1.40+2.80*i/segments
+        inner=np.array([band_a*0.98*math.sin(angle),-0.010,band_b*0.98*math.cos(angle)])
+        reach=0.155*math.cos(angle)**0.8
+        outer=inner+np.array([0.020*math.sin(angle),-0.075*math.cos(angle),reach])
+        for j in range(section):
+            theta=2*math.pi*j/section
+            t=(1-math.cos(theta))/2
+            point=inner*(1-t)+outer*t
+            point[1]+=0.008*math.sin(theta)
+            vertices.append(point)
+    for i in range(segments):
+        for j in range(section):
+            k=(j+1)%section
+            faces.append((i*section+j,(i+1)*section+j,(i+1)*section+k,i*section+k))
+    faces.append(tuple(reversed(range(section))))
+    faces.append(tuple(segments*section+j for j in range(section)))
+    return mk.orient_outward(mk.Mesh(np.asarray(vertices),faces,["M_Conductor_UniformDark"]*len(faces)))
+
+
 def build_cap():
     """Pet: bolle kroon (~1,3x lijfbreedte), gouden band, donkere klep, embleem.
     Lokale oorsprong = onderkant band, midden van het hoofd."""
@@ -166,7 +196,7 @@ def build_cap():
     band = mk.lathe([(0.0, 0.0), (0.96, 0.0), (1.0, 0.009), (1.0, BAND_H - 0.009), (0.96, BAND_H), (0.0, BAND_H)],
                     SEG, band_a, band_b, 2.3, mat="M_Conductor_Gold")
     # kroon: bolt boven de band ruim uit (~1,28x) en loopt hoog door tot een zachte, platte bovenkant
-    crown_prof = [(0.0, BAND_H - 0.004), (0.97, BAND_H - 0.004)]
+    crown_prof = [(0.0, BAND_H + 0.001), (0.97, BAND_H + 0.001)]
     for k in range(1, 9):
         t = k / 8
         crown_prof.append((0.97 + 0.31 * math.sin(t * math.pi / 2) ** 0.9, BAND_H + 0.11 * t))
@@ -176,12 +206,9 @@ def build_cap():
         th = math.pi / 2 * k / 8
         crown_prof.append((1.28 * math.cos(th) ** 0.5 if k < 8 else 0.0, BAND_H + 0.17 + 0.085 * math.sin(th)))
     crown = mk.lathe(crown_prof, SEG, band_a, band_b * 1.04, 2.2, mat="M_Conductor_Uniform")
-    crown = crown.transform(t=(0, 0, 0.02))  # kroon iets naar voren: 'peaked' silhouet
     under = mk.lathe([(0.0, -0.012), (1.02, -0.012), (1.03, 0.0), (0.0, 0.0)], SEG, band_a, band_b, 2.3,
                      mat="M_Conductor_UniformDark")
-    # klep: platte ellipsoïde die vóór de band uitsteekt, licht omlaag gekanteld
-    brim = mk.ellipsoid(band_a * 0.96, 0.02, 0.22, 28, 6, mat="M_Conductor_UniformDark")
-    brim = brim.transform(R=mk.rot_x(math.radians(16)), t=(0, -0.002, band_b - 0.05))
+    brim = build_brim(band_a,band_b)
     # Embleem zit op de gouden band, overlapt de bovenrand licht zoals het concept.
     badge = mk.ellipsoid(0.059, 0.043, 0.026, 20, 10, mat="M_Conductor_Gold", n=2.1)
     badge = badge.transform(R=mk.rot_x(math.radians(-10)), t=(0, BAND_H * 0.62, band_b + 0.014))
@@ -190,10 +217,10 @@ def build_cap():
 
 def build_arm():
     """Eén doorlopend mouw-handvolume; het materiaal wisselt bij de pols."""
-    profile=[(0.0,-0.265),(0.046,-0.260),(0.068,-0.244),(0.078,-0.218),
+    profile=[(0.0,-0.270),(0.025,-0.267),(0.041,-0.260),(0.057,-0.251),(0.069,-0.238),(0.078,-0.218),
              (0.079,-0.190),(0.074,-0.164),(0.071,-0.148),
              (0.073,-0.120),(0.077,-0.070),(0.079,-0.025),(0.071,0.018),(0.0,0.045)]
-    arm=mk.lathe(profile,24,a=1.0,b=0.88,n=2.0,mat="M_Conductor_Uniform")
+    arm=mk.lathe(profile,32,a=1.0,b=0.88,n=2.0,mat="M_Conductor_Uniform")
     arm.M=["M_Conductor_Skin" if arm.V[list(f),1].mean() < -0.148 else "M_Conductor_Uniform" for f in arm.F]
     return arm
 
@@ -214,6 +241,7 @@ def build_scene(arm_angle_deg=50.0):
     sc.material("M_Conductor_Uniform", R_["uniform_navy"][2], R_["uniform_navy"], 0.22, opts={"paint": 1.3})
     sc.material("M_Conductor_UniformDark", R_["uniform_navy"][1], R_["uniform_navy"], 0.22, ramp_shift=-0.22)
     sc.material("M_Conductor_Gold", R_["gold_trim"][2], R_["gold_trim"], 0.40)
+    sc.material("M_Conductor_GoldLow", R_["gold_trim"][1], R_["gold_trim"], 0.30, ramp_shift=-0.24)
     sc.material("M_Conductor_EyeWhite", R_["wool"][3], R_["wool"], 0.35, ramp_shift=0.30,
                 opts={"flat": 0.45, "noShadow": True})
     sc.material("M_Conductor_Pupil", R_["face"][0], R_["ink"], 0.45, ramp_shift=-0.30, opts={"noShadow": True})

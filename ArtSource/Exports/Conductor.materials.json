@@ -3,9 +3,9 @@
   "height_m": 1.25,
   "stats": {
     "parts": 20,
-    "tris": 28681,
-    "verts": 14395,
-    "materials": 9
+    "tris": 30463,
+    "verts": 15300,
+    "materials": 10
   },
   "materials": {
     "M_Conductor_Skin": {
@@ -62,6 +62,19 @@
       ],
       "rampShift": 0.0,
       "smoothness": 0.4,
+      "opts": {}
+    },
+    "M_Conductor_GoldLow": {
+      "base": "#AD7031",
+      "ramp": [
+        "#9D662F",
+        "#AD7031",
+        "#DA993A",
+        "#FBBA39",
+        "#FCCF53"
+      ],
+      "rampShift": -0.24,
+      "smoothness": 0.3,
       "opts": {}
     },
     "M_Conductor_EyeWhite": {
