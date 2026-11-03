@@ -1,6 +1,6 @@
 // Conductor Chaos — kliffen op het terrein live bijwerken tijdens het boetseren (issue #38).
-// Menu: Conductor Chaos > Art > Terrain > Add Cliffs To Selected Terrain.
-// Daarna: Raise or Lower Terrain; zodra je even stopt met trekken (0,25 s), worden de kliffen opnieuw opgebouwd.
+// Zodra je een terrein vormt (Cliff Painter of Unity's Raise or Lower), krijgt het vanzelf kliffen; zodra je even stopt
+// met trekken (0,25 s) worden ze opnieuw opgebouwd. Uitzetten: Conductor Chaos > Art > Terrain > Auto Cliffs While Sculpting.
 // Instellingen (hoek, facetgrootte, plooien, grasrand) staan op het object 'StylizedCliffs' onder het terrein.
 using System.Collections.Generic;
 using ConductorChaos.Art;
@@ -19,23 +19,52 @@ namespace ConductorChaos.EditorTools
         static readonly HashSet<StylizedTerrainCliffs> Pending = new HashSet<StylizedTerrainCliffs>();
         static double due;
 
+        const string AutoKey = "ConductorChaos.TerrainCliffs.Auto";
+        const string AutoMenu = "Conductor Chaos/Art/Terrain/Auto Cliffs While Sculpting";
+        static readonly HashSet<Terrain> NeedsCliffs = new HashSet<Terrain>();
+
         static TerrainCliffsEditor()
         {
             TerrainCallbacks.heightmapChanged += OnHeightmapChanged;
             EditorApplication.update += Tick;
+            Undo.undoRedoPerformed += () => { foreach (var t in Terrain.activeTerrains) Schedule(t); };
+        }
+
+        [MenuItem(AutoMenu)]
+        static void ToggleAuto() => EditorPrefs.SetBool(AutoKey, !EditorPrefs.GetBool(AutoKey, true));
+
+        [MenuItem(AutoMenu, true)]
+        static bool ToggleAutoValidate()
+        {
+            Menu.SetChecked(AutoMenu, EditorPrefs.GetBool(AutoKey, true));
+            return true;
         }
 
         static void OnHeightmapChanged(Terrain terrain, RectInt heightRegion, bool synched)
         {
             if (StylizedTerrainCliffs.IsBuilding || terrain == null || EditorApplication.isPlayingOrWillChangePlaymode) return;
-            foreach (var c in terrain.GetComponentsInChildren<StylizedTerrainCliffs>())
-                Pending.Add(c);
+            Schedule(terrain);
+        }
+
+        /// <summary>Kliffen van dit terrein over 0,25 s opnieuw opbouwen (en ze toevoegen als ze er nog niet zijn).</summary>
+        public static void Schedule(Terrain terrain)
+        {
+            if (terrain == null || EditorApplication.isPlayingOrWillChangePlaymode) return;
+            var found = terrain.GetComponentsInChildren<StylizedTerrainCliffs>();
+            if (found.Length == 0 && EditorPrefs.GetBool(AutoKey, true)) NeedsCliffs.Add(terrain);
+            foreach (var c in found) Pending.Add(c);
             due = EditorApplication.timeSinceStartup + 0.25;       // pas bouwen als je even stilstaat
         }
 
         static void Tick()
         {
-            if (Pending.Count == 0 || EditorApplication.timeSinceStartup < due) return;
+            if ((Pending.Count == 0 && NeedsCliffs.Count == 0) || EditorApplication.timeSinceStartup < due) return;
+            if (NeedsCliffs.Count > 0)
+            {
+                var add = new List<Terrain>(NeedsCliffs);
+                NeedsCliffs.Clear();
+                foreach (var t in add) if (t != null) AddTo(t);
+            }
             var list = new List<StylizedTerrainCliffs>(Pending);
             Pending.Clear();
             foreach (var c in list)

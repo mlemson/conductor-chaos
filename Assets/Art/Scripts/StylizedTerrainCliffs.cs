@@ -149,30 +149,9 @@ namespace ConductorChaos.Art
                 for (int i = 0; i < n; i++)
                     if (!st2[i, j] && slope2[i, j] > tanHalf * tanHalf && SteepAround(st2, i, j) > 0) steep[i, j] = true;
 
-            bool IsFoot(int i, int j, float h)
-            {
-                for (int b = j - 1; b <= j; b++)
-                    for (int a = i - 1; a <= i; a++)
-                        if (a >= 0 && b >= 0 && a < n && b < n && !steep[a, b] && avg[a, b] < h - 0.1f) return true;
-                return false;
-            }
-
-            // rotswand: iets naar buiten, verticale plooien, kleine hoogteschommeling; de voet zakt de grond in
-            Vector3 Wall(int i, int j)
-            {
-                var p = Base(i, j);
-                float f = Mathf.PerlinNoise(p.x * 0.45f + 17.3f, p.z * 0.45f + 3.1f);
-                if (IsFoot(i, j, p.y)) p.y -= 0.35f;
-                p += Down(i, j) * (0.15f + folds * f);
-                p.y += (Mathf.PerlinNoise(p.x * 0.9f + 50f, p.z * 0.9f) - 0.5f) * 0.12f - 0.04f;
-                return p;
-            }
-
-            Color Rock(Vector3 p) => new Color(0.78f + 0.22f * Mathf.PerlinNoise(p.x * 0.3f, p.z * 0.3f + 7f), 0f, 0.5f, 1f);
-
             verts.Clear(); cols.Clear(); rockTris.Clear(); grassTris.Clear();
 
-            // 2) rotswanden; randen tussen een steil vakje en een hoger, vlak buurvakje onthouden voor de grasrand
+            // 2) bovenranden: randen tussen een steil vakje en een hoger, vlak buurvakje
             var lipEdges = new List<(int a, int b)>();
             int Key(int i, int j) => j * (n + 1) + i;
             void Edge(int qi, int qj, int ni, int nj, int ai, int aj, int bi, int bj)
@@ -185,15 +164,13 @@ namespace ConductorChaos.Art
                 for (int i = 0; i < n; i++)
                 {
                     if (!steep[i, j]) continue;
-                    var w00 = Wall(i, j); var w10 = Wall(i + 1, j); var w01 = Wall(i, j + 1); var w11 = Wall(i + 1, j + 1);
-                    Quad(rockTris, w00, w01, w11, w10, Rock(w00), Rock(w01), Rock(w11), Rock(w10), null);
                     Edge(i, j, i, j + 1, i, j + 1, i + 1, j + 1);
                     Edge(i, j, i, j - 1, i, j, i + 1, j);
                     Edge(i, j, i + 1, j, i + 1, j, i + 1, j + 1);
                     Edge(i, j, i - 1, j, i, j, i, j + 1);
                 }
 
-            // 3) grasrand: randlijn gladstrijken (trapjes van het raster worden een vloeiende lijn), dan de rand opbouwen
+            // 3) randlijnen: losse snippers (minder dan 4 randen) weg, dan gladstrijken (trapjes van het raster worden vloeiend)
             var nb = new Dictionary<int, List<int>>();
             void Link(int a, int b)
             {
@@ -201,6 +178,25 @@ namespace ConductorChaos.Art
                 if (!l.Contains(b)) l.Add(b);
             }
             foreach (var e in lipEdges) { Link(e.a, e.b); Link(e.b, e.a); }
+            var comp = new Dictionary<int, int>(nb.Count);
+            var compEdges = new List<int>();
+            foreach (var start in nb.Keys)
+            {
+                if (comp.ContainsKey(start)) continue;
+                int id = compEdges.Count;
+                compEdges.Add(0);
+                var stack = new Stack<int>();
+                stack.Push(start);
+                comp[start] = id;
+                while (stack.Count > 0)
+                {
+                    int q = stack.Pop();
+                    foreach (int r in nb[q])
+                        if (!comp.ContainsKey(r)) { comp[r] = id; stack.Push(r); }
+                }
+            }
+            foreach (var e in lipEdges) compEdges[comp[e.a]]++;
+            lipEdges.RemoveAll(e => compEdges[comp[e.a]] < 4);
             var pos = new Dictionary<int, Vector3>(nb.Count);
             var dir = new Dictionary<int, Vector3>(nb.Count);
             foreach (var k in nb.Keys) { int i = k % (n + 1), j = k / (n + 1); pos[k] = Base(i, j); dir[k] = Down(i, j); }
@@ -225,6 +221,74 @@ namespace ConductorChaos.Art
                 pos = p2; dir = d2;
             }
 
+            // 4) voet van de wand per randpunt: langs de helling omlaag tot het minstens 0,75 m vlak blijft
+            //    (een smal richeltje telt niet als voet), daarna de voeten langs de rand gladstrijken
+            float flatDrop = 0.25f * tanHalf;
+            Vector3 FootOf(int k)
+            {
+                var a = pos[k];
+                var d = dir[k];
+                float prev = a.y;
+                int flat = 0;
+                var first = a;
+                for (int step = 1; step <= 80; step++)
+                {
+                    var q = a + d * (step * 0.25f);
+                    float hq = HeightAt(q);
+                    if (prev - hq < flatDrop)
+                    {
+                        if (flat == 0) { first = q; first.y = hq; }
+                        flat++;
+                        if (flat >= 3 && step > 3) return first;
+                    }
+                    else flat = 0;
+                    prev = hq;
+                }
+                var end = a + d * 20f;
+                end.y = HeightAt(end);
+                return end;
+            }
+            var foot = new Dictionary<int, Vector3>(pos.Count);
+            foreach (var k in pos.Keys) foot[k] = FootOf(k);
+            for (int it = 0; it < 2; it++)
+            {
+                var f2 = new Dictionary<int, Vector3>(foot.Count);
+                foreach (var kv in nb)
+                {
+                    int k = kv.Key;
+                    if (kv.Value.Count == 2) f2[k] = foot[k] * 0.5f + (foot[kv.Value[0]] + foot[kv.Value[1]]) * 0.25f;
+                    else f2[k] = foot[k];
+                }
+                foot = f2;
+            }
+
+            // 5) rotswand: kolom van de top naar de voet in een paar rijen, iets naar buiten met plooien,
+            //    en altijd vóór het terrein (anders prikt het gras door de wand)
+            const int rows = 3;
+            var column = new Dictionary<int, Vector3[]>(pos.Count);
+            var drop = new Dictionary<int, float>(pos.Count);
+            foreach (var k in pos.Keys)
+            {
+                var a = pos[k];
+                var d = dir[k];
+                var F = foot[k];
+                float h = a.y - F.y;
+                drop[k] = h;
+                var col = new Vector3[rows + 1];
+                for (int r = 0; r <= rows; r++)
+                {
+                    float t = r / (float)rows;
+                    var P = Vector3.Lerp(a, F, t);
+                    P.y = a.y - 0.02f - (h + 0.5f) * t;
+                    float f = Mathf.PerlinNoise(P.x * 0.45f + 17.3f, P.z * 0.45f + 3.1f);
+                    P += d * ((0.12f + folds * f) * (r == 0 ? 0.5f : 1f));
+                    if (r > 0 && r < rows) P.y += (Mathf.PerlinNoise(P.x * 0.9f + 50f, P.z * 0.9f) - 0.5f) * 0.25f;
+                    for (int guard = 0; guard < 12 && r < rows && HeightAt(P) > P.y - 0.06f; guard++) P += d * 0.12f;
+                    col[r] = P;
+                }
+                column[k] = col;
+            }
+
             var grassTop = new Color(1f, 0f, 0.5f, 1f);
             var grassEdge = new Color(0.95f, 1f, 0.5f, 1f);
             var grassUnder = new Color(0.55f, 0f, 0.5f, 1f);
@@ -243,11 +307,22 @@ namespace ConductorChaos.Art
                 var back = a - d * 0.15f - Vector3.up * grassThickness;
                 lip[k] = (inner, outer, under, back);
             }
+
             foreach (var e in lipEdges)
             {
+                if ((drop[e.a] + drop[e.b]) * 0.5f < 0.6f) continue;    // te laag voor een klif
+                var outward = dir[e.a] + dir[e.b];
+                var ca = column[e.a];
+                var cb = column[e.b];
+                for (int r = 0; r < rows; r++)
+                {
+                    float t0 = r / (float)rows, t1 = (r + 1) / (float)rows;
+                    var c0 = new Color(0.65f + 0.35f * (1f - t0), 0f, 0.5f, 1f);
+                    var c1 = new Color(0.65f + 0.35f * (1f - t1), 0f, 0.5f, 1f);
+                    Quad(rockTris, ca[r], cb[r], cb[r + 1], ca[r + 1], c0, c0, c1, c1, outward);
+                }
                 var A = lip[e.a];
                 var B = lip[e.b];
-                var outward = dir[e.a] + dir[e.b];
                 Quad(grassTris, A.inner, B.inner, B.outer, A.outer, grassTop, grassTop, grassEdge, grassEdge, Vector3.up);
                 Quad(grassTris, A.outer, B.outer, B.under, A.under, grassEdge, grassEdge, grassUnder, grassUnder, outward);
                 Quad(grassTris, A.under, B.under, B.back, A.back, grassUnder, grassUnder, grassBack, grassBack, Vector3.down);
