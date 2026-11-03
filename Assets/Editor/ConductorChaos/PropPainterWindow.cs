@@ -80,6 +80,11 @@ namespace ConductorChaos.EditorTools
                 if (GUILayout.Button("Achtergrond")) LoadPreset("Background");
                 if (GUILayout.Button("Bos + rotsen")) LoadPreset("Mixed");
             }
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("Pad (keien)")) LoadPreset("Path");
+                if (GUILayout.Button("Bloemen + gras")) LoadPreset("Plants");
+            }
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Kwast", EditorStyles.boldLabel);
@@ -228,8 +233,17 @@ namespace ConductorChaos.EditorTools
                     Add("Mountains"); Add("Trees", "Background", 1.5f);
                     Set(radius: 40, per: 2, dist: 25f, scale: new Vector2(0.8f, 1.5f), height: new Vector2(0.8f, 1.3f), yaw: 0, align: 0f, sink: 1f, colliders: false);
                     break;
+                case "Path":
+                    Add("Paths", "Stone_Single");
+                    Set(radius: 0.9f, per: 2, dist: 0.55f, scale: new Vector2(0.75f, 1.25f), height: new Vector2(0.8f, 1.3f), yaw: 0, align: 1f, sink: 0.03f, colliders: false);
+                    spacing = 0.5f;
+                    break;
+                case "Plants":
+                    Add("Plants", "Grass_Tuft", 1.5f); Add("Plants", "Flower", 1f);
+                    Set(radius: 3, per: 6, dist: 0.35f, scale: new Vector2(0.8f, 1.3f), height: new Vector2(0.8f, 1.3f), yaw: 0, align: 0.5f, sink: 0.02f, colliders: false);
+                    break;
                 case "Mixed":
-                    Add("Trees", "Tree_Pine", 1.2f); Add("Trees", "Bush", 0.7f); Add("Rocks", null, 0.5f);
+                    Add("Trees", "Tree_Pine", 1.2f); Add("Trees", "Bush", 0.7f); Add("Rocks", null, 0.5f); Add("Plants", "Grass_Tuft", 0.6f);
                     entries.RemoveAll(e => e.prefab.name.Contains("Background"));
                     Set(radius: 8, per: 4, dist: 1.6f, scale: new Vector2(0.75f, 1.3f), height: new Vector2(0.9f, 1.2f), yaw: 0, align: 0.2f, sink: 0.08f, colliders: false);
                     break;

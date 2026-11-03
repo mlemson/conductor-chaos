@@ -442,6 +442,25 @@ def env_sheet():
     sheet.convert("RGB").save(os.path.join(DOCS, "Environment_DesignSheet.png"), optimize=True)
 
 
+def terrain_sheet():
+    names = [("T_Ground_Grass", "Gras"), ("T_Ground_GrassFlowers", "Gras + bloemetjes"), ("T_Ground_Dirt", "Grond / berm"),
+             ("T_Ground_PathStones", "Stenen pad"), ("T_Ground_Rock", "Rots (steil)")]
+    W, tw = 3000, 540
+    H = 200 + tw + 140
+    sheet = Image.new("RGBA", (W, H), BG + (255,))
+    d = ImageDraw.Draw(sheet)
+    label(d, (60, 40), "Terrein · grondtextures v1", 56)
+    d.text((64, 148), "Issue #38 · tegelbaar (hier 2×2 getoond) · Unity: Conductor Chaos > Art > Terrain > Create Stylized Terrain · kleuren uit palette.json",
+           font=font(25, False), fill=SUB)
+    for i, (n, cap) in enumerate(names):
+        im = Image.open(os.path.join(ROOT, "ArtSource", "Exports", "Terrain", n + "_preview.png")).convert("RGBA").resize((tw, tw))
+        x = 60 + i * (tw + 30)
+        sheet.alpha_composite(im, (x, 200))
+        d.text((x + tw // 2, 220 + tw), cap, font=font(26), fill=TXT, anchor="ma")
+        d.text((x + tw // 2, 258 + tw), n, font=font(18, False), fill=MUTED, anchor="ma")
+    sheet.convert("RGB").save(os.path.join(DOCS, "Terrain_DesignSheet.png"), optimize=True)
+
+
 if __name__ == "__main__":
     design_sheet()
     c = art_check()
@@ -452,4 +471,6 @@ if __name__ == "__main__":
         cattle_sheet()
     if os.path.exists(os.path.join(OUT, "env_example.png")):
         env_sheet()
+    if os.path.exists(os.path.join(ROOT, "ArtSource", "Exports", "Terrain", "T_Ground_Grass_preview.png")):
+        terrain_sheet()
     print("ok ->", DOCS)

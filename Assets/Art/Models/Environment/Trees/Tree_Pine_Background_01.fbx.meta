@@ -7,13 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Env_Trunk
-    second: {fileID: 2100000, guid: f91e64aa1926be43450277a03e97ba71, type: 2}
+      name: M_Env_PineFar
+    second: {fileID: 2100000, guid: 3a87e5cb9bf73ff60808075f18fef27d, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Env_PineFar
-    second: {fileID: 2100000, guid: 3a87e5cb9bf73ff60808075f18fef27d, type: 2}
+      name: M_Env_Trunk
+    second: {fileID: 2100000, guid: f91e64aa1926be43450277a03e97ba71, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -59,6 +59,11 @@ MATERIALS = {
                                                                        "noShadow": True, "edge": 0.0}),
     "M_Env_Foam": (R["cloud_snow"][4], R["cloud_snow"], 0.0, 0.25, {"cells": 0.0, "flat": 0.45, "rim": 0.20,
                                                                        "noShadow": True, "edge": 0.0}),
+    "M_Env_PathStone": (R["metal"][3], R["metal"], 0.05, 0.10, {"cells": 0.6, "cellSize": 0.4, "rim": 0.2}),
+    "M_Env_Dirt": (R["cliff"][1], R["cliff"], 0.05, -0.30, {"cells": 0.6, "cellSize": 0.6, "rim": 0.1}),
+    "M_Env_Petal": (R["cloud_snow"][4], R["cloud_snow"], 0.05, 0.10, {"cells": 0.0, "rim": 0.2}),
+    "M_Env_FlowerHeart": (R["helmet"][2], R["helmet"], 0.05, 0.0, {"cells": 0.0}),
+    "M_Env_Stem": (R["grass"][1], R["grass"], 0.05, -0.20, {"cells": 0.0}),
     "M_Env_Cloud": (R["cloud_snow"][3], R["cloud_snow"], 0.0, 0.12, {"cells": 0.0, "flat": 0.35, "rim": 0.25,
                                                                        "noShadow": True, "edge": 0.0}),
 }
@@ -226,7 +231,8 @@ def cliff_block(x0, x1, z0, z1, H, rng, ledge=True):
     base = rect_outline(x0, x1, z0, z1)
     n = len(base)
     col = np.array([0.07 if k % 2 else -0.02 for k in range(n)]) + rng.uniform(-0.02, 0.04, n)   # verticale kolommen
-    rings = [(offset(base, -col + 0.02), -0.30),
+    rings = [(offset(base, -col - 0.14), -0.30),                       # voet: breder, sluit aan op buren
+             (offset(base, -col - 0.05), min(0.35, H * 0.18)),
              (offset(base, -col - rng.uniform(0.0, 0.05, n)), H * 0.30)]
     if ledge and H >= 1.8:                                  # terrasrand: klein stapje naar binnen
         yl = H * 0.52
@@ -256,9 +262,10 @@ def pillar(x0, x1, z0, z1, H, rng, tufts=True):
     een vlak grasdek met korte overhang en een paar graspluk-bolletjes."""
     base = rect_outline(x0, x1, z0, z1, step=0.85, chamfer=min(0.35, (x1 - x0) * 0.18, (z1 - z0) * 0.18))
     n = len(base)
-    fold = np.array([0.17 if k % 2 else -0.05 for k in range(n)]) + rng.uniform(-0.03, 0.05, n)
-    tilt = rng.uniform(-0.10, 0.10, n)
-    rings = [(offset(base, -fold), -0.30),
+    fold = np.array([0.13 if k % 2 else -0.04 for k in range(n)]) + rng.uniform(-0.02, 0.04, n)
+    tilt = rng.uniform(-0.06, 0.06, n)
+    rings = [(offset(base, -fold - 0.16), -0.30),                     # voet: breder, loopt in de grond over
+             (offset(base, -fold - 0.06), min(0.35, H * 0.2)),
              (offset(base, -fold * 1.1 + tilt), H * 0.45),
              (offset(base, -fold * 0.9 + 0.03), H * 0.88),
              (offset(base, -fold * 0.5 + 0.10), H - 0.02)]
@@ -280,8 +287,16 @@ def pillar(x0, x1, z0, z1, H, rng, tufts=True):
 
 
 def cluster(blocks, rng):
-    """Klifcluster: meerdere pijlers van verschillende hoogte die in elkaar steken (één massa, terrassen)."""
-    return mk.merge(*[pillar(*b, rng) for b in blocks])
+    """Klifcluster als één massa: een gedeelde voet (laag terras met gras) over de hele footprint, waaruit
+    pijlers van verschillende hoogte oprijzen die elkaar overlappen. Geen losse blokken met kieren meer."""
+    xs0, xs1 = min(b[0] for b in blocks), max(b[1] for b in blocks)
+    zs0, zs1 = min(b[2] for b in blocks), max(b[3] for b in blocks)
+    hb = max(0.7, min(b[4] for b in blocks) * 0.55)
+    parts = [pillar(xs0 + 0.05, xs1 - 0.05, zs0 + 0.05, zs1 - 0.05, hb, rng, tufts=True)]
+    g = 0.14                                                          # pijlers groeien in elkaar
+    for (x0, x1, z0, z1, h) in sorted(blocks, key=lambda b: -b[4]):
+        parts.append(pillar(x0 - g, x1 + g, z0 - g, z1 + g, h, rng))
+    return mk.merge(*parts)
 
 
 def _fall_profile(H, lip_r, back, drift, n_arc=6, n_fall=14):
@@ -394,6 +409,108 @@ def waterfall(H, W, rng, strips=None):
     return mk.merge(*parts)
 
 
+# ------------------------------------------------------- paden en planten
+def stone(r, rng, h=0.07):
+    """Platte, afgeronde kei (laag-poly), licht in de grond: bovenkant vlak, schuine rand."""
+    rk = rng.uniform(0.85, 1.15, 7)
+    m = lathe_mod([(0.0, h), (r * 0.78, h), (r, h * 0.45), (r * 0.96, -0.04), (0.0, -0.04)], 7,
+                  rmod=lambda i, k, rk=rk: rk[k], phase=rng.uniform(0, 6.28), mat="M_Env_PathStone")
+    m.V[:, 0] *= rng.uniform(0.85, 1.15)
+    return m
+
+
+def place_stones(points, rng, rmin=0.20, rmax=0.29):
+    return [stone(rng.uniform(rmin, rmax), rng).transform(R=mk.rot_y(rng.uniform(0, 6.28)), t=(x, 0.0, z)) for (x, z) in points]
+
+
+def poisson(area_fn, n, min_d, rng, tries=4000):
+    pts = []
+    for _ in range(tries):
+        p = area_fn()
+        if all((p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 >= min_d ** 2 for q in pts):
+            pts.append(p)
+            if len(pts) >= n:
+                break
+    return pts
+
+
+def path_bed(outline, mat="M_Env_Dirt"):
+    """Lage, platte grondstrook onder de keien (leest als pad, ook op gras)."""
+    return loft([(offset(outline, -0.02), -0.03), (outline, 0.015), (offset(outline, 0.06), 0.02)], mat)
+
+
+def path_straight(rng):
+    pts = poisson(lambda: (rng.uniform(-0.85, 0.85), rng.uniform(-0.30, 0.30)), 8, 0.62, rng)
+    bed = path_bed(rect_outline(-1.0, 1.0, -0.55, 0.55, step=0.25, chamfer=0.25))
+    return mk.merge(bed, *place_stones(pts, rng))
+
+
+def path_curve(rng):
+    """Kwartbocht (straal 2 m tot het midden, 1,1 m breed), eindigt op het raster zoals het rechte stuk."""
+    rc = 2.0
+    def pt():
+        a = rng.uniform(0.08, math.pi / 2 - 0.08)
+        r = rc + rng.uniform(-0.38, 0.38)
+        return (rc - r * math.cos(a), -rc + r * math.sin(a))
+    pts = poisson(pt, 10, 0.62, rng)
+    arc = []
+    for k in range(9):
+        a = math.pi / 2 * k / 8
+        arc.append((rc - (rc + 0.55) * math.cos(a), -rc + (rc + 0.55) * math.sin(a)))
+    for k in range(8, -1, -1):
+        a = math.pi / 2 * k / 8
+        arc.append((rc - (rc - 0.55) * math.cos(a), -rc + (rc - 0.55) * math.sin(a)))
+    outline = np.array(arc)
+    if mk._poly_area(outline) < 0:
+        outline = outline[::-1]
+    return mk.merge(path_bed(outline), *place_stones(pts, rng))
+
+
+def path_patch(rng):
+    pts = poisson(lambda: tuple(rng.uniform(-0.65, 0.65, 2)), 8, 0.60, rng)
+    pts = [p for p in pts if p[0] ** 2 + p[1] ** 2 < 0.72 ** 2]
+    a = np.linspace(0, 2 * math.pi, 14, endpoint=False)
+    outline = np.stack([np.cos(a) * 0.95 * rng.uniform(0.9, 1.1, 14), np.sin(a) * 0.95 * rng.uniform(0.9, 1.1, 14)], -1)
+    return mk.merge(path_bed(outline), *place_stones(pts, rng))
+
+
+def daisy(rng, h):
+    """Madeliefje: dun steeltje, gele kern, 6 witte blaadjes (zacht, in de stijl van het concept)."""
+    stem = mk.capsule_between((0, 0, 0), (0, h, 0), 0.012, 0.010, 5, 1, mat="M_Env_Stem")
+    heart = mk.ellipsoid(0.035, 0.022, 0.035, 8, 4, mat="M_Env_FlowerHeart").transform(t=(0, h + 0.01, 0))
+    petals = []
+    for k in range(6):
+        a = 2 * math.pi * k / 6
+        pet = mk.ellipsoid(0.045, 0.012, 0.022, 6, 3, mat="M_Env_Petal")
+        petals.append(pet.transform(R=mk.rot_y(-a), t=(math.cos(a) * 0.055, h + 0.004, math.sin(a) * 0.055)))
+    return mk.merge(stem, heart, *petals).transform(R=mk.rot_z(rng.uniform(-0.15, 0.15)) @ mk.rot_y(rng.uniform(0, 6.28)))
+
+
+def grass_tuft(rng, n=7, h=0.32):
+    blades = []
+    for k in range(n):
+        a = 2 * math.pi * k / n + rng.uniform(-0.3, 0.3)
+        r = rng.uniform(0.02, 0.09)
+        hh = h * rng.uniform(0.6, 1.1)
+        tip = (math.cos(a) * (r + hh * 0.35), hh, math.sin(a) * (r + hh * 0.35))
+        b = lathe_mod([(0.035, 0.0), (0.0, 1.0)], 4, mat="M_Env_Bush")
+        b.V[:, 1] *= hh
+        # scheeftrekken naar de tip
+        b.V[:, 0] += b.V[:, 1] / hh * (tip[0] - math.cos(a) * r)
+        b.V[:, 2] += b.V[:, 1] / hh * (tip[2] - math.sin(a) * r)
+        blades.append(b.transform(t=(math.cos(a) * r, -0.02, math.sin(a) * r)))
+    return mk.merge(*blades)
+
+
+def flower_patch(rng, n_daisies=5, n_tufts=3, radius=0.45):
+    parts = []
+    for _ in range(n_tufts):
+        parts.append(grass_tuft(rng, 6, 0.28).transform(t=(rng.uniform(-radius, radius), 0, rng.uniform(-radius, radius))))
+    for _ in range(n_daisies):
+        parts.append(daisy(rng, rng.uniform(0.12, 0.22)).transform(t=(rng.uniform(-radius, radius), 0, rng.uniform(-radius, radius))))
+    return mk.merge(*parts)
+
+
 # ------------------------------------------------------------------- bergen
 def mountain(width, height, rng, peaks=1, seg=9):
     """Verre berg: groot facetsilhouet (plat in de diepte) met een simpele, gekartelde sneeuwkap."""
@@ -482,6 +599,17 @@ def build_all():
     A["Cliffs/Cliff_Big_01"] = (cluster([(-4.0, 0.2, -3.0, 1.0, 9.5), (-0.2, 4.0, -3.2, 0.4, 7.4),
                                           (-4.2, -0.8, 0.6, 3.0, 4.6), (-1.0, 2.2, 0.2, 2.6, 3.0),
                                           (2.0, 4.4, 0.2, 2.4, 1.8)], rng), 60, 0.55)
+    A["Paths/Stone_Single_01"] = (stone(0.32, rng), 2500, 0.10)
+    A["Paths/Stone_Single_02"] = (stone(0.45, rng), 2500, 0.10)
+    A["Paths/Stone_Single_03"] = (stone(0.60, rng, 0.09), 2000, 0.12)
+    A["Paths/Path_Stones_Straight"] = (path_straight(rng), 900, 0.15)
+    A["Paths/Path_Stones_Curve"] = (path_curve(rng), 700, 0.15)
+    A["Paths/Path_Stones_Patch"] = (path_patch(rng), 900, 0.15)
+    A["Plants/Flower_Daisy_01"] = (mk.merge(daisy(rng, 0.18), daisy(rng, 0.14).transform(t=(0.10, 0, 0.06)),
+                                            daisy(rng, 0.20).transform(t=(-0.08, 0, 0.09))), 4000, 0.05)
+    A["Plants/Grass_Tuft_01"] = (grass_tuft(rng, 7, 0.32), 3000, 0.06)
+    A["Plants/Grass_Tuft_02"] = (grass_tuft(rng, 10, 0.45), 3000, 0.06)
+    A["Plants/Flower_Patch_01"] = (flower_patch(rng), 2500, 0.08)
     A["Water/Waterfall_Large"] = (waterfall(6.0, 2.4, rng), 200, 0.30)
     A["Water/Waterfall_Medium"] = (waterfall(4.0, 1.6, rng), 250, 0.30)
     A["Water/Waterfall_Small"] = (waterfall(2.4, 0.9, rng), 300, 0.25)

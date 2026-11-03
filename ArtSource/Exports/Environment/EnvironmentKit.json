@@ -170,16 +170,16 @@
     "Cliff_Module_A": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_A.fbx",
-      "tris": 312,
+      "tris": 344,
       "min": [
-        -1.191,
+        -1.231,
         -0.3,
-        -1.195
+        -1.235
       ],
       "max": [
-        1.181,
+        1.221,
         2.17,
-        1.188
+        1.228
       ],
       "materials": [
         "M_Env_Cliff",
@@ -189,16 +189,16 @@
     "Cliff_Module_B": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_B.fbx",
-      "tris": 512,
+      "tris": 564,
       "min": [
-        -2.178,
+        -2.218,
         -0.3,
-        -1.198
+        -1.238
       ],
       "max": [
-        2.205,
+        2.245,
         3.17,
-        1.2
+        1.24
       ],
       "materials": [
         "M_Env_Cliff",
@@ -208,16 +208,16 @@
     "Cliff_Module_C": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_C.fbx",
-      "tris": 416,
+      "tris": 464,
       "min": [
-        -1.191,
+        -1.228,
         -0.3,
-        -1.187
+        -1.227
       ],
       "max": [
-        1.154,
+        1.191,
         2.77,
-        1.198
+        1.238
       ],
       "materials": [
         "M_Env_Cliff",
@@ -245,16 +245,16 @@
     "Cliff_Pillar_Small": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Pillar_Small.fbx",
-      "tris": 204,
+      "tris": 220,
       "min": [
         -1.04,
         -0.3,
-        -0.973
+        -1.012
       ],
       "max": [
-        0.952,
+        1.025,
         2.964,
-        0.883
+        1.002
       ],
       "materials": [
         "M_Env_Bush",
@@ -265,16 +265,16 @@
     "Cliff_Pillar_Tall": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Pillar_Tall.fbx",
-      "tris": 226,
+      "tris": 250,
       "min": [
-        -1.198,
+        -1.294,
         -0.3,
-        -1.18
+        -1.288
       ],
       "max": [
-        1.211,
+        1.323,
         5.195,
-        1.231
+        1.288
       ],
       "materials": [
         "M_Env_Bush",
@@ -285,16 +285,16 @@
     "Cliff_Ledge_Low": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Ledge_Low.fbx",
-      "tris": 290,
+      "tris": 322,
       "min": [
-        -2.209,
+        -2.274,
         -0.3,
-        -1.235
+        -1.302
       ],
       "max": [
-        2.173,
+        2.295,
         1.552,
-        1.214
+        1.294
       ],
       "materials": [
         "M_Env_Bush",
@@ -305,16 +305,16 @@
     "Cliff_Block_Wide": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Block_Wide.fbx",
-      "tris": 332,
+      "tris": 364,
       "min": [
-        -2.159,
+        -2.284,
         -0.3,
-        -1.242
+        -1.304
       ],
       "max": [
-        2.198,
+        2.314,
         2.613,
-        1.262
+        1.287
       ],
       "materials": [
         "M_Env_Bush",
@@ -325,16 +325,16 @@
     "Cliff_Cluster_Step": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Step.fbx",
-      "tris": 772,
+      "tris": 1312,
       "min": [
-        -3.238,
+        -3.437,
         -0.3,
-        -1.641
+        -1.793
       ],
       "max": [
-        3.184,
-        4.698,
-        1.397
+        3.427,
+        4.733,
+        1.631
       ],
       "materials": [
         "M_Env_Bush",
@@ -345,16 +345,16 @@
     "Cliff_Cluster_Corner": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Corner.fbx",
-      "tris": 944,
+      "tris": 1490,
       "min": [
-        -2.22,
+        -2.458,
         -0.3,
-        -2.254
+        -2.405
       ],
       "max": [
-        2.275,
-        4.128,
-        2.191
+        2.429,
+        4.132,
+        2.434
       ],
       "materials": [
         "M_Env_Bush",
@@ -365,16 +365,16 @@
     "Cliff_Cluster_Tall": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Tall.fbx",
-      "tris": 1146,
+      "tris": 1652,
       "min": [
-        -3.211,
+        -3.426,
         -0.3,
-        -2.509
+        -2.638
       ],
       "max": [
-        3.192,
-        7.092,
-        2.211
+        3.419,
+        7.031,
+        2.456
       ],
       "materials": [
         "M_Env_Bush",
@@ -385,21 +385,209 @@
     "Cliff_Big_01": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Big_01.fbx",
-      "tris": 1544,
+      "tris": 2670,
       "min": [
-        -4.395,
+        -4.652,
         -0.3,
-        -3.435
+        -3.622
       ],
       "max": [
-        4.542,
-        9.977,
-        3.224
+        4.849,
+        10.004,
+        3.454
       ],
       "materials": [
         "M_Env_Bush",
         "M_Env_Cliff",
         "M_Env_Grass"
+      ]
+    },
+    "Stone_Single_01": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_01.fbx",
+      "tris": 42,
+      "min": [
+        -0.293,
+        -0.04,
+        -0.322
+      ],
+      "max": [
+        0.304,
+        0.07,
+        0.354
+      ],
+      "materials": [
+        "M_Env_PathStone"
+      ]
+    },
+    "Stone_Single_02": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_02.fbx",
+      "tris": 42,
+      "min": [
+        -0.504,
+        -0.04,
+        -0.42
+      ],
+      "max": [
+        0.426,
+        0.07,
+        0.422
+      ],
+      "materials": [
+        "M_Env_PathStone"
+      ]
+    },
+    "Stone_Single_03": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_03.fbx",
+      "tris": 42,
+      "min": [
+        -0.564,
+        -0.04,
+        -0.598
+      ],
+      "max": [
+        0.551,
+        0.09,
+        0.659
+      ],
+      "materials": [
+        "M_Env_PathStone"
+      ]
+    },
+    "Path_Stones_Straight": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Path_Stones_Straight.fbx",
+      "tris": 284,
+      "min": [
+        -1.02,
+        -0.04,
+        -0.57
+      ],
+      "max": [
+        1.133,
+        0.07,
+        0.57
+      ],
+      "materials": [
+        "M_Env_Dirt",
+        "M_Env_PathStone"
+      ]
+    },
+    "Path_Stones_Curve": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Path_Stones_Curve.fbx",
+      "tris": 356,
+      "min": [
+        -0.565,
+        -0.04,
+        -2.015
+      ],
+      "max": [
+        2.043,
+        0.07,
+        0.565
+      ],
+      "materials": [
+        "M_Env_Dirt",
+        "M_Env_PathStone"
+      ]
+    },
+    "Path_Stones_Patch": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Path_Stones_Patch.fbx",
+      "tris": 248,
+      "min": [
+        -0.988,
+        -0.04,
+        -1.007
+      ],
+      "max": [
+        0.928,
+        0.07,
+        1.016
+      ],
+      "materials": [
+        "M_Env_Dirt",
+        "M_Env_PathStone"
+      ]
+    },
+    "Flower_Daisy_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Flower_Daisy_01.fbx",
+      "tris": 726,
+      "min": [
+        -0.187,
+        -0.012,
+        -0.088
+      ],
+      "max": [
+        0.205,
+        0.231,
+        0.181
+      ],
+      "materials": [
+        "M_Env_FlowerHeart",
+        "M_Env_Petal",
+        "M_Env_Stem"
+      ]
+    },
+    "Grass_Tuft_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Grass_Tuft_01.fbx",
+      "tris": 28,
+      "min": [
+        -0.136,
+        -0.02,
+        -0.146
+      ],
+      "max": [
+        0.12,
+        0.325,
+        0.119
+      ],
+      "materials": [
+        "M_Env_Bush"
+      ]
+    },
+    "Grass_Tuft_02": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Grass_Tuft_02.fbx",
+      "tris": 40,
+      "min": [
+        -0.162,
+        -0.02,
+        -0.191
+      ],
+      "max": [
+        0.25,
+        0.469,
+        0.211
+      ],
+      "materials": [
+        "M_Env_Bush"
+      ]
+    },
+    "Flower_Patch_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Flower_Patch_01.fbx",
+      "tris": 1282,
+      "min": [
+        -0.541,
+        -0.02,
+        -0.496
+      ],
+      "max": [
+        0.431,
+        0.282,
+        0.289
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_FlowerHeart",
+        "M_Env_Petal",
+        "M_Env_Stem"
       ]
     },
     "Waterfall_Large": {
@@ -408,8 +596,8 @@
       "tris": 4900,
       "min": [
         -2.465,
-        -0.072,
-        -1.277
+        -0.06,
+        -1.28
       ],
       "max": [
         2.346,
@@ -430,7 +618,7 @@
       "tris": 3484,
       "min": [
         -1.822,
-        -0.084,
+        -0.131,
         -1.283
       ],
       "max": [
@@ -453,12 +641,12 @@
       "min": [
         -1.259,
         -0.06,
-        -1.278
+        -1.279
       ],
       "max": [
         1.199,
         2.4,
-        1.528
+        1.673
       ],
       "materials": [
         "M_Env_Foam",
@@ -473,14 +661,14 @@
       "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_01.fbx",
       "tris": 90,
       "min": [
-        -25.253,
+        -22.398,
         -2.0,
-        -13.212
+        -14.436
       ],
       "max": [
-        23.954,
+        19.319,
         30.25,
-        10.764
+        13.567
       ],
       "materials": [
         "M_Env_Mountain",
@@ -492,14 +680,14 @@
       "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_02.fbx",
       "tris": 180,
       "min": [
-        -32.17,
+        -26.318,
         -2.0,
-        -18.801
+        -16.92
       ],
       "max": [
-        43.442,
+        41.754,
         34.25,
-        17.737
+        14.512
       ],
       "materials": [
         "M_Env_Mountain",
@@ -511,14 +699,14 @@
       "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_03.fbx",
       "tris": 240,
       "min": [
-        -51.779,
+        -52.008,
         -2.0,
-        -21.069
+        -19.801
       ],
       "max": [
-        52.308,
+        47.086,
         22.25,
-        17.694
+        18.397
       ],
       "materials": [
         "M_Env_Mountain",
@@ -530,14 +718,14 @@
       "fbx": "Assets/Art/Models/Environment/Sky/Cloud_01.fbx",
       "tris": 720,
       "min": [
-        -3.35,
+        -3.667,
         0.0,
-        -0.903
+        -1.243
       ],
       "max": [
-        3.058,
-        1.647,
-        0.978
+        3.548,
+        1.934,
+        0.963
       ],
       "materials": [
         "M_Env_Cloud"
@@ -548,14 +736,14 @@
       "fbx": "Assets/Art/Models/Environment/Sky/Cloud_02.fbx",
       "tris": 576,
       "min": [
-        -2.475,
+        -2.538,
         0.0,
-        -1.033
+        -0.888
       ],
       "max": [
-        2.694,
-        1.709,
-        0.938
+        2.872,
+        1.732,
+        1.138
       ],
       "materials": [
         "M_Env_Cloud"
@@ -566,14 +754,14 @@
       "fbx": "Assets/Art/Models/Environment/Sky/Cloud_03.fbx",
       "tris": 432,
       "min": [
-        -1.706,
+        -2.142,
         0.0,
-        -1.089
+        -0.865
       ],
       "max": [
-        1.767,
-        1.735,
-        0.84
+        1.811,
+        1.395,
+        0.696
       ],
       "materials": [
         "M_Env_Cloud"
@@ -823,6 +1011,86 @@
         "rim": 0.2,
         "noShadow": true,
         "edge": 0.0
+      }
+    },
+    "M_Env_PathStone": {
+      "base": "#958E9C",
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.4,
+        "rim": 0.2
+      }
+    },
+    "M_Env_Dirt": {
+      "base": "#906959",
+      "ramp": [
+        "#6A4C4B",
+        "#906959",
+        "#AC7F75",
+        "#BE907B",
+        "#CA957A"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.6,
+        "rim": 0.1
+      }
+    },
+    "M_Env_Petal": {
+      "base": "#FDF2EB",
+      "ramp": [
+        "#C2CAEA",
+        "#C7D0F0",
+        "#DFDDEE",
+        "#E7E1EA",
+        "#FDF2EB"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.2
+      }
+    },
+    "M_Env_FlowerHeart": {
+      "base": "#F5B038",
+      "ramp": [
+        "#B57326",
+        "#E59C2F",
+        "#F5B038",
+        "#FDBF40",
+        "#FDC443"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0
+      }
+    },
+    "M_Env_Stem": {
+      "base": "#6B7F38",
+      "ramp": [
+        "#566D3A",
+        "#6B7F38",
+        "#8B9F3B",
+        "#A1B044",
+        "#ADBC4A"
+      ],
+      "rampShift": -0.2,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0
       }
     },
     "M_Env_Cloud": {
