@@ -68,6 +68,7 @@ flowchart LR
 
 ## 🔗 Open pull requests zonder gekoppelde roadmap-taak
 
+- [#32 Art: modulaire natuur- en achtergrondkit v1](https://github.com/mlemson/conductor-chaos/pull/32) — verwijs in de PR-omschrijving naar `Refs #nummer` of `Closes #nummer`.
 - [#31 Art: doorzichtige ramen regionale wagon](https://github.com/mlemson/conductor-chaos/pull/31) — verwijs in de PR-omschrijving naar `Refs #nummer` of `Closes #nummer`.
 
 ## 🤝 Samenwerken met mensen en agents
