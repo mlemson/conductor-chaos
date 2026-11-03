@@ -50,7 +50,7 @@ flowchart LR
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
-| P0 | [#2 Valideer Unity-project en URP-import](https://github.com/mlemson/conductor-chaos/issues/2) | Foundation | — | [#27](https://github.com/mlemson/conductor-chaos/pull/27), [#26](https://github.com/mlemson/conductor-chaos/pull/26) |
+| P0 | [#2 Valideer Unity-project en URP-import](https://github.com/mlemson/conductor-chaos/issues/2) | Foundation | — | [#27](https://github.com/mlemson/conductor-chaos/pull/27) |
 
 ### 👀 Klaar voor review (1)
 
