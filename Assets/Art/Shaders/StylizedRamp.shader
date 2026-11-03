@@ -32,6 +32,7 @@ Shader "ConductorChaos/StylizedRamp"
         _DirtColor ("Dirt Color", Color) = (0.31, 0.20, 0.19, 1)
         _Emissive ("Emissive", Range(0, 1)) = 0
         _Opacity ("Opacity", Range(0, 1)) = 1
+        _SoftEdge ("Soft Edge (mist)", Range(0, 1)) = 0
         _HasShade ("Use Vertex Shade", Float) = 1
         _ReceiveShadowsF ("Receive Shadows", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
@@ -53,7 +54,7 @@ Shader "ConductorChaos/StylizedRamp"
             half4 _RimColor;
             half4 _DirtColor;
             float4 _GrimeY;
-            half _RampShift, _Flat, _Edge, _Rim, _Spec, _Cells, _CellSize, _Grime, _Emissive, _Opacity, _HasShade;
+            half _RampShift, _Flat, _Edge, _Rim, _Spec, _Cells, _CellSize, _Grime, _Emissive, _Opacity, _HasShade, _SoftEdge;
             half _ReceiveShadowsF, _SrcBlend, _DstBlend, _ZWrite, _Cull;
         CBUFFER_END
         ENDHLSL
@@ -190,6 +191,7 @@ Shader "ConductorChaos/StylizedRamp"
                 col = lerp(col, SampleRamp(0.25 + 0.75 * pow(saturate(dot(N, V)), 0.9) + _RampShift), _Emissive);
                 col = MixFog(col, i.fogFactor);
                 half alpha = _Opacity >= 0.999 ? 1.0 : saturate(_Opacity + fr * 0.45);
+                alpha = lerp(alpha, _Opacity * (1.0 - pow(1.0 - saturate(dot(N, V)), 1.5)), _SoftEdge);   // mist: zachte randen
                 return half4(col, alpha);
             }
             ENDHLSL

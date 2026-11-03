@@ -52,8 +52,11 @@ MATERIALS = {
     "M_Env_Grass": (R["grass"][2], R["grass"], 0.05, 0.02, {"cells": 0.8, "cellSize": 0.9}),
     "M_Env_Mountain": (R["mountain"][2], R["mountain"], 0.05, 0.02, {"cells": 0.8, "cellSize": 6.0, "rim": 0.12, "edge": 0.6}),
     "M_Env_Snow": (R["cloud_snow"][3], R["cloud_snow"], 0.05, 0.05, {"cells": 0.4, "cellSize": 5.0, "rim": 0.10}),
-    "M_Env_Water": (R["water"][2], R["water"], 0.3, 0.02, {"cells": 0.0, "flat": 0.45, "rim": 0.20, "edge": 0.0}),
-    "M_Env_WaterLight": (R["water"][4], R["water"], 0.3, 0.30, {"cells": 0.0, "flat": 0.75, "rim": 0.10, "edge": 0.0}),
+    "M_Env_Water": (R["water"][2], R["water"], 0.3, 0.02, {"cells": 0.0, "flat": 0.15, "rim": 0.20, "edge": 0.0}),
+    "M_Env_WaterLight": (R["water"][4], R["water"], 0.3, 0.38, {"cells": 0.0, "flat": 0.55, "rim": 0.10, "edge": 0.0}),
+    "M_Env_WaterDeep": (R["water"][0], R["water"], 0.3, -0.10, {"cells": 0.0, "flat": 0.15, "rim": 0.15, "edge": 0.0}),
+    "M_Env_Mist": (R["cloud_snow"][4], R["cloud_snow"], 0.0, 0.30, {"cells": 0.0, "flat": 0.7, "rim": 0.0, "opacity": 0.45, "softEdge": 1.0,
+                                                                       "noShadow": True, "edge": 0.0}),
     "M_Env_Foam": (R["cloud_snow"][4], R["cloud_snow"], 0.0, 0.25, {"cells": 0.0, "flat": 0.45, "rim": 0.20,
                                                                        "noShadow": True, "edge": 0.0}),
     "M_Env_Cloud": (R["cloud_snow"][3], R["cloud_snow"], 0.0, 0.12, {"cells": 0.0, "flat": 0.35, "rim": 0.25,
@@ -281,45 +284,114 @@ def cluster(blocks, rng):
     return mk.merge(*[pillar(*b, rng) for b in blocks])
 
 
-def waterfall(H, W, rng, strips=5):
-    """Stilstaande waterval 'zoals in een plaatje': verticale banen in twee tinten die over een ronde lip
-    vallen, onderaan witte schuimwolkjes. Pivot midden-onder, de lip ligt op y = H tegen een klifrand (−Z)."""
+def _fall_profile(H, lip_r, back, drift, n_arc=6, n_fall=14):
+    """Middellijn van het water (u = naar voren, v = hoogte): stroom bovenop -> ronde lip -> val met lichte boog."""
+    pts = [(-back, H), (-back * 0.5, H), (-0.05, H)]
+    for k in range(1, n_arc + 1):                                  # lip: kwartcirkel over de rand
+        a = math.pi / 2 * (1 - k / n_arc)
+        pts.append((lip_r * math.cos(a), H - lip_r + lip_r * math.sin(a)))
+    v0 = H - lip_r
+    for k in range(1, n_fall + 1):
+        f = k / n_fall
+        pts.append((lip_r + drift * math.sqrt(f), v0 * (1 - f) - 0.05 * f))
+    return pts
+
+
+def waterfall(H, W, rng, strips=None):
+    """Stilstaande waterval in 'plaatje'-stijl, v2: één doorlopend, gegroefd watervel dat als stroom over de
+    klifrand komt, over een ronde lip buigt en in een lichte boog valt. Verticale banen in drie watertinten
+    (facetten vangen elk anders het licht), dunne lichtstrepen, gerafelde onderrand, een poel met lichte
+    ring en een wolk van schuim en mist. Pivot midden-onder; de lip ligt op y = H tegen een klifrand (-Z)."""
     parts = []
-    xs = np.linspace(-W / 2, W / 2, strips + 1)
-    for i in range(strips):
-        a, b = xs[i] + 0.01, xs[i + 1] - 0.01
-        bulge = rng.uniform(0.02, 0.10)
-        fwd = 0.05 if i % 2 else 0.0
-        bot = rng.uniform(-0.10, 0.25) + (0.0 if i % 2 else 0.1)
-        t = 0.12
-        outer = [(-0.70, H + 0.03), (-0.12, H + 0.03), (0.06 + fwd, H - 0.10), (0.14 + fwd, H - 0.36),
-                 (0.18 + fwd + bulge, H * 0.55), (0.20 + fwd + bulge * 0.6, H * 0.22), (0.21 + fwd, bot)]
-        inner = [(0.21 + fwd - t, bot), (0.20 + fwd + bulge * 0.6 - t, H * 0.22), (0.18 + fwd + bulge - t, H * 0.55),
-                 (0.14 + fwd - t, H - 0.36), (0.02 + fwd - t * 0.5, H - 0.13), (-0.12, H + 0.03 - t), (-0.70, H + 0.03 - t)]
-        prof = outer + inner
-        mat = "M_Env_WaterLight" if i % 2 else "M_Env_Water"
-        strip = mk.prism([(u, v) for (u, v) in prof], a, b, 0.015, mat=mat)
-        # prism: profiel in (x=u, y), extrusie langs z -> draai zodat u = +Z (naar voren) en z = X (breedte)
-        strip = strip.transform(R=mk.rot_y(-math.pi / 2))
-        parts.append(strip)
-    # lichte lip over de hele breedte (water dat over de rand buigt)
-    lip = [(-0.50, H + 0.06), (-0.10, H + 0.06), (0.10, H - 0.07), (0.20, H - 0.32), (0.20 - 0.10, H - 0.34),
-           (0.06, H - 0.14), (-0.10, H - 0.04), (-0.50, H - 0.04)]
-    parts.append(mk.prism(lip, -W / 2 - 0.02, W / 2 + 0.02, 0.03, mat="M_Env_WaterLight").transform(R=mk.rot_y(-math.pi / 2)))
-    # schuim onderaan
-    n = max(3, int(W / 0.45))
-    for k in range(n):
-        x = -W / 2 + W * (k + 0.5) / n + rng.uniform(-0.1, 0.1)
-        r = rng.uniform(0.28, 0.42) * (0.75 + 0.35 * min(1.0, W / 2.0))
-        puff = mk.ellipsoid(r * 1.15, r * 0.80, r * 0.90, 10, 6, mat="M_Env_Foam")
-        puff.V[:, 1] = np.maximum(puff.V[:, 1], -r * 0.2)
-        parts.append(puff.transform(t=(x, r * 0.2, 0.25 + rng.uniform(-0.05, 0.12))))
-    for k in range(max(2, n // 2)):                         # losse spetters
-        r = rng.uniform(0.08, 0.14)
-        sp = mk.ellipsoid(r, r * 0.9, r, 8, 5, mat="M_Env_Foam")
-        parts.append(sp.transform(t=(rng.uniform(-W / 2 - 0.3, W / 2 + 0.3), rng.uniform(0.0, 0.25), rng.uniform(0.45, 0.85))))
-    m = mk.merge(*parts)
-    return m
+    lip_r = min(0.45, 0.10 * H + 0.10)
+    drift = 0.10 + 0.04 * H
+    prof = _fall_profile(H, lip_r, back=1.2, drift=drift)
+    nprof = len(prof)
+    cols = max(6, int(round(W / 0.16)))
+    xs = np.linspace(-W / 2, W / 2, cols + 1)
+    # groeven: zigzag over de breedte (in/uit) + willekeur, sterker naar beneden; randen iets naar achteren
+    ridge = np.array([0.075 * (1 if j % 2 else -1) + rng.uniform(-0.02, 0.02) for j in range(cols + 1)])
+    edge = np.clip(1.0 - np.abs(np.linspace(-1, 1, cols + 1)) ** 6, 0.0, 1.0)
+    bottom = rng.uniform(0.0, 0.35, cols + 1) * (0.6 + 0.4 * (np.arange(cols + 1) % 2))
+    t = 0.10
+    V, F, M = [], [], []
+
+    def vid(p):
+        V.append(p)
+        return len(V) - 1
+    front = np.zeros((nprof, cols + 1), int)
+    back = np.zeros((nprof, cols + 1), int)
+    for i, (u, v) in enumerate(prof):
+        fall = max(0.0, min(1.0, (H - v) / H)) if u > 0 else 0.0
+        for j, x in enumerate(xs):
+            vv = max(v, bottom[j]) if i == nprof - 1 else v
+            uu = u + ridge[j] * (0.25 + 0.75 * fall) - (1 - edge[j]) * 0.06
+            front[i, j] = vid((x, vv, uu))
+            # achterkant: naar binnen (richting klif / naar beneden bij de stroom)
+            if u <= 0:
+                back[i, j] = vid((x, vv - t, uu))
+            else:
+                back[i, j] = vid((x, vv, uu - t))
+    band = []
+    for j in range(cols):
+        r = rng.uniform()
+        band.append("M_Env_WaterLight" if r < 0.28 else ("M_Env_WaterDeep" if r > 0.86 else "M_Env_Water"))
+    band[0] = band[-1] = "M_Env_WaterDeep"
+    for i in range(nprof - 1):
+        for j in range(cols):
+            a, b, c, d = front[i, j], front[i, j + 1], front[i + 1, j + 1], front[i + 1, j]
+            F.append((a, d, c, b)); M.append(band[j] if prof[i][0] > -0.3 else "M_Env_Water")
+            a, b, c, d = back[i, j], back[i, j + 1], back[i + 1, j + 1], back[i + 1, j]
+            F.append((a, b, c, d)); M.append("M_Env_WaterDeep")
+    for i in range(nprof - 1):                                          # zijkanten
+        for j, flip in ((0, False), (cols, True)):
+            q = (front[i, j], front[i + 1, j], back[i + 1, j], back[i, j])
+            F.append(q[::-1] if flip else q); M.append("M_Env_WaterDeep")
+    for j in range(cols):                                               # onder- en achterrand
+        for i, flip in ((nprof - 1, False), (0, True)):
+            q = (front[i, j], front[i, j + 1], back[i, j + 1], back[i, j])
+            F.append(q[::-1] if flip else q); M.append("M_Env_WaterDeep")
+    sheet = mk.Mesh(np.array(V, float), F, M)
+    sheet.sharp = True
+    parts.append(mk._orient_closed(sheet))
+    # dunne lichtstrepen vóór het vel (het water 'glanst' in banen)
+    for _ in range(max(2, int(W / 0.5))):
+        x = rng.uniform(-W / 2 + 0.15, W / 2 - 0.15)
+        y0, y1 = rng.uniform(0.3, H * 0.35), rng.uniform(H * 0.55, H - lip_r - 0.1)
+        w = rng.uniform(0.025, 0.045)
+        u = lip_r + drift * math.sqrt(max(0.0, (H - lip_r - (y0 + y1) / 2) / (H - lip_r))) + 0.06
+        streak = mk.rounded_box(w * 2, y1 - y0, 0.02, w * 0.9, 1, mat="M_Env_WaterLight").transform(t=(x, (y0 + y1) / 2, u))
+        parts.append(streak)
+    # poel aan de voet met een lichte ring
+    pr = W * 0.75 + 0.5
+    pool = lathe_mod([(0.0, 0.03), (pr * 0.55, 0.03), (pr, 0.02), (pr * 1.02, -0.06), (0.0, -0.06)], 14,
+                     rmod=lambda i, k: 1.0 + 0.06 * math.sin(k * 2.1), mat="M_Env_WaterDeep")
+    pool.V[:, 2] *= 0.55
+    ring = lathe_mod([(pr * 0.50, 0.045), (pr * 0.62, 0.045), (pr * 0.62, 0.02), (pr * 0.50, 0.02)], 14,
+                     rmod=lambda i, k: 1.0 + 0.06 * math.sin(k * 2.1), mat="M_Env_WaterLight")
+    ring.V[:, 2] *= 0.55
+    parts += [pool.transform(t=(0, 0, lip_r + drift + 0.2)), ring.transform(t=(0, 0, lip_r + drift + 0.2))]
+    # schuim: twee rijen puffen + spetters, en een doorzichtige mistwolk
+    zf = lip_r + drift + 0.05
+    n = max(4, int(W / 0.35))
+    for row, (zo, sc, yo) in enumerate(((0.0, 1.0, 0.0), (0.35, 0.75, -0.05))):
+        for k in range(n + row):
+            x = -W / 2 - 0.1 + (W + 0.2) * (k + 0.5) / (n + row) + rng.uniform(-0.08, 0.08)
+            r = rng.uniform(0.26, 0.40) * sc * (0.8 + 0.3 * min(1.0, W / 2.0))
+            puff = mk.ellipsoid(r * 1.15, r * 0.85, r * 0.95, 12, 7, mat="M_Env_Foam")
+            puff.V[:, 1] = np.maximum(puff.V[:, 1], -r * 0.15)
+            parts.append(puff.transform(t=(x, r * 0.25 + yo, zf + zo + rng.uniform(-0.05, 0.08))))
+    for k in range(max(3, n)):
+        r = rng.uniform(0.06, 0.12)
+        parts.append(mk.ellipsoid(r, r * 0.9, r, 8, 5, mat="M_Env_Foam").transform(
+            t=(rng.uniform(-W / 2 - 0.4, W / 2 + 0.4), rng.uniform(0.05, 0.55), zf + rng.uniform(0.45, 1.0))))
+    nm = max(2, int(W / 0.7) + 1)
+    for k in range(nm):
+        r = rng.uniform(0.40, 0.60) * (0.7 + 0.3 * min(1.0, W / 2.0))
+        mist = mk.ellipsoid(r * 1.3, r, r, 12, 7, mat="M_Env_Mist")
+        x = -W / 2 + W * (k + 0.5) / nm + rng.uniform(-0.1, 0.1)
+        parts.append(mist.transform(t=(x, rng.uniform(0.35, 0.8), zf + rng.uniform(0.05, 0.35))))
+    return mk.merge(*parts)
 
 
 # ------------------------------------------------------------------- bergen
@@ -410,9 +482,9 @@ def build_all():
     A["Cliffs/Cliff_Big_01"] = (cluster([(-4.0, 0.2, -3.0, 1.0, 9.5), (-0.2, 4.0, -3.2, 0.4, 7.4),
                                           (-4.2, -0.8, 0.6, 3.0, 4.6), (-1.0, 2.2, 0.2, 2.6, 3.0),
                                           (2.0, 4.4, 0.2, 2.4, 1.8)], rng), 60, 0.55)
-    A["Water/Waterfall_Large"] = (waterfall(6.0, 2.4, rng, 6), 200, 0.30)
-    A["Water/Waterfall_Medium"] = (waterfall(4.0, 1.6, rng, 4), 250, 0.30)
-    A["Water/Waterfall_Small"] = (waterfall(2.4, 0.8, rng, 3), 300, 0.25)
+    A["Water/Waterfall_Large"] = (waterfall(6.0, 2.4, rng), 200, 0.30)
+    A["Water/Waterfall_Medium"] = (waterfall(4.0, 1.6, rng), 250, 0.30)
+    A["Water/Waterfall_Small"] = (waterfall(2.4, 0.9, rng), 300, 0.25)
     A["Mountains/Mountain_Back_01"] = (mountain(46, 30, rng), 0.6, 4.0)
     A["Mountains/Mountain_Back_02"] = (mountain(60, 34, rng, peaks=2), 0.4, 4.0)
     A["Mountains/Mountain_Back_03"] = (mountain(70, 22, rng, peaks=3, seg=8), 0.4, 4.0)
@@ -431,7 +503,7 @@ def build_all():
         sc = make_scene(name, mesh, dens, rad, gradient=0.0 if smooth or rel.startswith("Water") else 0.25, facet=not smooth)
         if rel.startswith("Water"):                         # schuim zacht, water facet
             m = sc.parts[0].mesh
-            m.FS = [mm != "M_Env_Foam" for mm in m.M]
+            m.FS = [mm not in ("M_Env_Foam", "M_Env_Mist") for mm in m.M]
             m.sharp = False
         fbx_rel = f"{MODEL_DIR}/{rel}.fbx"
         os.makedirs(os.path.join(ROOT, os.path.dirname(fbx_rel)), exist_ok=True)

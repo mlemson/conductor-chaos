@@ -47,6 +47,8 @@ namespace ConductorChaos.EditorTools
         [MenuItem("Conductor Chaos/Art/Build Showcase Scene")]
         public static void Build()
         {
+            // open scène met niet-opgeslagen wijzigingen? Eerst vragen (NewScene zou ze anders weggooien).
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             var json = AssetDatabase.LoadAssetAtPath<TextAsset>(LayoutPath);
             if (json == null) { Debug.LogError($"[ArtShowcase] Layout ontbreekt: {LayoutPath}"); return; }
             var layout = JsonUtility.FromJson<Layout>(json.text);

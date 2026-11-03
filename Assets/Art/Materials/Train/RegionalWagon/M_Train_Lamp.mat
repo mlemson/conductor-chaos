@@ -37,6 +37,7 @@ Material:
     - _Emissive: 0.85
     - _Opacity: 1.0
     - _HasShade: 1.0
+    - _SoftEdge: 0.0
     - _ReceiveShadowsF: 1.0
     - _Cull: 2.0
     - _SrcBlend: 1.0

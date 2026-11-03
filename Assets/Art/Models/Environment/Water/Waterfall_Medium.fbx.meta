@@ -12,13 +12,23 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Env_Water
-    second: {fileID: 2100000, guid: 277b0e3117009cd0edf51bc7bc99ea22, type: 2}
+      name: M_Env_Mist
+    second: {fileID: 2100000, guid: a99191425b9d9d6fc42c0e9a2c845801, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_WaterDeep
+    second: {fileID: 2100000, guid: 5d7fed93f81b4b0b1344c52843c537c7, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: M_Env_WaterLight
     second: {fileID: 2100000, guid: 480918067fdf6eefb61329ef75ee1c2d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Water
+    second: {fileID: 2100000, guid: 277b0e3117009cd0edf51bc7bc99ea22, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -99,21 +99,21 @@ Objects:  {
 			}
 		}
 	}
-	Material: 100001, "Material::M_Env_Cliff", "" {
-		Version: 102
-		ShadingModel: "lambert"
-		MultiLayer: 0
-		Properties70:  {
-			P: "DiffuseColor", "Color", "", "A",0.674510,0.498039,0.458824
-			P: "DiffuseFactor", "Number", "", "A",1
-		}
-	}
-	Material: 100002, "Material::M_Env_Bush", "" {
+	Material: 100001, "Material::M_Env_Bush", "" {
 		Version: 102
 		ShadingModel: "lambert"
 		MultiLayer: 0
 		Properties70:  {
 			P: "DiffuseColor", "Color", "", "A",0.419608,0.498039,0.219608
+			P: "DiffuseFactor", "Number", "", "A",1
+		}
+	}
+	Material: 100002, "Material::M_Env_Cliff", "" {
+		Version: 102
+		ShadingModel: "lambert"
+		MultiLayer: 0
+		Properties70:  {
+			P: "DiffuseColor", "Color", "", "A",0.674510,0.498039,0.458824
 			P: "DiffuseFactor", "Number", "", "A",1
 		}
 	}
@@ -130,7 +130,7 @@ Objects:  {
 Connections:  {
 	C: "OO",100004,0
 	C: "OO",100005,100004
-	C: "OO",100001,100004
-	C: "OO",100003,100004
 	C: "OO",100002,100004
+	C: "OO",100003,100004
+	C: "OO",100001,100004
 }

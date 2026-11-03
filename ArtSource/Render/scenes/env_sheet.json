@@ -512,14 +512,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 16.04,
-   "target": "-0.06,3.00,0.08",
+   "dist": 19.91,
+   "target": "-0.06,2.96,0.52",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 8.59,
-   "shadowSize": 5.5,
-   "far": 114.2,
+   "groundR": 10.67,
+   "shadowSize": 6.83,
+   "far": 129.7,
    "items": [
     {
      "url": "../Exports/Environment/Waterfall_Large.glb"
@@ -536,14 +536,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 11.18,
-   "target": "0.11,1.99,0.05",
+   "dist": 14.64,
+   "target": "-0.04,1.96,0.30",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 5.99,
-   "shadowSize": 3.84,
-   "far": 94.7,
+   "groundR": 7.84,
+   "shadowSize": 5.02,
+   "far": 108.5,
    "items": [
     {
      "url": "../Exports/Environment/Waterfall_Medium.glb"
@@ -560,14 +560,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 7.58,
-   "target": "-0.08,1.21,0.09",
+   "dist": 10.42,
+   "target": "-0.03,1.17,0.12",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 4.06,
-   "shadowSize": 2.6,
-   "far": 80.3,
+   "groundR": 5.59,
+   "shadowSize": 3.57,
+   "far": 91.7,
    "items": [
     {
      "url": "../Exports/Environment/Waterfall_Small.glb"
@@ -584,14 +584,14 @@
    "fov": 30,
    "yaw": 8,
    "pitch": 6,
-   "dist": 150.02,
-   "target": "-0.50,14.12,0.79",
+   "dist": 148.19,
+   "target": "-0.65,14.12,-1.22",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 80.39,
-   "shadowSize": 51.45,
-   "far": 650.1,
+   "groundR": 79.41,
+   "shadowSize": 50.83,
+   "far": 642.8,
    "items": [
     {
      "url": "../Exports/Environment/Mountain_Back_01.glb"
@@ -608,14 +608,14 @@
    "fov": 30,
    "yaw": 8,
    "pitch": 6,
-   "dist": 206.17,
-   "target": "5.88,16.12,-0.76",
+   "dist": 213.35,
+   "target": "5.64,16.12,-0.53",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 110.48,
-   "shadowSize": 70.71,
-   "far": 874.7,
+   "groundR": 114.33,
+   "shadowSize": 73.17,
+   "far": 903.4,
    "items": [
     {
      "url": "../Exports/Environment/Mountain_Back_02.glb"
@@ -632,14 +632,14 @@
    "fov": 30,
    "yaw": 8,
    "pitch": 6,
-   "dist": 255.43,
-   "target": "0.61,10.12,-1.17",
+   "dist": 265.18,
+   "target": "0.26,10.12,-1.69",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 136.88,
-   "shadowSize": 87.6,
-   "far": 1071.7,
+   "groundR": 142.11,
+   "shadowSize": 90.95,
+   "far": 1110.7,
    "items": [
     {
      "url": "../Exports/Environment/Mountain_Back_03.glb"
@@ -656,14 +656,14 @@
    "fov": 30,
    "yaw": 8,
    "pitch": 6,
-   "dist": 17.17,
-   "target": "0.10,0.93,0.07",
+   "dist": 16.04,
+   "target": "-0.15,0.82,0.04",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 9.2,
-   "shadowSize": 5.89,
-   "far": 118.7,
+   "groundR": 8.6,
+   "shadowSize": 5.5,
+   "far": 114.2,
    "items": [
     {
      "url": "../Exports/Environment/Cloud_01.glb"
@@ -680,14 +680,14 @@
    "fov": 30,
    "yaw": 8,
    "pitch": 6,
-   "dist": 13.98,
-   "target": "0.20,0.94,-0.03",
+   "dist": 13.51,
+   "target": "0.11,0.85,-0.05",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 7.49,
-   "shadowSize": 4.8,
-   "far": 105.9,
+   "groundR": 7.24,
+   "shadowSize": 4.63,
+   "far": 104.0,
    "items": [
     {
      "url": "../Exports/Environment/Cloud_02.glb"
@@ -704,14 +704,14 @@
    "fov": 30,
    "yaw": 8,
    "pitch": 6,
-   "dist": 9.81,
-   "target": "0.16,0.82,0.02",
+   "dist": 10.11,
+   "target": "0.03,0.87,-0.12",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 5.26,
-   "shadowSize": 3.36,
-   "far": 89.2,
+   "groundR": 5.42,
+   "shadowSize": 3.47,
+   "far": 90.4,
    "items": [
     {
      "url": "../Exports/Environment/Cloud_03.glb"

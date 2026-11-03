@@ -7,13 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Env_Cliff
-    second: {fileID: 2100000, guid: c10fb4d04a8695f925552aac6ead4bf3, type: 2}
+      name: M_Env_Bush
+    second: {fileID: 2100000, guid: f69f6c574081197df2c9be6daa74dd3e, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Env_Bush
-    second: {fileID: 2100000, guid: f69f6c574081197df2c9be6daa74dd3e, type: 2}
+      name: M_Env_Cliff
+    second: {fileID: 2100000, guid: c10fb4d04a8695f925552aac6ead4bf3, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
