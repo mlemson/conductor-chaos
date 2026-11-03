@@ -408,7 +408,7 @@ def env_sheet():
     H = 200 + hh + 40 + 70 + rows * (th + 80) + 40
     sheet = Image.new("RGBA", (W, H), BG + (255,))
     d = ImageDraw.Draw(sheet)
-    label(d, (60, 40), "Natuur- en achtergrondkit · v1", 56)
+    label(d, (60, 40), "Natuur- en achtergrondkit · v2", 56)
     d.text((64, 148), "Modulair (issue #30) · chunky low-poly, grote leesbare vormen · warm vooraan, koel achteraan · kleuren uit palette.json",
            font=font(25, False), fill=SUB)
     sheet.alpha_composite(ex.resize((hw, hh), Image.LANCZOS), (60, 200))
@@ -416,15 +416,16 @@ def env_sheet():
     rx = 60 + hw + 40
     d.rounded_rectangle([rx, 200, W - 50, 200 + hh], 22, fill=PANEL)
     d.text((rx + 24, 222), "Lagen", font=font(28), fill=YEL)
-    notes = ["1  Bij het spoor: grasheuvel, rotsen,", "   struiken, een enkele kleine boom",
-             "2  Midden: klifmodules op een raster", "   van 2 m, in terrassen gestapeld,", "   bomen op de randen",
-             "3  Achter: beboste heuvelrug, verre", "   blauwe bergen, wolken, mist", "",
-             "Stijl", "•  grote vormen, weinig details", "•  facetten met afgeschuinde overgangen",
-             "•  bovenkant licht, onderkant donker", "•  grote kleurvlakken in de shader",
-             "•  pivot midden-onder, 1 unit = 1 m", "•  elk asset een eigen FBX + GLB"]
+    notes = ["1  Bij het spoor: grasheuvel, rotsen, struiken",
+             "2  Midden: klifclusters in terrassen, watervallen",
+             "3  Achter: heuvelrug, blauwe bergen, wolken, mist"]
     for k, t in enumerate(notes):
-        is_head = t in ("Stijl",)
-        d.text((rx + 24, 280 + k * 40), t, font=font(24 if is_head else 21, is_head), fill=YEL if is_head else SUB)
+        d.text((rx + 24, 280 + k * 40), t, font=font(21, False), fill=SUB)
+    combo = sky(load("env_combo_waterfall").size)
+    combo.alpha_composite(load("env_combo_waterfall"))
+    combo = fit(combo, W - 50 - rx - 48, hh - 260)
+    sheet.alpha_composite(combo, (rx + 24, 420))
+    d.text((rx + 24, 428 + combo.height), "Klifclusters + stilstaande watervallen ('als een plaatje')", font=font(20, False), fill=MUTED)
     by = 200 + hh + 40
     label(d, (60, by), "Kit", 30)
     for i, (name, a) in enumerate(assets.items()):

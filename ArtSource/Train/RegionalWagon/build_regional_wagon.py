@@ -348,6 +348,10 @@ def main():
     wag.write_glb(os.path.join(exp_dir, "RegionalWagon_Blockout.glb"))
     unity_assets.export_unity(ROOT, wag, rel, "Assets/Art/Materials/Train/RegionalWagon")
     env.write_glb(os.path.join(exp_dir, "ArtCheck_Environment.glb"))
+    env_rel = "Assets/Art/Models/Environment/Showcase/ArtCheck_Environment.fbx"     # alleen voor de showcase-scène
+    os.makedirs(os.path.join(ROOT, os.path.dirname(env_rel)), exist_ok=True)
+    env.write_fbx_ascii(os.path.join(ROOT, env_rel))
+    unity_assets.export_unity(ROOT, env, env_rel, "Assets/Art/Materials/Environment/Showcase")
     mats = {k: {"base": v["base"], "ramp": v["ramp"], "rampShift": v["ramp_shift"], "smoothness": v["smoothness"],
                 "opts": v["opts"]} for k, v in wag.materials.items()}
     json.dump({"model": "RegionalWagon_Blockout", "stats": wag.stats(), "materials": mats},

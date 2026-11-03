@@ -1,0 +1,1254 @@
+{
+ "camera": {
+  "target": [
+   -2.5,
+   2.6,
+   -2.5
+  ],
+  "yaw": 32,
+  "pitch": 4,
+  "dist": 17,
+  "fov": 44,
+  "far": 700
+ },
+ "light": {
+  "az": -40,
+  "el": 48,
+  "intensity": 1.15,
+  "color": "#FFE3BC"
+ },
+ "fog": {
+  "color": "#91A8E6",
+  "near": 28,
+  "far": 240
+ },
+ "sky": "#85A4EC",
+ "items": [
+  {
+   "path": "Assets/Art/Models/Environment/Showcase/ArtCheck_Environment.fbx",
+   "pos": [
+    0,
+    0,
+    0
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [
+    "Platform",
+    "Bench",
+    "Lantern",
+    "Pines",
+    "Mountains"
+   ],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Train/Locomotive/Locomotive_Blockout.fbx",
+   "pos": [
+    0,
+    0,
+    0
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Train/Tender/Tender_Blockout.fbx",
+   "pos": [
+    -4.9,
+    0,
+    0
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Train/RegionalWagon/RegionalWagon_Blockout.fbx",
+   "pos": [
+    -11.2,
+    0,
+    0.05
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Characters/Conductor/Conductor.fbx",
+   "pos": [
+    -1.02,
+    1.02,
+    -0.34
+   ],
+   "rotY": 62,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [
+    "Mouth_Neutral"
+   ],
+   "show": [
+    "Mouth_Surprised"
+   ]
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Hill_Grass_01.fbx",
+   "pos": [
+    -1,
+    -0.9,
+    4.6
+   ],
+   "rotY": 0.0,
+   "scale": [
+    3.2,
+    0.32,
+    2.2
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Hill_Grass_01.fbx",
+   "pos": [
+    12,
+    -0.9,
+    6.5
+   ],
+   "rotY": 20,
+   "scale": [
+    1.6,
+    0.6,
+    1.4
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Rocks/Rock_Large_01.fbx",
+   "pos": [
+    7.5,
+    -0.75,
+    3.2
+   ],
+   "rotY": 40,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Rocks/Rock_Small_01.fbx",
+   "pos": [
+    6.2,
+    -0.7,
+    2.4
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Rocks/Rock_Medium_01.fbx",
+   "pos": [
+    -6.5,
+    -0.75,
+    3.0
+   ],
+   "rotY": 120,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Bush_01.fbx",
+   "pos": [
+    4.6,
+    -0.65,
+    2.6
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Bush_01.fbx",
+   "pos": [
+    -8.5,
+    -0.7,
+    3.6
+   ],
+   "rotY": 90,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Small_01.fbx",
+   "pos": [
+    10.5,
+    -0.7,
+    3.8
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Medium_01.fbx",
+   "pos": [
+    13,
+    -0.5,
+    5.5
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Mountains/Mountain_Back_02.fbx",
+   "pos": [
+    -25,
+    -2,
+    -150
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1.4,
+    1.4,
+    1.4
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Mountains/Mountain_Back_01.fbx",
+   "pos": [
+    35,
+    -2,
+    -170
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1.5,
+    1.6,
+    1.5
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Mountains/Mountain_Back_03.fbx",
+   "pos": [
+    -90,
+    -2,
+    -180
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1.4,
+    1.3,
+    1.4
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Mountains/Mountain_Back_01.fbx",
+   "pos": [
+    80,
+    -2,
+    -130
+   ],
+   "rotY": 90,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Sky/Cloud_01.fbx",
+   "pos": [
+    -30,
+    38,
+    -90
+   ],
+   "rotY": 0.0,
+   "scale": [
+    2.2,
+    2.2,
+    2.2
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Sky/Cloud_02.fbx",
+   "pos": [
+    20,
+    46,
+    -110
+   ],
+   "rotY": 0.0,
+   "scale": [
+    2.6,
+    2.6,
+    2.6
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Sky/Cloud_03.fbx",
+   "pos": [
+    55,
+    30,
+    -80
+   ],
+   "rotY": 0.0,
+   "scale": [
+    2.0,
+    2.0,
+    2.0
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Sky/Cloud_02.fbx",
+   "pos": [
+    -70,
+    42,
+    -120
+   ],
+   "rotY": 0.0,
+   "scale": [
+    2.4,
+    2.4,
+    2.4
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Hill_Grass_01.fbx",
+   "pos": [
+    -30,
+    -0.9,
+    -34
+   ],
+   "rotY": 0.0,
+   "scale": [
+    5,
+    1.6,
+    3
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    -24.857181408695013,
+    0.29200000000000026,
+    -36.088092792036974
+   ],
+   "rotY": 176.02671617129002,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    -39.21585485905125,
+    0.29200000000000026,
+    -32.99070486079363
+   ],
+   "rotY": 275.2455118366127,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    -28.53948119445232,
+    0.29200000000000026,
+    -31.74713312901467
+   ],
+   "rotY": 112.94910462531483,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    -26.094092674526813,
+    0.29200000000000026,
+    -33.43378073736989
+   ],
+   "rotY": 208.7622735416972,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    -30.87589337397174,
+    0.29200000000000026,
+    -31.96019331692475
+   ],
+   "rotY": 340.08519423885747,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Hill_Grass_01.fbx",
+   "pos": [
+    5,
+    -0.9,
+    -40
+   ],
+   "rotY": 0.0,
+   "scale": [
+    6,
+    1.4,
+    3
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    4.481966748392889,
+    0.06800000000000006,
+    -39.015086767151956
+   ],
+   "rotY": 21.840993934999098,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    9.029840426088478,
+    0.06800000000000006,
+    -39.11722687283399
+   ],
+   "rotY": 357.51453820798827,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    11.438495732194298,
+    0.06800000000000006,
+    -41.292426807435106
+   ],
+   "rotY": 138.8849192808159,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    8.373054317683764,
+    0.06800000000000006,
+    -42.86462243166647
+   ],
+   "rotY": 166.2103030679157,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    -1.6390324218691088,
+    0.06800000000000006,
+    -42.29742523310961
+   ],
+   "rotY": 21.223590959271746,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Hill_Grass_01.fbx",
+   "pos": [
+    40,
+    -0.9,
+    -36
+   ],
+   "rotY": 0.0,
+   "scale": [
+    5,
+    1.8,
+    3
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    45.36465976945041,
+    0.5160000000000006,
+    -38.22395866788789
+   ],
+   "rotY": 89.14134013088915,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    37.818994062664544,
+    0.5160000000000006,
+    -33.771468155242204
+   ],
+   "rotY": 29.009268432049904,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    38.98374801898662,
+    0.5160000000000006,
+    -35.70336054513577
+   ],
+   "rotY": 318.01817751894447,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    46.385596756714826,
+    0.5160000000000006,
+    -33.81609318180891
+   ],
+   "rotY": 100.23158322500296,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+   "pos": [
+    38.30593034423397,
+    0.5160000000000006,
+    -36.84737300801025
+   ],
+   "rotY": 318.3094177913581,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Block_Wide.fbx",
+   "pos": [
+    -34.15,
+    -0.9,
+    -5.91
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    0.83,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Pillar_Small.fbx",
+   "pos": [
+    -31.45,
+    -0.9,
+    -5.59
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    0.96,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Variant_02.fbx",
+   "pos": [
+    -31.92,
+    1.83,
+    -5.79
+   ],
+   "rotY": 21.82222760594089,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_B.fbx",
+   "pos": [
+    -28.74,
+    -0.9,
+    -6.1
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    0.96,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Step.fbx",
+   "pos": [
+    -24.15,
+    -0.9,
+    -5.41
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    1.03,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_B.fbx",
+   "pos": [
+    -19.56,
+    -0.9,
+    -5.7
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    0.92,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Variant_02.fbx",
+   "pos": [
+    -19.84,
+    1.91,
+    -5.9
+   ],
+   "rotY": 210.5643394483666,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Block_Wide.fbx",
+   "pos": [
+    -15.84,
+    -0.9,
+    -5.94
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    1.05,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Small_01.fbx",
+   "pos": [
+    -16.31,
+    1.72,
+    -6.14
+   ],
+   "rotY": 264.61648874911674,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Corner.fbx",
+   "pos": [
+    -12.08,
+    -0.9,
+    -5.87
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    0.86,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_A.fbx",
+   "pos": [
+    -9.16,
+    -0.9,
+    -6.04
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    0.94,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Variant_02.fbx",
+   "pos": [
+    -9.27,
+    1.03,
+    -6.24
+   ],
+   "rotY": 232.83490325713788,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_A.fbx",
+   "pos": [
+    -7.15,
+    -0.9,
+    -5.31
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    1.09,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Ledge_Low.fbx",
+   "pos": [
+    -4.27,
+    -0.9,
+    -5.36
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    0.97,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Ledge_Low.fbx",
+   "pos": [
+    -0.55,
+    -0.9,
+    -6.27
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    0.85,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_A.fbx",
+   "pos": [
+    2.32,
+    -0.9,
+    -6.02
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    1.0,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Medium_01.fbx",
+   "pos": [
+    1.93,
+    1.15,
+    -6.22
+   ],
+   "rotY": 72.93635165837541,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Step.fbx",
+   "pos": [
+    11.8,
+    -0.9,
+    -6.1
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    1.09,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Pillar_Small.fbx",
+   "pos": [
+    15.37,
+    -0.9,
+    -5.69
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    0.82,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_A.fbx",
+   "pos": [
+    17.23,
+    -0.9,
+    -6.26
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    0.99,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Medium_01.fbx",
+   "pos": [
+    17.53,
+    1.13,
+    -6.46
+   ],
+   "rotY": 218.25439638980725,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Pillar_Small.fbx",
+   "pos": [
+    -33.15,
+    1.4,
+    -9.73
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    0.98,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Step.fbx",
+   "pos": [
+    -29.58,
+    1.4,
+    -10.12
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    0.9,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_B.fbx",
+   "pos": [
+    -24.99,
+    1.4,
+    -9.93
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    0.94,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_B.fbx",
+   "pos": [
+    -21.26,
+    1.4,
+    -9.63
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    1.18,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Pillar_Small.fbx",
+   "pos": [
+    -18.55,
+    1.4,
+    -10.31
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    0.97,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Step.fbx",
+   "pos": [
+    -14.97,
+    1.4,
+    -10.13
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    1.0,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Step.fbx",
+   "pos": [
+    -9.52,
+    1.4,
+    -9.81
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    1.18,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_B.fbx",
+   "pos": [
+    -4.92,
+    1.4,
+    -10.38
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    1.16,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Large_01.fbx",
+   "pos": [
+    -5.18,
+    4.94,
+    -10.58
+   ],
+   "rotY": 317.69078754328376,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_B.fbx",
+   "pos": [
+    -1.2,
+    1.4,
+    -10.19
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    1.17,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Step.fbx",
+   "pos": [
+    3.39,
+    1.4,
+    -9.89
+   ],
+   "rotY": 0,
+   "scale": [
+    1,
+    0.91,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Cliffs/Cliff_Block_Wide.fbx",
+   "pos": [
+    4.6,
+    -0.9,
+    -6.4
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1.0,
+    1.6,
+    1.0
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Water/Waterfall_Medium.fbx",
+   "pos": [
+    4.6,
+    -0.91,
+    -5.25
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Rocks/Rock_Small_01.fbx",
+   "pos": [
+    5.7,
+    -0.9,
+    -4.6
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Medium_01.fbx",
+   "pos": [
+    3.5,
+    3.09,
+    -6.6
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  }
+ ]
+}
