@@ -1,0 +1,80 @@
+fileFormatVersion: 2
+guid: eb8d649072ab263af520066abde4d221
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tender_Red
+    second: {fileID: 2100000, guid: 3dc34655d18c329b4cded57e7ba1da69, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tender_RedDark
+    second: {fileID: 2100000, guid: 50b72fbe9da80e6f877e88ebf1c9e816, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tender_Panel
+    second: {fileID: 2100000, guid: fedd88f2bdeb1822d4472ad703c04a11, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tender_Gold
+    second: {fileID: 2100000, guid: e1b3445b56fa35630468a788756af2b8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tender_Frame
+    second: {fileID: 2100000, guid: 50e4663274351ba82ffd69a5090a8e89, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tender_Trim
+    second: {fileID: 2100000, guid: 4ba57e6ac931f87bddbad9b8e4a54b95, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tender_Wheel
+    second: {fileID: 2100000, guid: 719b4218d7ea292d6e5d1ab266bf0fd8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tender_Interact
+    second: {fileID: 2100000, guid: e77a0302ff28b7c4ef8b4b7930d48d21, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tender_Coal
+    second: {fileID: 2100000, guid: 32207dcdf79affac2c5a69fddbf88830, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tender_TailLamp
+    second: {fileID: 2100000, guid: 7bc3e41e13fda387df3ffcd387dbabf9, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

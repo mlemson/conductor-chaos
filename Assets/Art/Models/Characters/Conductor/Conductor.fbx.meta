@@ -27,6 +27,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Conductor_GoldLow
+    second: {fileID: 2100000, guid: 1058f82ac9cc02240c1fa5f6ee0a5139, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Conductor_EyeWhite
     second: {fileID: 2100000, guid: 316d7d31f372abeb77c5f412457fe803, type: 2}
   - first:
@@ -73,3 +78,4 @@ ModelImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+
