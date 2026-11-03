@@ -49,7 +49,7 @@ flowchart LR
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
-| P0 | [#2 Valideer Unity-project en URP-import](https://github.com/mlemson/conductor-chaos/issues/2) | Foundation | — | [#26](https://github.com/mlemson/conductor-chaos/pull/26) |
+| P0 | [#2 Valideer Unity-project en URP-import](https://github.com/mlemson/conductor-chaos/issues/2) | Foundation | — | [#27](https://github.com/mlemson/conductor-chaos/pull/27), [#26](https://github.com/mlemson/conductor-chaos/pull/26) |
 | P0 | [#9 Eerste in-engine artproof: conducteur en wagonhoek](https://github.com/mlemson/conductor-chaos/issues/9) | Art | — | [#21](https://github.com/mlemson/conductor-chaos/pull/21) |
 | P0 | [#22 Art proof: locomotief in conceptstijl](https://github.com/mlemson/conductor-chaos/issues/22) | Art | — | [#23](https://github.com/mlemson/conductor-chaos/pull/23) |
 
