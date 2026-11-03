@@ -1,24 +1,22 @@
-## Gekoppelde taak
-<!-- Verplicht: Refs #nummer tijdens WIP, of Closes #nummer wanneer de hele issue is opgelost. -->
+## Gekoppelde kleine issue
+<!-- Tijdens ontwikkeling: Refs #nummer. Volledig af na merge: Closes #nummer. -->
 Refs #
 
-## Verandering en spelersimpact
+## Gedaan
+<!-- Eén of twee zinnen: wat is veranderd? -->
 
-### Probleem en wijziging
+## Gerichte controle
+<!-- Kies wat van toepassing is. Geen Play-test voor documenten of gewone assets. -->
+- [ ] Alleen relevante files/.meta/compile of modelimport gecontroleerd, waar mogelijk
+- [ ] Indien gedeelde netwerkstate gewijzigd: één passende host + remote-client check, of NOT RUN met reden
+- [ ] Geen onnodige volledige Unity-herimport, langdurige Play-test of brede regressiematrix
 
-### Multiplayer / autoriteit
+**Resultaat:** <!-- korte check en resultaat; of NOT RUN — user Play-test -->
 
-### Validatie
-- [ ] Relevante Unity Console- en testresultaten vermeld
-- [ ] Host + afzonderlijke client getest, of expliciet uitgelegd waarom niet
-- [ ] Relevante late-join/disconnect/racegevallen gecontroleerd
-- [ ] Documentatie, `.meta` en eventuele lockfile bijgewerkt
+## Voor gebruiker (optioneel)
+<!-- Max. 1–3 stappen om visueel/qua gamefeel te beoordelen. -->
 
-### Risico's of niet geteste onderdelen
+## Openstaand
+<!-- Alleen blocker/risico; anders 'geen bekend'. Bij gedeelde state kort serverautoriteit noemen. -->
 
-
-## Status en bord
-- [ ] Issue met acceptatiecriteria gekoppeld
-- [ ] Issue/PR bijgewerkt met echte voortgang, tests en blokkades
-- [ ] Deels gereed? Dan blijft het `Refs`, niet `Closes`
-- [ ] Geen handmatige aanpassing aan `Docs/PROJECT_BOARD.md`
+> Bij een grote epic hoort **niet** één PR: kies eerst een klein kind-issue. [Playbook](Docs/AI/SMALL_TASK_PLAYBOOK.md)
