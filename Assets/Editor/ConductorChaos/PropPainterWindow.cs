@@ -122,6 +122,8 @@ namespace ConductorChaos.EditorTools
             if (GUILayout.Button(new GUIContent("Colliders op alle bestaande geschilderde objecten", "voor objecten die zonder collider zijn geschilderd (bloemen/gras uitgezonderd)")))
                 AddCollidersToExisting();
             paintOnPainted = EditorGUILayout.ToggleLeft("Op geschilderde objecten schilderen", paintOnPainted);
+            EditorGUILayout.HelpBox("Bloemen en gras worden alleen op voldoende vlak Unity Terrain geplaatst. " +
+                                    "Op steile klifwanden worden ze overgeslagen.", MessageType.None);
             rootName = EditorGUILayout.TextField("Root-object", rootName);
 
             EditorGUILayout.Space();
@@ -393,7 +395,7 @@ namespace ConductorChaos.EditorTools
 
         void Dab(Vector3 center)
         {
-            if (entries.All(e => !e.enabled || !e.prefab)) { ShowNotification(new GUIContent("Palet is leeg")); return; }
+            if (entries.All(e => !e.enabled || !e.prefab || e.weight <= 0f)) { ShowNotification(new GUIContent("Palet is leeg")); return; }
             var root = GameObject.Find(rootName);
             var existing = new List<Vector3>();
             if (root)
@@ -422,7 +424,7 @@ namespace ConductorChaos.EditorTools
                 if (minDistance > 0f && existing.Any(q => (new Vector2(q.x, q.z) - flat).sqrMagnitude < minDistance * minDistance)) continue;
 
                 var go = PlaceOne(hit, created);
-                if (go == null) break;
+                if (go == null) continue; // steile plek: probeer een andere positie binnen de kwast
                 created.Add(go);
                 existing.Add(go.transform.position);
                 placed++;
@@ -433,9 +435,25 @@ namespace ConductorChaos.EditorTools
         {
             var entry = PickEntry();
             if (entry == null) { ShowNotification(new GUIContent("Palet is leeg")); return null; }
+            string category = CategoryOf(entry.prefab);
+            if (category == "Plants")
+            {
+                // Niet op 3D-cliffprefabs of een fictief grondvlak schilderen.
+                // De hoogte en normaal komen altijd van het echte Unity Terrain.
+                var terrain = PropGroundSnap.TerrainAt(hit.point);
+                if (terrain == null || !PropGroundSnap.SuitableForPlants(terrain, hit.point))
+                    return null;
+                var origin = terrain.transform.position;
+                var size = terrain.terrainData.size;
+                float u = Mathf.Clamp01((hit.point.x - origin.x) / size.x);
+                float v = Mathf.Clamp01((hit.point.z - origin.z) / size.z);
+                var grounded = hit.point;
+                grounded.y = terrain.SampleHeight(hit.point) + origin.y;
+                hit.point = grounded;
+                hit.normal = terrain.terrainData.GetInterpolatedNormal(u, v);
+            }
             var go = (GameObject)PrefabUtility.InstantiatePrefab(entry.prefab);
             Undo.RegisterCreatedObjectUndo(go, "Prop Painter");
-            string category = CategoryOf(entry.prefab);
             go.transform.SetParent(Container(category), true);
 
             float s = Rand(scaleRange.x, scaleRange.y);
