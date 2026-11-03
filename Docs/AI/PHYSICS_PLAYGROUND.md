@@ -1,0 +1,13 @@
+# Physics playground
+
+Open `Assets/Scenes/TrainPlayground.unity` and press Play. WASD moves, mouse looks, Space jumps. Hold left or right mouse to reach and grip with that hand; release to let go. Escape frees the cursor and clicking the Game view captures it again.
+
+The scene starts a local Netcode for GameObjects host. The server controls the capsule body, upright balance, movement, jump, two jointed physics arms and spring grips. It sends arm rotations to observers. Hands can grip static geometry and server-owned, spawned network rigidbodies. The scene includes a server-authoritative test crate with NetworkRigidbody and NetworkTransform. Static train meshes use non-convex mesh colliders; a moving train needs suitable dynamic shapes and a separate network physics design.
+
+This remains a physics prototype: the model's legs are part of the torso mesh and do not have independent joints. The grip attaches to an arm rigidbody at the hand position; fingers are not simulated. The local trial spawns a server-owned scene player for the host and an owned prefab for each connecting client. It uses direct loopback transport, not a lobby, Relay, reconnect or a finished session flow. Reconciliation, simultaneous grabs, late join, disconnect handling, latency and a moving train still need end-to-end tests before this can be treated as a complete multiplayer controller.
+
+On 2026-11-03 an editor-only host smoke probe moved the player in an empty area, requested a jump and created a temporary static wall at the left hand: movement, a 0.43 m jump and spring-joint creation all succeeded. The probe injected server-side intent and therefore did not validate mouse/keyboard input, release, dynamic targets or a remote peer. The wall and probe were temporary and did not change the saved scene.
+
+On 2026-11-03 a Windows development client connected over loopback to the Editor host; both player objects appeared on the host. A development-only automated client sent movement and jump RPCs: its observed displacement was 3.10 m and its jump was 0.47 m. A separate host-side temporary probe confirmed that a hand attached to the spawned network crate and released it. The probe temporarily disabled crate gravity during acquisition; it did not validate carrying the crate, contention, crate replication on the client or mouse/keyboard input.
+
+For a local two-process test, build using `Tools > Conductor Chaos > Build Local Trial Client`, start Play in the Editor, then launch `work/PlaygroundClient/ConductorChaos.exe -playground-client`. This is a development build and the trial uses loopback; it is not an online invitation flow.
