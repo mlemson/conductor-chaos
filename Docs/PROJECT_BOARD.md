@@ -6,7 +6,7 @@
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 15 | 2 | 0 | 0 | 0 |
+| 15 | 1 | 1 | 0 | 0 |
 
 ## 🗺️ Mijlpalen
 
@@ -46,16 +46,17 @@ flowchart LR
 | P2 | [#15 Bergtrajecten met bruggen, tunnels en gevaren](https://github.com/mlemson/conductor-chaos/issues/15) | World | — | — |
 | P2 | [#16 HUD, menu, audio en performance polish](https://github.com/mlemson/conductor-chaos/issues/16) | Polish | — | — |
 
-### 🔧 Bezig (2)
+### 🔧 Bezig (1)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
 | P0 | [#2 Valideer Unity-project en URP-import](https://github.com/mlemson/conductor-chaos/issues/2) | Foundation | — | [#27](https://github.com/mlemson/conductor-chaos/pull/27), [#26](https://github.com/mlemson/conductor-chaos/pull/26) |
+
+### 👀 Klaar voor review (1)
+
+| Fase | Taak | Onderdeel | Eigenaar | Pull request |
+| :-- | :-- | :-- | :-- | :-- |
 | P0 | [#22 Art proof: locomotief in conceptstijl](https://github.com/mlemson/conductor-chaos/issues/22) | Art | — | [#23](https://github.com/mlemson/conductor-chaos/pull/23) |
-
-### 👀 Klaar voor review (0)
-
-*Geen taken in deze kolom.*
 
 ### ⛔ Geblokkeerd (0)
 
