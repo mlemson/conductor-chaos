@@ -6,7 +6,7 @@
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 68 | 0 | 0 | 0 | 1 |
+| 67 | 0 | 1 | 0 | 1 |
 
 ## 🗺️ Mijlpalen
 
@@ -26,7 +26,7 @@ flowchart LR
 
 ## 📋 Taken per status
 
-### 📝 Te doen (68)
+### 📝 Te doen (67)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -43,7 +43,6 @@ flowchart LR
 | P0 | [#28 Physics-proef: conducteur, trein en grijpen](https://github.com/mlemson/conductor-chaos/issues/28) | Overig | — | — |
 | P0 | [#36 Voorkom armclippen, rig benen en herstel loslaten](https://github.com/mlemson/conductor-chaos/issues/36) | Overig | — | — |
 | P0 | [#39 UI foundation: menu, HUD en lobbyconcept volgens referenties 1 en 3](https://github.com/mlemson/conductor-chaos/issues/39) | Art | — | — |
-| P0 | [#45 Onderhoud: uitvoerbare issue-backlog en zuinige agentworkflow](https://github.com/mlemson/conductor-chaos/issues/45) | Foundation | — | — |
 | P0 | [#46 Grip: één los object vanaf de vloer kunnen oppakken](https://github.com/mlemson/conductor-chaos/issues/46) | Physics | — | — |
 | P0 | [#47 Grip: object loslaten zonder blijven kleven](https://github.com/mlemson/conductor-chaos/issues/47) | Physics | — | — |
 | P0 | [#48 Grip: twee spelers kunnen niet dezelfde koffer bezitten](https://github.com/mlemson/conductor-chaos/issues/48) | Physics | — | — |
@@ -103,9 +102,11 @@ flowchart LR
 
 *Geen taken in deze kolom.*
 
-### 👀 Klaar voor review (0)
+### 👀 Klaar voor review (1)
 
-*Geen taken in deze kolom.*
+| Fase | Taak | Onderdeel | Eigenaar | Pull request |
+| :-- | :-- | :-- | :-- | :-- |
+| P0 | [#45 Onderhoud: uitvoerbare issue-backlog en zuinige agentworkflow](https://github.com/mlemson/conductor-chaos/issues/45) | Foundation | — | [#93](https://github.com/mlemson/conductor-chaos/pull/93) |
 
 ### ⛔ Geblokkeerd (0)
 
