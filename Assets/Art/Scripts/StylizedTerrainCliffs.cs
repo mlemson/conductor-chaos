@@ -194,7 +194,7 @@ namespace ConductorChaos.Art
             finally { IsBuilding = false; }
         }
 
-        bool IsPainted(float u, float v, int heightmapResolution)
+        public bool IsPainted(float u, float v, int heightmapResolution)
         {
             if (!maskInitialised || cliffMask == null || cliffMaskRes != heightmapResolution)
                 return false;
