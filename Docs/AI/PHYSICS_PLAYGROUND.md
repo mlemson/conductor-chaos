@@ -1,6 +1,6 @@
 # Physics playground
 
-Open `Assets/Scenes/TrainPlayground.unity` and press Play. WASD moves, mouse looks, Space jumps. Hold left or right mouse to reach and grip with that hand; release to let go. Escape frees the cursor and clicking the Game view captures it again.
+Open `Assets/Scenes/TrainPlayground.unity` and press Play. WASD moves, Shift runs, and the mouse looks and aims both arms. Hold left or right mouse to grip with that hand; release to let go. Space jumps, or pulls up when holding an overhead anchor. Escape frees the cursor and clicking the Game view captures it again.
 
 The scene starts a local Netcode for GameObjects host. The server controls the capsule body, upright balance, movement, jump, jointed physics arms and legs, and spring grips. The continuous conductor mesh is skinned at runtime to the existing leg anchors; its importer needs Read/Write enabled. The server sends limb rotations to observers. Arm/torso collisions are enabled, with restricted shoulder joints. A released button, lost window focus or stale input clears the grip on the server. Hands can grip static geometry and server-owned, spawned network rigidbodies. The scene includes a server-authoritative test crate with NetworkRigidbody and NetworkTransform. Static train meshes use non-convex mesh colliders; a moving train needs suitable dynamic shapes and a separate network physics design.
 
