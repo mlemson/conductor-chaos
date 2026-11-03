@@ -4,6 +4,7 @@
 //   - [ en ] = kwast kleiner/groter.
 //   - "Los plaatsen": elke klik zet precies één object onder de muis (geen strooien).
 //   - Rotsen zakken altijd extra de grond in (percentage van hun hoogte), zodat ze er niet bovenop liggen.
+//   - Elk object krijgt een PaintedProp-markering en zakt/stijgt mee als je het terrein eronder verandert (behalve wolken).
 //   - Colliders staan standaard aan (behalve bloemen/gras en de achtergrond); nooit op iets met een Rigidbody.
 // Geschilderde objecten komen onder "PaintedProps/<categorie>" (prefab-instanties, dus aanpassingen aan het model
 // komen overal door). Alles gaat via Undo. Editor-only: statisch decor, geen gameplay/netwerkstatus.
@@ -457,6 +458,9 @@ namespace ConductorChaos.EditorTools
                 }
             }
             go.transform.position = hit.point - up * down;
+            var marker = Undo.AddComponent<ConductorChaos.Art.PaintedProp>(go);   // na het boetseren weer op de grond (PropGroundSnap)
+            marker.groundOffset = go.transform.position.y - hit.point.y;
+            marker.followGround = category != "Sky";
 
             if (addColliders && category != "Plants") AddColliders(go);
             return go;

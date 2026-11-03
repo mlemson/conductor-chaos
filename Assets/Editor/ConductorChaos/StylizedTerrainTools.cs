@@ -139,7 +139,7 @@ namespace ConductorChaos.EditorTools
             "Vormen: Terrain-component > Paint Terrain > 'Raise or Lower Terrain' (klik = omhoog, Shift+klik = omlaag), " +
             "'Smooth Height' om af te ronden, 'Set Height' voor vlakke plateaus (bv. onder het spoor). " +
             "Kleuren: 'Paint Texture' en kies een laag. Brush Size/Opacity bepalen grootte en kracht. " +
-            "Steile stukken worden automatisch klif (object 'StylizedCliffs'; anders: Add Cliffs To Selected Terrain).";
+            "Kliffen: Conductor Chaos > Art > Terrain > Cliff Painter (alleen waar je daarmee ophoogt of uitdiept).";
 
         [MenuItem("Conductor Chaos/Art/Terrain/Flatten Selected Terrain")]
         public static void FlattenSelected()

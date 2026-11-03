@@ -1,11 +1,15 @@
 // Conductor Chaos — Cliff Painter: kliffen live op het terrein schilderen (issue #38).
 // Menu: Conductor Chaos > Art > Terrain > Cliff Painter.
 //   - LMB slepen          = een trede omhoog: het geschilderde stuk wordt een plateau met een klifrand eromheen.
+//                           Vertrekpunt is de laagste trede onder de kwast: een plateau verbreden houdt dezelfde hoogte.
 //   - Shift + LMB slepen  = een trede omlaag: kuil, sloot of ravijn met klifwanden.
+//                           Vertrekpunt is de hoogste trede onder de kwast: een rivier verbreden houdt dezelfde diepte.
 //   - Ctrl + LMB slepen   = vlak maken op de trede waar je begint (randen bijwerken, gaten dichten).
 //   - [ en ]              = kwast kleiner/groter. Alt = camera.
 // De hoogte springt per trede (standaard 2,4 m = Cliff_Pillar_Small), dus alles wat je schildert sluit netjes op elkaar aan.
+// Alleen waar je met deze kwast schildert komen kliffen (klifmasker); ander boetseerwerk krijgt geen randen.
 // Na elke streek worden de kliffen (StylizedCliffs onder het terrein) vanzelf bijgewerkt. Alles via Undo.
+using ConductorChaos.Art;
 using UnityEditor;
 using UnityEngine;
 
@@ -22,6 +26,7 @@ namespace ConductorChaos.EditorTools
         Mode strokeMode;
         float strokeTarget;
         Terrain strokeTerrain;
+        StylizedTerrainCliffs strokeCliffs;
 
         [MenuItem("Conductor Chaos/Art/Terrain/Cliff Painter")]
         public static void Open() => GetWindow<CliffPainterWindow>("Cliff Painter");
@@ -80,9 +85,12 @@ namespace ConductorChaos.EditorTools
                 strokeTerrain = terrain;
                 strokeMode = mode;
                 float step = Mathf.Max(0.1f, stepHeight);
+                LevelsUnderBrush(terrain, point, step, out int low, out int high);
                 int level = Mathf.RoundToInt(point.y / step);
-                strokeTarget = mode == Mode.Raise ? (level + 1) * step : mode == Mode.Lower ? (level - 1) * step : level * step;
-                Undo.RegisterCompleteObjectUndo(terrain.terrainData, "Cliff Painter");
+                strokeTarget = mode == Mode.Raise ? (low + 1) * step : mode == Mode.Lower ? (high - 1) * step : level * step;
+                strokeCliffs = terrain.GetComponentInChildren<StylizedTerrainCliffs>();
+                if (strokeCliffs == null) strokeCliffs = TerrainCliffsEditor.AddTo(terrain);
+                Undo.RegisterCompleteObjectUndo(new Object[] { terrain.terrainData, strokeCliffs }, "Cliff Painter");
                 Dab(terrain, point);
                 GUIUtility.hotControl = id;
                 ev.Use();
@@ -100,6 +108,7 @@ namespace ConductorChaos.EditorTools
                     TerrainCliffsEditor.Schedule(strokeTerrain);
                 }
                 strokeTerrain = null;
+                strokeCliffs = null;
                 GUIUtility.hotControl = 0;
                 ev.Use();
             }
@@ -124,6 +133,33 @@ namespace ConductorChaos.EditorTools
             return terrain != null;
         }
 
+        // laagste en hoogste trede onder de kwast (bij het begin van een streek)
+        void LevelsUnderBrush(Terrain t, Vector3 world, float step, out int low, out int high)
+        {
+            var td = t.terrainData;
+            var size = td.size;
+            int res = td.heightmapResolution;
+            var local = world - t.transform.position;
+            float sx = (res - 1) / size.x, sz = (res - 1) / size.z;
+            int cx = Mathf.RoundToInt(local.x * sx), cz = Mathf.RoundToInt(local.z * sz);
+            int rx = Mathf.CeilToInt(radius * sx) + 1, rz = Mathf.CeilToInt(radius * sz) + 1;
+            int x0 = Mathf.Clamp(cx - rx, 0, res - 1), x1 = Mathf.Clamp(cx + rx, 0, res - 1);
+            int z0 = Mathf.Clamp(cz - rz, 0, res - 1), z1 = Mathf.Clamp(cz + rz, 0, res - 1);
+            int here = Mathf.RoundToInt(world.y / step);
+            low = here;
+            high = here;
+            var hs = td.GetHeights(x0, z0, x1 - x0 + 1, z1 - z0 + 1);
+            for (int j = 0; j <= z1 - z0; j++)
+                for (int i = 0; i <= x1 - x0; i++)
+                {
+                    float dx = (x0 + i) / sx - local.x, dz = (z0 + j) / sz - local.z;
+                    if (dx * dx + dz * dz > radius * radius) continue;
+                    int lvl = Mathf.RoundToInt((hs[j, i] * size.y + t.transform.position.y) / step);
+                    low = Mathf.Min(low, lvl);
+                    high = Mathf.Max(high, lvl);
+                }
+        }
+
         void Dab(Terrain t, Vector3 world)
         {
             var td = t.terrainData;
@@ -144,7 +180,9 @@ namespace ConductorChaos.EditorTools
                 for (int i = 0; i < w; i++)
                 {
                     float dx = (x0 + i) / sx - local.x, dz = (z0 + j) / sz - local.z;
-                    if (dx * dx + dz * dz > radius * radius) continue;   // harde rand: zo ontstaat een echte klif
+                    float r2 = dx * dx + dz * dz;
+                    if (strokeCliffs != null && r2 <= (radius + 1f / sx) * (radius + 1f / sx)) strokeCliffs.MarkCliff(x0 + i, z0 + j, res);
+                    if (r2 > radius * radius) continue;                        // harde rand: zo ontstaat een echte klif
                     float cur = hs[j, i];
                     hs[j, i] = strokeMode == Mode.Raise ? Mathf.Max(cur, target) : strokeMode == Mode.Lower ? Mathf.Min(cur, target) : target;
                 }

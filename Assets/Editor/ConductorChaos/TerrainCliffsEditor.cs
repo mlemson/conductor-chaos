@@ -1,6 +1,7 @@
 // Conductor Chaos — kliffen op het terrein live bijwerken tijdens het boetseren (issue #38).
-// Zodra je een terrein vormt (Cliff Painter of Unity's Raise or Lower), krijgt het vanzelf kliffen; zodra je even stopt
-// met trekken (0,25 s) worden ze opnieuw opgebouwd. Uitzetten: Conductor Chaos > Art > Terrain > Auto Cliffs While Sculpting.
+// Kliffen komen alleen waar je met de Cliff Painter ophoogt of uitdiept; na elke terreinwijziging (0,25 s stil) worden
+// ze opnieuw opgebouwd, en zakken/stijgen geschilderde props mee met de grond (PropGroundSnap).
+// Optioneel: Conductor Chaos > Art > Terrain > Auto Cliffs While Sculpting (standaard uit) voegt ze ook toe bij Unity's penselen.
 // Instellingen (hoek, facetgrootte, plooien, grasrand) staan op het object 'StylizedCliffs' onder het terrein.
 using System.Collections.Generic;
 using ConductorChaos.Art;
@@ -22,6 +23,7 @@ namespace ConductorChaos.EditorTools
         const string AutoKey = "ConductorChaos.TerrainCliffs.Auto";
         const string AutoMenu = "Conductor Chaos/Art/Terrain/Auto Cliffs While Sculpting";
         static readonly HashSet<Terrain> NeedsCliffs = new HashSet<Terrain>();
+        static readonly HashSet<Terrain> Changed = new HashSet<Terrain>();
 
         static TerrainCliffsEditor()
         {
@@ -31,12 +33,12 @@ namespace ConductorChaos.EditorTools
         }
 
         [MenuItem(AutoMenu)]
-        static void ToggleAuto() => EditorPrefs.SetBool(AutoKey, !EditorPrefs.GetBool(AutoKey, true));
+        static void ToggleAuto() => EditorPrefs.SetBool(AutoKey, !EditorPrefs.GetBool(AutoKey, false));
 
         [MenuItem(AutoMenu, true)]
         static bool ToggleAutoValidate()
         {
-            Menu.SetChecked(AutoMenu, EditorPrefs.GetBool(AutoKey, true));
+            Menu.SetChecked(AutoMenu, EditorPrefs.GetBool(AutoKey, false));
             return true;
         }
 
@@ -50,15 +52,16 @@ namespace ConductorChaos.EditorTools
         public static void Schedule(Terrain terrain)
         {
             if (terrain == null || EditorApplication.isPlayingOrWillChangePlaymode) return;
+            Changed.Add(terrain);
             var found = terrain.GetComponentsInChildren<StylizedTerrainCliffs>();
-            if (found.Length == 0 && EditorPrefs.GetBool(AutoKey, true)) NeedsCliffs.Add(terrain);
+            if (found.Length == 0 && EditorPrefs.GetBool(AutoKey, false)) NeedsCliffs.Add(terrain);
             foreach (var c in found) Pending.Add(c);
             due = EditorApplication.timeSinceStartup + 0.25;       // pas bouwen als je even stilstaat
         }
 
         static void Tick()
         {
-            if ((Pending.Count == 0 && NeedsCliffs.Count == 0) || EditorApplication.timeSinceStartup < due) return;
+            if ((Pending.Count == 0 && NeedsCliffs.Count == 0 && Changed.Count == 0) || EditorApplication.timeSinceStartup < due) return;
             if (NeedsCliffs.Count > 0)
             {
                 var add = new List<Terrain>(NeedsCliffs);
@@ -69,17 +72,10 @@ namespace ConductorChaos.EditorTools
             Pending.Clear();
             foreach (var c in list)
                 if (c != null && c.isActiveAndEnabled) c.Rebuild();
-        }
-
-        [MenuItem("Conductor Chaos/Art/Terrain/Add Cliffs To Selected Terrain")]
-        static void AddToSelectedMenu()
-        {
-            var go = Selection.activeGameObject;
-            var t = go ? go.GetComponentInParent<Terrain>() : null;
-            if (t == null) { Debug.LogWarning("[Terrain] Selecteer eerst een Terrain."); return; }
-            AddTo(t);
-            Debug.Log("[Terrain] Kliffen staan aan op " + t.name + ". Trek de grond omhoog/omlaag met Raise or Lower Terrain: " +
-                      "waar het steiler wordt dan de ingestelde hoek komt een rotswand met een grasrand. Instellingen: object 'StylizedCliffs'.", t);
+            var changed = new List<Terrain>(Changed);
+            Changed.Clear();
+            foreach (var t in changed)
+                if (t != null) PropGroundSnap.SnapOver(t);             // geschilderde props zakken/stijgen mee met de grond
         }
 
         public static StylizedTerrainCliffs AddTo(Terrain t)

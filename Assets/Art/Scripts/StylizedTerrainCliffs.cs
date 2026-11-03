@@ -1,5 +1,6 @@
 // Conductor Chaos — klifranden op een Unity-terrein (issue #38).
-// Waar het terrein steiler is dan 'steepAngle', komt er een gefacetteerde rotswand (M_Env_Cliff) over de helling,
+// Alleen waar met de Cliff Painter is opgehoogd of uitgediept (het 'klifmasker') en het terrein steiler is dan 'steepAngle',
+// komt er een gefacetteerde rotswand (M_Env_Cliff) over de helling,
 // en langs de bovenrand een dikke grasrand (M_Env_Grass) die net over de rand hangt: hetzelfde ontwerp als de klifmodules.
 // De mesh wordt uit de hoogtekaart opgebouwd (bij laden en, in de editor, live tijdens het boetseren) en niet opgeslagen,
 // dus de scène en Git blijven klein. Puur decor: geen collider (de TerrainCollider blijft de ondergrond),
@@ -28,6 +29,25 @@ namespace ConductorChaos.Art
         [Range(0.05f, 0.6f)] public float grassThickness = 0.3f;
         public Material cliffMaterial;
         public Material grassMaterial;
+
+        // klifmasker: 1 = hier is met de Cliff Painter geschilderd (per punt van de hoogtekaart). Alleen daar komen kliffen,
+        // zodat ander boetseerwerk (gladmaken, heuvels) geen randen krijgt.
+        [SerializeField, HideInInspector] byte[] cliffMask;
+        [SerializeField, HideInInspector] int cliffMaskRes;
+        [SerializeField, HideInInspector] bool maskInitialised;
+
+        /// <summary>Markeer een punt van de hoogtekaart als klifgebied (aanroepen vanuit de Cliff Painter).</summary>
+        public void MarkCliff(int x, int z, int heightmapResolution)
+        {
+            if (cliffMask == null || cliffMaskRes != heightmapResolution)
+            {
+                cliffMask = new byte[heightmapResolution * heightmapResolution];
+                cliffMaskRes = heightmapResolution;
+            }
+            maskInitialised = true;
+            if (x < 0 || z < 0 || x >= cliffMaskRes || z >= cliffMaskRes) return;
+            cliffMask[z * cliffMaskRes + x] = 1;
+        }
 
         /// <summary>True terwijl er gebouwd wordt (de editor negeert dan terreinmeldingen die het bouwen zelf veroorzaakt).</summary>
         public static bool IsBuilding { get; private set; }
@@ -98,6 +118,27 @@ namespace ConductorChaos.Art
             float tan = Mathf.Tan(Mathf.Clamp(steepAngle, 10f, 85f) * Mathf.Deg2Rad);
             float tanHalf = Mathf.Tan(Mathf.Clamp(steepAngle, 10f, 85f) * 0.5f * Mathf.Deg2Rad);
 
+            // terreinen van vóór het masker: alleen de harde treden (> 65°, zoals de Cliff Painter ze maakt) overnemen
+            if (!maskInitialised)
+            {
+                maskInitialised = true;
+                cliffMask = new byte[res * res];
+                cliffMaskRes = res;
+                float hard = Mathf.Tan(65f * Mathf.Deg2Rad) * (size.x / (res - 1));
+                for (int z = 0; z < res - 1; z++)
+                    for (int x = 0; x < res - 1; x++)
+                        if (Mathf.Abs(H[z, x + 1] - H[z, x]) * size.y > hard || Mathf.Abs(H[z + 1, x] - H[z, x]) * size.y > hard)
+                        { cliffMask[z * res + x] = 1; cliffMask[z * res + x + 1] = 1; cliffMask[(z + 1) * res + x] = 1; }
+            }
+            bool Allowed(int hx, int hz)
+            {
+                if (cliffMask == null || cliffMaskRes != res) return false;
+                for (int z = Mathf.Max(hz - 2, 0); z <= Mathf.Min(hz + 2, res - 1); z++)
+                    for (int x = Mathf.Max(hx - 2, 0); x <= Mathf.Min(hx + 2, res - 1); x++)
+                        if (cliffMask[z * res + x] != 0) return true;
+                return false;
+            }
+
             float Hm(int i, int j) => H[Mathf.Clamp(j * s, 0, res - 1), Mathf.Clamp(i * s, 0, res - 1)] * size.y;
             Vector3 Base(int i, int j) => new Vector3(i * cx, Hm(i, j), j * cz);
             float HeightAt(Vector3 p) => td.GetInterpolatedHeight(Mathf.Clamp01(p.x / size.x), Mathf.Clamp01(p.z / size.z));
@@ -158,6 +199,7 @@ namespace ConductorChaos.Art
             {
                 if (ni < 0 || nj < 0 || ni >= n || nj >= n) return;
                 if (steep[ni, nj] || avg[ni, nj] <= avg[qi, qj]) return;
+                if (!Allowed(ai * s, aj * s) || !Allowed(bi * s, bj * s)) return;   // alleen waar met de Cliff Painter is geschilderd
                 lipEdges.Add((Key(ai, aj), Key(bi, bj)));
             }
             for (int j = 0; j < n; j++)
