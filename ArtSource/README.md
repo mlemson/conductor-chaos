@@ -15,6 +15,7 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 | `Train/Locomotive/build_locomotive.py` | Locomotief v2.1 (ronde ketelneus, rookkastring met lamp, gewelfd dak, sierlijsten, drijfstang) — issue #22 |
 | `Train/CattleWagon/build_cattle_wagon.py` | Veewagen: rode kooi uit één stuk om een lattenwand met echte kieren, schuifdeuren, gewelfd dak, interieur (stro, hooibalen), doorloopbaar — issue #25 |
 | `Train/Tender/build_tender.py` | Kolenwagen direct achter de loc (rode bak, gouden rand, panelen met klinknagels, kolenberg, ladder, sluitlampen) — issue #22 |
+| `Environment/build_environment_kit.py` | Modulaire natuurkit (issue #30): bomen, struik, rotsen, klifmodules, grasheuvel, verre bergen, wolken; elk asset een eigen FBX + GLB, gedeelde materialen |
 | `Tools/meshkit.py` | Kleine numpy-toolkit: lathe/superellips, afgeronde box, ellipsoïde, capsule, profielextrusie (ketel/dak); export naar FBX (ASCII) en glTF (.glb) |
 | `Tools/spatial_fallback.py` | NumPy-terugval voor de straalzoekopdracht bij het bakken van vertexkleur als SciPy ontbreekt |
 | `Tools/implicit_body.py` | Bouwt het lijf met broek en voeten als één verbonden oppervlak met een echte opening tussen de benen |
@@ -32,8 +33,9 @@ Gegenereerde uitvoer:
 - `Assets/Art/Models/Train/Locomotive/Locomotive_Blockout.fbx` (+ `.meta`)
 - `Assets/Art/Models/Train/Tender/Tender_Blockout.fbx` (+ `.meta`)
 - `Assets/Art/Models/Train/CattleWagon/CattleWagon_Blockout.fbx` (+ `.meta`)
+- `Assets/Art/Models/Environment/{Trees,Rocks,Cliffs,Mountains,Sky}/*.fbx` + `Assets/Art/Materials/Environment/*.mat`
 - `Assets/Art/Materials/...` URP Lit-materialen (middentoon van elke ramp)
-- `Docs/Art/Conductor_DesignSheet.png`, `ArtCheck_Wagon.png`, `ArtCheck_vs_Concept.png`, `Locomotive_DesignSheet.png`, `CattleWagon_DesignSheet.png`
+- `Docs/Art/Conductor_DesignSheet.png`, `ArtCheck_Wagon.png`, `ArtCheck_vs_Concept.png`, `Locomotive_DesignSheet.png`, `CattleWagon_DesignSheet.png`, `Environment_DesignSheet.png`
 
 ## Opnieuw bouwen
 

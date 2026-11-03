@@ -39,8 +39,8 @@ Material:
     - _BumpScale: 1.0
     - _OcclusionStrength: 1.0
     m_Colors:
-    - _BaseColor: {r: 0.996078, g: 0.925490, b: 0.631373, a: 1.0}
-    - _Color: {r: 0.996078, g: 0.925490, b: 0.631373, a: 1.0}
-    - _EmissionColor: {r: 0.996078, g: 0.949020, b: 0.690196, a: 1.0}
+    - _BaseColor: {r: 0.996078, g: 0.925490, b: 0.631373, a: 1.000}
+    - _Color: {r: 0.996078, g: 0.925490, b: 0.631373, a: 1.000}
+    - _EmissionColor: {r: 0.996078, g: 0.949020, b: 0.690196, a: 1.000}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

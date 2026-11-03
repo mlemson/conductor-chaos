@@ -182,6 +182,15 @@ Omgevingen bestaan uit simpele grote vormen met weinig micro-detail.
 - bergen en rotsen in gestileerde vormen
 - bomen als simpele volumes
 
+### Natuur- en achtergrondkit (issue #30)
+Zie `Docs/Art/Environment_DesignSheet.png` en `ArtSource/Environment/build_environment_kit.py`.
+- **Lagen:** (1) bij het spoor: grasheuvels, rotsen, struiken, een enkele kleine boom; (2) midden: klifmodules in terrassen met bomen op de randen; (3) achter: een beboste heuvelrug, verre blauwe bergen, wolken en mist. Vooraan warm en contrastrijk, achteraan koel, licht en rustig.
+- **Bomen:** een korte zeskantige stam met 2–4 gestapelde kegellagen, een afgeronde en licht gekartelde onderrand en een duidelijk driehoekig silhouet. Gedempt blauwgroen (`pine`), geen takken of naalden.
+- **Rotsen:** chunky grijs-mauve klonten (`metal`-ramp) met weinig facetten, iets in de grond gezet.
+- **Kliffen:** modules op een raster van 2 m (A 2×2×2 m, B 4×2×3 m, C een terras van 1,2 en 2,6 m) met verticale facetkolommen, een terrasrand halverwege en een grasdek dat een fractie overhangt. Randen bollen tot ongeveer 0,1 m uit, zodat buren elkaar overlappen. Stapelen en roteren (0/180°) mag, ook in hoogte schalen (0,8–1,35).
+- **Verre bergen:** grote facetsilhouetten in `mountain` (blauw-paars) met een simpele, gekartelde sneeuwkap; plat in de diepte.
+- **Wolken:** zachte, ronde puffen (`cloud_snow`), zonder facetten en zonder schaduw.
+
 ### Interieur trein
 - duidelijk gangpad
 - grote simpele stoelen

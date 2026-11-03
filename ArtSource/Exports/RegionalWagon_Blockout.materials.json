@@ -2,8 +2,8 @@
   "model": "RegionalWagon_Blockout",
   "stats": {
     "parts": 15,
-    "tris": 26322,
-    "verts": 14424,
+    "tris": 26938,
+    "verts": 14780,
     "materials": 14
   },
   "materials": {
@@ -119,21 +119,22 @@
       }
     },
     "M_Train_Glass": {
-      "base": "#34335B",
+      "base": "#85A4EC",
       "ramp": [
-        "#1D1C2D",
-        "#34335B",
-        "#3E3D70",
-        "#454377",
-        "#565191"
+        "#6E83BA",
+        "#7D99D5",
+        "#85A4EC",
+        "#92BAF8",
+        "#98C4FC"
       ],
-      "rampShift": -0.1,
-      "smoothness": 0.7,
+      "rampShift": 0.05,
+      "smoothness": 0.85,
       "opts": {
-        "flat": 0.5,
-        "rim": 0.25,
-        "paint": 0.3,
-        "grime": 1.0
+        "flat": 0.6,
+        "rim": 0.35,
+        "opacity": 0.22,
+        "cells": 0.0,
+        "grime": 0.0
       }
     },
     "M_Train_GlassShine": {
@@ -150,8 +151,9 @@
       "opts": {
         "flat": 0.85,
         "rim": 0,
-        "paint": 0,
-        "grime": 1.0
+        "opacity": 0.55,
+        "cells": 0.0,
+        "grime": 0.0
       }
     },
     "M_Train_Interact": {

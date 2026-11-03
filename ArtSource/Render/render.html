@@ -40,6 +40,7 @@ const STYLE = {
 function hex3(h) { const c = new THREE.Color(); c.setStyle(h, THREE.LinearSRGBColorSpace); return c; }
 function rampMaterial(ramp, shift = 0, opts = {}) {
   const m = new THREE.MeshLambertMaterial({ color: 0xffffff, side: opts.side ?? THREE.FrontSide });
+  if ((opts.opacity ?? 1) < 1) { m.transparent = true; m.depthWrite = false; }
   m.userData.ramp = ramp;
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uRamp = { value: ramp.map(hex3) };
@@ -54,6 +55,7 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
     sh.uniforms.uHasShade = { value: opts.hasShade ? 1.0 : 0.0 };
     sh.uniforms.uPaint = { value: (opts.paint ?? 1.0) * STYLE.noise };
     sh.uniforms.uEdge = { value: opts.edge ?? 1.0 };
+    sh.uniforms.uOpacity = { value: opts.opacity ?? 1.0 };
     sh.uniforms.uCells = { value: opts.emissive ? 0.0 : (opts.cells ?? 1.0) };   // grote vlakken met iets andere tint
     sh.uniforms.uCellSize = { value: opts.cellSize ?? 0.45 };
     sh.uniforms.uGrime = { value: opts.grime ?? 0.0 };                          // onderin viezer
@@ -67,6 +69,7 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
         uniform vec3 uRamp[5]; uniform float uShift; uniform vec3 uFog; uniform vec2 uFogRange; uniform float uEmissive;
+        uniform float uOpacity;
         uniform float uCells; uniform float uCellSize; uniform float uGrime; uniform vec2 uGrimeY; uniform vec3 uDirt;
         vec3 hash33(vec3 p){ p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33);
           return fract((p.xxy + p.yxx) * p.zyx); }
@@ -123,7 +126,9 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
         col = mix(col, sampleRamp(0.25 + 0.75 * pow(max(dot(N, V), 0.), 0.9) + uShift), uEmissive);
         float fogT = smoothstep(uFogRange.x, uFogRange.y, length(vViewPosition));
         col = mix(col, uFog, fogT * 0.85);
-        gl_FragColor = vec4(col, 1.0);`);
+        // glas: doorzichtig, aan de randen (scherende hoek) iets dekkender
+        float alpha = uOpacity >= 1.0 ? 1.0 : clamp(uOpacity + fr * 0.45, 0., 1.);
+        gl_FragColor = vec4(col, alpha);`);
   };
   return m;
 }
@@ -132,16 +137,20 @@ window.rampMaterial = rampMaterial;
 // --------------------------------------------------------------------- licht
 const key = new THREE.DirectionalLight(0xffffff, Math.PI); // Lambert: max = intensiteit/π -> 1.0
 const az = THREE.MathUtils.degToRad(+(Q.get('lightAz') ?? 38)), el = THREE.MathUtils.degToRad(+(Q.get('lightEl') ?? 42));
-key.position.set(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)).multiplyScalar(10);
+const sc = +(Q.get('shadowSize') || 3);
+const lightDist = Math.max(10, sc * 2);
+const sctr = (Q.get('shadowCenter') || '0,0,0').split(',').map(Number);
+key.position.set(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)).multiplyScalar(lightDist).add(new THREE.Vector3(...sctr));
+key.target.position.set(...sctr);
 key.castShadow = true;
 key.shadow.mapSize.set(4096, 4096);
-const sc = +(Q.get('shadowSize') || 3);
-Object.assign(key.shadow.camera, { left: -sc, right: sc, top: sc, bottom: -sc, near: 0.1, far: 40 });
+Object.assign(key.shadow.camera, { left: -sc, right: sc, top: sc, bottom: -sc, near: 0.1, far: Math.max(40, lightDist * 4) });
 key.shadow.bias = -0.0004; key.shadow.normalBias = 0.012; key.shadow.radius = 3;
 scene.add(key); scene.add(key.target);
 // lichtrichting is t.o.v. de camera-kijkrichting wanneer 'lightRel' gezet is
 // ------------------------------------------------------------------- camera
-const cam = new THREE.PerspectiveCamera(+(Q.get('fov') || 22), W / H, 0.05, 200);
+const FAR = +(Q.get('far') || 200);
+const cam = new THREE.PerspectiveCamera(+(Q.get('fov') || 22), W / H, 0.05, FAR);
 const tgt = (Q.get('target') || '0,0.62,0').split(',').map(Number);
 const yaw = THREE.MathUtils.degToRad(+(Q.get('yaw') || 0)), pitch = THREE.MathUtils.degToRad(+(Q.get('pitch') || 4));
 const dist = +(Q.get('dist') || 4.2);
@@ -149,12 +158,12 @@ cam.position.set(tgt[0] + Math.sin(yaw) * Math.cos(pitch) * dist, tgt[1] + Math.
 cam.lookAt(...tgt);
 if (Q.get('ortho')) {
   const hh = +Q.get('ortho');
-  const oc = new THREE.OrthographicCamera(-hh * W / H, hh * W / H, hh, -hh, 0.05, 200);
+  const oc = new THREE.OrthographicCamera(-hh * W / H, hh * W / H, hh, -hh, 0.05, FAR);
   oc.position.copy(cam.position); oc.quaternion.copy(cam.quaternion);
   window.__cam = oc;
 }
 if (Q.get('lightRel')) { // licht meedraaien met de camera (turnarounds: steeds dezelfde belichting)
-  const v = key.position.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+  const v = key.position.clone().sub(new THREE.Vector3(...sctr)).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw).add(new THREE.Vector3(...sctr));
   key.position.copy(v);
 }
 
@@ -178,6 +187,7 @@ function applyRampMaterials(root, matsJson) {
       const info = (m.userData && m.userData.ramp) ? { ramp: m.userData.ramp, rampShift: m.userData.rampShift || 0, opts: m.userData.opts } : matsJson?.[m.name];
       if (!info) return m;
       if (info.opts && info.opts.noShadow) o.receiveShadow = false;
+      if (info.opts && (info.opts.opacity ?? 1) < 1) o.castShadow = false;
       const o2 = Object.assign({}, info.opts || {}, { hasShade: !!o.geometry.attributes.color });
       const rm = rampMaterial(info.ramp, info.rampShift || 0, o2);
       rm.name = m.name; return rm;
@@ -205,6 +215,7 @@ function setPose(root, pose) {
       if (it.mats) applyRampMaterials(root, await (await fetch(it.mats)).json().then(j => j.materials || j));
       else applyRampMaterials(root, null);
       if (it.unitScale) root.scale.setScalar(it.unitScale);
+      if (it.scale) root.scale.set(...it.scale);
       // glTF: verborgen nodes (extras.hidden) verbergen
       root.traverse(o => { if (o.userData && o.userData.hidden) o.visible = false; });
       if (it.pos) root.position.set(...it.pos);

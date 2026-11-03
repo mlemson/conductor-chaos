@@ -81,7 +81,7 @@ def end_frame(sgn, u0, u1, y0, y1, w, d0, d1, r, mat, open_bottom=True):
 
 
 def glass(x0, x1, y0, y1, z):
-    """Donker glas met één grote, zachte luchtreflectie (concept: donkere ramen, lichte weerspiegeling)."""
+    """Doorzichtig glas (licht blauw getint) met één schuine luchtreflectie; je kijkt erdoorheen het interieur in."""
     g = box(x0, x1, y0, y1, z - 0.03, z, 0.004, "M_Train_Glass")
     w, h = x1 - x0, y1 - y0
     # schuine reflectieband over de bovenhoek
@@ -152,9 +152,9 @@ def build_wagon():
     sc.material("M_Train_Trim", R_["train_trim"][1], R_["train_trim"], 0.20, opts={"paint": 1.2})
     sc.material("M_Train_Wheel", R_["ui_bg"][2], R_["ui_bg"], 0.30, opts={"paint": 0.8})
     sc.material("M_Train_Gold", R_["gold_trim"][2], R_["gold_trim"], 0.40)
-    sc.material("M_Train_Glass", R_["uniform_navy"][1], R_["uniform_navy"], 0.70, ramp_shift=-0.10,
-                opts={"flat": 0.5, "rim": 0.25, "paint": 0.3})
-    sc.material("M_Train_GlassShine", R_["sky"][2], R_["sky"], 0.70, ramp_shift=-0.05, opts={"flat": 0.85, "rim": 0, "paint": 0})
+    sc.material("M_Train_Glass", R_["sky"][2], R_["sky"], 0.85, ramp_shift=0.05,
+                opts={"flat": 0.6, "rim": 0.35, "opacity": 0.22, "cells": 0.0, "grime": 0.0})
+    sc.material("M_Train_GlassShine", R_["sky"][2], R_["sky"], 0.70, ramp_shift=-0.05, opts={"flat": 0.85, "rim": 0, "opacity": 0.55, "cells": 0.0, "grime": 0.0})
     sc.material("M_Train_Interact", R_["accent_yellow"][2], R_["accent_yellow"], 0.30)
     sc.material("M_Train_Inner", R_["cab_interior"][3], R_["cab_interior"], 0.15, ramp_shift=0.05)
     sc.material("M_Train_Floor", R_["interior_wood"][1], R_["interior_wood"], 0.15, ramp_shift=-0.12)
@@ -203,9 +203,10 @@ def build_wagon():
     leaf_h = DOOR_TOP - SILL_Y + 0.08
     for nm, cx, sgn in (("DoorLeaf_L", DOOR[0] + half / 2, -1), ("DoorLeaf_R", DOOR[1] - half / 2, 1)):
         hw = half / 2 - 0.008
-        leaf = [box(-hw, hw, 0.0, leaf_h, -0.03, 0.03, 0.022, "M_Train_Red")]
+        leaf = [mk.through_box((-hw, hw, 0.0, leaf_h, -0.03, 0.03), [(-hw + 0.13, hw - 0.13, 0.86, 1.42)], 0.022,
+                               step=0.3, mat="M_Train_Red")]
         leaf.append(frame(-hw + 0.13, hw - 0.13, 0.86, 1.42, 0.05, 0.0, 0.05, 0.015, "M_Train_Trim"))
-        leaf.append(glass(-hw + 0.13, hw - 0.13, 0.86, 1.42, 0.035))
+        leaf.append(glass(-hw + 0.13, hw - 0.13, 0.86, 1.42, 0.015))
         leaf.append(box(-hw + 0.08, hw - 0.08, 0.14, 0.56, 0.02, 0.048, 0.015, "M_Train_RedPanel"))
         gx = -sgn * (hw - 0.07)
         leaf.append(mk.capsule_between((gx, 0.52, 0.065), (gx, 0.95, 0.065), 0.022, 0.022, 8, 1, mat="M_Train_Interact"))
