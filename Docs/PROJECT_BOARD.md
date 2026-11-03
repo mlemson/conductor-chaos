@@ -2,31 +2,31 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand.
 
-**Voortgang: 0/37 afgerond (0%)**
+**Voortgang: 0/41 afgerond (0%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 36 | 1 | 0 | 0 | 0 |
+| 40 | 1 | 0 | 0 | 0 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
-    P0["P0 · Technisch fundament + stijltest · 0/23 klaar"]
-    P1["P1 · Eerste speelbare co-opervaring · 0/11 klaar"]
+    P0["P0 · Technisch fundament + stijltest · 0/25 klaar"]
+    P1["P1 · Eerste speelbare co-opervaring · 0/13 klaar"]
     P2["P2 · Bergavontuur en chaos · 0/3 klaar"]
     P0 --> P1 --> P2
 ```
 
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
-| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/23 | Technisch fundament + stijltest |
-| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/11 | Eerste speelbare co-opervaring |
+| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/25 | Technisch fundament + stijltest |
+| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/13 | Eerste speelbare co-opervaring |
 | **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/3 | Bergavontuur en chaos |
 
 ## 📋 Taken per status
 
-### 📝 Te doen (36)
+### 📝 Te doen (40)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -52,6 +52,8 @@ flowchart LR
 | P0 | [#54 Spoorroute: korte testbaan uit bestaande railstukken](https://github.com/mlemson/conductor-chaos/issues/54) | Train | — | — |
 | P0 | [#55 Treinbeweging: één wagon volgt testspoor](https://github.com/mlemson/conductor-chaos/issues/55) | Train | — | — |
 | P0 | [#56 Rijdende wagon: speler blijft op vloer bij rijden/remmen](https://github.com/mlemson/conductor-chaos/issues/56) | Multiplayer | — | — |
+| P0 | [#61 Conducteurssleutel: vast voorwerp en slotpunt](https://github.com/mlemson/conductor-chaos/issues/61) | Interactions | — | — |
+| P0 | [#62 Treindeur: open/dicht als gedeelde toestand](https://github.com/mlemson/conductor-chaos/issues/62) | Interactions | — | — |
 | P1 | [#10 Reizigers, tickets en eerste conducteur-taakloop](https://github.com/mlemson/conductor-chaos/issues/10) | Gameplay | — | — |
 | P1 | [#11 Klein station, korte route en eerste incident](https://github.com/mlemson/conductor-chaos/issues/11) | Gameplay | — | — |
 | P1 | [#12 Echte physics-ontsporing van één wagon](https://github.com/mlemson/conductor-chaos/issues/12) | Physics | — | — |
@@ -63,6 +65,8 @@ flowchart LR
 | P1 | [#58 Wagonkoppeling: twee delen visueel koppelen](https://github.com/mlemson/conductor-chaos/issues/58) | Train | — | — |
 | P1 | [#59 Station: één modulair perron met bank en bord](https://github.com/mlemson/conductor-chaos/issues/59) | World | — | — |
 | P1 | [#60 Eerste rit: vertrekstation naar eindhalte](https://github.com/mlemson/conductor-chaos/issues/60) | World | — | — |
+| P1 | [#63 Treindeur: openhouden en loslaten tijdens rijden](https://github.com/mlemson/conductor-chaos/issues/63) | Interactions | — | — |
+| P1 | [#64 Kolenwagen: toegankelijk laadpunt voor schep](https://github.com/mlemson/conductor-chaos/issues/64) | Gameplay | — | — |
 | P2 | [#14 Meerdere wagons koppelen en afzonderlijk laten ontsporen](https://github.com/mlemson/conductor-chaos/issues/14) | Physics | — | — |
 | P2 | [#15 Bergtrajecten met bruggen, tunnels en gevaren](https://github.com/mlemson/conductor-chaos/issues/15) | World | — | — |
 | P2 | [#16 HUD, menu, audio en performance polish](https://github.com/mlemson/conductor-chaos/issues/16) | Polish | — | — |
