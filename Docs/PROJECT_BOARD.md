@@ -2,17 +2,17 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand.
 
-**Voortgang: 0/16 afgerond (0%)**
+**Voortgang: 0/17 afgerond (0%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 16 | 0 | 0 | 0 | 0 |
+| 16 | 0 | 1 | 0 | 0 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
-    P0["P0 · Technisch fundament + stijltest · 0/9 klaar"]
+    P0["P0 · Technisch fundament + stijltest · 0/10 klaar"]
     P1["P1 · Eerste speelbare co-opervaring · 0/4 klaar"]
     P2["P2 · Bergavontuur en chaos · 0/3 klaar"]
     P0 --> P1 --> P2
@@ -20,7 +20,7 @@ flowchart LR
 
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
-| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/9 | Technisch fundament + stijltest |
+| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/10 | Technisch fundament + stijltest |
 | **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/4 | Eerste speelbare co-opervaring |
 | **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/3 | Bergavontuur en chaos |
 
@@ -51,9 +51,11 @@ flowchart LR
 
 *Geen taken in deze kolom.*
 
-### 👀 Klaar voor review (0)
+### 👀 Klaar voor review (1)
 
-*Geen taken in deze kolom.*
+| Fase | Taak | Onderdeel | Eigenaar | Pull request |
+| :-- | :-- | :-- | :-- | :-- |
+| P0 | [#22 Art proof: locomotief in conceptstijl](https://github.com/mlemson/conductor-chaos/issues/22) | Art | — | [#23](https://github.com/mlemson/conductor-chaos/pull/23) |
 
 ### ⛔ Geblokkeerd (0)
 
