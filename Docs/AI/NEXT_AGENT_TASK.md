@@ -1,4 +1,10 @@
-# Agent task template — P0-01: validate Unity baseline
+# Historisch: P0-01 Unity-baseline (niet standaard opnieuw uitvoeren)
+
+> **Deze template is verouderd.** Er is inmiddels een Unity-physics-playground en lokale multiplayerproef. Kies voor nieuw werk één issue uit de [kleine taakindex](SMALL_TASK_INDEX.md) en lees het [playbook](SMALL_TASK_PLAYBOOK.md). Gebruik onderstaande tekst alleen als issue #2 nog een daadwerkelijk aangetoonde blocker bevat.
+
+## Oude oorspronkelijke opdracht
+
+### P0-01 Unity-baseline
 
 > To use **now**. When complete, update or retire this template. Do not treat instructions here as proof of project status.
 
