@@ -102,22 +102,12 @@ def capsule(x0, y0, x1, y1, w):
 
 
 def grass(flowers=False):
-    v = 0.52 + 0.16 * pnoise(170) + 0.07 * pnoise(60)
-    img = ramp("grass", 0.18 + 0.55 * soft_bands(np.clip(v, 0, 1), 5, 0.45))
-    # gestileerde graspluk: 3 korte schuine streepjes, iets donkerder, met een lichte top
-    dark, light = ramp("grass", np.array(0.12)), ramp("grass", np.array(0.85))
-    for _ in range(170):
-        cx, cy = rng.uniform(0, N, 2)
-        s = rng.uniform(7, 13)
-        for k, ang in enumerate((-0.45, 0.0, 0.45)):
-            ln = s * (1.3 if k == 1 else 1.0)
-            bx = (k - 1) * 2.5
-            tx, ty = bx + np.sin(ang) * ln, -np.cos(ang) * ln
-            stamp(img, cx, cy, capsule(bx, 0, tx, ty, 1.8), dark, ln + 4)
-            stamp(img, cx, cy, capsule(tx, ty, tx, ty, 1.3), light, ln + 4)
+    """Rustig gras: alleen grote, zachte vlakken in een smal tintbereik (geen streepjes; die doen de 3D-plukjes)."""
+    v = 0.5 + 0.12 * pnoise(240) + 0.04 * pnoise(110)
+    img = ramp("grass", 0.32 + 0.30 * soft_bands(np.clip(v, 0, 1), 4, 0.55))
     if flowers:
         petal, heart = rgb(R["cloud_snow"][4]), rgb(R["accent_yellow"][2])
-        for _ in range(110):
+        for _ in range(60):
             cx, cy = rng.uniform(0, N, 2)
             r = rng.uniform(3.0, 4.5)
             for a in np.linspace(0, 2 * np.pi, 5, endpoint=False) + rng.uniform(0, 1):
@@ -140,22 +130,23 @@ def dirt():
 
 
 def path_stones():
+    """Keien met duidelijk contrast: elke kei een eigen tint (breed bereik), een lichte rand naar het licht
+    (linksboven), een donkere rand eraf, en donkere voegen met hier en daar wat gras."""
     ids, edge, vec, n = voronoi(64, 0.55)
-    tone = rng.uniform(0.35, 0.75, n)[ids]                 # elke kei een eigen effen tint
+    tone = rng.uniform(0.12, 0.92, n)[ids]
     img = ramp("metal", tone)
-    gap = 7.0
-    # afgeschuinde rand: licht linksboven, donker rechtsonder (licht komt van linksboven)
-    L = np.array([-0.6, -0.8])
+    gap = 8.0
+    L = np.array([-0.6, -0.8])                                    # licht van linksboven (beeld: y omlaag)
     dirn = vec / (np.linalg.norm(vec, axis=-1, keepdims=True) + 1e-6)
-    lam = (dirn @ L)
-    bevel = np.clip(1 - (edge - gap) / 14.0, 0, 1)
-    img = img * (1 + 0.16 * bevel[..., None] * np.clip(-lam, 0, 1)[..., None])     # binnenkant naar het licht
-    img = img * (1 - 0.22 * bevel[..., None] * np.clip(lam, 0, 1)[..., None])
-    # voegen: grond en hier en daar gras
+    lam = dirn @ L                                                 # > 0: rand aan de lichtkant
+    bevel = np.clip(1 - (edge - gap) / 12.0, 0, 1)[..., None]
+    img = img * (1 + 0.32 * bevel * np.clip(lam, 0, 1)[..., None])
+    img = img * (1 - 0.40 * bevel * np.clip(-lam, 0, 1)[..., None])
+    # voegen: donkere grond, soms een sprietje gras
     v = pnoise(90)
-    joint = np.where((v > 0.35)[..., None], ramp("grass", 0.3 + 0.2 * np.clip(v, 0, 1))[..., :],
-                     ramp("cliff", 0.15 + 0.1 * np.clip(v + 1, 0, 2)))
-    m = np.clip((gap - edge) / 1.5, 0, 1)[..., None]
+    joint = np.where((v > 0.9)[..., None], ramp("grass", np.full(v.shape, 0.15)), ramp("cliff", 0.02 + 0.05 * np.clip(v + 1, 0, 2)))
+    joint = joint * 0.78
+    m = np.clip((gap - edge) / 1.2, 0, 1)[..., None]
     return np.clip(img * (1 - m) + joint * m, 0, 255)
 
 
