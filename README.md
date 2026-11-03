@@ -10,6 +10,12 @@ Een warme, speelse co-opgame in ontwikkeling: 1–6 spelers proberen samen een t
 
 Het bord toont automatisch *te doen*, *bezig*, *review*, *geblokkeerd* en *klaar* zodra [de GitHub-workflow](.github/workflows/update-development-board.yml) in `main` is samengevoegd. De daadwerkelijke status komt uit GitHub Issues en gekoppelde PR's; niet uit losse commitberichten.
 
+## UI en menu proef
+
+[**UI-stijlgids (afbeeldingen 1 en 3)**](Docs/UI_STYLE_GUIDE.md) · [**Zo open je de interactieve Unity-menu-preview**](Docs/UI_TESTING.md)
+
+De runtime HUD in `TrainPlayground` toont alleen echte netwerkproefinformatie. Het losse hoofdmenu/lobby-preview wordt eenmalig in Unity aangemaakt via `Tools > Conductor Chaos > UI > Create or Open Menu Preview`. De lobby is nog geen werkende online sessie; het menu kan de lokale physics-proef wel starten. Niet als afgeronde gameplay-UI presenteren voordat de editorchecks zijn uitgevoerd.
+
 ## Begin hier
 
 1. [Agentinstructies](AGENTS.md) en [projectstatus](Docs/AI/UnityProjectContext.md).

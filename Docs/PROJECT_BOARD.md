@@ -2,17 +2,17 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand.
 
-**Voortgang: 0/17 afgerond (0%)**
+**Voortgang: 0/20 afgerond (0%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 16 | 0 | 1 | 0 | 0 |
+| 20 | 0 | 0 | 0 | 0 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
-    P0["P0 · Technisch fundament + stijltest · 0/10 klaar"]
+    P0["P0 · Technisch fundament + stijltest · 0/13 klaar"]
     P1["P1 · Eerste speelbare co-opervaring · 0/4 klaar"]
     P2["P2 · Bergavontuur en chaos · 0/3 klaar"]
     P0 --> P1 --> P2
@@ -20,13 +20,13 @@ flowchart LR
 
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
-| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/10 | Technisch fundament + stijltest |
+| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/13 | Technisch fundament + stijltest |
 | **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/4 | Eerste speelbare co-opervaring |
 | **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/3 | Bergavontuur en chaos |
 
 ## 📋 Taken per status
 
-### 📝 Te doen (16)
+### 📝 Te doen (20)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -39,6 +39,10 @@ flowchart LR
 | P0 | [#8 Multiplayer stressproef voor eerste technische slice](https://github.com/mlemson/conductor-chaos/issues/8) | QA | — | — |
 | P0 | [#9 Eerste in-engine artproof: conducteur en wagonhoek](https://github.com/mlemson/conductor-chaos/issues/9) | Art | — | — |
 | P0 | [#17 Visueel ontwikkelbord en automatische statusupdates](https://github.com/mlemson/conductor-chaos/issues/17) | Foundation | — | — |
+| P0 | [#22 Art proof: locomotief in conceptstijl](https://github.com/mlemson/conductor-chaos/issues/22) | Art | — | — |
+| P0 | [#28 Physics-proef: conducteur, trein en grijpen](https://github.com/mlemson/conductor-chaos/issues/28) | Overig | — | — |
+| P0 | [#36 Voorkom armclippen, rig benen en herstel loslaten](https://github.com/mlemson/conductor-chaos/issues/36) | Overig | — | — |
+| P0 | [#39 UI foundation: menu, HUD en lobbyconcept volgens referenties 1 en 3](https://github.com/mlemson/conductor-chaos/issues/39) | Art | — | — |
 | P1 | [#10 Reizigers, tickets en eerste conducteur-taakloop](https://github.com/mlemson/conductor-chaos/issues/10) | Gameplay | — | — |
 | P1 | [#11 Klein station, korte route en eerste incident](https://github.com/mlemson/conductor-chaos/issues/11) | Gameplay | — | — |
 | P1 | [#12 Echte physics-ontsporing van één wagon](https://github.com/mlemson/conductor-chaos/issues/12) | Physics | — | — |
@@ -51,11 +55,9 @@ flowchart LR
 
 *Geen taken in deze kolom.*
 
-### 👀 Klaar voor review (1)
+### 👀 Klaar voor review (0)
 
-| Fase | Taak | Onderdeel | Eigenaar | Pull request |
-| :-- | :-- | :-- | :-- | :-- |
-| P0 | [#22 Art proof: locomotief in conceptstijl](https://github.com/mlemson/conductor-chaos/issues/22) | Art | — | [#23](https://github.com/mlemson/conductor-chaos/pull/23) |
+*Geen taken in deze kolom.*
 
 ### ⛔ Geblokkeerd (0)
 
@@ -67,7 +69,7 @@ flowchart LR
 
 ## 🔗 Open pull requests zonder gekoppelde roadmap-taak
 
-Alle open PR's zijn gekoppeld of er zijn geen open PR's.
+- [#43 Feature/30 environment kit v2](https://github.com/mlemson/conductor-chaos/pull/43) — verwijs in de PR-omschrijving naar `Refs #nummer` of `Closes #nummer`.
 
 ## 🤝 Samenwerken met mensen en agents
 

@@ -24,6 +24,15 @@
 - Leid nieuwe assets af van boonvormige cartoonkarakters, zachte ronde low-poly volumes (warm licht, koele blauw-violette schaduw) en simpele regionale reizigerstreinen. De kleine locomotief op het conceptbord is sfeer, geen blauwdruk; UI/menus hebben geen posterlay-out nodig.
 - Eerst een tweespeler technische proef en één kleine art-test; geen ongevraagde hele treinlijn, levelgenerator of inhoudelijke uitbreidingen.
 
+## UI-richtlijn (verplicht voor UI-agents)
+
+- Lees [UI Style Guide](Docs/UI_STYLE_GUIDE.md) voordat je menu, lobby, knoppen, HUD, iconen of interactiefeedback maakt.
+- **Primair visueel:** conceptbeeld **1** = UI-componenten; conceptbeeld **3** = hoofdmenu en lobby. Kopieer de drukke full-HUD van conceptbeeld 2 **niet** als standaard. Houd de UI mat, compact, leesbaar en zonder AI-glow/glassy effect.
+- Gebruik de bestaande uGUI-bouwstenen in `Assets/Scripts/UI/` en de bestaande kleurbron `Docs/References/palette.json`; maak geen tweede los UI-thema. Houd presentatie lokaal en puur; gedeelde data uit de server/Netcode.
+- Geen schijnfunctionaliteit: de echte Lobby/Relay/route-, coal-, integrity- en ticketsystemen ontbreken nog. Toon ze alleen als gelabelde demo in de menuproef, nooit als echte online of gameplaystatus.
+- Bij veranderingen aan de physics-playground: HUD mag het camera-/muis-/gripsysteem niet kapen. Geen dubbele EventSystem of niet-functionerende permanente inputprompts. Test host en remote client waar relevant.
+- Documenteer wat in Unity zichtbaar en getest is en wat alleen een conceptcomponent is. Gebruik de aparte UI-preview als art-review, niet als bewijs dat online multiplayer af is.
+
 ## Ontwerpregels
 
 - De host/server valideert en beslist over gedeelde toestand, inclusief trein, deur, objecten en events; clients sturen intenties, geen vertrouwde uitkomsten. Lokale UI en cosmetische feedback mogen lokaal zijn.
