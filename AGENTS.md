@@ -5,7 +5,7 @@
 ## Verplichte werkafspraak: klein, zuinig, geen dubbel werk
 
 - **START HERE:** [small-task playbook](Docs/AI/SMALL_TASK_PLAYBOOK.md) en [kleine issues per thema](Docs/AI/SMALL_TASK_INDEX.md). **Eén issue = één afgebakende feature/asset en één PR**. Een grote issue met `<!-- conductor-chaos-epic -->` is alleen een overzicht, nooit een opdracht om alles tegelijk te bouwen.
-- Lees eerst de **huidige code** en open PR's, niet alleen de oudere statusdocumenten. Er bestaat al een `TrainPlayground` met NGO-physics, 3D-assets en UI. **Issue #44 is toegewezen**: maak geen tweede loopfix naast die agent.
+- Lees eerst de **huidige code** en open PR's, niet alleen de oudere statusdocumenten. Er bestaat al een `TrainPlayground` met NGO-physics, 3D-assets en UI. **Loopbug #44 is inmiddels afgesloten**: inspecteer die wijziging eerst en bouw geen tweede loopfix zonder nieuwe reproduceerbare bug.
 - **Minimale controle per wijziging:** art/docs = import of inspectie; lokale UI = compile/één actie als haalbaar; gedeelde state = één host+remote rooktest waar uitvoerbaar; een lange Play/latency/6-player-test alleen als afzonderlijke QA-issue dat vraagt. Laat de gebruiker gamefeel handmatig testen. Schrijf `NOT RUN — user Play-test` wanneer niet getest.
 - **Stel een korte vraag bij wezenlijke keuzes** (controls, feel, onverwachte art-richting, externe diensten/licenties, destructieve wijzigingen, conflicterende agents). Kleine technische keuzes zelf maken en kort rapporteren.
 - Voer geen herhaalde volledige Unity imports/Blender-renders uit voor een kleine issue. Rapporteer maximaal vijf regels, zonder grote logs of analyse.
