@@ -2,31 +2,31 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand.
 
-**Voortgang: 0/29 afgerond (0%)**
+**Voortgang: 0/37 afgerond (0%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 28 | 1 | 0 | 0 | 0 |
+| 36 | 1 | 0 | 0 | 0 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
-    P0["P0 · Technisch fundament + stijltest · 0/19 klaar"]
-    P1["P1 · Eerste speelbare co-opervaring · 0/7 klaar"]
+    P0["P0 · Technisch fundament + stijltest · 0/23 klaar"]
+    P1["P1 · Eerste speelbare co-opervaring · 0/11 klaar"]
     P2["P2 · Bergavontuur en chaos · 0/3 klaar"]
     P0 --> P1 --> P2
 ```
 
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
-| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/19 | Technisch fundament + stijltest |
-| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/7 | Eerste speelbare co-opervaring |
+| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/23 | Technisch fundament + stijltest |
+| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/11 | Eerste speelbare co-opervaring |
 | **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/3 | Bergavontuur en chaos |
 
 ## 📋 Taken per status
 
-### 📝 Te doen (28)
+### 📝 Te doen (36)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -48,6 +48,10 @@ flowchart LR
 | P0 | [#47 Grip: object loslaten zonder blijven kleven](https://github.com/mlemson/conductor-chaos/issues/47) | Physics | — | — |
 | P0 | [#48 Grip: twee spelers kunnen niet dezelfde koffer bezitten](https://github.com/mlemson/conductor-chaos/issues/48) | Physics | — | — |
 | P0 | [#49 Interacties: één herbruikbare focusdetectie voor props](https://github.com/mlemson/conductor-chaos/issues/49) | Gameplay | — | — |
+| P0 | [#53 Spoorasset: recht segment en bocht als Unity-prefabs](https://github.com/mlemson/conductor-chaos/issues/53) | Train | — | — |
+| P0 | [#54 Spoorroute: korte testbaan uit bestaande railstukken](https://github.com/mlemson/conductor-chaos/issues/54) | Train | — | — |
+| P0 | [#55 Treinbeweging: één wagon volgt testspoor](https://github.com/mlemson/conductor-chaos/issues/55) | Train | — | — |
+| P0 | [#56 Rijdende wagon: speler blijft op vloer bij rijden/remmen](https://github.com/mlemson/conductor-chaos/issues/56) | Multiplayer | — | — |
 | P1 | [#10 Reizigers, tickets en eerste conducteur-taakloop](https://github.com/mlemson/conductor-chaos/issues/10) | Gameplay | — | — |
 | P1 | [#11 Klein station, korte route en eerste incident](https://github.com/mlemson/conductor-chaos/issues/11) | Gameplay | — | — |
 | P1 | [#12 Echte physics-ontsporing van één wagon](https://github.com/mlemson/conductor-chaos/issues/12) | Physics | — | — |
@@ -55,6 +59,10 @@ flowchart LR
 | P1 | [#50 Spelers kunnen elkaar licht fysiek aanstoten](https://github.com/mlemson/conductor-chaos/issues/50) | Physics | — | — |
 | P1 | [#51 Speler kan na een val weer opstaan](https://github.com/mlemson/conductor-chaos/issues/51) | Gameplay | — | — |
 | P1 | [#52 Prefab voor één testkoffer met collider en massainstellingen](https://github.com/mlemson/conductor-chaos/issues/52) | Gameplay | — | — |
+| P1 | [#57 Cabinehendel: eenvoudige bediening van treinsnelheid](https://github.com/mlemson/conductor-chaos/issues/57) | Train | — | — |
+| P1 | [#58 Wagonkoppeling: twee delen visueel koppelen](https://github.com/mlemson/conductor-chaos/issues/58) | Train | — | — |
+| P1 | [#59 Station: één modulair perron met bank en bord](https://github.com/mlemson/conductor-chaos/issues/59) | World | — | — |
+| P1 | [#60 Eerste rit: vertrekstation naar eindhalte](https://github.com/mlemson/conductor-chaos/issues/60) | World | — | — |
 | P2 | [#14 Meerdere wagons koppelen en afzonderlijk laten ontsporen](https://github.com/mlemson/conductor-chaos/issues/14) | Physics | — | — |
 | P2 | [#15 Bergtrajecten met bruggen, tunnels en gevaren](https://github.com/mlemson/conductor-chaos/issues/15) | World | — | — |
 | P2 | [#16 HUD, menu, audio en performance polish](https://github.com/mlemson/conductor-chaos/issues/16) | Polish | — | — |
