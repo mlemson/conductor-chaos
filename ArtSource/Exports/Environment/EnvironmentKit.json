@@ -659,8 +659,8 @@
       ],
       "max": [
         2.346,
-        6.0,
-        2.312
+        4.6,
+        2.256
       ],
       "materials": [
         "M_Env_Foam",
@@ -681,8 +681,8 @@
       ],
       "max": [
         1.734,
-        4.0,
-        1.887
+        3.0,
+        1.797
       ],
       "materials": [
         "M_Env_Foam",
@@ -1029,6 +1029,28 @@
         "flat": 0.15,
         "rim": 0.15,
         "edge": 0.0
+      }
+    },
+    "M_Env_WaterSurface": {
+      "base": "#8EC7EC",
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.3,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 1.4,
+        "flat": 0.25,
+        "rim": 0.35,
+        "edge": 0.0,
+        "opacity": 0.82,
+        "cull": 0.0,
+        "noShadow": true
       }
     },
     "M_Env_Mist": {

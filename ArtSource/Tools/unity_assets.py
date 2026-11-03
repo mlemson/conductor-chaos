@@ -61,7 +61,7 @@ def stylized_material(root, rel_path, name, ramp, ramp_shift=0.0, opts=None, emi
         "_Rim": float(o.get("rim", 0.32)), "_Spec": float(o.get("spec", 0.55)),
         "_Cells": 0.0 if emissive else float(o.get("cells", 1.0)), "_CellSize": float(o.get("cellSize", 0.45)),
         "_Grime": float(o.get("grime", 0.0)), "_Emissive": emissive, "_Opacity": alpha, "_HasShade": 1.0, "_SoftEdge": float(o.get("softEdge", 0.0)),
-        "_ReceiveShadowsF": 0.0 if o.get("noShadow") else 1.0, "_Cull": 2.0,
+        "_ReceiveShadowsF": 0.0 if o.get("noShadow") else 1.0, "_Cull": float(o.get("cull", 2.0)),
         "_SrcBlend": 5.0 if alpha < 1 else 1.0, "_DstBlend": 10.0 if alpha < 1 else 0.0, "_ZWrite": 0.0 if alpha < 1 else 1.0,
     }
     gy = o.get("grimeY", [-0.35, 0.85])

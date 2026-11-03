@@ -2,6 +2,9 @@
 // Menu: Conductor Chaos > Art > Prop Painter.
 //   - LMB slepen in de Scene view = schilderen, Shift + LMB = gummen (alleen geschilderde objecten), Alt = camera.
 //   - [ en ] = kwast kleiner/groter.
+//   - "Los plaatsen": elke klik zet precies één object onder de muis (geen strooien).
+//   - Rotsen zakken altijd extra de grond in (percentage van hun hoogte), zodat ze er niet bovenop liggen.
+//   - Colliders staan standaard aan (behalve bloemen/gras en de achtergrond); nooit op iets met een Rigidbody.
 // Geschilderde objecten komen onder "PaintedProps/<categorie>" (prefab-instanties, dus aanpassingen aan het model
 // komen overal door). Alles gaat via Undo. Editor-only: statisch decor, geen gameplay/netwerkstatus.
 using System;
@@ -38,7 +41,9 @@ namespace ConductorChaos.EditorTools
         [SerializeField] float sink = 0.05f;
         [SerializeField] bool gridSnap;
         [SerializeField] float gridSize = 2f;
-        [SerializeField] bool addColliders;
+        [SerializeField] bool addColliders = true;
+        [SerializeField] bool singleMode;                     // één object per klik, precies onder de muis
+        [SerializeField] float rockSink = 0.22f;              // rotsen: extra inzakken als fractie van hun hoogte
         [SerializeField] bool paintOnPainted = true;          // ook óp geschilderde objecten (met collider) schilderen
         [SerializeField] LayerMask surfaceMask = ~0;
         [SerializeField] string rootName = "PaintedProps";
@@ -65,6 +70,8 @@ namespace ConductorChaos.EditorTools
             var on = GUILayout.Toggle(painting, painting ? "■  Schilderen AAN  (klik om te stoppen)" : "▶  Schilderen starten", "Button", GUILayout.Height(30));
             if (on != painting) { painting = on; SceneView.RepaintAll(); }
             EditorGUILayout.HelpBox("Scene view: LMB slepen = schilderen · Shift+LMB = gummen · Alt = camera · [ ] = kwastgrootte", MessageType.None);
+            singleMode = EditorGUILayout.ToggleLeft(new GUIContent("Los plaatsen (1 object per klik, onder de muis)",
+                "Geen strooien: elke klik zet precies één object. Zet in het palet alleen het model aan dat je wilt."), singleMode);
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Presets", EditorStyles.boldLabel);
@@ -100,6 +107,7 @@ namespace ConductorChaos.EditorTools
             yawSnap = EditorGUILayout.Slider(new GUIContent("Draaistap (°)", "0 = vrij draaien; 90 = alleen 0/90/180/270 (handig voor kliffen)"), yawSnap, 0f, 180f);
             alignToNormal = EditorGUILayout.Slider(new GUIContent("Volg ondergrond", "0 = rechtop (bomen), 1 = helemaal schuin mee (rotsen)"), alignToNormal, 0f, 1f);
             sink = EditorGUILayout.Slider(new GUIContent("Inzakken (m)", "zet objecten iets in de grond zodat er geen kier is"), sink, 0f, 1f);
+            rockSink = EditorGUILayout.Slider(new GUIContent("Rotsen extra in de grond (× hoogte)", "rotsen zakken dit deel van hun hoogte extra weg"), rockSink, 0f, 0.6f);
             using (new EditorGUILayout.HorizontalScope())
             {
                 gridSnap = EditorGUILayout.ToggleLeft("Op raster", gridSnap, GUILayout.Width(90));
@@ -109,7 +117,9 @@ namespace ConductorChaos.EditorTools
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Ondergrond", EditorStyles.boldLabel);
             surfaceMask = LayerMaskField("Lagen", surfaceMask);
-            addColliders = EditorGUILayout.ToggleLeft(new GUIContent("Collider toevoegen aan geschilderde objecten", "dan kun je er later bomen óp schilderen (bv. op kliffen)"), addColliders);
+            addColliders = EditorGUILayout.ToggleLeft(new GUIContent("Collider toevoegen aan geschilderde objecten", "dan kun je er later bomen óp schilderen (bv. op kliffen) en lopen spelers er niet doorheen"), addColliders);
+            if (GUILayout.Button(new GUIContent("Colliders op alle bestaande geschilderde objecten", "voor objecten die zonder collider zijn geschilderd (bloemen/gras uitgezonderd)")))
+                AddCollidersToExisting();
             paintOnPainted = EditorGUILayout.ToggleLeft("Op geschilderde objecten schilderen", paintOnPainted);
             rootName = EditorGUILayout.TextField("Root-object", rootName);
 
@@ -213,11 +223,11 @@ namespace ConductorChaos.EditorTools
                 case "Trees":
                     Add("Trees", "Tree_Pine"); Add("Trees", "Bush", 0.6f);
                     entries.RemoveAll(e => e.prefab.name.Contains("Background"));
-                    Set(radius: 6, per: 3, dist: 1.8f, scale: new Vector2(0.8f, 1.25f), height: new Vector2(0.9f, 1.2f), yaw: 0, align: 0f, sink: 0.08f, colliders: false);
+                    Set(radius: 6, per: 3, dist: 1.8f, scale: new Vector2(0.8f, 1.25f), height: new Vector2(0.9f, 1.2f), yaw: 0, align: 0f, sink: 0.08f, colliders: true);
                     break;
                 case "Rocks":
-                    Add("Rocks"); Add("Trees", "Bush", 0.5f);
-                    Set(radius: 4, per: 3, dist: 1.0f, scale: new Vector2(0.6f, 1.5f), height: new Vector2(0.8f, 1.2f), yaw: 0, align: 0.6f, sink: 0.12f, colliders: false);
+                    Add("Rocks");                                   // alleen rotsen (struiken zitten in 'Bos + rotsen')
+                    Set(radius: 4, per: 3, dist: 1.0f, scale: new Vector2(0.6f, 1.5f), height: new Vector2(0.8f, 1.2f), yaw: 0, align: 0.6f, sink: 0.05f, colliders: true);
                     break;
                 case "Cliffs":
                     Add("Cliffs");
@@ -227,7 +237,10 @@ namespace ConductorChaos.EditorTools
                     break;
                 case "Water":
                     Add("Water");
-                    Set(radius: 1, per: 1, dist: 4f, scale: new Vector2(0.9f, 1.1f), height: new Vector2(1f, 1f), yaw: 0, align: 0f, sink: 0f, colliders: false);
+                    // zelfde inzakken als de kliffen en geen schaalvariatie: dan valt de stroom precies op de kliftop
+                    // (Waterfall_Small = 2,4 m: Cliff_Pillar_Small; Medium = 3,0 m: Cliff_Module_B; Large = 4,6 m: Cliff_Pillar_Tall)
+                    Set(radius: 1, per: 1, dist: 4f, scale: new Vector2(1f, 1f), height: new Vector2(1f, 1f), yaw: 0, align: 0f, sink: 0.2f, colliders: false);
+                    singleMode = true;
                     break;
                 case "Background":
                     Add("Mountains"); Add("Trees", "Background", 1.5f);
@@ -235,7 +248,7 @@ namespace ConductorChaos.EditorTools
                     break;
                 case "Path":
                     Add("Paths", "Stone_Single");
-                    Set(radius: 0.9f, per: 2, dist: 0.55f, scale: new Vector2(0.75f, 1.25f), height: new Vector2(0.8f, 1.3f), yaw: 0, align: 1f, sink: 0.03f, colliders: false);
+                    Set(radius: 0.9f, per: 2, dist: 0.55f, scale: new Vector2(0.75f, 1.25f), height: new Vector2(0.8f, 1.3f), yaw: 0, align: 1f, sink: 0.03f, colliders: true);
                     spacing = 0.5f;
                     break;
                 case "Plants":
@@ -245,7 +258,7 @@ namespace ConductorChaos.EditorTools
                 case "Mixed":
                     Add("Trees", "Tree_Pine", 1.2f); Add("Trees", "Bush", 0.7f); Add("Rocks", null, 0.5f); Add("Plants", "Grass_Tuft", 0.6f);
                     entries.RemoveAll(e => e.prefab.name.Contains("Background"));
-                    Set(radius: 8, per: 4, dist: 1.6f, scale: new Vector2(0.75f, 1.3f), height: new Vector2(0.9f, 1.2f), yaw: 0, align: 0.2f, sink: 0.08f, colliders: false);
+                    Set(radius: 8, per: 4, dist: 1.6f, scale: new Vector2(0.75f, 1.3f), height: new Vector2(0.9f, 1.2f), yaw: 0, align: 0.2f, sink: 0.08f, colliders: true);
                     break;
             }
             Repaint();
@@ -253,6 +266,7 @@ namespace ConductorChaos.EditorTools
 
         void Set(float radius, int per, float dist, Vector2 scale, Vector2 height, float yaw, float align, float sink, bool colliders)
         {
+            singleMode = false;
             this.radius = radius; perDab = per; minDistance = dist; scaleRange = scale; heightRange = height;
             yawSnap = yaw; alignToNormal = align; this.sink = sink; addColliders = colliders;
         }
@@ -275,14 +289,18 @@ namespace ConductorChaos.EditorTools
             if (!SurfaceUnderMouse(ev.mousePosition, null, out var hit)) return;
             bool erase = ev.shift;
             Handles.color = erase ? new Color(1f, 0.35f, 0.3f, 0.9f) : new Color(1f, 0.85f, 0.3f, 0.9f);
-            Handles.DrawWireDisc(hit.point, hit.normal, radius, 2f);
+            Handles.DrawWireDisc(hit.point, hit.normal, singleMode && !erase ? 0.4f : radius, 2f);
             Handles.color = erase ? new Color(1f, 0.35f, 0.3f, 0.08f) : new Color(1f, 0.85f, 0.3f, 0.06f);
-            Handles.DrawSolidDisc(hit.point, hit.normal, radius);
+            Handles.DrawSolidDisc(hit.point, hit.normal, singleMode && !erase ? 0.4f : radius);
 
             if ((ev.type == EventType.MouseDown || ev.type == EventType.MouseDrag) && ev.button == 0)
             {
                 if (ev.type == EventType.MouseDown) { Undo.IncrementCurrentGroup(); hasLastDab = false; }
-                if (!hasLastDab || Vector3.Distance(lastDab, hit.point) >= radius * spacing)
+                if (singleMode && !erase)
+                {
+                    if (ev.type == EventType.MouseDown) PlaceOne(hit, null);
+                }
+                else if (!hasLastDab || Vector3.Distance(lastDab, hit.point) >= radius * spacing)
                 {
                     if (erase) Erase(hit.point); else Dab(hit.point);
                     lastDab = hit.point;
@@ -402,29 +420,69 @@ namespace ConductorChaos.EditorTools
                 var flat = new Vector2(hit.point.x, hit.point.z);
                 if (minDistance > 0f && existing.Any(q => (new Vector2(q.x, q.z) - flat).sqrMagnitude < minDistance * minDistance)) continue;
 
-                var entry = PickEntry();
-                if (entry == null) break;
-                var go = (GameObject)PrefabUtility.InstantiatePrefab(entry.prefab);
-                Undo.RegisterCreatedObjectUndo(go, "Prop Painter");
-                go.transform.SetParent(Container(CategoryOf(entry.prefab)), true);
-
-                float s = Rand(scaleRange.x, scaleRange.y);
-                float h = Rand(heightRange.x, heightRange.y);
-                float yaw = Rand(0f, 360f);
-                if (yawSnap > 0.5f) yaw = Mathf.Round(yaw / yawSnap) * yawSnap;
-                var up = Vector3.Slerp(Vector3.up, hit.normal, alignToNormal);
-                go.transform.rotation = Quaternion.FromToRotation(Vector3.up, up) * Quaternion.Euler(0f, yaw, 0f);
-                go.transform.localScale = new Vector3(s, s * h, s);
-                go.transform.position = hit.point - up * sink * s;
-
-                if (addColliders)
-                    foreach (var mf in go.GetComponentsInChildren<MeshFilter>())
-                        if (!mf.GetComponent<Collider>()) Undo.AddComponent<MeshCollider>(mf.gameObject).sharedMesh = mf.sharedMesh;
-
+                var go = PlaceOne(hit, created);
+                if (go == null) break;
                 created.Add(go);
                 existing.Add(go.transform.position);
                 placed++;
             }
+        }
+
+        GameObject PlaceOne(RaycastHit hit, HashSet<GameObject> created)
+        {
+            var entry = PickEntry();
+            if (entry == null) { ShowNotification(new GUIContent("Palet is leeg")); return null; }
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(entry.prefab);
+            Undo.RegisterCreatedObjectUndo(go, "Prop Painter");
+            string category = CategoryOf(entry.prefab);
+            go.transform.SetParent(Container(category), true);
+
+            float s = Rand(scaleRange.x, scaleRange.y);
+            float h = Rand(heightRange.x, heightRange.y);
+            float yaw = Rand(0f, 360f);
+            if (yawSnap > 0.5f) yaw = Mathf.Round(yaw / yawSnap) * yawSnap;
+            var up = Vector3.Slerp(Vector3.up, hit.normal, alignToNormal);
+            go.transform.rotation = Quaternion.FromToRotation(Vector3.up, up) * Quaternion.Euler(0f, yaw, 0f);
+            go.transform.localScale = new Vector3(s, s * h, s);
+            float down = sink * s;
+            if (category == "Rocks" && rockSink > 0f)                   // rotsen liggen ín de grond, niet erop
+            {
+                go.transform.position = hit.point;
+                var rs = go.GetComponentsInChildren<Renderer>();
+                if (rs.Length > 0)
+                {
+                    var b = rs[0].bounds;
+                    foreach (var r in rs) b.Encapsulate(r.bounds);
+                    down += b.size.y * rockSink;
+                }
+            }
+            go.transform.position = hit.point - up * down;
+
+            if (addColliders && category != "Plants") AddColliders(go);
+            return go;
+        }
+
+        static void AddColliders(GameObject go)
+        {
+            if (go.GetComponentInParent<Rigidbody>()) return;            // nooit een holle mesh collider op een Rigidbody
+            foreach (var mf in go.GetComponentsInChildren<MeshFilter>())
+                if (mf.sharedMesh && !mf.GetComponent<Collider>() && !mf.GetComponentInParent<Rigidbody>())
+                    Undo.AddComponent<MeshCollider>(mf.gameObject).sharedMesh = mf.sharedMesh;
+        }
+
+        void AddCollidersToExisting()
+        {
+            var root = GameObject.Find(rootName);
+            if (!root) return;
+            Undo.IncrementCurrentGroup();
+            int n = 0;
+            foreach (Transform cat in root.transform)
+            {
+                if (cat.name == "Plants") continue;
+                foreach (Transform t in cat) { int before = t.GetComponentsInChildren<Collider>().Length; AddColliders(t.gameObject); if (t.GetComponentsInChildren<Collider>().Length > before) n++; }
+            }
+            Undo.SetCurrentGroupName("Prop Painter: colliders");
+            ShowNotification(new GUIContent($"{n} objecten kregen een collider"));
         }
 
         void Erase(Vector3 center)

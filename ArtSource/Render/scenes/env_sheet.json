@@ -512,14 +512,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 2.37,
-   "target": "0.01,0.07,-0.02",
+   "dist": 2.11,
+   "target": "0.00,0.02,-0.01",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 1.27,
-   "shadowSize": 0.81,
-   "far": 59.5,
+   "groundR": 1.13,
+   "shadowSize": 0.72,
+   "far": 58.4,
    "items": [
     {
      "url": "../Exports/Environment/Stone_Single_01.glb"
@@ -536,14 +536,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 2.58,
-   "target": "0.02,0.08,0.00",
+   "dist": 3.16,
+   "target": "0.01,0.02,-0.00",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 1.38,
-   "shadowSize": 0.88,
-   "far": 60.3,
+   "groundR": 1.69,
+   "shadowSize": 1.08,
+   "far": 62.6,
    "items": [
     {
      "url": "../Exports/Environment/Stone_Single_02.glb"
@@ -560,14 +560,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 4.22,
-   "target": "0.04,0.10,-0.03",
+   "dist": 3.65,
+   "target": "-0.03,0.02,0.01",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 2.26,
-   "shadowSize": 1.45,
-   "far": 66.9,
+   "groundR": 1.95,
+   "shadowSize": 1.25,
+   "far": 64.6,
    "items": [
     {
      "url": "../Exports/Environment/Stone_Single_03.glb"
@@ -584,14 +584,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 2.84,
-   "target": "-0.01,0.08,-0.02",
+   "dist": 2.73,
+   "target": "-0.05,0.02,-0.03",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 1.52,
-   "shadowSize": 0.97,
-   "far": 61.4,
+   "groundR": 1.47,
+   "shadowSize": 0.94,
+   "far": 60.9,
    "items": [
     {
      "url": "../Exports/Environment/Stone_Single_04.glb"
@@ -608,8 +608,8 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 1.6,
-   "target": "-0.00,0.08,-0.00",
+   "dist": 1.61,
+   "target": "0.02,0.02,-0.03",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
@@ -632,14 +632,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 3.17,
-   "target": "-0.04,0.09,-0.00",
+   "dist": 3.29,
+   "target": "-0.02,0.02,-0.02",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 1.7,
-   "shadowSize": 1.09,
-   "far": 62.7,
+   "groundR": 1.76,
+   "shadowSize": 1.13,
+   "far": 63.2,
    "items": [
     {
      "url": "../Exports/Environment/Stone_Single_06.glb"
@@ -656,14 +656,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 5.48,
-   "target": "0.00,0.08,0.00",
+   "dist": 5.46,
+   "target": "0.00,0.02,0.00",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 2.94,
-   "shadowSize": 1.88,
-   "far": 71.9,
+   "groundR": 2.92,
+   "shadowSize": 1.87,
+   "far": 71.8,
    "items": [
     {
      "url": "../Exports/Environment/Path_Stones_Straight.glb"
@@ -680,14 +680,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 8.66,
-   "target": "0.76,0.08,-0.73",
+   "dist": 8.55,
+   "target": "0.74,0.02,-0.73",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 4.64,
-   "shadowSize": 2.97,
-   "far": 84.6,
+   "groundR": 4.58,
+   "shadowSize": 2.93,
+   "far": 84.2,
    "items": [
     {
      "url": "../Exports/Environment/Path_Stones_Curve.glb"
@@ -704,14 +704,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 6.72,
-   "target": "0.02,0.08,-0.02",
+   "dist": 6.5,
+   "target": "-0.01,0.02,-0.04",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 3.6,
-   "shadowSize": 2.3,
-   "far": 76.9,
+   "groundR": 3.48,
+   "shadowSize": 2.23,
+   "far": 76.0,
    "items": [
     {
      "url": "../Exports/Environment/Path_Stones_Patch.glb"
@@ -824,14 +824,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 19.9,
-   "target": "-0.06,2.97,0.52",
+   "dist": 17.66,
+   "target": "-0.06,2.27,0.49",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 10.66,
-   "shadowSize": 6.82,
-   "far": 129.6,
+   "groundR": 9.47,
+   "shadowSize": 6.06,
+   "far": 120.7,
    "items": [
     {
      "url": "../Exports/Environment/Waterfall_Large.glb"
@@ -848,14 +848,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 14.6,
-   "target": "-0.04,1.97,0.30",
+   "dist": 13.09,
+   "target": "-0.04,1.47,0.26",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 7.82,
-   "shadowSize": 5.01,
-   "far": 108.4,
+   "groundR": 7.02,
+   "shadowSize": 4.49,
+   "far": 102.4,
    "items": [
     {
      "url": "../Exports/Environment/Waterfall_Medium.glb"
@@ -1889,7 +1889,7 @@
      ],
      "scale": [
       1.0,
-      1.6,
+      1.3636,
       1.0
      ]
     },
@@ -1958,7 +1958,7 @@
      "url": "../Exports/Environment/Waterfall_Large.glb",
      "pos": [
       3.0,
-      -1.4,
+      0,
       -0.95
      ]
     },

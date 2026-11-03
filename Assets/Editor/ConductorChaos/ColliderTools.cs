@@ -6,6 +6,8 @@
 //   - de mesh is een Unity-primitief (Cube/Sphere/Capsule) -> vervangen door Box/Sphere/CapsuleCollider;
 //   - anders                                               -> Convex aan.
 // Statische objecten (zonder Rigidbody, of met een kinematische) blijven ongemoeid. Alles met Undo.
+// Daarnaast gebeurt dit automatisch vlak voordat je op Play drukt (uit te zetten via
+// Conductor Chaos > Tools > Auto-fix Mesh Colliders On Play), zodat de foutmelding niet meer terugkomt.
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -15,20 +17,44 @@ using UnityEngine.SceneManagement;
 
 namespace ConductorChaos.EditorTools
 {
+    [InitializeOnLoad]
     public static class ColliderTools
     {
+        const string AutoKey = "ConductorChaos.ColliderTools.AutoFixOnPlay";
+        const string AutoMenu = "Conductor Chaos/Tools/Auto-fix Mesh Colliders On Play";
+
+        static ColliderTools()
+        {
+            EditorApplication.playModeStateChanged += state =>
+            {
+                if (state == PlayModeStateChange.ExitingEditMode && EditorPrefs.GetBool(AutoKey, true)) Fix(false);
+            };
+        }
+
+        [MenuItem(AutoMenu)]
+        static void ToggleAuto() => EditorPrefs.SetBool(AutoKey, !EditorPrefs.GetBool(AutoKey, true));
+
+        [MenuItem(AutoMenu, true)]
+        static bool ToggleAutoValidate()
+        {
+            Menu.SetChecked(AutoMenu, EditorPrefs.GetBool(AutoKey, true));
+            return true;
+        }
+
         [MenuItem("Conductor Chaos/Tools/Fix Mesh Colliders On Rigidbodies")]
-        public static void FixMeshCollidersOnRigidbodies()
+        public static void FixMeshCollidersOnRigidbodies() => Fix(true);
+
+        static void Fix(bool ask)
         {
             var bad = FindProblemColliders();
             if (bad.Count == 0)
             {
-                Debug.Log("[Colliders] Geen concave MeshColliders onder dynamische Rigidbodies gevonden.");
+                if (ask) Debug.Log("[Colliders] Geen concave MeshColliders onder dynamische Rigidbodies gevonden.");
                 return;
             }
             var names = string.Join("\n", bad.Take(15).Select(c => "• " + Path(c.transform)));
             if (bad.Count > 15) names += $"\n… en nog {bad.Count - 15}";
-            if (!EditorUtility.DisplayDialog("Mesh colliders repareren",
+            if (ask && !EditorUtility.DisplayDialog("Mesh colliders repareren",
                     $"{bad.Count} concave MeshCollider(s) onder een dynamische Rigidbody:\n\n{names}\n\n" +
                     "Overbodige worden verwijderd, primitieven worden Box/Sphere/Capsule, de rest wordt convex.",
                     "Repareren", "Annuleren"))

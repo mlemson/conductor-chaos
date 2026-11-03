@@ -55,6 +55,9 @@ MATERIALS = {
     "M_Env_Water": (R["water"][2], R["water"], 0.3, 0.02, {"cells": 0.0, "flat": 0.15, "rim": 0.20, "edge": 0.0}),
     "M_Env_WaterLight": (R["water"][4], R["water"], 0.3, 0.38, {"cells": 0.0, "flat": 0.55, "rim": 0.10, "edge": 0.0}),
     "M_Env_WaterDeep": (R["water"][0], R["water"], 0.3, -0.10, {"cells": 0.0, "flat": 0.15, "rim": 0.15, "edge": 0.0}),
+    # wateroppervlak (StylizedWater): licht doorzichtig, van onder ook zichtbaar (cull 0), effen facetten
+    "M_Env_WaterSurface": (R["water"][2], R["water"], 0.3, 0.05, {"cells": 0.6, "cellSize": 1.4, "flat": 0.25, "rim": 0.35,
+                                                                   "edge": 0.0, "opacity": 0.82, "cull": 0.0, "noShadow": True}),
     "M_Env_Mist": (R["cloud_snow"][4], R["cloud_snow"], 0.0, 0.30, {"cells": 0.0, "flat": 0.7, "rim": 0.0, "opacity": 0.45, "softEdge": 1.0,
                                                                        "noShadow": True, "edge": 0.0}),
     "M_Env_Foam": (R["cloud_snow"][4], R["cloud_snow"], 0.0, 0.25, {"cells": 0.0, "flat": 0.45, "rim": 0.20,
@@ -627,8 +630,10 @@ def build_all():
     A["Plants/Grass_Tuft_02"] = (grass_tuft(rng, 10, 0.45), 3000, 0.06)
     A["Plants/Flower_Patch_01"] = (flower_patch(rng), 2500, 0.08)
     rng = np.random.default_rng([2026, 3])          # eigen reeks per sectie: wijzigingen lopen niet door
-    A["Water/Waterfall_Large"] = (waterfall(6.0, 2.4, rng), 200, 0.30)
-    A["Water/Waterfall_Medium"] = (waterfall(4.0, 1.6, rng), 250, 0.30)
+    # hoogtes gelijk aan de kliffen, zodat de stroom precies op de kliftop ligt (onder de grasrand):
+    # Large = Cliff_Pillar_Tall (4,6 m), Medium = Cliff_Module_B (3,0 m), Small = Cliff_Pillar_Small (2,4 m)
+    A["Water/Waterfall_Large"] = (waterfall(4.6, 2.4, rng), 200, 0.30)
+    A["Water/Waterfall_Medium"] = (waterfall(3.0, 1.6, rng), 250, 0.30)
     A["Water/Waterfall_Small"] = (waterfall(2.4, 0.9, rng), 300, 0.25)
     rng = np.random.default_rng([2026, 4])          # eigen reeks per sectie: wijzigingen lopen niet door
     A["Mountains/Mountain_Back_01"] = (mountain(46, 30, rng), 0.6, 4.0)
