@@ -6,7 +6,7 @@ Laatst opgesteld: 2026-11-02. Dit document is een momentopname; verifieer de hui
 
 - Projectroot: de map met `Assets`, `Packages` en `ProjectSettings`.
 - `ProjectSettings/ProjectVersion.txt` specificeert Unity **6000.5.7f1**. De bestanden zijn afgeleid van de lokaal aanwezige officiële 3D Cross Platform-template `17.0.14`; versiecompatibiliteit is nog niet in de editor getest.
-- `Packages/manifest.json` noemt URP 17.0.1, Input System 1.12.0 en Unity Test Framework 1.4.2. Dit zijn templateafhankelijkheden; oplossen/installatie en runtimegedrag zijn **niet geverifieerd**. Een lockfile zal door Unity worden gegenereerd; controleer en commit die.
+- `Packages/manifest.json` bevat URP, Input System en Test Framework. Zie `Packages/packages-lock.json` voor de door Unity opgeloste versies. Runtimegedrag is niet geverifieerd.
 - URP-configuratie staat in `Assets/Settings` en ProjectSettings. Geen scènes in `EditorBuildSettings.asset`; geen gamecode of prefabs.
 - Art proof (#9): `Assets/Art/Models/...` bevat een conducteur-basismodel en een wagonhoek-blockout (gegenereerde ASCII-FBX's), met URP Lit-materialen in `Assets/Art/Materials/...`. Deze bestanden komen uit `ArtSource/` en zijn **nog niet in de Unity Editor geïmporteerd** (testplan A01).
 - Geen Netcode for GameObjects, Transport, Relay of Lobby vermeld in manifest: multiplayer is **ontworpen, niet geïmplementeerd**. Geen assemblies of tests aangemaakt.
@@ -19,3 +19,11 @@ Editor open/import/compile; packageversies en compatibiliteit; URP-renderer en i
 ## Bronnen
 
 `ProjectSettings/ProjectVersion.txt`, `ProjectSettings/EditorBuildSettings.asset`, `ProjectSettings/GraphicsSettings.asset`, `Packages/manifest.json`, `Assets/Settings/`, [architectuur](../ARCHITECTURE.md). Laatst geanalyseerde commit: nog niet bepaald bij opstellen.
+
+## Validatie 2026-11-03 — werk in uitvoering (Refs #2)
+
+- Unity 6000.5.7f1 op Windows: de oude templateversies van Input System, AI Navigation, Timeline, Version Control en Visual Scripting veroorzaakten compileerfouten. De manifestversies zijn aangepast en de lockfile is afkomstig van de daaropvolgende Unity-resolutie.
+- Een afzonderlijke projectkopie op `C:/Users/mauri/Documents/Codex/ConductorChaos` heeft de eerste assetdatabase-import voltooid. De Editor opende zonder Safe Mode; de Console toonde op dat moment nul fouten en nul waarschuwingen, terwijl achtergrondtaken nog liepen. De kopie bevat ook de afzonderlijke conducteur-draft uit PR #21: dit is geen validatie van de exacte Git-hoofdtak.
+- Het langere pad onder `Documents/Codex/2026-11-02/...` gaf importfouten voor URP-bestanden; een kort projectpad voorkwam de geobserveerde padfouten. Controleer opnieuw bij een verse Git-checkout.
+- Een echte Git-checkout van deze branch staat apart op `C:/Users/mauri/Documents/Codex/ConductorChaosGit`; Unity-import van die checkout en beoordeling van de visuele look zijn nog niet uitgevoerd. De projectkopie is niet aan Git gekoppeld.
+- Geen multiplayer, Play Mode, player build of host/client-test uitgevoerd. Openstaande Unity-importtaken en alle meldingen opnieuw controleren voordat P0-01 als afgerond wordt aangemerkt.
