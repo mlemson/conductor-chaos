@@ -60,6 +60,12 @@ namespace ConductorChaos.UI
             ChaosUI.Action(left, "Quit", "QUIT", V(0.08f, 0.035f), V(0.92f, 0.14f),
                 ChaosUI.TrainRed, ChaosUI.Paper, QuitGame, 20);
 
+            // Flat pictograms: no emoji, stock 3D icons or glow.
+            ChaosUIIcon.Add(left, "Play icon", ChaosUIIcon.Symbol.Play, V(0.105f, 0.555f), V(0.175f, 0.615f), ChaosUI.Ink);
+            ChaosUIIcon.Add(left, "Lobby icon", ChaosUIIcon.Symbol.Person, V(0.105f, 0.43f), V(0.175f, 0.49f), ChaosUI.Ink);
+            ChaosUIIcon.Add(left, "Settings icon", ChaosUIIcon.Symbol.Settings, V(0.105f, 0.305f), V(0.175f, 0.365f), ChaosUI.Ink);
+            ChaosUIIcon.Add(left, "HUD icon", ChaosUIIcon.Symbol.Wrench, V(0.105f, 0.18f), V(0.175f, 0.24f), ChaosUI.Ink);
+
             info = ChaosUI.Label(root, "Feedback", "Join/Relay komt later. Probeer de lokale physics-test.",
                 16, ChaosUI.Muted, TextAnchor.MiddleLeft, FontStyle.Normal, V(0.35f, 0.035f), V(0.97f, 0.105f));
             BuildLobby(root);
@@ -151,6 +157,8 @@ namespace ConductorChaos.UI
                 V(0.96f, 0.76f), ChaosUI.TrainRed);
             ChaosUI.Label(warning, "Warning title", "TRAIN NEEDS ATTENTION", 19,
                 ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(0.04f, 0.46f), V(0.96f, 0.95f));
+            ChaosUIIcon.Add(warning, "Warning symbol", ChaosUIIcon.Symbol.Warning,
+                V(0.055f, 0.51f), V(0.15f, 0.83f), ChaosUI.Paper);
             ChaosUI.Label(warning, "Warning explanation", "Show this only when a real event exists.",
                 15, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Normal, V(0.07f, 0.08f), V(0.93f, 0.53f));
             RectTransform prompt = ChaosUI.Panel(hudExample, "Prompt", V(0.23f, 0.27f),
