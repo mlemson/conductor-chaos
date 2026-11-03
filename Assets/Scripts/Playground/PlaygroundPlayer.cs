@@ -11,9 +11,11 @@ namespace ConductorChaos.Playground
         [SerializeField] private Transform leftArm;
         [SerializeField] private Transform rightArm;
         [SerializeField] private float speed = 3.5f;
+        [SerializeField] private float sprintSpeed = 4.7f;
         [SerializeField] private float acceleration = 18f;
         [SerializeField] private float reach = 1.8f;
         [SerializeField] private float jumpSpeed = 5f;
+        [SerializeField] private float balanceLean = 7f;
 
         private readonly NetworkVariable<Quaternion> leftPose = new(Quaternion.identity);
         private readonly NetworkVariable<Quaternion> rightPose = new(Quaternion.identity);
@@ -30,10 +32,11 @@ namespace ConductorChaos.Playground
         private Vector2 requestedMove;
         private float requestedYaw;
         private float requestedPitch;
-        private bool leftHeld, rightHeld, jumpQueued;
+        private bool leftHeld, rightHeld, jumpQueued, sprinting;
         private bool lastLeft, lastRight;
         private float nextInput, nextPose, lastJump;
         private float lastServerInput;
+        private Vector3 smoothedLean;
         private float yaw, pitch = 18f;
         private Camera playerCamera;
         private readonly RaycastHit[] hits = new RaycastHit[32];
@@ -105,7 +108,7 @@ namespace ConductorChaos.Playground
             Mouse mouse = Mouse.current;
             if (keyboard == null || mouse == null)
             {
-                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false);
+                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false);
                 lastLeft = lastRight = false;
                 return;
             }
@@ -134,7 +137,7 @@ namespace ConductorChaos.Playground
             if (active && keyboard.spaceKey.wasPressedThisFrame) JumpServerRpc();
             if (Time.unscaledTime >= nextInput || l != lastLeft || r != lastRight)
             {
-                SendInputServerRpc(Vector2.ClampMagnitude(move, 1f), yaw, pitch, l, r);
+                SendInputServerRpc(Vector2.ClampMagnitude(move, 1f), yaw, pitch, l, r, active && keyboard.leftShiftKey.isPressed);
                 nextInput = Time.unscaledTime + 0.05f;
                 lastLeft = l;
                 lastRight = r;
@@ -142,7 +145,7 @@ namespace ConductorChaos.Playground
         }
 
         [ServerRpc]
-        private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r)
+        private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r, bool sprint)
         {
             if (!float.IsFinite(move.x) || !float.IsFinite(move.y) || !float.IsFinite(direction) || !float.IsFinite(lookPitch)) return;
             requestedMove = Vector2.ClampMagnitude(move, 1f);
@@ -151,6 +154,7 @@ namespace ConductorChaos.Playground
             lastServerInput = Time.unscaledTime;
             leftHeld = l;
             rightHeld = r;
+            sprinting = sprint;
             if (!l) left?.Release();
             if (!r) right?.Release();
         }
@@ -159,7 +163,7 @@ namespace ConductorChaos.Playground
         {
             if (focused || !IsSpawned || !IsOwner) return;
             lastLeft = lastRight = false;
-            SendInputServerRpc(Vector2.zero, yaw, pitch, false, false);
+            SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false);
         }
 
         [ServerRpc]
@@ -177,11 +181,11 @@ namespace ConductorChaos.Playground
             float legAngle = 0f;
             for (int i = 0; i < 25; i++)
             {
-                SendInputServerRpc(Vector2.up, 0f, 0f, false, false);
+                SendInputServerRpc(Vector2.up, 0f, 0f, false, false, false);
                 yield return new WaitForSeconds(0.05f);
                 if (testLeg) legAngle = Mathf.Max(legAngle, Quaternion.Angle(initialLeg, testLeg.localRotation));
             }
-            SendInputServerRpc(Vector2.zero, 0f, 0f, false, false);
+            SendInputServerRpc(Vector2.zero, 0f, 0f, false, false, false);
             yield return new WaitForSeconds(0.3f);
             float moved = Vector3.Distance(start, transform.position);
             float baseY = transform.position.y;
@@ -203,11 +207,12 @@ namespace ConductorChaos.Playground
             {
                 requestedMove = Vector2.zero;
                 leftHeld = rightHeld = false;
+                sprinting = false;
                 left.Release();
                 right.Release();
             }
             Quaternion facing = Quaternion.Euler(0f, requestedYaw, 0f);
-            Vector3 target = facing * new Vector3(requestedMove.x, 0f, requestedMove.y) * speed;
+            Vector3 target = facing * new Vector3(requestedMove.x, 0f, requestedMove.y) * (sprinting ? sprintSpeed : speed);
             Vector3 current = body.linearVelocity;
             bool grounded = IsGrounded();
             float movementAcceleration = grounded ? acceleration : acceleration * 0.35f;
@@ -215,7 +220,12 @@ namespace ConductorChaos.Playground
             body.AddForce(change, ForceMode.VelocityChange);
 
             // A damped upright motor yields to impacts instead of freezing body rotation.
-            Quaternion error = facing * Quaternion.Inverse(body.rotation);
+            Vector3 localChange = Quaternion.Inverse(facing) * (change / Mathf.Max(Time.fixedDeltaTime, 0.001f));
+            Vector3 desiredLean = new Vector3(-localChange.z, 0f, localChange.x);
+            desiredLean = Vector3.ClampMagnitude(desiredLean, acceleration) / acceleration * balanceLean;
+            smoothedLean = Vector3.Lerp(smoothedLean, desiredLean, 5f * Time.fixedDeltaTime);
+            Quaternion targetBalance = facing * Quaternion.Euler(smoothedLean.x, 0f, smoothedLean.z);
+            Quaternion error = targetBalance * Quaternion.Inverse(body.rotation);
             error.ToAngleAxis(out float angle, out Vector3 axis);
             if (angle > 180f) angle -= 360f;
             if (float.IsFinite(axis.x) && axis.sqrMagnitude > 0.01f)
@@ -268,14 +278,15 @@ namespace ConductorChaos.Playground
                 legs?.ShowRemote(leftLegPose.Value, rightLegPose.Value);
             }
             if (!IsOwner || !playerCamera) return;
-            Quaternion orbit = Quaternion.Euler(pitch, yaw, 0f);
+            Quaternion look = Quaternion.Euler(pitch, yaw, 0f);
             Vector3 focus = transform.position + Vector3.up * 0.9f;
-            Vector3 direction = -(orbit * Vector3.forward);
+            Vector3 direction = -(look * Vector3.forward);
             float distance = 4f;
-            int count = Physics.SphereCastNonAlloc(focus, 0.16f, direction, hits, distance, ~0, QueryTriggerInteraction.Ignore);
+            const float radius = 0.16f;
+            int count = Physics.SphereCastNonAlloc(focus, radius, direction, hits, distance, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
-                if (!hits[i].collider.transform.IsChildOf(transform)) distance = Mathf.Min(distance, Mathf.Max(0.3f, hits[i].distance - 0.15f));
-            playerCamera.transform.SetPositionAndRotation(focus + direction * distance, orbit);
+                if (!hits[i].collider.transform.IsChildOf(transform)) distance = Mathf.Min(distance, Mathf.Max(0f, hits[i].distance - radius));
+            playerCamera.transform.SetPositionAndRotation(focus + direction * distance, look);
         }
 
         public override void OnNetworkDespawn()
@@ -295,7 +306,7 @@ namespace ConductorChaos.Playground
         private void OnGUI()
         {
             if (!IsSpawned || !IsOwner) return;
-            GUI.Label(new Rect(16, 16, 1000, 24), "WASD lopen | spatie springen | muis kijken | linker/rechter muisknop: hand grijpen | Esc cursor");
+            GUI.Label(new Rect(16, 16, 1200, 24), "WASD lopen | Shift rennen | spatie springen | muis kijken en armen richten | muisknoppen vasthouden: grijpen | Esc: cursor");
         }
 
         // Arm physics exists only on the server; observers receive the shoulder pose.
@@ -357,9 +368,9 @@ namespace ConductorChaos.Playground
                 Vector3 aimInParent = arm.parent.InverseTransformDirection(aim * Vector3.forward);
                 Vector3 restDirection = rest * Vector3.down;
                 aimInParent = (aimInParent + Vector3.right * Mathf.Sign(restDirection.x) * 0.55f).normalized;
-                Quaternion localTarget = held
-                    ? Quaternion.FromToRotation(restDirection, aimInParent) * rest
-                    : rest;
+                Quaternion aiming = Quaternion.FromToRotation(restDirection, aimInParent) * rest;
+                // Follow the look direction even when the hand is not gripping.
+                Quaternion localTarget = Quaternion.Slerp(rest, aiming, held ? 1f : 0.75f);
                 Quaternion desired = arm.parent.rotation * localTarget;
                 Quaternion error = desired * Quaternion.Inverse(rigid.rotation);
                 error.ToAngleAxis(out float angle, out Vector3 axis);
