@@ -170,16 +170,16 @@
     "Cliff_Module_A": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_A.fbx",
-      "tris": 312,
+      "tris": 344,
       "min": [
-        -1.191,
+        -1.231,
         -0.3,
-        -1.195
+        -1.235
       ],
       "max": [
-        1.181,
+        1.221,
         2.17,
-        1.188
+        1.228
       ],
       "materials": [
         "M_Env_Cliff",
@@ -189,16 +189,16 @@
     "Cliff_Module_B": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_B.fbx",
-      "tris": 512,
+      "tris": 564,
       "min": [
-        -2.178,
+        -2.218,
         -0.3,
-        -1.198
+        -1.238
       ],
       "max": [
-        2.205,
+        2.245,
         3.17,
-        1.2
+        1.24
       ],
       "materials": [
         "M_Env_Cliff",
@@ -208,16 +208,16 @@
     "Cliff_Module_C": {
       "category": "Cliffs",
       "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_C.fbx",
-      "tris": 416,
+      "tris": 464,
       "min": [
-        -1.191,
+        -1.228,
         -0.3,
-        -1.187
+        -1.227
       ],
       "max": [
-        1.154,
+        1.191,
         2.77,
-        1.198
+        1.238
       ],
       "materials": [
         "M_Env_Cliff",
@@ -242,19 +242,491 @@
         "M_Env_Grass"
       ]
     },
+    "Cliff_Pillar_Small": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Pillar_Small.fbx",
+      "tris": 220,
+      "min": [
+        -1.04,
+        -0.3,
+        -1.012
+      ],
+      "max": [
+        1.025,
+        2.964,
+        1.002
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Pillar_Tall": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Pillar_Tall.fbx",
+      "tris": 250,
+      "min": [
+        -1.294,
+        -0.3,
+        -1.288
+      ],
+      "max": [
+        1.323,
+        5.195,
+        1.288
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Ledge_Low": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Ledge_Low.fbx",
+      "tris": 322,
+      "min": [
+        -2.274,
+        -0.3,
+        -1.302
+      ],
+      "max": [
+        2.295,
+        1.552,
+        1.294
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Block_Wide": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Block_Wide.fbx",
+      "tris": 364,
+      "min": [
+        -2.284,
+        -0.3,
+        -1.304
+      ],
+      "max": [
+        2.314,
+        2.613,
+        1.287
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Cluster_Step": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Step.fbx",
+      "tris": 1312,
+      "min": [
+        -3.437,
+        -0.3,
+        -1.793
+      ],
+      "max": [
+        3.427,
+        4.733,
+        1.631
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Cluster_Corner": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Corner.fbx",
+      "tris": 1490,
+      "min": [
+        -2.458,
+        -0.3,
+        -2.405
+      ],
+      "max": [
+        2.429,
+        4.132,
+        2.434
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Cluster_Tall": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Tall.fbx",
+      "tris": 1652,
+      "min": [
+        -3.426,
+        -0.3,
+        -2.638
+      ],
+      "max": [
+        3.419,
+        7.031,
+        2.456
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Big_01": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Big_01.fbx",
+      "tris": 2670,
+      "min": [
+        -4.652,
+        -0.3,
+        -3.622
+      ],
+      "max": [
+        4.849,
+        10.004,
+        3.454
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Stone_Single_01": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_01.fbx",
+      "tris": 42,
+      "min": [
+        -0.314,
+        -0.04,
+        -0.335
+      ],
+      "max": [
+        0.315,
+        0.07,
+        0.306
+      ],
+      "materials": [
+        "M_Env_PathStone"
+      ]
+    },
+    "Stone_Single_02": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_02.fbx",
+      "tris": 42,
+      "min": [
+        -0.487,
+        -0.04,
+        -0.461
+      ],
+      "max": [
+        0.502,
+        0.07,
+        0.456
+      ],
+      "materials": [
+        "M_Env_PathStoneMid"
+      ]
+    },
+    "Stone_Single_03": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_03.fbx",
+      "tris": 42,
+      "min": [
+        -0.598,
+        -0.04,
+        -0.533
+      ],
+      "max": [
+        0.528,
+        0.09,
+        0.544
+      ],
+      "materials": [
+        "M_Env_PathStoneDark"
+      ]
+    },
+    "Stone_Single_04": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_04.fbx",
+      "tris": 42,
+      "min": [
+        -0.495,
+        -0.04,
+        -0.404
+      ],
+      "max": [
+        0.395,
+        0.07,
+        0.351
+      ],
+      "materials": [
+        "M_Env_PathStoneWarm"
+      ]
+    },
+    "Stone_Single_05": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_05.fbx",
+      "tris": 42,
+      "min": [
+        -0.217,
+        -0.04,
+        -0.278
+      ],
+      "max": [
+        0.252,
+        0.07,
+        0.217
+      ],
+      "materials": [
+        "M_Env_PathStoneDark"
+      ]
+    },
+    "Stone_Single_06": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_06.fbx",
+      "tris": 42,
+      "min": [
+        -0.522,
+        -0.04,
+        -0.511
+      ],
+      "max": [
+        0.485,
+        0.08,
+        0.468
+      ],
+      "materials": [
+        "M_Env_PathStone"
+      ]
+    },
+    "Path_Stones_Straight": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Path_Stones_Straight.fbx",
+      "tris": 242,
+      "min": [
+        -1.02,
+        -0.04,
+        -0.57
+      ],
+      "max": [
+        1.02,
+        0.07,
+        0.57
+      ],
+      "materials": [
+        "M_Env_Dirt",
+        "M_Env_PathStone",
+        "M_Env_PathStoneMid"
+      ]
+    },
+    "Path_Stones_Curve": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Path_Stones_Curve.fbx",
+      "tris": 356,
+      "min": [
+        -0.565,
+        -0.04,
+        -2.015
+      ],
+      "max": [
+        2.037,
+        0.07,
+        0.565
+      ],
+      "materials": [
+        "M_Env_Dirt",
+        "M_Env_PathStone",
+        "M_Env_PathStoneMid",
+        "M_Env_PathStoneWarm"
+      ]
+    },
+    "Path_Stones_Patch": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Path_Stones_Patch.fbx",
+      "tris": 206,
+      "min": [
+        -0.983,
+        -0.04,
+        -1.028
+      ],
+      "max": [
+        0.971,
+        0.07,
+        0.956
+      ],
+      "materials": [
+        "M_Env_Dirt",
+        "M_Env_PathStoneMid",
+        "M_Env_PathStoneWarm"
+      ]
+    },
+    "Flower_Daisy_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Flower_Daisy_01.fbx",
+      "tris": 726,
+      "min": [
+        -0.148,
+        -0.012,
+        -0.094
+      ],
+      "max": [
+        0.212,
+        0.231,
+        0.182
+      ],
+      "materials": [
+        "M_Env_FlowerHeart",
+        "M_Env_Petal",
+        "M_Env_Stem"
+      ]
+    },
+    "Grass_Tuft_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Grass_Tuft_01.fbx",
+      "tris": 28,
+      "min": [
+        -0.162,
+        -0.02,
+        -0.144
+      ],
+      "max": [
+        0.118,
+        0.322,
+        0.171
+      ],
+      "materials": [
+        "M_Env_Bush"
+      ]
+    },
+    "Grass_Tuft_02": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Grass_Tuft_02.fbx",
+      "tris": 40,
+      "min": [
+        -0.194,
+        -0.02,
+        -0.182
+      ],
+      "max": [
+        0.23,
+        0.43,
+        0.186
+      ],
+      "materials": [
+        "M_Env_Bush"
+      ]
+    },
+    "Flower_Patch_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Flower_Patch_01.fbx",
+      "tris": 1282,
+      "min": [
+        -0.481,
+        -0.02,
+        -0.555
+      ],
+      "max": [
+        0.524,
+        0.28,
+        0.403
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_FlowerHeart",
+        "M_Env_Petal",
+        "M_Env_Stem"
+      ]
+    },
+    "Waterfall_Large": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Waterfall_Large.fbx",
+      "tris": 4900,
+      "min": [
+        -2.465,
+        -0.06,
+        -1.277
+      ],
+      "max": [
+        2.346,
+        4.6,
+        2.256
+      ],
+      "materials": [
+        "M_Env_Foam",
+        "M_Env_Mist",
+        "M_Env_Water",
+        "M_Env_WaterDeep",
+        "M_Env_WaterLight"
+      ]
+    },
+    "Waterfall_Medium": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Waterfall_Medium.fbx",
+      "tris": 3484,
+      "min": [
+        -1.822,
+        -0.06,
+        -1.283
+      ],
+      "max": [
+        1.734,
+        3.0,
+        1.797
+      ],
+      "materials": [
+        "M_Env_Foam",
+        "M_Env_Mist",
+        "M_Env_Water",
+        "M_Env_WaterDeep",
+        "M_Env_WaterLight"
+      ]
+    },
+    "Waterfall_Small": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Waterfall_Small.fbx",
+      "tris": 2864,
+      "min": [
+        -1.259,
+        -0.06,
+        -1.278
+      ],
+      "max": [
+        1.199,
+        2.4,
+        1.545
+      ],
+      "materials": [
+        "M_Env_Foam",
+        "M_Env_Mist",
+        "M_Env_Water",
+        "M_Env_WaterDeep",
+        "M_Env_WaterLight"
+      ]
+    },
     "Mountain_Back_01": {
       "category": "Mountains",
       "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_01.fbx",
       "tris": 90,
       "min": [
-        -22.652,
+        -23.878,
         -2.0,
-        -12.906
+        -12.92
       ],
       "max": [
-        22.58,
+        21.627,
         30.25,
-        11.508
+        11.991
       ],
       "materials": [
         "M_Env_Mountain",
@@ -266,14 +738,14 @@
       "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_02.fbx",
       "tris": 180,
       "min": [
-        -27.697,
+        -33.399,
         -2.0,
-        -18.046
+        -18.577
       ],
       "max": [
-        38.778,
+        45.755,
         34.25,
-        18.028
+        16.413
       ],
       "materials": [
         "M_Env_Mountain",
@@ -285,14 +757,14 @@
       "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_03.fbx",
       "tris": 240,
       "min": [
-        -53.273,
+        -47.518,
         -2.0,
-        -17.156
+        -18.374
       ],
       "max": [
-        46.24,
+        52.517,
         22.25,
-        18.082
+        20.881
       ],
       "materials": [
         "M_Env_Mountain",
@@ -304,14 +776,14 @@
       "fbx": "Assets/Art/Models/Environment/Sky/Cloud_01.fbx",
       "tris": 720,
       "min": [
-        -3.117,
+        -3.534,
         0.0,
-        -1.122
+        -0.936
       ],
       "max": [
-        3.661,
-        2.077,
-        1.283
+        3.467,
+        1.62,
+        0.833
       ],
       "materials": [
         "M_Env_Cloud"
@@ -322,14 +794,14 @@
       "fbx": "Assets/Art/Models/Environment/Sky/Cloud_02.fbx",
       "tris": 576,
       "min": [
-        -2.746,
+        -2.629,
         0.0,
-        -1.077
+        -1.098
       ],
       "max": [
-        2.651,
-        1.938,
-        1.198
+        2.389,
+        1.897,
+        1.056
       ],
       "materials": [
         "M_Env_Cloud"
@@ -340,14 +812,14 @@
       "fbx": "Assets/Art/Models/Environment/Sky/Cloud_03.fbx",
       "tris": 432,
       "min": [
-        -1.73,
+        -1.642,
         0.0,
-        -0.936
+        -1.122
       ],
       "max": [
-        1.701,
-        1.745,
-        1.006
+        1.939,
+        1.768,
+        0.853
       ],
       "materials": [
         "M_Env_Cloud"
@@ -446,11 +918,11 @@
         "#BE907B",
         "#CA957A"
       ],
-      "rampShift": 0.0,
+      "rampShift": 0.04,
       "smoothness": 0.05,
       "opts": {
-        "cells": 1.0,
-        "cellSize": 0.8,
+        "cells": 0.55,
+        "cellSize": 1.1,
         "rim": 0.22
       }
     },
@@ -503,6 +975,257 @@
         "cells": 0.4,
         "cellSize": 5.0,
         "rim": 0.1
+      }
+    },
+    "M_Env_Water": {
+      "base": "#8EC7EC",
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "rampShift": 0.02,
+      "smoothness": 0.3,
+      "opts": {
+        "cells": 0.0,
+        "flat": 0.15,
+        "rim": 0.2,
+        "edge": 0.0
+      }
+    },
+    "M_Env_WaterLight": {
+      "base": "#ADD7ED",
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "rampShift": 0.38,
+      "smoothness": 0.3,
+      "opts": {
+        "cells": 0.0,
+        "flat": 0.55,
+        "rim": 0.1,
+        "edge": 0.0
+      }
+    },
+    "M_Env_WaterDeep": {
+      "base": "#6B8CB6",
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "rampShift": -0.1,
+      "smoothness": 0.3,
+      "opts": {
+        "cells": 0.0,
+        "flat": 0.15,
+        "rim": 0.15,
+        "edge": 0.0
+      }
+    },
+    "M_Env_WaterSurface": {
+      "base": "#8EC7EC",
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.3,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 1.4,
+        "flat": 0.25,
+        "rim": 0.35,
+        "edge": 0.0,
+        "opacity": 0.82,
+        "cull": 0.0,
+        "noShadow": true
+      }
+    },
+    "M_Env_Mist": {
+      "base": "#FDF2EB",
+      "ramp": [
+        "#C2CAEA",
+        "#C7D0F0",
+        "#DFDDEE",
+        "#E7E1EA",
+        "#FDF2EB"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.0,
+      "opts": {
+        "cells": 0.0,
+        "flat": 0.7,
+        "rim": 0.0,
+        "opacity": 0.45,
+        "softEdge": 1.0,
+        "noShadow": true,
+        "edge": 0.0
+      }
+    },
+    "M_Env_Foam": {
+      "base": "#FDF2EB",
+      "ramp": [
+        "#C2CAEA",
+        "#C7D0F0",
+        "#DFDDEE",
+        "#E7E1EA",
+        "#FDF2EB"
+      ],
+      "rampShift": 0.25,
+      "smoothness": 0.0,
+      "opts": {
+        "cells": 0.0,
+        "flat": 0.45,
+        "rim": 0.2,
+        "noShadow": true,
+        "edge": 0.0
+      }
+    },
+    "M_Env_PathStone": {
+      "base": "#B5AAAC",
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "rampShift": 0.08,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.6,
+        "rim": 0.2,
+        "edge": 2.0
+      }
+    },
+    "M_Env_PathStoneMid": {
+      "base": "#8E8796",
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "rampShift": -0.32,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.6,
+        "rim": 0.2,
+        "edge": 2.0
+      }
+    },
+    "M_Env_PathStoneDark": {
+      "base": "#6F696E",
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "rampShift": -0.72,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.6,
+        "rim": 0.15,
+        "edge": 2.0
+      }
+    },
+    "M_Env_PathStoneWarm": {
+      "base": "#BE907B",
+      "ramp": [
+        "#6A4C4B",
+        "#906959",
+        "#AC7F75",
+        "#BE907B",
+        "#CA957A"
+      ],
+      "rampShift": -0.12,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.6,
+        "rim": 0.2,
+        "edge": 2.0
+      }
+    },
+    "M_Env_Dirt": {
+      "base": "#906959",
+      "ramp": [
+        "#6A4C4B",
+        "#906959",
+        "#AC7F75",
+        "#BE907B",
+        "#CA957A"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.6,
+        "rim": 0.1
+      }
+    },
+    "M_Env_Petal": {
+      "base": "#FDF2EB",
+      "ramp": [
+        "#C2CAEA",
+        "#C7D0F0",
+        "#DFDDEE",
+        "#E7E1EA",
+        "#FDF2EB"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.2
+      }
+    },
+    "M_Env_FlowerHeart": {
+      "base": "#F5B038",
+      "ramp": [
+        "#B57326",
+        "#E59C2F",
+        "#F5B038",
+        "#FDBF40",
+        "#FDC443"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0
+      }
+    },
+    "M_Env_Stem": {
+      "base": "#6B7F38",
+      "ramp": [
+        "#566D3A",
+        "#6B7F38",
+        "#8B9F3B",
+        "#A1B044",
+        "#ADBC4A"
+      ],
+      "rampShift": -0.2,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0
       }
     },
     "M_Env_Cloud": {

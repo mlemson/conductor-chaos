@@ -1,0 +1,50 @@
+fileFormatVersion: 2
+guid: 62dfbec996165f88bcfcc47a1ee8cab0
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Bush
+    second: {fileID: 2100000, guid: f69f6c574081197df2c9be6daa74dd3e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_FlowerHeart
+    second: {fileID: 2100000, guid: 9af565d9a64d7577df9d0af73563ed72, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Petal
+    second: {fileID: 2100000, guid: 7dfb3fa1a442465c04aa45f47b4d9ee1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Stem
+    second: {fileID: 2100000, guid: 6fd8843666ee298eb807dd2b3161cd7d, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

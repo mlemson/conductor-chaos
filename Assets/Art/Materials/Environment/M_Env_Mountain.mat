@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: M_Env_Mountain
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_Shader: {fileID: 4800000, guid: b5459282d8a4f8506c331a2339199b4e, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -26,20 +26,32 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Smoothness: 0.05
-    - _Glossiness: 0.05
-    - _Metallic: 0.0
-    - _SpecularHighlights: 1.0
-    - _EnvironmentReflections: 1.0
-    - _Surface: 0.0
+    - _RampShift: 0.02
+    - _Flat: 0.0
+    - _Edge: 0.6
+    - _Rim: 0.12
+    - _Spec: 0.55
+    - _Cells: 0.8
+    - _CellSize: 6.0
+    - _Grime: 0.0
+    - _Emissive: 0.0
+    - _Opacity: 1.0
+    - _HasShade: 1.0
+    - _SoftEdge: 0.0
+    - _ReceiveShadowsF: 1.0
     - _Cull: 2.0
-    - _ReceiveShadows: 1.0
-    - _WorkflowMode: 1.0
-    - _BumpScale: 1.0
-    - _OcclusionStrength: 1.0
+    - _SrcBlend: 1.0
+    - _DstBlend: 0.0
+    - _ZWrite: 1.0
     m_Colors:
+    - _Ramp0: {r: 0.364706, g: 0.431373, b: 0.674510, a: 1.000}
+    - _Ramp1: {r: 0.392157, g: 0.458824, b: 0.701961, a: 1.000}
+    - _Ramp2: {r: 0.454902, g: 0.498039, b: 0.701961, a: 1.000}
+    - _Ramp3: {r: 0.505882, g: 0.529412, b: 0.705882, a: 1.000}
+    - _Ramp4: {r: 0.529412, g: 0.556863, b: 0.737255, a: 1.000}
     - _BaseColor: {r: 0.454902, g: 0.498039, b: 0.701961, a: 1.000}
-    - _Color: {r: 0.454902, g: 0.498039, b: 0.701961, a: 1.000}
-    - _EmissionColor: {r: 0.000000, g: 0.000000, b: 0.000000, a: 1.000}
+    - _RimColor: {r: 0.698039, g: 0.772549, b: 0.952941, a: 1.000}
+    - _DirtColor: {r: 0.313725, g: 0.200000, b: 0.188235, a: 1.000}
+    - _GrimeY: {r: -0.350000, g: 0.850000, b: 0.000000, a: 0.000}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

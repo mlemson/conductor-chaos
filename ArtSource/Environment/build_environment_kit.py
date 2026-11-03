@@ -48,10 +48,29 @@ MATERIALS = {
     "M_Env_Trunk": (R["interior_wood"][1], R["interior_wood"], 0.05, -0.05, {"cells": 0.5}),
     "M_Env_Bush": (R["grass"][1], R["grass"], 0.05, -0.18, {"cells": 0.6, "cellSize": 0.5}),
     "M_Env_Rock": (R["metal"][2], R["metal"], 0.05, 0.06, {"cells": 1.0, "cellSize": 0.6, "rim": 0.25}),
-    "M_Env_Cliff": (R["cliff"][2], R["cliff"], 0.05, 0.0, {"cells": 1.0, "cellSize": 0.8, "rim": 0.22}),
+    "M_Env_Cliff": (R["cliff"][2], R["cliff"], 0.05, 0.04, {"cells": 0.55, "cellSize": 1.1, "rim": 0.22}),
     "M_Env_Grass": (R["grass"][2], R["grass"], 0.05, 0.02, {"cells": 0.8, "cellSize": 0.9}),
     "M_Env_Mountain": (R["mountain"][2], R["mountain"], 0.05, 0.02, {"cells": 0.8, "cellSize": 6.0, "rim": 0.12, "edge": 0.6}),
     "M_Env_Snow": (R["cloud_snow"][3], R["cloud_snow"], 0.05, 0.05, {"cells": 0.4, "cellSize": 5.0, "rim": 0.10}),
+    "M_Env_Water": (R["water"][2], R["water"], 0.3, 0.02, {"cells": 0.0, "flat": 0.15, "rim": 0.20, "edge": 0.0}),
+    "M_Env_WaterLight": (R["water"][4], R["water"], 0.3, 0.38, {"cells": 0.0, "flat": 0.55, "rim": 0.10, "edge": 0.0}),
+    "M_Env_WaterDeep": (R["water"][0], R["water"], 0.3, -0.10, {"cells": 0.0, "flat": 0.15, "rim": 0.15, "edge": 0.0}),
+    # wateroppervlak (StylizedWater): licht doorzichtig, van onder ook zichtbaar (cull 0), effen facetten
+    "M_Env_WaterSurface": (R["water"][2], R["water"], 0.3, 0.05, {"cells": 0.6, "cellSize": 1.4, "flat": 0.25, "rim": 0.35,
+                                                                   "edge": 0.0, "opacity": 0.82, "cull": 0.0, "noShadow": True}),
+    "M_Env_Mist": (R["cloud_snow"][4], R["cloud_snow"], 0.0, 0.30, {"cells": 0.0, "flat": 0.7, "rim": 0.0, "opacity": 0.45, "softEdge": 1.0,
+                                                                       "noShadow": True, "edge": 0.0}),
+    "M_Env_Foam": (R["cloud_snow"][4], R["cloud_snow"], 0.0, 0.25, {"cells": 0.0, "flat": 0.45, "rim": 0.20,
+                                                                       "noShadow": True, "edge": 0.0}),
+    # keien in drie tinten (licht / middel / donker grijs) + een warme zandsteen: contrast tussen de stenen
+    "M_Env_PathStone": (R["metal"][4], R["metal"], 0.05, 0.08, {"cells": 0.5, "cellSize": 0.6, "rim": 0.2, "edge": 2.0}),
+    "M_Env_PathStoneMid": (R["metal"][2], R["metal"], 0.05, -0.32, {"cells": 0.5, "cellSize": 0.6, "rim": 0.2, "edge": 2.0}),
+    "M_Env_PathStoneDark": (R["metal"][0], R["metal"], 0.05, -0.72, {"cells": 0.5, "cellSize": 0.6, "rim": 0.15, "edge": 2.0}),
+    "M_Env_PathStoneWarm": (R["cliff"][3], R["cliff"], 0.05, -0.12, {"cells": 0.5, "cellSize": 0.6, "rim": 0.2, "edge": 2.0}),
+    "M_Env_Dirt": (R["cliff"][1], R["cliff"], 0.05, -0.30, {"cells": 0.6, "cellSize": 0.6, "rim": 0.1}),
+    "M_Env_Petal": (R["cloud_snow"][4], R["cloud_snow"], 0.05, 0.10, {"cells": 0.0, "rim": 0.2}),
+    "M_Env_FlowerHeart": (R["helmet"][2], R["helmet"], 0.05, 0.0, {"cells": 0.0}),
+    "M_Env_Stem": (R["grass"][1], R["grass"], 0.05, -0.20, {"cells": 0.0}),
     "M_Env_Cloud": (R["cloud_snow"][3], R["cloud_snow"], 0.0, 0.12, {"cells": 0.0, "flat": 0.35, "rim": 0.25,
                                                                        "noShadow": True, "edge": 0.0}),
 }
@@ -219,7 +238,8 @@ def cliff_block(x0, x1, z0, z1, H, rng, ledge=True):
     base = rect_outline(x0, x1, z0, z1)
     n = len(base)
     col = np.array([0.07 if k % 2 else -0.02 for k in range(n)]) + rng.uniform(-0.02, 0.04, n)   # verticale kolommen
-    rings = [(offset(base, -col + 0.02), -0.30),
+    rings = [(offset(base, -col - 0.14), -0.30),                       # voet: breder, sluit aan op buren
+             (offset(base, -col - 0.05), min(0.35, H * 0.18)),
              (offset(base, -col - rng.uniform(0.0, 0.05, n)), H * 0.30)]
     if ledge and H >= 1.8:                                  # terrasrand: klein stapje naar binnen
         yl = H * 0.52
@@ -241,6 +261,268 @@ def hill(rng):
     rings = [(offset(base, -j), -0.25), (offset(base, -j + 0.45), 0.45), (offset(base, -j * 0.5 + 0.95), 0.92),
              (offset(base, 1.30), 1.12)]
     return loft(rings, "M_Env_Grass")
+
+
+# ------------------------------------------------- kliffen v2: clusters van grote, gefacetteerde pijlers
+def pillar(x0, x1, z0, z1, H, rng, tufts=True):
+    """Pijler zoals in het referentieblad: grote vlakke facetten (2–3 per zijde), afgeschuinde hoeken,
+    een vlak grasdek met korte overhang en een paar graspluk-bolletjes."""
+    base = rect_outline(x0, x1, z0, z1, step=0.85, chamfer=min(0.35, (x1 - x0) * 0.18, (z1 - z0) * 0.18))
+    n = len(base)
+    fold = np.array([0.13 if k % 2 else -0.04 for k in range(n)]) + rng.uniform(-0.02, 0.04, n)
+    tilt = rng.uniform(-0.06, 0.06, n)
+    rings = [(offset(base, -fold - 0.16), -0.30),                     # voet: breder, loopt in de grond over
+             (offset(base, -fold - 0.06), min(0.35, H * 0.2)),
+             (offset(base, -fold * 1.1 + tilt), H * 0.45),
+             (offset(base, -fold * 0.9 + 0.03), H * 0.88),
+             (offset(base, -fold * 0.5 + 0.10), H - 0.02)]
+    body = loft(rings, "M_Env_Cliff")
+    drip = rng.uniform(0.04, 0.16, n) * (rng.uniform(0, 1, n) > 0.45)
+    grass = loft([(offset(base, -fold * 0.5 + 0.02), H - 0.07 - drip),
+                  (offset(base, -fold * 0.5 - 0.04), H + 0.04),
+                  (offset(base, -fold * 0.5 + 0.12), H + 0.12),
+                  (offset(base, min(0.40, 0.22 * min(x1 - x0, z1 - z0))), H + 0.14)], "M_Env_Grass")
+    parts = [body, grass]
+    if tufts:
+        for _ in range(rng.integers(1, 4)):
+            tx = rng.uniform(x0 + 0.3, x1 - 0.3)
+            tz = rng.uniform(z0 + 0.3, z1 - 0.3)
+            s = rng.uniform(0.20, 0.34)
+            t = blob(s * 1.1, s * 0.95, s, rng, 0.10, seg=7, rings=4, mat="M_Env_Bush", flat_bottom=-s * 0.5)
+            parts.append(t.transform(t=(tx, H + 0.12 + s * 0.45, tz)))
+    return mk.merge(*parts)
+
+
+def cluster(blocks, rng):
+    """Klifcluster als één massa: een gedeelde voet (laag terras met gras) over de hele footprint, waaruit
+    pijlers van verschillende hoogte oprijzen die elkaar overlappen. Geen losse blokken met kieren meer."""
+    xs0, xs1 = min(b[0] for b in blocks), max(b[1] for b in blocks)
+    zs0, zs1 = min(b[2] for b in blocks), max(b[3] for b in blocks)
+    hb = max(0.7, min(b[4] for b in blocks) * 0.55)
+    parts = [pillar(xs0 + 0.05, xs1 - 0.05, zs0 + 0.05, zs1 - 0.05, hb, rng, tufts=True)]
+    g = 0.14                                                          # pijlers groeien in elkaar
+    for (x0, x1, z0, z1, h) in sorted(blocks, key=lambda b: -b[4]):
+        parts.append(pillar(x0 - g, x1 + g, z0 - g, z1 + g, h, rng))
+    return mk.merge(*parts)
+
+
+def _fall_profile(H, lip_r, back, drift, n_arc=6, n_fall=14):
+    """Middellijn van het water (u = naar voren, v = hoogte): stroom bovenop -> ronde lip -> val met lichte boog."""
+    pts = [(-back, H), (-back * 0.5, H), (-0.05, H)]
+    for k in range(1, n_arc + 1):                                  # lip: kwartcirkel over de rand
+        a = math.pi / 2 * (1 - k / n_arc)
+        pts.append((lip_r * math.cos(a), H - lip_r + lip_r * math.sin(a)))
+    v0 = H - lip_r
+    for k in range(1, n_fall + 1):
+        f = k / n_fall
+        pts.append((lip_r + drift * math.sqrt(f), v0 * (1 - f) - 0.05 * f))
+    return pts
+
+
+def waterfall(H, W, rng, strips=None):
+    """Stilstaande waterval in 'plaatje'-stijl, v2: één doorlopend, gegroefd watervel dat als stroom over de
+    klifrand komt, over een ronde lip buigt en in een lichte boog valt. Verticale banen in drie watertinten
+    (facetten vangen elk anders het licht), dunne lichtstrepen, gerafelde onderrand, een poel met lichte
+    ring en een wolk van schuim en mist. Pivot midden-onder; de lip ligt op y = H tegen een klifrand (-Z)."""
+    parts = []
+    lip_r = min(0.45, 0.10 * H + 0.10)
+    drift = 0.10 + 0.04 * H
+    prof = _fall_profile(H, lip_r, back=1.2, drift=drift)
+    nprof = len(prof)
+    cols = max(6, int(round(W / 0.16)))
+    xs = np.linspace(-W / 2, W / 2, cols + 1)
+    # groeven: zigzag over de breedte (in/uit) + willekeur, sterker naar beneden; randen iets naar achteren
+    ridge = np.array([0.075 * (1 if j % 2 else -1) + rng.uniform(-0.02, 0.02) for j in range(cols + 1)])
+    edge = np.clip(1.0 - np.abs(np.linspace(-1, 1, cols + 1)) ** 6, 0.0, 1.0)
+    bottom = rng.uniform(0.0, 0.35, cols + 1) * (0.6 + 0.4 * (np.arange(cols + 1) % 2))
+    t = 0.10
+    V, F, M = [], [], []
+
+    def vid(p):
+        V.append(p)
+        return len(V) - 1
+    front = np.zeros((nprof, cols + 1), int)
+    back = np.zeros((nprof, cols + 1), int)
+    for i, (u, v) in enumerate(prof):
+        fall = max(0.0, min(1.0, (H - v) / H)) if u > 0 else 0.0
+        for j, x in enumerate(xs):
+            vv = max(v, bottom[j]) if i == nprof - 1 else v
+            uu = u + ridge[j] * (0.25 + 0.75 * fall) - (1 - edge[j]) * 0.06
+            front[i, j] = vid((x, vv, uu))
+            # achterkant: naar binnen (richting klif / naar beneden bij de stroom)
+            if u <= 0:
+                back[i, j] = vid((x, vv - t, uu))
+            else:
+                back[i, j] = vid((x, vv, uu - t))
+    band = []
+    for j in range(cols):
+        r = rng.uniform()
+        band.append("M_Env_WaterLight" if r < 0.28 else ("M_Env_WaterDeep" if r > 0.86 else "M_Env_Water"))
+    band[0] = band[-1] = "M_Env_WaterDeep"
+    for i in range(nprof - 1):
+        for j in range(cols):
+            a, b, c, d = front[i, j], front[i, j + 1], front[i + 1, j + 1], front[i + 1, j]
+            F.append((a, d, c, b)); M.append(band[j] if prof[i][0] > -0.3 else "M_Env_Water")
+            a, b, c, d = back[i, j], back[i, j + 1], back[i + 1, j + 1], back[i + 1, j]
+            F.append((a, b, c, d)); M.append("M_Env_WaterDeep")
+    for i in range(nprof - 1):                                          # zijkanten
+        for j, flip in ((0, False), (cols, True)):
+            q = (front[i, j], front[i + 1, j], back[i + 1, j], back[i, j])
+            F.append(q[::-1] if flip else q); M.append("M_Env_WaterDeep")
+    for j in range(cols):                                               # onder- en achterrand
+        for i, flip in ((nprof - 1, False), (0, True)):
+            q = (front[i, j], front[i, j + 1], back[i, j + 1], back[i, j])
+            F.append(q[::-1] if flip else q); M.append("M_Env_WaterDeep")
+    sheet = mk.Mesh(np.array(V, float), F, M)
+    sheet.sharp = True
+    parts.append(mk._orient_closed(sheet))
+    # dunne lichtstrepen vóór het vel (het water 'glanst' in banen)
+    for _ in range(max(2, int(W / 0.5))):
+        x = rng.uniform(-W / 2 + 0.15, W / 2 - 0.15)
+        y0, y1 = rng.uniform(0.3, H * 0.35), rng.uniform(H * 0.55, H - lip_r - 0.1)
+        w = rng.uniform(0.025, 0.045)
+        u = lip_r + drift * math.sqrt(max(0.0, (H - lip_r - (y0 + y1) / 2) / (H - lip_r))) + 0.06
+        streak = mk.rounded_box(w * 2, y1 - y0, 0.02, w * 0.9, 1, mat="M_Env_WaterLight").transform(t=(x, (y0 + y1) / 2, u))
+        parts.append(streak)
+    # poel aan de voet met een lichte ring
+    pr = W * 0.75 + 0.5
+    pool = lathe_mod([(0.0, 0.03), (pr * 0.55, 0.03), (pr, 0.02), (pr * 1.02, -0.06), (0.0, -0.06)], 14,
+                     rmod=lambda i, k: 1.0 + 0.06 * math.sin(k * 2.1), mat="M_Env_WaterDeep")
+    pool.V[:, 2] *= 0.55
+    ring = lathe_mod([(pr * 0.50, 0.045), (pr * 0.62, 0.045), (pr * 0.62, 0.02), (pr * 0.50, 0.02)], 14,
+                     rmod=lambda i, k: 1.0 + 0.06 * math.sin(k * 2.1), mat="M_Env_WaterLight")
+    ring.V[:, 2] *= 0.55
+    parts += [pool.transform(t=(0, 0, lip_r + drift + 0.2)), ring.transform(t=(0, 0, lip_r + drift + 0.2))]
+    # schuim: twee rijen puffen + spetters, en een doorzichtige mistwolk
+    zf = lip_r + drift + 0.05
+    n = max(4, int(W / 0.35))
+    for row, (zo, sc, yo) in enumerate(((0.0, 1.0, 0.0), (0.35, 0.75, -0.05))):
+        for k in range(n + row):
+            x = -W / 2 - 0.1 + (W + 0.2) * (k + 0.5) / (n + row) + rng.uniform(-0.08, 0.08)
+            r = rng.uniform(0.26, 0.40) * sc * (0.8 + 0.3 * min(1.0, W / 2.0))
+            puff = mk.ellipsoid(r * 1.15, r * 0.85, r * 0.95, 12, 7, mat="M_Env_Foam")
+            puff.V[:, 1] = np.maximum(puff.V[:, 1], -r * 0.15)
+            parts.append(puff.transform(t=(x, r * 0.25 + yo, zf + zo + rng.uniform(-0.05, 0.08))))
+    for k in range(max(3, n)):
+        r = rng.uniform(0.06, 0.12)
+        parts.append(mk.ellipsoid(r, r * 0.9, r, 8, 5, mat="M_Env_Foam").transform(
+            t=(rng.uniform(-W / 2 - 0.4, W / 2 + 0.4), rng.uniform(0.05, 0.55), zf + rng.uniform(0.45, 1.0))))
+    nm = max(2, int(W / 0.7) + 1)
+    for k in range(nm):
+        r = rng.uniform(0.40, 0.60) * (0.7 + 0.3 * min(1.0, W / 2.0))
+        mist = mk.ellipsoid(r * 1.3, r, r, 12, 7, mat="M_Env_Mist")
+        x = -W / 2 + W * (k + 0.5) / nm + rng.uniform(-0.1, 0.1)
+        parts.append(mist.transform(t=(x, rng.uniform(0.35, 0.8), zf + rng.uniform(0.05, 0.35))))
+    return mk.merge(*parts)
+
+
+# ------------------------------------------------------- paden en planten
+STONE_MATS = ["M_Env_PathStone", "M_Env_PathStoneMid", "M_Env_PathStoneDark", "M_Env_PathStoneWarm"]
+STONE_WEIGHTS = [0.32, 0.30, 0.24, 0.14]
+
+
+def stone(r, rng, h=0.07, mat=None):
+    """Platte, afgeronde kei (laag-poly), licht in de grond: bovenkant vlak, schuine rand (de vorm die beter beviel).
+    Contrast komt uit de tint: zonder mat krijgt elke kei willekeurig licht/middel/donker/warm."""
+    if mat is None:
+        mat = STONE_MATS[rng.choice(len(STONE_MATS), p=STONE_WEIGHTS)]
+    rk = rng.uniform(0.85, 1.15, 7)
+    m = lathe_mod([(0.0, h), (r * 0.78, h), (r, h * 0.45), (r * 0.96, -0.04), (0.0, -0.04)], 7,
+                  rmod=lambda i, k, rk=rk: rk[k], phase=rng.uniform(0, 6.28), mat=mat)
+    m.V[:, 0] *= rng.uniform(0.85, 1.15)
+    return m
+
+
+def place_stones(points, rng, rmin=0.20, rmax=0.29):
+    return [stone(rng.uniform(rmin, rmax), rng).transform(R=mk.rot_y(rng.uniform(0, 6.28)), t=(x, 0.0, z)) for (x, z) in points]
+
+
+def poisson(area_fn, n, min_d, rng, tries=4000):
+    pts = []
+    for _ in range(tries):
+        p = area_fn()
+        if all((p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 >= min_d ** 2 for q in pts):
+            pts.append(p)
+            if len(pts) >= n:
+                break
+    return pts
+
+
+def path_bed(outline, mat="M_Env_Dirt"):
+    """Lage, platte grondstrook onder de keien (leest als pad, ook op gras)."""
+    return loft([(offset(outline, -0.02), -0.03), (outline, 0.015), (offset(outline, 0.06), 0.02)], mat)
+
+
+def path_straight(rng):
+    pts = poisson(lambda: (rng.uniform(-0.85, 0.85), rng.uniform(-0.30, 0.30)), 8, 0.62, rng)
+    bed = path_bed(rect_outline(-1.0, 1.0, -0.55, 0.55, step=0.25, chamfer=0.25))
+    return mk.merge(bed, *place_stones(pts, rng))
+
+
+def path_curve(rng):
+    """Kwartbocht (straal 2 m tot het midden, 1,1 m breed), eindigt op het raster zoals het rechte stuk."""
+    rc = 2.0
+    def pt():
+        a = rng.uniform(0.08, math.pi / 2 - 0.08)
+        r = rc + rng.uniform(-0.38, 0.38)
+        return (rc - r * math.cos(a), -rc + r * math.sin(a))
+    pts = poisson(pt, 10, 0.62, rng)
+    arc = []
+    for k in range(9):
+        a = math.pi / 2 * k / 8
+        arc.append((rc - (rc + 0.55) * math.cos(a), -rc + (rc + 0.55) * math.sin(a)))
+    for k in range(8, -1, -1):
+        a = math.pi / 2 * k / 8
+        arc.append((rc - (rc - 0.55) * math.cos(a), -rc + (rc - 0.55) * math.sin(a)))
+    outline = np.array(arc)
+    if mk._poly_area(outline) < 0:
+        outline = outline[::-1]
+    return mk.merge(path_bed(outline), *place_stones(pts, rng))
+
+
+def path_patch(rng):
+    pts = poisson(lambda: tuple(rng.uniform(-0.65, 0.65, 2)), 8, 0.60, rng)
+    pts = [p for p in pts if p[0] ** 2 + p[1] ** 2 < 0.72 ** 2]
+    a = np.linspace(0, 2 * math.pi, 14, endpoint=False)
+    outline = np.stack([np.cos(a) * 0.95 * rng.uniform(0.9, 1.1, 14), np.sin(a) * 0.95 * rng.uniform(0.9, 1.1, 14)], -1)
+    return mk.merge(path_bed(outline), *place_stones(pts, rng))
+
+
+def daisy(rng, h):
+    """Madeliefje: dun steeltje, gele kern, 6 witte blaadjes (zacht, in de stijl van het concept)."""
+    stem = mk.capsule_between((0, 0, 0), (0, h, 0), 0.012, 0.010, 5, 1, mat="M_Env_Stem")
+    heart = mk.ellipsoid(0.035, 0.022, 0.035, 8, 4, mat="M_Env_FlowerHeart").transform(t=(0, h + 0.01, 0))
+    petals = []
+    for k in range(6):
+        a = 2 * math.pi * k / 6
+        pet = mk.ellipsoid(0.045, 0.012, 0.022, 6, 3, mat="M_Env_Petal")
+        petals.append(pet.transform(R=mk.rot_y(-a), t=(math.cos(a) * 0.055, h + 0.004, math.sin(a) * 0.055)))
+    return mk.merge(stem, heart, *petals).transform(R=mk.rot_z(rng.uniform(-0.15, 0.15)) @ mk.rot_y(rng.uniform(0, 6.28)))
+
+
+def grass_tuft(rng, n=7, h=0.32):
+    blades = []
+    for k in range(n):
+        a = 2 * math.pi * k / n + rng.uniform(-0.3, 0.3)
+        r = rng.uniform(0.02, 0.09)
+        hh = h * rng.uniform(0.6, 1.1)
+        tip = (math.cos(a) * (r + hh * 0.35), hh, math.sin(a) * (r + hh * 0.35))
+        b = lathe_mod([(0.035, 0.0), (0.0, 1.0)], 4, mat="M_Env_Bush")
+        b.V[:, 1] *= hh
+        # scheeftrekken naar de tip
+        b.V[:, 0] += b.V[:, 1] / hh * (tip[0] - math.cos(a) * r)
+        b.V[:, 2] += b.V[:, 1] / hh * (tip[2] - math.sin(a) * r)
+        blades.append(b.transform(t=(math.cos(a) * r, -0.02, math.sin(a) * r)))
+    return mk.merge(*blades)
+
+
+def flower_patch(rng, n_daisies=5, n_tufts=3, radius=0.45):
+    parts = []
+    for _ in range(n_tufts):
+        parts.append(grass_tuft(rng, 6, 0.28).transform(t=(rng.uniform(-radius, radius), 0, rng.uniform(-radius, radius))))
+    for _ in range(n_daisies):
+        parts.append(daisy(rng, rng.uniform(0.12, 0.22)).transform(t=(rng.uniform(-radius, radius), 0, rng.uniform(-radius, radius))))
+    return mk.merge(*parts)
 
 
 # ------------------------------------------------------------------- bergen
@@ -289,7 +571,7 @@ def cloud(rng, n=5, w=6.0):
 # ------------------------------------------------------------------ export
 def make_scene(name, mesh, density, radius, gradient=0.25, facet=True):
     sc = mk.Scene(name)
-    for mname in set(mesh.M):
+    for mname in sorted(set(mesh.M)):          # vaste volgorde: geen ruis in FBX/meta-diffs
         b, ramp, sm, sh, op = MATERIALS[mname]
         sc.material(mname, b, ramp, sm, ramp_shift=sh, opts=dict(op))
     sc.add(mk.Part(name, mesh, (0, 0, 0), None))
@@ -317,22 +599,64 @@ def build_all():
     terr = mk.merge(cliff_block(-1, 1, 0.0, 1, 1.2, rng, ledge=False), cliff_block(-1, 1, -1, 0.15, 2.6, rng))
     A["Cliffs/Cliff_Module_C"] = (terr, 250, 0.35)
     A["Cliffs/Hill_Grass_01"] = (hill(rng), 120, 0.50)
+    # v2: clusters in referentiestijl (grote facetten, terrassen) — meer variatie en grotere formaten
+    A["Cliffs/Cliff_Pillar_Small"] = (pillar(-0.75, 0.75, -0.75, 0.75, 2.4, rng), 300, 0.30)
+    A["Cliffs/Cliff_Pillar_Tall"] = (pillar(-1, 1, -1, 1, 4.6, rng), 200, 0.35)
+    A["Cliffs/Cliff_Ledge_Low"] = (pillar(-2, 2, -1, 1, 1.0, rng), 200, 0.35)
+    A["Cliffs/Cliff_Block_Wide"] = (pillar(-2, 2, -1, 1, 2.2, rng), 200, 0.35)
+    A["Cliffs/Cliff_Cluster_Step"] = (cluster([(-3.0, -0.8, -1.4, 0.4, 4.2), (-1.0, 1.2, -1.2, 0.8, 2.8),
+                                                (0.9, 3.0, -1.0, 1.2, 1.5)], rng), 150, 0.40)
+    A["Cliffs/Cliff_Cluster_Corner"] = (cluster([(-2.0, 0.2, -2.0, 0.2, 3.6), (0.0, 2.0, -2.0, -0.2, 2.4),
+                                                  (-2.0, -0.2, 0.0, 2.0, 1.8), (-0.1, 1.2, 0.0, 1.2, 1.0)], rng), 150, 0.40)
+    A["Cliffs/Cliff_Cluster_Tall"] = (cluster([(-3.0, -0.4, -2.0, 0.6, 6.5), (-0.6, 2.4, -2.2, 0.2, 5.0),
+                                                (-2.4, 0.4, 0.4, 2.0, 2.6), (0.2, 3.0, 0.0, 1.8, 1.6)], rng), 100, 0.45)
+    A["Cliffs/Cliff_Big_01"] = (cluster([(-4.0, 0.2, -3.0, 1.0, 9.5), (-0.2, 4.0, -3.2, 0.4, 7.4),
+                                          (-4.2, -0.8, 0.6, 3.0, 4.6), (-1.0, 2.2, 0.2, 2.6, 3.0),
+                                          (2.0, 4.4, 0.2, 2.4, 1.8)], rng), 60, 0.55)
+    rng = np.random.default_rng([2026, 1])          # eigen reeks per sectie: wijzigingen lopen niet door
+    A["Paths/Stone_Single_01"] = (stone(0.32, rng, mat="M_Env_PathStone"), 2500, 0.10)
+    A["Paths/Stone_Single_02"] = (stone(0.45, rng, mat="M_Env_PathStoneMid"), 2500, 0.10)
+    A["Paths/Stone_Single_03"] = (stone(0.60, rng, 0.09, mat="M_Env_PathStoneDark"), 2000, 0.12)
+    A["Paths/Stone_Single_04"] = (stone(0.40, rng, mat="M_Env_PathStoneWarm"), 2500, 0.10)
+    A["Paths/Stone_Single_05"] = (stone(0.26, rng, mat="M_Env_PathStoneDark"), 2500, 0.10)
+    A["Paths/Stone_Single_06"] = (stone(0.52, rng, 0.08, mat="M_Env_PathStone"), 2000, 0.12)
+    A["Paths/Path_Stones_Straight"] = (path_straight(rng), 900, 0.15)
+    A["Paths/Path_Stones_Curve"] = (path_curve(rng), 700, 0.15)
+    A["Paths/Path_Stones_Patch"] = (path_patch(rng), 900, 0.15)
+    rng = np.random.default_rng([2026, 2])          # eigen reeks per sectie: wijzigingen lopen niet door
+    A["Plants/Flower_Daisy_01"] = (mk.merge(daisy(rng, 0.18), daisy(rng, 0.14).transform(t=(0.10, 0, 0.06)),
+                                            daisy(rng, 0.20).transform(t=(-0.08, 0, 0.09))), 4000, 0.05)
+    A["Plants/Grass_Tuft_01"] = (grass_tuft(rng, 7, 0.32), 3000, 0.06)
+    A["Plants/Grass_Tuft_02"] = (grass_tuft(rng, 10, 0.45), 3000, 0.06)
+    A["Plants/Flower_Patch_01"] = (flower_patch(rng), 2500, 0.08)
+    rng = np.random.default_rng([2026, 3])          # eigen reeks per sectie: wijzigingen lopen niet door
+    # hoogtes gelijk aan de kliffen, zodat de stroom precies op de kliftop ligt (onder de grasrand):
+    # Large = Cliff_Pillar_Tall (4,6 m), Medium = Cliff_Module_B (3,0 m), Small = Cliff_Pillar_Small (2,4 m)
+    A["Water/Waterfall_Large"] = (waterfall(4.6, 2.4, rng), 200, 0.30)
+    A["Water/Waterfall_Medium"] = (waterfall(3.0, 1.6, rng), 250, 0.30)
+    A["Water/Waterfall_Small"] = (waterfall(2.4, 0.9, rng), 300, 0.25)
+    rng = np.random.default_rng([2026, 4])          # eigen reeks per sectie: wijzigingen lopen niet door
     A["Mountains/Mountain_Back_01"] = (mountain(46, 30, rng), 0.6, 4.0)
     A["Mountains/Mountain_Back_02"] = (mountain(60, 34, rng, peaks=2), 0.4, 4.0)
     A["Mountains/Mountain_Back_03"] = (mountain(70, 22, rng, peaks=3, seg=8), 0.4, 4.0)
+    rng = np.random.default_rng([2026, 5])          # eigen reeks per sectie: wijzigingen lopen niet door
     A["Sky/Cloud_01"] = (cloud(rng, 5, 6.0), 40, 0.6)
     A["Sky/Cloud_02"] = (cloud(rng, 4, 4.5), 50, 0.6)
     A["Sky/Cloud_03"] = (cloud(rng, 3, 3.0), 60, 0.6)
 
     os.makedirs(EXP_DIR, exist_ok=True)
     unity_assets.folder_meta(ROOT, MAT_DIR)
-    guids = {n: unity_assets.material(ROOT, f"{MAT_DIR}/{n}.mat", n, b, sm, None, op.get("opacity"))
+    guids = {n: unity_assets.material(ROOT, f"{MAT_DIR}/{n}.mat", n, b, sm, None, op.get("opacity"), ramp, sh, op)
              for n, (b, ramp, sm, sh, op) in MATERIALS.items()}
     manifest = {}
     for rel, (mesh, dens, rad) in A.items():
         name = os.path.basename(rel)
-        sc = make_scene(name, mesh, dens, rad, gradient=0.0 if rel.startswith("Sky") else 0.25,
-                        facet=not rel.startswith("Sky"))
+        smooth = rel.startswith("Sky")
+        sc = make_scene(name, mesh, dens, rad, gradient=0.0 if smooth or rel.startswith("Water") else 0.25, facet=not smooth)
+        if rel.startswith("Water"):                         # schuim zacht, water facet
+            m = sc.parts[0].mesh
+            m.FS = [mm not in ("M_Env_Foam", "M_Env_Mist") for mm in m.M]
+            m.sharp = False
         fbx_rel = f"{MODEL_DIR}/{rel}.fbx"
         os.makedirs(os.path.join(ROOT, os.path.dirname(fbx_rel)), exist_ok=True)
         unity_assets.folder_meta(ROOT, os.path.dirname(fbx_rel))

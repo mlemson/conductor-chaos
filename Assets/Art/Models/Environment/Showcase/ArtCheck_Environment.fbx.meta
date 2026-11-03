@@ -1,0 +1,95 @@
+fileFormatVersion: 2
+guid: ae50ca0f501c6242922b320baec70bb5
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Platform
+    second: {fileID: 2100000, guid: 43f831bab0cc6ae76a69eeb47b4c231f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_PlatformEdge
+    second: {fileID: 2100000, guid: 8fa629a888d94ec2bd79a0ad4ea345ce, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Ballast
+    second: {fileID: 2100000, guid: aa1719c1d64ad7df14cfecdfe9e2c065, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Sleeper
+    second: {fileID: 2100000, guid: c7ec54ee89d5523d6e3658c1d46cd6c8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Rail
+    second: {fileID: 2100000, guid: 0a454043c44ed58275cb540d015bc7b9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Grass
+    second: {fileID: 2100000, guid: e8b154d8f3511b615c2c41c4f4514c99, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Pine
+    second: {fileID: 2100000, guid: 0391df15d47c00744dc36e20c243021a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Trunk
+    second: {fileID: 2100000, guid: 6f8eabdd879e12c9ae93dc3fa2885446, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Rock
+    second: {fileID: 2100000, guid: d84dee4c75f78d56d0ebb91b77249e2a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Snow
+    second: {fileID: 2100000, guid: e702a95bb2e544dbc2c9f685d5a268e2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Bench
+    second: {fileID: 2100000, guid: ed5c59a4363da637025027b24ac0256d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Lamp
+    second: {fileID: 2100000, guid: 3229d7f4025cd3137f15aa350b56a878, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Post
+    second: {fileID: 2100000, guid: 7afa3a3c3489d5aa6fb055259289d280, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

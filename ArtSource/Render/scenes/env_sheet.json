@@ -224,14 +224,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 9.73,
+   "dist": 9.95,
    "target": "-0.01,0.93,-0.00",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 5.22,
-   "shadowSize": 3.34,
-   "far": 88.9,
+   "groundR": 5.33,
+   "shadowSize": 3.41,
+   "far": 89.8,
    "items": [
     {
      "url": "../Exports/Environment/Cliff_Module_A.glb"
@@ -248,14 +248,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 14.19,
+   "dist": 14.4,
    "target": "0.01,1.44,0.00",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 7.6,
-   "shadowSize": 4.87,
-   "far": 106.8,
+   "groundR": 7.72,
+   "shadowSize": 4.94,
+   "far": 107.6,
    "items": [
     {
      "url": "../Exports/Environment/Cliff_Module_B.glb"
@@ -272,14 +272,14 @@
    "fov": 30,
    "yaw": 28,
    "pitch": 14,
-   "dist": 10.59,
+   "dist": 10.78,
    "target": "-0.02,1.24,0.01",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 5.68,
-   "shadowSize": 3.63,
-   "far": 92.4,
+   "groundR": 5.78,
+   "shadowSize": 3.7,
+   "far": 93.1,
    "items": [
     {
      "url": "../Exports/Environment/Cliff_Module_C.glb"
@@ -312,6 +312,582 @@
   }
  },
  {
+  "name": "env_Cliff_Pillar_Small",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 10.16,
+   "target": "-0.01,1.33,-0.01",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 5.44,
+   "shadowSize": 3.48,
+   "far": 90.6,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cliff_Pillar_Small.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Cliff_Pillar_Tall",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 15.42,
+   "target": "0.01,2.45,0.00",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 8.26,
+   "shadowSize": 5.29,
+   "far": 111.7,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cliff_Pillar_Tall.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Cliff_Ledge_Low",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 13.0,
+   "target": "0.01,0.63,-0.00",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 6.96,
+   "shadowSize": 4.46,
+   "far": 102.0,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cliff_Ledge_Low.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Cliff_Block_Wide",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 14.06,
+   "target": "0.02,1.16,-0.01",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 7.54,
+   "shadowSize": 4.82,
+   "far": 106.2,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cliff_Block_Wide.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Cliff_Cluster_Step",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 21.4,
+   "target": "-0.00,2.22,-0.08",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 11.47,
+   "shadowSize": 7.34,
+   "far": 135.6,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cliff_Cluster_Step.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Cliff_Cluster_Corner",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 19.08,
+   "target": "-0.01,1.92,0.01",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 10.23,
+   "shadowSize": 6.55,
+   "far": 126.3,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cliff_Cluster_Corner.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Cliff_Cluster_Tall",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 26.24,
+   "target": "-0.00,3.37,-0.09",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 14.06,
+   "shadowSize": 9.0,
+   "far": 155.0,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cliff_Cluster_Tall.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Cliff_Big_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 36.62,
+   "target": "0.10,4.85,-0.08",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 19.63,
+   "shadowSize": 12.56,
+   "far": 196.5,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cliff_Big_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Stone_Single_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 2.11,
+   "target": "0.00,0.02,-0.01",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 1.13,
+   "shadowSize": 0.72,
+   "far": 58.4,
+   "items": [
+    {
+     "url": "../Exports/Environment/Stone_Single_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Stone_Single_02",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 3.16,
+   "target": "0.01,0.02,-0.00",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 1.69,
+   "shadowSize": 1.08,
+   "far": 62.6,
+   "items": [
+    {
+     "url": "../Exports/Environment/Stone_Single_02.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Stone_Single_03",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 3.65,
+   "target": "-0.03,0.02,0.01",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 1.95,
+   "shadowSize": 1.25,
+   "far": 64.6,
+   "items": [
+    {
+     "url": "../Exports/Environment/Stone_Single_03.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Stone_Single_04",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 2.73,
+   "target": "-0.05,0.02,-0.03",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 1.47,
+   "shadowSize": 0.94,
+   "far": 60.9,
+   "items": [
+    {
+     "url": "../Exports/Environment/Stone_Single_04.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Stone_Single_05",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 1.61,
+   "target": "0.02,0.02,-0.03",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 0.86,
+   "shadowSize": 0.55,
+   "far": 56.4,
+   "items": [
+    {
+     "url": "../Exports/Environment/Stone_Single_05.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Stone_Single_06",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 3.29,
+   "target": "-0.02,0.02,-0.02",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 1.76,
+   "shadowSize": 1.13,
+   "far": 63.2,
+   "items": [
+    {
+     "url": "../Exports/Environment/Stone_Single_06.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Path_Stones_Straight",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 5.46,
+   "target": "0.00,0.02,0.00",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 2.92,
+   "shadowSize": 1.87,
+   "far": 71.8,
+   "items": [
+    {
+     "url": "../Exports/Environment/Path_Stones_Straight.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Path_Stones_Curve",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 8.55,
+   "target": "0.74,0.02,-0.73",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 4.58,
+   "shadowSize": 2.93,
+   "far": 84.2,
+   "items": [
+    {
+     "url": "../Exports/Environment/Path_Stones_Curve.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Path_Stones_Patch",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 6.5,
+   "target": "-0.01,0.02,-0.04",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 3.48,
+   "shadowSize": 2.23,
+   "far": 76.0,
+   "items": [
+    {
+     "url": "../Exports/Environment/Path_Stones_Patch.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Flower_Daisy_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 1.2,
+   "target": "0.03,0.11,0.04",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 0.64,
+   "shadowSize": 0.41,
+   "far": 54.8,
+   "items": [
+    {
+     "url": "../Exports/Environment/Flower_Daisy_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Grass_Tuft_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 1.27,
+   "target": "-0.02,0.15,0.01",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 0.68,
+   "shadowSize": 0.43,
+   "far": 55.1,
+   "items": [
+    {
+     "url": "../Exports/Environment/Grass_Tuft_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Grass_Tuft_02",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 1.68,
+   "target": "0.02,0.20,0.00",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 0.9,
+   "shadowSize": 0.58,
+   "far": 56.7,
+   "items": [
+    {
+     "url": "../Exports/Environment/Grass_Tuft_02.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Flower_Patch_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 3.31,
+   "target": "0.02,0.13,-0.08",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 1.78,
+   "shadowSize": 1.14,
+   "far": 63.3,
+   "items": [
+    {
+     "url": "../Exports/Environment/Flower_Patch_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Waterfall_Large",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 17.66,
+   "target": "-0.06,2.27,0.49",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 9.47,
+   "shadowSize": 6.06,
+   "far": 120.7,
+   "items": [
+    {
+     "url": "../Exports/Environment/Waterfall_Large.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Waterfall_Medium",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 13.09,
+   "target": "-0.04,1.47,0.26",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 7.02,
+   "shadowSize": 4.49,
+   "far": 102.4,
+   "items": [
+    {
+     "url": "../Exports/Environment/Waterfall_Medium.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Waterfall_Small",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 10.45,
+   "target": "-0.03,1.17,0.13",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 5.6,
+   "shadowSize": 3.58,
+   "far": 91.8,
+   "items": [
+    {
+     "url": "../Exports/Environment/Waterfall_Small.glb"
+    }
+   ]
+  }
+ },
+ {
   "name": "env_Mountain_Back_01",
   "params": {
    "w": 700,
@@ -320,14 +896,14 @@
    "fov": 30,
    "yaw": 8,
    "pitch": 6,
-   "dist": 141.54,
-   "target": "-0.04,14.12,-0.70",
+   "dist": 142.48,
+   "target": "-1.13,14.12,-0.46",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 75.85,
-   "shadowSize": 48.54,
-   "far": 616.2,
+   "groundR": 76.36,
+   "shadowSize": 48.87,
+   "far": 619.9,
    "items": [
     {
      "url": "../Exports/Environment/Mountain_Back_01.glb"
@@ -344,14 +920,14 @@
    "fov": 30,
    "yaw": 8,
    "pitch": 6,
-   "dist": 195.63,
-   "target": "5.54,16.12,-0.01",
+   "dist": 218.86,
+   "target": "6.18,16.12,-1.08",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 104.84,
-   "shadowSize": 67.1,
-   "far": 832.5,
+   "groundR": 117.29,
+   "shadowSize": 75.06,
+   "far": 925.4,
    "items": [
     {
      "url": "../Exports/Environment/Mountain_Back_02.glb"
@@ -368,14 +944,14 @@
    "fov": 30,
    "yaw": 8,
    "pitch": 6,
-   "dist": 252.65,
-   "target": "-3.52,10.12,0.46",
+   "dist": 256.96,
+   "target": "2.50,10.12,1.25",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 135.4,
-   "shadowSize": 86.65,
-   "far": 1060.6,
+   "groundR": 137.7,
+   "shadowSize": 88.13,
+   "far": 1077.8,
    "items": [
     {
      "url": "../Exports/Environment/Mountain_Back_03.glb"
@@ -392,14 +968,14 @@
    "fov": 30,
    "yaw": 8,
    "pitch": 6,
-   "dist": 17.46,
-   "target": "0.27,1.04,0.08",
+   "dist": 17.26,
+   "target": "-0.03,0.81,-0.05",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 9.36,
-   "shadowSize": 5.99,
-   "far": 119.8,
+   "groundR": 9.25,
+   "shadowSize": 5.92,
+   "far": 119.0,
    "items": [
     {
      "url": "../Exports/Environment/Cloud_01.glb"
@@ -416,14 +992,14 @@
    "fov": 30,
    "yaw": 8,
    "pitch": 6,
-   "dist": 14.39,
-   "target": "-0.05,0.97,0.06",
+   "dist": 13.48,
+   "target": "-0.12,0.95,-0.02",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 7.71,
-   "shadowSize": 4.94,
-   "far": 107.6,
+   "groundR": 7.23,
+   "shadowSize": 4.62,
+   "far": 103.9,
    "items": [
     {
      "url": "../Exports/Environment/Cloud_02.glb"
@@ -440,14 +1016,14 @@
    "fov": 30,
    "yaw": 8,
    "pitch": 6,
-   "dist": 10.06,
-   "target": "-0.01,0.87,0.03",
+   "dist": 10.39,
+   "target": "0.15,0.88,-0.13",
    "lightAz": -35,
    "lightEl": 50,
    "groundShadowOnly": 1,
-   "groundR": 5.39,
-   "shadowSize": 3.45,
-   "far": 90.2,
+   "groundR": 5.57,
+   "shadowSize": 3.56,
+   "far": 91.6,
    "items": [
     {
      "url": "../Exports/Environment/Cloud_03.glb"
@@ -892,48 +1468,238 @@
      "rotY": 318.3094177913581
     },
     {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "url": "../Exports/Environment/Cliff_Block_Wide.glb",
      "pos": [
-      -34.0,
+      -34.15,
       -0.9,
-      -5.090947299171525
+      -5.91
      ],
      "rotY": 180,
      "scale": [
       1,
-      1.11,
+      0.83,
       1
      ]
     },
     {
-     "url": "../Exports/Environment/Cliff_Module_A.glb",
+     "url": "../Exports/Environment/Cliff_Pillar_Small.glb",
      "pos": [
-      -31.0,
+      -31.45,
       -0.9,
-      -5.585709633149833
+      -5.59
      ],
      "rotY": 0,
      "scale": [
       1,
-      0.9,
+      0.96,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Variant_02.glb",
+     "pos": [
+      -31.92,
+      1.83,
+      -5.79
+     ],
+     "rotY": 21.82222760594089
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -28.74,
+      -0.9,
+      -6.1
+     ],
+     "rotY": 180,
+     "scale": [
+      1,
+      0.96,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Cluster_Step.glb",
+     "pos": [
+      -24.15,
+      -0.9,
+      -5.41
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.03,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -19.56,
+      -0.9,
+      -5.7
+     ],
+     "rotY": 180,
+     "scale": [
+      1,
+      0.92,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Variant_02.glb",
+     "pos": [
+      -19.84,
+      1.91,
+      -5.9
+     ],
+     "rotY": 210.5643394483666
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Block_Wide.glb",
+     "pos": [
+      -15.84,
+      -0.9,
+      -5.94
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.05,
       1
      ]
     },
     {
      "url": "../Exports/Environment/Tree_Pine_Small_01.glb",
      "pos": [
-      -31.429845844888654,
-      1.0031263782403643,
-      -5.785709633149833
+      -16.31,
+      1.72,
+      -6.14
      ],
-     "rotY": 193.92966308796426
+     "rotY": 264.61648874911674
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Cluster_Corner.glb",
+     "pos": [
+      -12.08,
+      -0.9,
+      -5.87
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      0.86,
+      1
+     ]
     },
     {
      "url": "../Exports/Environment/Cliff_Module_A.glb",
      "pos": [
-      -29.0,
+      -9.16,
       -0.9,
-      -5.0213678950414655
+      -6.04
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      0.94,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Variant_02.glb",
+     "pos": [
+      -9.27,
+      1.03,
+      -6.24
+     ],
+     "rotY": 232.83490325713788
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_A.glb",
+     "pos": [
+      -7.15,
+      -0.9,
+      -5.31
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.09,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Ledge_Low.glb",
+     "pos": [
+      -4.27,
+      -0.9,
+      -5.36
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      0.97,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Ledge_Low.glb",
+     "pos": [
+      -0.55,
+      -0.9,
+      -6.27
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      0.85,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_A.glb",
+     "pos": [
+      2.32,
+      -0.9,
+      -6.02
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.0,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
+     "pos": [
+      1.93,
+      1.15,
+      -6.22
+     ],
+     "rotY": 72.93635165837541
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Cluster_Step.glb",
+     "pos": [
+      11.8,
+      -0.9,
+      -6.1
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.09,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Pillar_Small.glb",
+     "pos": [
+      15.37,
+      -0.9,
+      -5.69
      ],
      "rotY": 180,
      "scale": [
@@ -945,389 +1711,32 @@
     {
      "url": "../Exports/Environment/Cliff_Module_A.glb",
      "pos": [
-      -27.0,
+      17.23,
       -0.9,
-      -5.201958049580026
+      -6.26
      ],
-     "rotY": 0,
+     "rotY": 180,
      "scale": [
       1,
-      1.14,
+      0.99,
       1
      ]
     },
     {
      "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
      "pos": [
-      -26.544522032958778,
-      1.4854412966705923,
-      -5.401958049580026
+      17.53,
+      1.13,
+      -6.46
      ],
-     "rotY": 215.8625105830262
+     "rotY": 218.25439638980725
     },
     {
-     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "url": "../Exports/Environment/Cliff_Pillar_Small.glb",
      "pos": [
-      -25.0,
-      -0.9,
-      -5.189087445777761
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.04,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_C.glb",
-     "pos": [
-      -23.0,
-      -0.9,
-      -6.098013486349613
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      0.8,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      -20.0,
-      -0.9,
-      -5.08197773241804
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.1,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      -16.0,
-      -0.9,
-      -5.853152063222957
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      0.93,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      -12.0,
-      -0.9,
-      -5.850916528226314
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      0.86,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_A.glb",
-     "pos": [
-      -9.0,
-      -0.9,
-      -5.0875494219934465
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      0.92,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_C.glb",
-     "pos": [
-      -7.0,
-      -0.9,
-      -5.5205099049557305
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.03,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Tree_Pine_Variant_02.glb",
-     "pos": [
-      -7.276269295779829,
-      1.880301703396774,
-      -5.720509904955731
-     ],
-     "rotY": 31.371911406781248
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      -4.0,
-      -0.9,
-      -5.290351379607489
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.33,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Tree_Pine_Variant_02.glb",
-     "pos": [
-      -4.478744429251954,
-      3.1907257573797114,
-      -5.490351379607489
-     ],
-     "rotY": 21.561625058787612
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_A.glb",
-     "pos": [
-      -1.0,
-      -0.9,
-      -5.97393743889846
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.18,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_C.glb",
-     "pos": [
-      1.0,
-      -0.9,
-      -6.060190414832353
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.15,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      4.0,
-      -0.9,
-      -5.034885132537569
-     ],
-     "rotY": 180,
-     "scale": [
-      1,
-      0.95,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      8.0,
-      -0.9,
-      -5.004997135510651
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      0.9,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
-     "pos": [
-      7.655892042293027,
-      1.9090571451973406,
-      -5.204997135510651
-     ],
-     "rotY": 92.97992083018336
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_C.glb",
-     "pos": [
-      11.0,
-      -0.9,
-      -5.736596053182495
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.26,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
-     "pos": [
-      11.099281757801062,
-      2.4673139532934463,
-      -5.9365960531824955
-     ],
-     "rotY": 87.48465124952246
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_C.glb",
-     "pos": [
-      13.0,
-      -0.9,
-      -6.047334689267266
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.14,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_A.glb",
-     "pos": [
-      15.0,
-      -0.9,
-      -5.980606741065578
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.28,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      -32.0,
-      2.0,
-      -8.32953084239542
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.14,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_A.glb",
-     "pos": [
-      -29.0,
-      2.0,
-      -8.734148074249717
-     ],
-     "rotY": 180,
-     "scale": [
-      1,
-      1.18,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      -26.0,
-      2.0,
-      -9.15356423396746
-     ],
-     "rotY": 180,
-     "scale": [
-      1,
-      0.86,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
-     "pos": [
-      -26.291622322015627,
-      4.671335474252164,
-      -9.35356423396746
-     ],
-     "rotY": 296.53842483264697
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_C.glb",
-     "pos": [
-      -23.0,
-      2.0,
-      -8.08491657626313
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.09,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      -20.0,
-      2.0,
-      -8.41579088402629
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.06,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
-     "pos": [
-      -19.70121786579572,
-      5.290844846687872,
-      -8.61579088402629
-     ],
-     "rotY": 24.89555669508733
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      -16.0,
-      2.0,
-      -9.144082234714146
-     ],
-     "rotY": 180,
-     "scale": [
-      1,
-      0.94,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
-     "pos": [
-      -16.489369451742068,
-      4.91095564737731,
-      -9.344082234714145
-     ],
-     "rotY": 49.826991563577046
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      -12.0,
-      2.0,
-      -8.320513877053067
+      -33.15,
+      1.4,
+      -9.73
      ],
      "rotY": 0,
      "scale": [
@@ -1337,161 +1746,55 @@
      ]
     },
     {
-     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "url": "../Exports/Environment/Cliff_Cluster_Step.glb",
      "pos": [
-      -9.0,
-      2.0,
-      -8.358835977508383
+      -29.58,
+      1.4,
+      -10.12
      ],
      "rotY": 0,
      "scale": [
       1,
-      1.3,
+      0.9,
       1
      ]
     },
     {
      "url": "../Exports/Environment/Cliff_Module_B.glb",
      "pos": [
-      -6.0,
-      2.0,
-      -8.621317132706011
+      -24.99,
+      1.4,
+      -9.93
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      0.94,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -21.26,
+      1.4,
+      -9.63
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.18,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Pillar_Small.glb",
+     "pos": [
+      -18.55,
+      1.4,
+      -10.31
      ],
      "rotY": 180,
-     "scale": [
-      1,
-      1.15,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
-     "pos": [
-      -6.50968451988914,
-      5.549704460602071,
-      -8.82131713270601
-     ],
-     "rotY": 196.5943292707154
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_A.glb",
-     "pos": [
-      -3.0,
-      2.0,
-      -9.044546659649015
-     ],
-     "rotY": 180,
-     "scale": [
-      1,
-      1.21,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
-     "pos": [
-      -2.5189968728035455,
-      4.510864225581733,
-      -9.244546659649014
-     ],
-     "rotY": 313.5964532839239
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      0.0,
-      2.0,
-      -8.16383279115028
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.23,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      4.0,
-      2.0,
-      -8.469359719107308
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.12,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
-     "pos": [
-      4.591986625705987,
-      5.461420171488358,
-      -8.669359719107307
-     ],
-     "rotY": 316.7250584799697
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_C.glb",
-     "pos": [
-      -29.0,
-      5.0,
-      -11.36701223330838
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.31,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
-     "pos": [
-      -26.0,
-      5.0,
-      -11.577563431112079
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.1,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
-     "pos": [
-      -26.02285182158091,
-      8.39306552177847,
-      -11.777563431112078
-     ],
-     "rotY": 82.8797917415386
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_C.glb",
-     "pos": [
-      -23.0,
-      5.0,
-      -11.407842094417235
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.23,
-      1
-     ]
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_C.glb",
-     "pos": [
-      -21.0,
-      5.0,
-      -11.386235625042694
-     ],
-     "rotY": 0,
      "scale": [
       1,
       0.97,
@@ -1499,64 +1802,213 @@
      ]
     },
     {
+     "url": "../Exports/Environment/Cliff_Cluster_Step.glb",
+     "pos": [
+      -14.97,
+      1.4,
+      -10.13
+     ],
+     "rotY": 180,
+     "scale": [
+      1,
+      1.0,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Cluster_Step.glb",
+     "pos": [
+      -9.52,
+      1.4,
+      -9.81
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.18,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -4.92,
+      1.4,
+      -10.38
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.16,
+      1
+     ]
+    },
+    {
      "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
      "pos": [
-      -20.695474452623234,
-      7.610476676783003,
-      -11.586235625042693
+      -5.18,
+      4.94,
+      -10.58
      ],
-     "rotY": 123.30873815414607
-    },
-    {
-     "url": "../Exports/Environment/Cliff_Module_C.glb",
-     "pos": [
-      -19.0,
-      5.0,
-      -11.80764725740471
-     ],
-     "rotY": 0,
-     "scale": [
-      1,
-      1.29,
-      1
-     ]
+     "rotY": 317.69078754328376
     },
     {
      "url": "../Exports/Environment/Cliff_Module_B.glb",
      "pos": [
-      -16.0,
-      5.0,
-      -11.232813920784327
+      -1.2,
+      1.4,
+      -10.19
      ],
-     "rotY": 0,
+     "rotY": 180,
      "scale": [
       1,
-      1.04,
+      1.17,
       1
      ]
     },
     {
-     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "url": "../Exports/Environment/Cliff_Cluster_Step.glb",
      "pos": [
-      -12.0,
-      5.0,
-      -11.820215786607033
+      3.39,
+      1.4,
+      -9.89
      ],
      "rotY": 0,
      "scale": [
       1,
-      1.12,
+      0.91,
       1
      ]
     },
     {
-     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "url": "../Exports/Environment/Cliff_Block_Wide.glb",
      "pos": [
-      -11.595485259035353,
-      8.462126859794003,
-      -12.020215786607032
+      4.6,
+      -0.9,
+      -6.4
      ],
-     "rotY": 305.53930978928565
+     "scale": [
+      1.0,
+      1.3636,
+      1.0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Waterfall_Medium.glb",
+     "pos": [
+      4.6,
+      -0.91,
+      -5.25
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Rock_Small_01.glb",
+     "pos": [
+      5.7,
+      -0.9,
+      -4.6
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
+     "pos": [
+      3.5,
+      3.09,
+      -6.6
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_combo_waterfall",
+  "params": {
+   "w": 1200,
+   "h": 900,
+   "ss": 1.4,
+   "fov": 34,
+   "yaw": 22,
+   "pitch": 10,
+   "dist": 17,
+   "target": "0,3.2,0",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 14,
+   "shadowSize": 12,
+   "far": 200,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cliff_Cluster_Tall.glb",
+     "pos": [
+      -1.6,
+      0,
+      -1.2
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Pillar_Tall.glb",
+     "pos": [
+      3.0,
+      0,
+      -2.2
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Waterfall_Large.glb",
+     "pos": [
+      3.0,
+      0,
+      -0.95
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Ledge_Low.glb",
+     "pos": [
+      3.2,
+      0,
+      1.6
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Waterfall_Small.glb",
+     "pos": [
+      -1.5,
+      -0.25,
+      1.3
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Rock_Medium_01.glb",
+     "pos": [
+      0.6,
+      0,
+      2.6
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
+     "pos": [
+      -3.4,
+      6.6,
+      -1.6
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Small_01.glb",
+     "pos": [
+      -0.6,
+      2.75,
+      0.9
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Bush_01.glb",
+     "pos": [
+      5.6,
+      0,
+      2.2
+     ]
     }
    ]
   }

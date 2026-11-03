@@ -56,6 +56,7 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
     sh.uniforms.uPaint = { value: (opts.paint ?? 1.0) * STYLE.noise };
     sh.uniforms.uEdge = { value: opts.edge ?? 1.0 };
     sh.uniforms.uOpacity = { value: opts.opacity ?? 1.0 };
+    sh.uniforms.uSoftEdge = { value: opts.softEdge ?? 0.0 };
     sh.uniforms.uCells = { value: opts.emissive ? 0.0 : (opts.cells ?? 1.0) };   // grote vlakken met iets andere tint
     sh.uniforms.uCellSize = { value: opts.cellSize ?? 0.45 };
     sh.uniforms.uGrime = { value: opts.grime ?? 0.0 };                          // onderin viezer
@@ -69,7 +70,7 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
         uniform vec3 uRamp[5]; uniform float uShift; uniform vec3 uFog; uniform vec2 uFogRange; uniform float uEmissive;
-        uniform float uOpacity;
+        uniform float uOpacity; uniform float uSoftEdge;
         uniform float uCells; uniform float uCellSize; uniform float uGrime; uniform vec2 uGrimeY; uniform vec3 uDirt;
         vec3 hash33(vec3 p){ p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33);
           return fract((p.xxy + p.yxx) * p.zyx); }
@@ -108,7 +109,7 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
         vec4 cl = cell3(vWorldPos / uCellSize);
         t += (cl.x - 0.5) * 0.10 * uCells;
         // vuil: onderin donkerder en bruiner, per cel (zodat ook het vuil uit vlakken bestaat)
-        float cy = mix(vWorldPos.y, cl.w * uCellSize, step(0.001, uCells));
+        float cy = mix(vWorldPos.y, cl.z * uCellSize, step(0.001, uCells));   // hoogte van het celmiddelpunt
         float grime = (1. - smoothstep(uGrimeY.x, uGrimeY.y, cy + (hash33(cl.yzw).y - 0.5) * 0.45)) * uGrime;
         t -= grime * 0.11;
         #if NUM_DIR_LIGHTS > 0
@@ -128,6 +129,8 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
         col = mix(col, uFog, fogT * 0.85);
         // glas: doorzichtig, aan de randen (scherende hoek) iets dekkender
         float alpha = uOpacity >= 1.0 ? 1.0 : clamp(uOpacity + fr * 0.45, 0., 1.);
+        // mist/zachte wolk: randen juist doorzichtig (geen 'zeepbel')
+        alpha = mix(alpha, uOpacity * (1.0 - pow(1.0 - max(dot(N, V), 0.), 1.5)), uSoftEdge);
         gl_FragColor = vec4(col, alpha);`);
   };
   return m;

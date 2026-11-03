@@ -408,7 +408,7 @@ def env_sheet():
     H = 200 + hh + 40 + 70 + rows * (th + 80) + 40
     sheet = Image.new("RGBA", (W, H), BG + (255,))
     d = ImageDraw.Draw(sheet)
-    label(d, (60, 40), "Natuur- en achtergrondkit · v1", 56)
+    label(d, (60, 40), "Natuur- en achtergrondkit · v2", 56)
     d.text((64, 148), "Modulair (issue #30) · chunky low-poly, grote leesbare vormen · warm vooraan, koel achteraan · kleuren uit palette.json",
            font=font(25, False), fill=SUB)
     sheet.alpha_composite(ex.resize((hw, hh), Image.LANCZOS), (60, 200))
@@ -416,15 +416,16 @@ def env_sheet():
     rx = 60 + hw + 40
     d.rounded_rectangle([rx, 200, W - 50, 200 + hh], 22, fill=PANEL)
     d.text((rx + 24, 222), "Lagen", font=font(28), fill=YEL)
-    notes = ["1  Bij het spoor: grasheuvel, rotsen,", "   struiken, een enkele kleine boom",
-             "2  Midden: klifmodules op een raster", "   van 2 m, in terrassen gestapeld,", "   bomen op de randen",
-             "3  Achter: beboste heuvelrug, verre", "   blauwe bergen, wolken, mist", "",
-             "Stijl", "•  grote vormen, weinig details", "•  facetten met afgeschuinde overgangen",
-             "•  bovenkant licht, onderkant donker", "•  grote kleurvlakken in de shader",
-             "•  pivot midden-onder, 1 unit = 1 m", "•  elk asset een eigen FBX + GLB"]
+    notes = ["1  Bij het spoor: grasheuvel, rotsen, struiken",
+             "2  Midden: klifclusters in terrassen, watervallen",
+             "3  Achter: heuvelrug, blauwe bergen, wolken, mist"]
     for k, t in enumerate(notes):
-        is_head = t in ("Stijl",)
-        d.text((rx + 24, 280 + k * 40), t, font=font(24 if is_head else 21, is_head), fill=YEL if is_head else SUB)
+        d.text((rx + 24, 280 + k * 40), t, font=font(21, False), fill=SUB)
+    combo = sky(load("env_combo_waterfall").size)
+    combo.alpha_composite(load("env_combo_waterfall"))
+    combo = fit(combo, W - 50 - rx - 48, hh - 260)
+    sheet.alpha_composite(combo, (rx + 24, 420))
+    d.text((rx + 24, 428 + combo.height), "Klifclusters + stilstaande watervallen ('als een plaatje')", font=font(20, False), fill=MUTED)
     by = 200 + hh + 40
     label(d, (60, by), "Kit", 30)
     for i, (name, a) in enumerate(assets.items()):
@@ -441,6 +442,34 @@ def env_sheet():
     sheet.convert("RGB").save(os.path.join(DOCS, "Environment_DesignSheet.png"), optimize=True)
 
 
+def terrain_sheet():
+    rows = [("Detail (v1)", [("T_Ground_Grass", "Gras"), ("T_Ground_GrassFlowers", "Gras + bloemetjes"), ("T_Ground_Dirt", "Grond / berm"),
+                             ("T_Ground_PathStones", "Stenen pad"), ("T_Ground_Rock", "Rots (steil)")]),
+            ("Effen set (test) · zoals het gras en de rots op de kliffen",
+             [("T_Flat_Grass", "Gras"), ("T_Flat_GrassSmall", "Gras, kleine vlakken"), ("T_Flat_GrassShade", "Gras, schaduw"),
+              ("T_Flat_GrassFlowers", "Gras + bloemetjes"), ("T_Flat_Dirt", "Grond / berm")]),
+            ("", [("T_Flat_Sand", "Zandpad"), ("T_Flat_Rock", "Rots"), ("T_Flat_Stone", "Stenen vloer"), ("T_Flat_Snow", "Sneeuw")])]
+    W, tw = 3000, 540
+    rh = tw + 170
+    H = 200 + rh * len(rows)
+    sheet = Image.new("RGBA", (W, H), BG + (255,))
+    d = ImageDraw.Draw(sheet)
+    label(d, (60, 40), "Terrein · grondtextures", 56)
+    d.text((64, 148), "Issue #38 · tegelbaar (hier 2×2 getoond) · Unity: Conductor Chaos > Art > Terrain · kleuren uit palette.json",
+           font=font(25, False), fill=SUB)
+    for r, (title, names) in enumerate(rows):
+        y0 = 200 + r * rh
+        if title:
+            d.text((64, y0), title, font=font(26), fill=TXT)
+        for i, (n, cap) in enumerate(names):
+            im = Image.open(os.path.join(ROOT, "ArtSource", "Exports", "Terrain", n + "_preview.png")).convert("RGBA").resize((tw, tw))
+            x = 60 + i * (tw + 30)
+            sheet.alpha_composite(im, (x, y0 + 44))
+            d.text((x + tw // 2, y0 + 58 + tw), cap, font=font(26), fill=TXT, anchor="ma")
+            d.text((x + tw // 2, y0 + 96 + tw), n, font=font(18, False), fill=MUTED, anchor="ma")
+    sheet.convert("RGB").save(os.path.join(DOCS, "Terrain_DesignSheet.png"), optimize=True)
+
+
 if __name__ == "__main__":
     design_sheet()
     c = art_check()
@@ -451,4 +480,6 @@ if __name__ == "__main__":
         cattle_sheet()
     if os.path.exists(os.path.join(OUT, "env_example.png")):
         env_sheet()
+    if os.path.exists(os.path.join(ROOT, "ArtSource", "Exports", "Terrain", "T_Ground_Grass_preview.png")):
+        terrain_sheet()
     print("ok ->", DOCS)

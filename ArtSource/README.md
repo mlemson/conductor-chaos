@@ -15,7 +15,8 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 | `Train/Locomotive/build_locomotive.py` | Locomotief v2.1 (ronde ketelneus, rookkastring met lamp, gewelfd dak, sierlijsten, drijfstang) — issue #22 |
 | `Train/CattleWagon/build_cattle_wagon.py` | Veewagen: rode kooi uit één stuk om een lattenwand met echte kieren, schuifdeuren, gewelfd dak, interieur (stro, hooibalen), doorloopbaar — issue #25 |
 | `Train/Tender/build_tender.py` | Kolenwagen direct achter de loc (rode bak, gouden rand, panelen met klinknagels, kolenberg, ladder, sluitlampen) — issue #22 |
-| `Environment/build_environment_kit.py` | Modulaire natuurkit (issue #30): bomen, struik, rotsen, klifmodules, grasheuvel, verre bergen, wolken; elk asset een eigen FBX + GLB, gedeelde materialen |
+| `Environment/build_environment_kit.py` | Modulaire natuurkit (issue #30): bomen, struik, rotsen, klifmodules + klifclusters (v2), grasheuvel, stilstaande watervallen, verre bergen, wolken; elk asset een eigen FBX + GLB, gedeelde materialen |
+| `Textures/build_ground_textures.py` | Tegelbare grondtextures voor het Unity-terrein (gras, bloemetjes, grond, stenen pad, rots), issue #38 |
 | `Tools/meshkit.py` | Kleine numpy-toolkit: lathe/superellips, afgeronde box, ellipsoïde, capsule, profielextrusie (ketel/dak); export naar FBX (ASCII) en glTF (.glb) |
 | `Tools/spatial_fallback.py` | NumPy-terugval voor de straalzoekopdracht bij het bakken van vertexkleur als SciPy ontbreekt |
 | `Tools/implicit_body.py` | Bouwt het lijf met broek en voeten als één verbonden oppervlak met een echte opening tussen de benen |
@@ -67,6 +68,12 @@ Pas vormen of maten aan in de `build_*.py`-scripts, niet in de FBX. Kleuren kome
   Standaard verborgen: `Mouth_Surprised`, `Mouth_Happy`, `Prop_Key`.
 - **Uit één stuk:** gebruik `meshkit.frame_ring` (kader met verstekhoeken), `meshkit.hollow_box` (holle bak met dagkanten) en `meshkit.prism` (stapvormig profiel). Laat geen balken stomp tegen elkaar eindigen; een lijst die op een andere lijst aansluit, eindigt daarin.
 - Doorloopbaar (issue #24): de cabine-achterdeur, de kolenwagen (`FallPlate`, dekken, `Coal`) en de kopse doorgangen van de wagon zijn de ankers voor latere colliders.
+- **Prop Painter (Unity, issue #35):** *Conductor Chaos > Art > Prop Painter* schildert natuur-assets met een kwast over de map.
+  - Presets: Bomen, Rotsen, Kliffen, Water, Achtergrond en Bos + rotsen. Het palet heeft gewichten en je kunt modellen erin slepen.
+  - Instellingen: straal, aantal per stip, minimale afstand, willekeurige schaal en hoogte, draaistap (kliffen 90°), volg ondergrond, inzakken en raster.
+  - Bediening: LMB = schilderen, Shift+LMB = gummen (alleen geschilderde objecten), `[` `]` = kwastgrootte. Alles kan met Undo terug.
+  - Objecten komen onder `PaintedProps/<categorie>` als prefab-instanties.
+  - Met *Collider toevoegen* kun je daarna bomen óp kliffen schilderen.
 - Regionale wagon: `DoorLeaf_L/R` schuiven langs lokale X (dicht = +0,475 / −0,475). `KeyLock` (0,72 m) en
   `DoorSill` zijn de interactie-ankers voor P0-05.
 - **Geschilderde variatie** (zodat niets één effen kleur is) is per vertex gebakken in de vertexkleur
