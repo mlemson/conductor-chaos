@@ -405,16 +405,16 @@
     "Stone_Single_01": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_01.fbx",
-      "tris": 42,
+      "tris": 56,
       "min": [
-        -0.293,
+        -0.343,
         -0.04,
-        -0.322
+        -0.358
       ],
       "max": [
-        0.304,
-        0.07,
-        0.354
+        0.371,
+        0.183,
+        0.327
       ],
       "materials": [
         "M_Env_PathStone"
@@ -423,34 +423,88 @@
     "Stone_Single_02": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_02.fbx",
-      "tris": 42,
+      "tris": 56,
       "min": [
-        -0.504,
+        -0.342,
         -0.04,
-        -0.42
+        -0.393
       ],
       "max": [
-        0.426,
-        0.07,
-        0.422
+        0.391,
+        0.193,
+        0.4
       ],
       "materials": [
-        "M_Env_PathStone"
+        "M_Env_PathStoneMid"
       ]
     },
     "Stone_Single_03": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_03.fbx",
-      "tris": 42,
+      "tris": 56,
       "min": [
-        -0.564,
+        -0.664,
         -0.04,
-        -0.598
+        -0.581
       ],
       "max": [
-        0.551,
-        0.09,
-        0.659
+        0.738,
+        0.244,
+        0.53
+      ],
+      "materials": [
+        "M_Env_PathStoneDark"
+      ]
+    },
+    "Stone_Single_04": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_04.fbx",
+      "tris": 56,
+      "min": [
+        -0.446,
+        -0.04,
+        -0.427
+      ],
+      "max": [
+        0.422,
+        0.193,
+        0.393
+      ],
+      "materials": [
+        "M_Env_PathStoneWarm"
+      ]
+    },
+    "Stone_Single_05": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_05.fbx",
+      "tris": 56,
+      "min": [
+        -0.236,
+        -0.04,
+        -0.225
+      ],
+      "max": [
+        0.229,
+        0.192,
+        0.224
+      ],
+      "materials": [
+        "M_Env_PathStoneDark"
+      ]
+    },
+    "Stone_Single_06": {
+      "category": "Paths",
+      "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_06.fbx",
+      "tris": 56,
+      "min": [
+        -0.485,
+        -0.04,
+        -0.5
+      ],
+      "max": [
+        0.402,
+        0.219,
+        0.499
       ],
       "materials": [
         "M_Env_PathStone"
@@ -466,8 +520,8 @@
         -0.57
       ],
       "max": [
-        1.133,
-        0.07,
+        1.02,
+        0.195,
         0.57
       ],
       "materials": [
@@ -478,39 +532,43 @@
     "Path_Stones_Curve": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Path_Stones_Curve.fbx",
-      "tris": 356,
+      "tris": 496,
       "min": [
         -0.565,
         -0.04,
-        -2.015
+        -2.021
       ],
       "max": [
-        2.043,
-        0.07,
+        2.088,
+        0.198,
         0.565
       ],
       "materials": [
         "M_Env_Dirt",
-        "M_Env_PathStone"
+        "M_Env_PathStone",
+        "M_Env_PathStoneDark",
+        "M_Env_PathStoneMid"
       ]
     },
     "Path_Stones_Patch": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Path_Stones_Patch.fbx",
-      "tris": 248,
+      "tris": 304,
       "min": [
-        -0.988,
+        -1.004,
         -0.04,
-        -1.007
+        -1.025
       ],
       "max": [
-        0.928,
-        0.07,
-        1.016
+        1.05,
+        0.201,
+        0.981
       ],
       "materials": [
         "M_Env_Dirt",
-        "M_Env_PathStone"
+        "M_Env_PathStone",
+        "M_Env_PathStoneDark",
+        "M_Env_PathStoneMid"
       ]
     },
     "Flower_Daisy_01": {
@@ -518,14 +576,14 @@
       "fbx": "Assets/Art/Models/Environment/Plants/Flower_Daisy_01.fbx",
       "tris": 726,
       "min": [
-        -0.187,
+        -0.148,
         -0.012,
-        -0.088
+        -0.094
       ],
       "max": [
-        0.205,
+        0.212,
         0.231,
-        0.181
+        0.182
       ],
       "materials": [
         "M_Env_FlowerHeart",
@@ -538,14 +596,14 @@
       "fbx": "Assets/Art/Models/Environment/Plants/Grass_Tuft_01.fbx",
       "tris": 28,
       "min": [
-        -0.136,
+        -0.162,
         -0.02,
-        -0.146
+        -0.144
       ],
       "max": [
-        0.12,
-        0.325,
-        0.119
+        0.118,
+        0.322,
+        0.171
       ],
       "materials": [
         "M_Env_Bush"
@@ -556,14 +614,14 @@
       "fbx": "Assets/Art/Models/Environment/Plants/Grass_Tuft_02.fbx",
       "tris": 40,
       "min": [
-        -0.162,
+        -0.194,
         -0.02,
-        -0.191
+        -0.182
       ],
       "max": [
-        0.25,
-        0.469,
-        0.211
+        0.23,
+        0.43,
+        0.186
       ],
       "materials": [
         "M_Env_Bush"
@@ -574,14 +632,14 @@
       "fbx": "Assets/Art/Models/Environment/Plants/Flower_Patch_01.fbx",
       "tris": 1282,
       "min": [
-        -0.541,
+        -0.481,
         -0.02,
-        -0.496
+        -0.555
       ],
       "max": [
-        0.431,
-        0.282,
-        0.289
+        0.524,
+        0.28,
+        0.403
       ],
       "materials": [
         "M_Env_Bush",
@@ -597,7 +655,7 @@
       "min": [
         -2.465,
         -0.06,
-        -1.28
+        -1.277
       ],
       "max": [
         2.346,
@@ -618,7 +676,7 @@
       "tris": 3484,
       "min": [
         -1.822,
-        -0.131,
+        -0.06,
         -1.283
       ],
       "max": [
@@ -641,12 +699,12 @@
       "min": [
         -1.259,
         -0.06,
-        -1.279
+        -1.278
       ],
       "max": [
         1.199,
         2.4,
-        1.673
+        1.545
       ],
       "materials": [
         "M_Env_Foam",
@@ -661,14 +719,14 @@
       "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_01.fbx",
       "tris": 90,
       "min": [
-        -22.398,
+        -23.878,
         -2.0,
-        -14.436
+        -12.92
       ],
       "max": [
-        19.319,
+        21.627,
         30.25,
-        13.567
+        11.991
       ],
       "materials": [
         "M_Env_Mountain",
@@ -680,14 +738,14 @@
       "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_02.fbx",
       "tris": 180,
       "min": [
-        -26.318,
+        -33.399,
         -2.0,
-        -16.92
+        -18.577
       ],
       "max": [
-        41.754,
+        45.755,
         34.25,
-        14.512
+        16.413
       ],
       "materials": [
         "M_Env_Mountain",
@@ -699,14 +757,14 @@
       "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_03.fbx",
       "tris": 240,
       "min": [
-        -52.008,
+        -47.518,
         -2.0,
-        -19.801
+        -18.374
       ],
       "max": [
-        47.086,
+        52.517,
         22.25,
-        18.397
+        20.881
       ],
       "materials": [
         "M_Env_Mountain",
@@ -718,14 +776,14 @@
       "fbx": "Assets/Art/Models/Environment/Sky/Cloud_01.fbx",
       "tris": 720,
       "min": [
-        -3.667,
+        -3.534,
         0.0,
-        -1.243
+        -0.936
       ],
       "max": [
-        3.548,
-        1.934,
-        0.963
+        3.467,
+        1.62,
+        0.833
       ],
       "materials": [
         "M_Env_Cloud"
@@ -736,14 +794,14 @@
       "fbx": "Assets/Art/Models/Environment/Sky/Cloud_02.fbx",
       "tris": 576,
       "min": [
-        -2.538,
+        -2.629,
         0.0,
-        -0.888
+        -1.098
       ],
       "max": [
-        2.872,
-        1.732,
-        1.138
+        2.389,
+        1.897,
+        1.056
       ],
       "materials": [
         "M_Env_Cloud"
@@ -754,14 +812,14 @@
       "fbx": "Assets/Art/Models/Environment/Sky/Cloud_03.fbx",
       "tris": 432,
       "min": [
-        -2.142,
+        -1.642,
         0.0,
-        -0.865
+        -1.122
       ],
       "max": [
-        1.811,
-        1.395,
-        0.696
+        1.939,
+        1.768,
+        0.853
       ],
       "materials": [
         "M_Env_Cloud"
@@ -1014,7 +1072,7 @@
       }
     },
     "M_Env_PathStone": {
-      "base": "#958E9C",
+      "base": "#B5AAAC",
       "ramp": [
         "#6F696E",
         "#7B7582",
@@ -1022,12 +1080,67 @@
         "#958E9C",
         "#B5AAAC"
       ],
-      "rampShift": 0.1,
+      "rampShift": 0.08,
       "smoothness": 0.05,
       "opts": {
-        "cells": 0.6,
-        "cellSize": 0.4,
-        "rim": 0.2
+        "cells": 0.5,
+        "cellSize": 0.6,
+        "rim": 0.2,
+        "edge": 2.0
+      }
+    },
+    "M_Env_PathStoneMid": {
+      "base": "#8E8796",
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "rampShift": -0.32,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.6,
+        "rim": 0.2,
+        "edge": 2.0
+      }
+    },
+    "M_Env_PathStoneDark": {
+      "base": "#6F696E",
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "rampShift": -0.72,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.6,
+        "rim": 0.15,
+        "edge": 2.0
+      }
+    },
+    "M_Env_PathStoneWarm": {
+      "base": "#BE907B",
+      "ramp": [
+        "#6A4C4B",
+        "#906959",
+        "#AC7F75",
+        "#BE907B",
+        "#CA957A"
+      ],
+      "rampShift": -0.12,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.6,
+        "rim": 0.2,
+        "edge": 2.0
       }
     },
     "M_Env_Dirt": {

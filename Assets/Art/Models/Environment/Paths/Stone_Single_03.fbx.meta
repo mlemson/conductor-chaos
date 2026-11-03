@@ -7,8 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Env_PathStone
-    second: {fileID: 2100000, guid: 3dd855bd19f62165af73ee7a17393816, type: 2}
+      name: M_Env_PathStoneDark
+    second: {fileID: 2100000, guid: 53d04c4d845928e57e5664ad09ce510d, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

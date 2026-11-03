@@ -7,13 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Env_Snow
-    second: {fileID: 2100000, guid: 45a841c8c253bc7c3caec6e714c07cd4, type: 2}
+      name: M_Env_Mountain
+    second: {fileID: 2100000, guid: 704bc9b7e5c923343ee0a70f60ffc1c9, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Env_Mountain
-    second: {fileID: 2100000, guid: 704bc9b7e5c923343ee0a70f60ffc1c9, type: 2}
+      name: M_Env_Snow
+    second: {fileID: 2100000, guid: 45a841c8c253bc7c3caec6e714c07cd4, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

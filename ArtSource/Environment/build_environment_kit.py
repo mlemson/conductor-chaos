@@ -59,7 +59,11 @@ MATERIALS = {
                                                                        "noShadow": True, "edge": 0.0}),
     "M_Env_Foam": (R["cloud_snow"][4], R["cloud_snow"], 0.0, 0.25, {"cells": 0.0, "flat": 0.45, "rim": 0.20,
                                                                        "noShadow": True, "edge": 0.0}),
-    "M_Env_PathStone": (R["metal"][3], R["metal"], 0.05, 0.10, {"cells": 0.6, "cellSize": 0.4, "rim": 0.2}),
+    # keien in drie tinten (licht / middel / donker grijs) + een warme zandsteen: contrast tussen de stenen
+    "M_Env_PathStone": (R["metal"][4], R["metal"], 0.05, 0.08, {"cells": 0.5, "cellSize": 0.6, "rim": 0.2, "edge": 2.0}),
+    "M_Env_PathStoneMid": (R["metal"][2], R["metal"], 0.05, -0.32, {"cells": 0.5, "cellSize": 0.6, "rim": 0.2, "edge": 2.0}),
+    "M_Env_PathStoneDark": (R["metal"][0], R["metal"], 0.05, -0.72, {"cells": 0.5, "cellSize": 0.6, "rim": 0.15, "edge": 2.0}),
+    "M_Env_PathStoneWarm": (R["cliff"][3], R["cliff"], 0.05, -0.12, {"cells": 0.5, "cellSize": 0.6, "rim": 0.2, "edge": 2.0}),
     "M_Env_Dirt": (R["cliff"][1], R["cliff"], 0.05, -0.30, {"cells": 0.6, "cellSize": 0.6, "rim": 0.1}),
     "M_Env_Petal": (R["cloud_snow"][4], R["cloud_snow"], 0.05, 0.10, {"cells": 0.0, "rim": 0.2}),
     "M_Env_FlowerHeart": (R["helmet"][2], R["helmet"], 0.05, 0.0, {"cells": 0.0}),
@@ -410,11 +414,22 @@ def waterfall(H, W, rng, strips=None):
 
 
 # ------------------------------------------------------- paden en planten
-def stone(r, rng, h=0.07):
-    """Platte, afgeronde kei (laag-poly), licht in de grond: bovenkant vlak, schuine rand."""
-    rk = rng.uniform(0.85, 1.15, 7)
-    m = lathe_mod([(0.0, h), (r * 0.78, h), (r, h * 0.45), (r * 0.96, -0.04), (0.0, -0.04)], 7,
-                  rmod=lambda i, k, rk=rk: rk[k], phase=rng.uniform(0, 6.28), mat="M_Env_PathStone")
+STONE_MATS = ["M_Env_PathStone", "M_Env_PathStoneMid", "M_Env_PathStoneDark", "M_Env_PathStoneWarm"]
+STONE_WEIGHTS = [0.32, 0.30, 0.24, 0.14]
+
+
+def stone(r, rng, h=0.07, mat=None):
+    """Afgeronde kei (laag-poly), licht in de grond: gefacetteerde bolle bovenkant (vlakken vangen elk
+    ander licht), schuine rand. Zonder mat krijgt elke kei willekeurig een licht/middel/donker/warm tint."""
+    if mat is None:
+        mat = STONE_MATS[rng.choice(len(STONE_MATS), p=STONE_WEIGHTS)]
+    seg = 7
+    rk = rng.uniform(0.85, 1.15, seg)
+    dy = rng.uniform(-0.55, 0.55, (6, seg)) * h          # scheve facetten op de bovenkant
+    prof = [(0.0, h * 2.6), (r * 0.40, h * 2.25), (r * 0.76, h * 1.45), (r, h * 0.45), (r * 0.96, -0.04), (0.0, -0.04)]
+    m = lathe_mod(prof, seg, rmod=lambda i, k, rk=rk: rk[k],
+                  ymod=lambda i, k, dy=dy: dy[i, k] if i in (1, 2) else (dy[0, 0] * 0.5 if i == 0 else 0.0),
+                  phase=rng.uniform(0, 6.28), mat=mat)
     m.V[:, 0] *= rng.uniform(0.85, 1.15)
     return m
 
@@ -557,7 +572,7 @@ def cloud(rng, n=5, w=6.0):
 # ------------------------------------------------------------------ export
 def make_scene(name, mesh, density, radius, gradient=0.25, facet=True):
     sc = mk.Scene(name)
-    for mname in set(mesh.M):
+    for mname in sorted(set(mesh.M)):          # vaste volgorde: geen ruis in FBX/meta-diffs
         b, ramp, sm, sh, op = MATERIALS[mname]
         sc.material(mname, b, ramp, sm, ramp_shift=sh, opts=dict(op))
     sc.add(mk.Part(name, mesh, (0, 0, 0), None))
@@ -599,23 +614,31 @@ def build_all():
     A["Cliffs/Cliff_Big_01"] = (cluster([(-4.0, 0.2, -3.0, 1.0, 9.5), (-0.2, 4.0, -3.2, 0.4, 7.4),
                                           (-4.2, -0.8, 0.6, 3.0, 4.6), (-1.0, 2.2, 0.2, 2.6, 3.0),
                                           (2.0, 4.4, 0.2, 2.4, 1.8)], rng), 60, 0.55)
-    A["Paths/Stone_Single_01"] = (stone(0.32, rng), 2500, 0.10)
-    A["Paths/Stone_Single_02"] = (stone(0.45, rng), 2500, 0.10)
-    A["Paths/Stone_Single_03"] = (stone(0.60, rng, 0.09), 2000, 0.12)
+    rng = np.random.default_rng([2026, 1])          # eigen reeks per sectie: wijzigingen lopen niet door
+    A["Paths/Stone_Single_01"] = (stone(0.32, rng, mat="M_Env_PathStone"), 2500, 0.10)
+    A["Paths/Stone_Single_02"] = (stone(0.45, rng, mat="M_Env_PathStoneMid"), 2500, 0.10)
+    A["Paths/Stone_Single_03"] = (stone(0.60, rng, 0.09, mat="M_Env_PathStoneDark"), 2000, 0.12)
+    A["Paths/Stone_Single_04"] = (stone(0.40, rng, mat="M_Env_PathStoneWarm"), 2500, 0.10)
+    A["Paths/Stone_Single_05"] = (stone(0.26, rng, mat="M_Env_PathStoneDark"), 2500, 0.10)
+    A["Paths/Stone_Single_06"] = (stone(0.52, rng, 0.08, mat="M_Env_PathStone"), 2000, 0.12)
     A["Paths/Path_Stones_Straight"] = (path_straight(rng), 900, 0.15)
     A["Paths/Path_Stones_Curve"] = (path_curve(rng), 700, 0.15)
     A["Paths/Path_Stones_Patch"] = (path_patch(rng), 900, 0.15)
+    rng = np.random.default_rng([2026, 2])          # eigen reeks per sectie: wijzigingen lopen niet door
     A["Plants/Flower_Daisy_01"] = (mk.merge(daisy(rng, 0.18), daisy(rng, 0.14).transform(t=(0.10, 0, 0.06)),
                                             daisy(rng, 0.20).transform(t=(-0.08, 0, 0.09))), 4000, 0.05)
     A["Plants/Grass_Tuft_01"] = (grass_tuft(rng, 7, 0.32), 3000, 0.06)
     A["Plants/Grass_Tuft_02"] = (grass_tuft(rng, 10, 0.45), 3000, 0.06)
     A["Plants/Flower_Patch_01"] = (flower_patch(rng), 2500, 0.08)
+    rng = np.random.default_rng([2026, 3])          # eigen reeks per sectie: wijzigingen lopen niet door
     A["Water/Waterfall_Large"] = (waterfall(6.0, 2.4, rng), 200, 0.30)
     A["Water/Waterfall_Medium"] = (waterfall(4.0, 1.6, rng), 250, 0.30)
     A["Water/Waterfall_Small"] = (waterfall(2.4, 0.9, rng), 300, 0.25)
+    rng = np.random.default_rng([2026, 4])          # eigen reeks per sectie: wijzigingen lopen niet door
     A["Mountains/Mountain_Back_01"] = (mountain(46, 30, rng), 0.6, 4.0)
     A["Mountains/Mountain_Back_02"] = (mountain(60, 34, rng, peaks=2), 0.4, 4.0)
     A["Mountains/Mountain_Back_03"] = (mountain(70, 22, rng, peaks=3, seg=8), 0.4, 4.0)
+    rng = np.random.default_rng([2026, 5])          # eigen reeks per sectie: wijzigingen lopen niet door
     A["Sky/Cloud_01"] = (cloud(rng, 5, 6.0), 40, 0.6)
     A["Sky/Cloud_02"] = (cloud(rng, 4, 4.5), 50, 0.6)
     A["Sky/Cloud_03"] = (cloud(rng, 3, 3.0), 60, 0.6)
