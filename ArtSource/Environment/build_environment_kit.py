@@ -48,10 +48,14 @@ MATERIALS = {
     "M_Env_Trunk": (R["interior_wood"][1], R["interior_wood"], 0.05, -0.05, {"cells": 0.5}),
     "M_Env_Bush": (R["grass"][1], R["grass"], 0.05, -0.18, {"cells": 0.6, "cellSize": 0.5}),
     "M_Env_Rock": (R["metal"][2], R["metal"], 0.05, 0.06, {"cells": 1.0, "cellSize": 0.6, "rim": 0.25}),
-    "M_Env_Cliff": (R["cliff"][2], R["cliff"], 0.05, 0.0, {"cells": 1.0, "cellSize": 0.8, "rim": 0.22}),
+    "M_Env_Cliff": (R["cliff"][2], R["cliff"], 0.05, 0.04, {"cells": 0.55, "cellSize": 1.1, "rim": 0.22}),
     "M_Env_Grass": (R["grass"][2], R["grass"], 0.05, 0.02, {"cells": 0.8, "cellSize": 0.9}),
     "M_Env_Mountain": (R["mountain"][2], R["mountain"], 0.05, 0.02, {"cells": 0.8, "cellSize": 6.0, "rim": 0.12, "edge": 0.6}),
     "M_Env_Snow": (R["cloud_snow"][3], R["cloud_snow"], 0.05, 0.05, {"cells": 0.4, "cellSize": 5.0, "rim": 0.10}),
+    "M_Env_Water": (R["water"][2], R["water"], 0.3, 0.02, {"cells": 0.0, "flat": 0.45, "rim": 0.20, "edge": 0.0}),
+    "M_Env_WaterLight": (R["water"][4], R["water"], 0.3, 0.30, {"cells": 0.0, "flat": 0.75, "rim": 0.10, "edge": 0.0}),
+    "M_Env_Foam": (R["cloud_snow"][4], R["cloud_snow"], 0.0, 0.25, {"cells": 0.0, "flat": 0.45, "rim": 0.20,
+                                                                       "noShadow": True, "edge": 0.0}),
     "M_Env_Cloud": (R["cloud_snow"][3], R["cloud_snow"], 0.0, 0.12, {"cells": 0.0, "flat": 0.35, "rim": 0.25,
                                                                        "noShadow": True, "edge": 0.0}),
 }
@@ -243,6 +247,81 @@ def hill(rng):
     return loft(rings, "M_Env_Grass")
 
 
+# ------------------------------------------------- kliffen v2: clusters van grote, gefacetteerde pijlers
+def pillar(x0, x1, z0, z1, H, rng, tufts=True):
+    """Pijler zoals in het referentieblad: grote vlakke facetten (2–3 per zijde), afgeschuinde hoeken,
+    een vlak grasdek met korte overhang en een paar graspluk-bolletjes."""
+    base = rect_outline(x0, x1, z0, z1, step=0.85, chamfer=min(0.35, (x1 - x0) * 0.18, (z1 - z0) * 0.18))
+    n = len(base)
+    fold = np.array([0.17 if k % 2 else -0.05 for k in range(n)]) + rng.uniform(-0.03, 0.05, n)
+    tilt = rng.uniform(-0.10, 0.10, n)
+    rings = [(offset(base, -fold), -0.30),
+             (offset(base, -fold * 1.1 + tilt), H * 0.45),
+             (offset(base, -fold * 0.9 + 0.03), H * 0.88),
+             (offset(base, -fold * 0.5 + 0.10), H - 0.02)]
+    body = loft(rings, "M_Env_Cliff")
+    drip = rng.uniform(0.04, 0.16, n) * (rng.uniform(0, 1, n) > 0.45)
+    grass = loft([(offset(base, -fold * 0.5 + 0.02), H - 0.07 - drip),
+                  (offset(base, -fold * 0.5 - 0.04), H + 0.04),
+                  (offset(base, -fold * 0.5 + 0.12), H + 0.12),
+                  (offset(base, min(0.40, 0.22 * min(x1 - x0, z1 - z0))), H + 0.14)], "M_Env_Grass")
+    parts = [body, grass]
+    if tufts:
+        for _ in range(rng.integers(1, 4)):
+            tx = rng.uniform(x0 + 0.3, x1 - 0.3)
+            tz = rng.uniform(z0 + 0.3, z1 - 0.3)
+            s = rng.uniform(0.20, 0.34)
+            t = blob(s * 1.1, s * 0.95, s, rng, 0.10, seg=7, rings=4, mat="M_Env_Bush", flat_bottom=-s * 0.5)
+            parts.append(t.transform(t=(tx, H + 0.12 + s * 0.45, tz)))
+    return mk.merge(*parts)
+
+
+def cluster(blocks, rng):
+    """Klifcluster: meerdere pijlers van verschillende hoogte die in elkaar steken (één massa, terrassen)."""
+    return mk.merge(*[pillar(*b, rng) for b in blocks])
+
+
+def waterfall(H, W, rng, strips=5):
+    """Stilstaande waterval 'zoals in een plaatje': verticale banen in twee tinten die over een ronde lip
+    vallen, onderaan witte schuimwolkjes. Pivot midden-onder, de lip ligt op y = H tegen een klifrand (−Z)."""
+    parts = []
+    xs = np.linspace(-W / 2, W / 2, strips + 1)
+    for i in range(strips):
+        a, b = xs[i] + 0.01, xs[i + 1] - 0.01
+        bulge = rng.uniform(0.02, 0.10)
+        fwd = 0.05 if i % 2 else 0.0
+        bot = rng.uniform(-0.10, 0.25) + (0.0 if i % 2 else 0.1)
+        t = 0.12
+        outer = [(-0.70, H + 0.03), (-0.12, H + 0.03), (0.06 + fwd, H - 0.10), (0.14 + fwd, H - 0.36),
+                 (0.18 + fwd + bulge, H * 0.55), (0.20 + fwd + bulge * 0.6, H * 0.22), (0.21 + fwd, bot)]
+        inner = [(0.21 + fwd - t, bot), (0.20 + fwd + bulge * 0.6 - t, H * 0.22), (0.18 + fwd + bulge - t, H * 0.55),
+                 (0.14 + fwd - t, H - 0.36), (0.02 + fwd - t * 0.5, H - 0.13), (-0.12, H + 0.03 - t), (-0.70, H + 0.03 - t)]
+        prof = outer + inner
+        mat = "M_Env_WaterLight" if i % 2 else "M_Env_Water"
+        strip = mk.prism([(u, v) for (u, v) in prof], a, b, 0.015, mat=mat)
+        # prism: profiel in (x=u, y), extrusie langs z -> draai zodat u = +Z (naar voren) en z = X (breedte)
+        strip = strip.transform(R=mk.rot_y(-math.pi / 2))
+        parts.append(strip)
+    # lichte lip over de hele breedte (water dat over de rand buigt)
+    lip = [(-0.50, H + 0.06), (-0.10, H + 0.06), (0.10, H - 0.07), (0.20, H - 0.32), (0.20 - 0.10, H - 0.34),
+           (0.06, H - 0.14), (-0.10, H - 0.04), (-0.50, H - 0.04)]
+    parts.append(mk.prism(lip, -W / 2 - 0.02, W / 2 + 0.02, 0.03, mat="M_Env_WaterLight").transform(R=mk.rot_y(-math.pi / 2)))
+    # schuim onderaan
+    n = max(3, int(W / 0.45))
+    for k in range(n):
+        x = -W / 2 + W * (k + 0.5) / n + rng.uniform(-0.1, 0.1)
+        r = rng.uniform(0.28, 0.42) * (0.75 + 0.35 * min(1.0, W / 2.0))
+        puff = mk.ellipsoid(r * 1.15, r * 0.80, r * 0.90, 10, 6, mat="M_Env_Foam")
+        puff.V[:, 1] = np.maximum(puff.V[:, 1], -r * 0.2)
+        parts.append(puff.transform(t=(x, r * 0.2, 0.25 + rng.uniform(-0.05, 0.12))))
+    for k in range(max(2, n // 2)):                         # losse spetters
+        r = rng.uniform(0.08, 0.14)
+        sp = mk.ellipsoid(r, r * 0.9, r, 8, 5, mat="M_Env_Foam")
+        parts.append(sp.transform(t=(rng.uniform(-W / 2 - 0.3, W / 2 + 0.3), rng.uniform(0.0, 0.25), rng.uniform(0.45, 0.85))))
+    m = mk.merge(*parts)
+    return m
+
+
 # ------------------------------------------------------------------- bergen
 def mountain(width, height, rng, peaks=1, seg=9):
     """Verre berg: groot facetsilhouet (plat in de diepte) met een simpele, gekartelde sneeuwkap."""
@@ -317,6 +396,23 @@ def build_all():
     terr = mk.merge(cliff_block(-1, 1, 0.0, 1, 1.2, rng, ledge=False), cliff_block(-1, 1, -1, 0.15, 2.6, rng))
     A["Cliffs/Cliff_Module_C"] = (terr, 250, 0.35)
     A["Cliffs/Hill_Grass_01"] = (hill(rng), 120, 0.50)
+    # v2: clusters in referentiestijl (grote facetten, terrassen) — meer variatie en grotere formaten
+    A["Cliffs/Cliff_Pillar_Small"] = (pillar(-0.75, 0.75, -0.75, 0.75, 2.4, rng), 300, 0.30)
+    A["Cliffs/Cliff_Pillar_Tall"] = (pillar(-1, 1, -1, 1, 4.6, rng), 200, 0.35)
+    A["Cliffs/Cliff_Ledge_Low"] = (pillar(-2, 2, -1, 1, 1.0, rng), 200, 0.35)
+    A["Cliffs/Cliff_Block_Wide"] = (pillar(-2, 2, -1, 1, 2.2, rng), 200, 0.35)
+    A["Cliffs/Cliff_Cluster_Step"] = (cluster([(-3.0, -0.8, -1.4, 0.4, 4.2), (-1.0, 1.2, -1.2, 0.8, 2.8),
+                                                (0.9, 3.0, -1.0, 1.2, 1.5)], rng), 150, 0.40)
+    A["Cliffs/Cliff_Cluster_Corner"] = (cluster([(-2.0, 0.2, -2.0, 0.2, 3.6), (0.0, 2.0, -2.0, -0.2, 2.4),
+                                                  (-2.0, -0.2, 0.0, 2.0, 1.8), (-0.1, 1.2, 0.0, 1.2, 1.0)], rng), 150, 0.40)
+    A["Cliffs/Cliff_Cluster_Tall"] = (cluster([(-3.0, -0.4, -2.0, 0.6, 6.5), (-0.6, 2.4, -2.2, 0.2, 5.0),
+                                                (-2.4, 0.4, 0.4, 2.0, 2.6), (0.2, 3.0, 0.0, 1.8, 1.6)], rng), 100, 0.45)
+    A["Cliffs/Cliff_Big_01"] = (cluster([(-4.0, 0.2, -3.0, 1.0, 9.5), (-0.2, 4.0, -3.2, 0.4, 7.4),
+                                          (-4.2, -0.8, 0.6, 3.0, 4.6), (-1.0, 2.2, 0.2, 2.6, 3.0),
+                                          (2.0, 4.4, 0.2, 2.4, 1.8)], rng), 60, 0.55)
+    A["Water/Waterfall_Large"] = (waterfall(6.0, 2.4, rng, 6), 200, 0.30)
+    A["Water/Waterfall_Medium"] = (waterfall(4.0, 1.6, rng, 4), 250, 0.30)
+    A["Water/Waterfall_Small"] = (waterfall(2.4, 0.8, rng, 3), 300, 0.25)
     A["Mountains/Mountain_Back_01"] = (mountain(46, 30, rng), 0.6, 4.0)
     A["Mountains/Mountain_Back_02"] = (mountain(60, 34, rng, peaks=2), 0.4, 4.0)
     A["Mountains/Mountain_Back_03"] = (mountain(70, 22, rng, peaks=3, seg=8), 0.4, 4.0)
@@ -331,8 +427,12 @@ def build_all():
     manifest = {}
     for rel, (mesh, dens, rad) in A.items():
         name = os.path.basename(rel)
-        sc = make_scene(name, mesh, dens, rad, gradient=0.0 if rel.startswith("Sky") else 0.25,
-                        facet=not rel.startswith("Sky"))
+        smooth = rel.startswith("Sky")
+        sc = make_scene(name, mesh, dens, rad, gradient=0.0 if smooth or rel.startswith("Water") else 0.25, facet=not smooth)
+        if rel.startswith("Water"):                         # schuim zacht, water facet
+            m = sc.parts[0].mesh
+            m.FS = [mm != "M_Env_Foam" for mm in m.M]
+            m.sharp = False
         fbx_rel = f"{MODEL_DIR}/{rel}.fbx"
         os.makedirs(os.path.join(ROOT, os.path.dirname(fbx_rel)), exist_ok=True)
         unity_assets.folder_meta(ROOT, os.path.dirname(fbx_rel))

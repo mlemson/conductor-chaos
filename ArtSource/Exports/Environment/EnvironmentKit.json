@@ -242,19 +242,239 @@
         "M_Env_Grass"
       ]
     },
+    "Cliff_Pillar_Small": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Pillar_Small.fbx",
+      "tris": 204,
+      "min": [
+        -1.04,
+        -0.3,
+        -0.973
+      ],
+      "max": [
+        0.952,
+        2.964,
+        0.883
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Pillar_Tall": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Pillar_Tall.fbx",
+      "tris": 226,
+      "min": [
+        -1.198,
+        -0.3,
+        -1.18
+      ],
+      "max": [
+        1.211,
+        5.195,
+        1.231
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Ledge_Low": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Ledge_Low.fbx",
+      "tris": 290,
+      "min": [
+        -2.209,
+        -0.3,
+        -1.235
+      ],
+      "max": [
+        2.173,
+        1.552,
+        1.214
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Block_Wide": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Block_Wide.fbx",
+      "tris": 332,
+      "min": [
+        -2.159,
+        -0.3,
+        -1.242
+      ],
+      "max": [
+        2.198,
+        2.613,
+        1.262
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Cluster_Step": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Step.fbx",
+      "tris": 772,
+      "min": [
+        -3.238,
+        -0.3,
+        -1.641
+      ],
+      "max": [
+        3.184,
+        4.698,
+        1.397
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Cluster_Corner": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Corner.fbx",
+      "tris": 944,
+      "min": [
+        -2.22,
+        -0.3,
+        -2.254
+      ],
+      "max": [
+        2.275,
+        4.128,
+        2.191
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Cluster_Tall": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Cluster_Tall.fbx",
+      "tris": 1146,
+      "min": [
+        -3.211,
+        -0.3,
+        -2.509
+      ],
+      "max": [
+        3.192,
+        7.092,
+        2.211
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Big_01": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Big_01.fbx",
+      "tris": 1544,
+      "min": [
+        -4.395,
+        -0.3,
+        -3.435
+      ],
+      "max": [
+        4.542,
+        9.977,
+        3.224
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Waterfall_Large": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Waterfall_Large.fbx",
+      "tris": 1336,
+      "min": [
+        -1.412,
+        -0.066,
+        -0.7
+      ],
+      "max": [
+        1.293,
+        6.06,
+        0.86
+      ],
+      "materials": [
+        "M_Env_Foam",
+        "M_Env_Water",
+        "M_Env_WaterLight"
+      ]
+    },
+    "Waterfall_Medium": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Waterfall_Medium.fbx",
+      "tris": 920,
+      "min": [
+        -0.845,
+        -0.075,
+        -0.7
+      ],
+      "max": [
+        1.064,
+        4.06,
+        0.797
+      ],
+      "materials": [
+        "M_Env_Foam",
+        "M_Env_Water",
+        "M_Env_WaterLight"
+      ]
+    },
+    "Waterfall_Small": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Waterfall_Small.fbx",
+      "tris": 812,
+      "min": [
+        -0.756,
+        -0.044,
+        -0.7
+      ],
+      "max": [
+        0.594,
+        2.46,
+        0.871
+      ],
+      "materials": [
+        "M_Env_Foam",
+        "M_Env_Water",
+        "M_Env_WaterLight"
+      ]
+    },
     "Mountain_Back_01": {
       "category": "Mountains",
       "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_01.fbx",
       "tris": 90,
       "min": [
-        -22.652,
+        -24.898,
         -2.0,
-        -12.906
+        -12.58
       ],
       "max": [
-        22.58,
+        23.897,
         30.25,
-        11.508
+        14.166
       ],
       "materials": [
         "M_Env_Mountain",
@@ -266,14 +486,14 @@
       "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_02.fbx",
       "tris": 180,
       "min": [
-        -27.697,
+        -31.229,
         -2.0,
-        -18.046
+        -16.485
       ],
       "max": [
-        38.778,
+        42.997,
         34.25,
-        18.028
+        14.959
       ],
       "materials": [
         "M_Env_Mountain",
@@ -285,14 +505,14 @@
       "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_03.fbx",
       "tris": 240,
       "min": [
-        -53.273,
+        -49.651,
         -2.0,
-        -17.156
+        -19.177
       ],
       "max": [
-        46.24,
+        50.88,
         22.25,
-        18.082
+        16.836
       ],
       "materials": [
         "M_Env_Mountain",
@@ -304,14 +524,14 @@
       "fbx": "Assets/Art/Models/Environment/Sky/Cloud_01.fbx",
       "tris": 720,
       "min": [
-        -3.117,
+        -3.305,
         0.0,
-        -1.122
+        -0.979
       ],
       "max": [
-        3.661,
-        2.077,
-        1.283
+        3.504,
+        1.856,
+        1.119
       ],
       "materials": [
         "M_Env_Cloud"
@@ -322,14 +542,14 @@
       "fbx": "Assets/Art/Models/Environment/Sky/Cloud_02.fbx",
       "tris": 576,
       "min": [
-        -2.746,
+        -2.436,
         0.0,
-        -1.077
+        -1.096
       ],
       "max": [
-        2.651,
-        1.938,
-        1.198
+        2.841,
+        1.881,
+        1.036
       ],
       "materials": [
         "M_Env_Cloud"
@@ -340,14 +560,14 @@
       "fbx": "Assets/Art/Models/Environment/Sky/Cloud_03.fbx",
       "tris": 432,
       "min": [
-        -1.73,
+        -1.558,
         0.0,
-        -0.936
+        -0.885
       ],
       "max": [
-        1.701,
-        1.745,
-        1.006
+        1.868,
+        1.643,
+        0.916
       ],
       "materials": [
         "M_Env_Cloud"
@@ -446,11 +666,11 @@
         "#BE907B",
         "#CA957A"
       ],
-      "rampShift": 0.0,
+      "rampShift": 0.04,
       "smoothness": 0.05,
       "opts": {
-        "cells": 1.0,
-        "cellSize": 0.8,
+        "cells": 0.55,
+        "cellSize": 1.1,
         "rim": 0.22
       }
     },
@@ -503,6 +723,61 @@
         "cells": 0.4,
         "cellSize": 5.0,
         "rim": 0.1
+      }
+    },
+    "M_Env_Water": {
+      "base": "#8EC7EC",
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "rampShift": 0.02,
+      "smoothness": 0.3,
+      "opts": {
+        "cells": 0.0,
+        "flat": 0.45,
+        "rim": 0.2,
+        "edge": 0.0
+      }
+    },
+    "M_Env_WaterLight": {
+      "base": "#ADD7ED",
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.3,
+      "opts": {
+        "cells": 0.0,
+        "flat": 0.75,
+        "rim": 0.1,
+        "edge": 0.0
+      }
+    },
+    "M_Env_Foam": {
+      "base": "#FDF2EB",
+      "ramp": [
+        "#C2CAEA",
+        "#C7D0F0",
+        "#DFDDEE",
+        "#E7E1EA",
+        "#FDF2EB"
+      ],
+      "rampShift": 0.25,
+      "smoothness": 0.0,
+      "opts": {
+        "cells": 0.0,
+        "flat": 0.45,
+        "rim": 0.2,
+        "noShadow": true,
+        "edge": 0.0
       }
     },
     "M_Env_Cloud": {

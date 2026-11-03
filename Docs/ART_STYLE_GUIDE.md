@@ -188,6 +188,8 @@ Zie `Docs/Art/Environment_DesignSheet.png` en `ArtSource/Environment/build_envir
 - **Bomen:** een korte zeskantige stam met 2–4 gestapelde kegellagen, een afgeronde en licht gekartelde onderrand en een duidelijk driehoekig silhouet. Gedempt blauwgroen (`pine`), geen takken of naalden.
 - **Rotsen:** chunky grijs-mauve klonten (`metal`-ramp) met weinig facetten, iets in de grond gezet.
 - **Kliffen:** modules op een raster van 2 m (A 2×2×2 m, B 4×2×3 m, C een terras van 1,2 en 2,6 m) met verticale facetkolommen, een terrasrand halverwege en een grasdek dat een fractie overhangt. Randen bollen tot ongeveer 0,1 m uit, zodat buren elkaar overlappen. Stapelen en roteren (0/180°) mag, ook in hoogte schalen (0,8–1,35).
+- **Klifclusters (v2):** pijlers van grote vlakke facetten (2–3 per zijde) met afgeschuinde hoeken, in hoogte gestaffeld tot terrassen, met een vlak grasdek, korte overhang en een paar graspluk-bolletjes. Combineer klein en groot (tot ~10 m) om herhaling te voorkomen.
+- **Watervallen:** stilstaand en grafisch: verticale banen in twee watertinten, een lichte lip over de rand en witte schuimwolkjes onderaan. Plaats ze tegen een klifwand, met de lip op de hoogte van het grasdek.
 - **Verre bergen:** grote facetsilhouetten in `mountain` (blauw-paars) met een simpele, gekartelde sneeuwkap; plat in de diepte.
 - **Wolken:** zachte, ronde puffen (`cloud_snow`), zonder facetten en zonder schaduw.
 
