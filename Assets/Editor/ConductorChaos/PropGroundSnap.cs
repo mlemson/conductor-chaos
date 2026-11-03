@@ -26,6 +26,32 @@ namespace ConductorChaos.EditorTools
                       "Bloemen en gras op steile hellingen blijven in de scène bewaard (Undo mogelijk).");
         }
 
+        // Voor oudere losse planten zonder PaintedProp-component: selecteer de betreffende
+        // objecten (of hun parent) en gebruik dit menu. Beperkt tot gras en bloemen;
+        // geen globale verplaatsing van handmatig geplaatste scenery.
+        [MenuItem("Conductor Chaos/Art/Snap Selected Flowers And Grass To Terrain")]
+        static void SnapSelectedVegetationMenu()
+        {
+            int corrected = 0;
+            var seen = new HashSet<Transform>();
+            foreach (var root in Selection.transforms)
+                foreach (var child in root.GetComponentsInChildren<Transform>(true))
+                {
+                    if (!seen.Add(child) || !Plant(child, null)) continue;
+                    var terrain = TerrainAt(child.position);
+                    if (terrain == null) continue;
+                    var marker = child.GetComponent<PaintedProp>();
+                    if (marker == null)
+                    {
+                        marker = Undo.AddComponent<PaintedProp>(child.gameObject);
+                        marker.groundOffset = DefaultOffset("Plants", child);
+                    }
+                    corrected += SnapOne(child, marker, "Plants", terrain);
+                }
+            Debug.Log($"[Props] {corrected} geselecteerde gras- of bloemobjecten verplaatst/verborgen. " +
+                      "Handmatig uitgeschakelde objecten worden niet gewijzigd.");
+        }
+
         /// <summary>
         /// Dezelfde plaatsingscontrole voor Prop Painter en herstel: ook de voetafdruk naast
         /// de plant moet vlak genoeg zijn (anders hangt de bloem aan de klifrand).
