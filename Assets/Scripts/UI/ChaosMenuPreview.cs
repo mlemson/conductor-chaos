@@ -34,8 +34,10 @@ namespace ConductorChaos.UI
             Canvas canvas = ChaosUI.MakeCanvas(transform, "Conductor Chaos | Menu Preview", true);
             RectTransform root = (RectTransform)canvas.transform;
 
-            ChaosUI.Panel(root, "Background / ink", V(0, 0), V(1, 1), ChaosUI.Dark);
-            ChaosUI.Panel(root, "Muted background ribbon", V(0.32f, 0.76f), V(1, 1), ChaosUI.Navy);
+            Color softScrim = ChaosUI.Dark; softScrim.a = 0.16f;
+            Color skyScrim = ChaosUI.Navy; skyScrim.a = 0.22f;
+            ChaosUI.Panel(root, "Light screen scrim", V(0, 0), V(1, 1), softScrim);
+            ChaosUI.Panel(root, "Muted background ribbon", V(0.32f, 0.76f), V(1, 1), skyScrim);
             ChaosUI.Panel(root, "Subtle horizon strip", V(0.32f, 0.74f), V(1, 0.755f), ChaosUI.TrainRedDark);
             ChaosUI.Label(root, "Scene status", "UI STYLE PREVIEW  ·  Not an online lobby", 15, ChaosUI.Muted,
                 TextAnchor.MiddleRight, FontStyle.Bold, V(0.55f, 0.92f), V(0.97f, 0.97f));
@@ -76,7 +78,7 @@ namespace ConductorChaos.UI
 
         private void BuildLobby(RectTransform root)
         {
-            lobby = ChaosUI.Panel(root, "Lobby (concept only)", V(0.345f, 0.13f), V(0.965f, 0.9f),
+            lobby = ChaosUI.Panel(root, "Lobby (concept only)", V(0.575f, 0.13f), V(0.965f, 0.9f),
                 ChaosUI.Slate, 2, ChaosUI.Muted);
             ChaosUI.Label(lobby, "Lobby title", "MULTIPLAYER LOBBY", 31, ChaosUI.Paper,
                 TextAnchor.MiddleLeft, FontStyle.Bold, V(0.035f, 0.88f), V(0.75f, 0.975f));
@@ -111,7 +113,7 @@ namespace ConductorChaos.UI
 
         private void BuildSettings(RectTransform root)
         {
-            settings = ChaosUI.Panel(root, "Settings", V(0.345f, 0.13f), V(0.965f, 0.9f),
+            settings = ChaosUI.Panel(root, "Settings", V(0.575f, 0.13f), V(0.965f, 0.9f),
                 ChaosUI.Slate, 2, ChaosUI.Muted);
             ChaosUI.Label(settings, "Heading", "SETTINGS", 32, ChaosUI.Paper,
                 TextAnchor.MiddleLeft, FontStyle.Bold, V(0.035f, 0.88f), V(0.90f, 0.97f));
@@ -141,7 +143,7 @@ namespace ConductorChaos.UI
 
         private void BuildHudExample(RectTransform root)
         {
-            hudExample = ChaosUI.Panel(root, "HUD style examples", V(0.345f, 0.13f), V(0.965f, 0.9f),
+            hudExample = ChaosUI.Panel(root, "HUD style examples", V(0.575f, 0.13f), V(0.965f, 0.9f),
                 ChaosUI.Slate, 2, ChaosUI.Muted);
             ChaosUI.Label(hudExample, "Title", "HUD COMPONENT PREVIEW", 30, ChaosUI.Paper,
                 TextAnchor.MiddleLeft, FontStyle.Bold, V(0.035f, 0.87f), V(0.96f, 0.97f));
