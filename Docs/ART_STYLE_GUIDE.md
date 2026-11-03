@@ -349,6 +349,8 @@ Aanpak: één gedeelde stylized-lit shader (Shader Graph) met zachte 2–3-staps
 
 ---
 
+**Concrete implementatie en prioritaire referenties:** lees eerst de [UI Style Guide](UI_STYLE_GUIDE.md). De eerder ontworpen **UI-component sheet (beeld 1)** en **main menu/lobby (beeld 3)** zijn leidend; beeld 2 is te vol voor standaard gameplay. Deze sectie beschrijft alleen de brede visuele context. Maak niet zelfstandig een tweede UI-palet of glanzende HUD.
+
 ## J. UI / HUD stijl
 
 ## Richting
