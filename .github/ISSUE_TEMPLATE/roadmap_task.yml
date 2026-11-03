@@ -1,41 +1,85 @@
-name: Roadmap task
-description: Functionele, technische of visuele taak voor Conductor Chaos
+name: Kleine uitvoertaak
+description: Één feature, interactie of asset in één PR; geen complete systemen tegelijk
+title: "[P1] "
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Kies bij voorkeur een ontbrekend klein deel van een bestaand overkoepelend issue.
+        Lees `Docs/AI/SMALL_TASK_PLAYBOOK.md`. De gebruiker doet waar mogelijk zelf de Play-/feel-test.
   - type: dropdown
     id: phase
     attributes:
       label: Fase
-      description: Gebruik dezelfde [P0], [P1] of [P2] ook in de titel.
-      options: [P0, P1, P2]
+      description: Zet de fase ook in de titel als [P0], [P1] of [P2].
+      options:
+        - P0
+        - P1
+        - P2
     validations:
       required: true
   - type: dropdown
     id: area
     attributes:
       label: Onderdeel
-      options: [Foundation, Multiplayer, Train, Interactions, Physics, Gameplay, World, Art, QA, Polish, Other]
+      options:
+        - Gameplay
+        - Physics
+        - Train
+        - Interactions
+        - Multiplayer
+        - World
+        - Art
+        - Polish
+        - Foundation
+        - QA
+        - Other
     validations:
       required: true
+  - type: input
+    id: parent
+    attributes:
+      label: Overkoepelend issue (optioneel)
+      placeholder: "#10"
   - type: textarea
     id: goal
     attributes:
-      label: Doel
-      description: Wat moet zichtbaar of aantoonbaar veranderen?
+      label: Resultaat in één zin
+      description: Wat moet deze ene taak toevoegen of verbeteren?
+      placeholder: Een ticket bij één NPC kunnen controleren.
+    validations:
+      required: true
+  - type: textarea
+    id: in_scope
+    attributes:
+      label: Wat doen en waar kijken?
+      description: Noem alleen relevante bestaande scripts/assets en wat expliciet buiten scope blijft.
     validations:
       required: true
   - type: textarea
     id: criteria
     attributes:
-      label: Acceptatiecriteria
-      description: Wat moet werken? Noem host en aparte client als het multiplayer raakt.
+      label: Klaar als
+      description: Eén of twee concrete acceptatiecriteria, niet alle mogelijke scenarios.
       value: |
-        - [ ] Functionaliteit werkt volgens beschrijving
-        - [ ] Relevante tests en beperkingen gedocumenteerd
-        - [ ] Bestaande onderdelen blijven werken
+        - [ ] De beschreven functionaliteit of asset bestaat.
+        - [ ] Alleen relevante bestanden en Unity .meta-bestanden aangepast.
+    validations:
+      required: true
+  - type: dropdown
+    id: check
+    attributes:
+      label: Passende minimale controle
+      options:
+        - Statische inspectie / import / één screenshot (geen Play)
+        - Compile / één korte gerichte lokale actie
+        - Één host + één client bij veranderde gedeelde state
+        - Gebruiker voert handmatige Play-/feel-test uit
+        - Aparte integratietest vanwege hoog risico (motiveer)
     validations:
       required: true
   - type: textarea
-    id: risks
+    id: dependencies
     attributes:
-      label: Afhankelijkheden en risico's
-      description: Andere issues, blocking dependencies en overige informatie
+      label: Afhankelijkheden of vraag aan de gebruiker (alleen indien nodig)
+      description: Links naar andere issues of één concrete ontwerpvraag
