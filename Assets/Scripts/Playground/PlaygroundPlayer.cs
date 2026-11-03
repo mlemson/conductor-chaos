@@ -128,7 +128,7 @@ namespace ConductorChaos.Playground
             {
                 Vector2 delta = mouse.delta.ReadValue();
                 yaw += delta.x * 0.12f;
-                pitch = Mathf.Clamp(pitch - delta.y * 0.12f, -60f, 65f);
+                pitch = Mathf.Clamp(pitch - delta.y * 0.12f, -80f, 65f);
             }
             Vector2 move = active ? new Vector2((keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f),
                                (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f)) : Vector2.zero;
@@ -150,7 +150,7 @@ namespace ConductorChaos.Playground
             if (!float.IsFinite(move.x) || !float.IsFinite(move.y) || !float.IsFinite(direction) || !float.IsFinite(lookPitch)) return;
             requestedMove = Vector2.ClampMagnitude(move, 1f);
             requestedYaw = Mathf.Repeat(direction, 360f);
-            requestedPitch = Mathf.Clamp(lookPitch, -60f, 65f);
+            requestedPitch = Mathf.Clamp(lookPitch, -80f, 65f);
             lastServerInput = Time.unscaledTime;
             leftHeld = l;
             rightHeld = r;
@@ -214,10 +214,13 @@ namespace ConductorChaos.Playground
             }
             Quaternion facing = Quaternion.Euler(0f, requestedYaw, 0f);
             float uprightControl = Mathf.InverseLerp(0.15f, 0.75f, Vector3.Dot(body.rotation * Vector3.up, Vector3.up));
-            Vector3 target = facing * new Vector3(requestedMove.x, 0f, requestedMove.y) * (sprinting ? sprintSpeed : speed) * uprightControl;
             Vector3 current = body.linearVelocity;
             bool grounded = IsGrounded();
-            float movementAcceleration = grounded ? acceleration : acceleration * 0.35f;
+            float walkSpeed = Mathf.Min(sprinting ? sprintSpeed : speed, sprinting ? 2.2f : 1.5f);
+            bool supported = legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed);
+            Vector3 groundVelocity = supported ? legs.SupportVelocity : Vector3.zero;
+            Vector3 target = groundVelocity + facing * new Vector3(requestedMove.x, 0f, requestedMove.y) * walkSpeed * uprightControl;
+            float movementAcceleration = grounded ? (supported ? acceleration : 0f) : acceleration * 0.2f;
             Vector3 change = Vector3.ClampMagnitude(new Vector3(target.x - current.x, 0f, target.z - current.z), movementAcceleration * Time.fixedDeltaTime);
             body.AddForce(change, ForceMode.VelocityChange);
 
@@ -238,6 +241,7 @@ namespace ConductorChaos.Playground
                 jumpQueued = false;
                 if (Time.time - lastJump > 0.25f && grounded)
                 {
+                    legs?.ReleaseSupport();
                     Vector3 velocity = body.linearVelocity;
                     velocity.y = jumpSpeed;
                     body.linearVelocity = velocity;
@@ -247,17 +251,16 @@ namespace ConductorChaos.Playground
             Quaternion aim = Quaternion.Euler(requestedPitch, requestedYaw, 0f);
             left.Step(leftHeld, requestedPitch, aim, hits, transform, reach);
             right.Step(rightHeld, requestedPitch, aim, hits, transform, reach);
-            if (climbing && !grounded && body.linearVelocity.y < 2f)
+            if (climbing && !grounded && body.linearVelocity.y < 2.5f)
             {
                 int supports = (left.CanPullUp ? 1 : 0) + (right.CanPullUp ? 1 : 0);
                 if (supports > 0)
                 {
-                    Vector3 force = Vector3.up * (body.mass * 14f / supports);
+                    Vector3 force = Vector3.up * (body.mass * 18f / supports);
                     left.PullUp(force);
                     right.PullUp(force);
                 }
             }
-            legs?.Step(body.linearVelocity, requestedMove, grounded);
             if (Time.time >= nextPose)
             {
                 leftPose.Value = left.LocalRotation;
@@ -367,8 +370,8 @@ namespace ConductorChaos.Playground
                 shoulder.angularXMotion = shoulder.angularYMotion = shoulder.angularZMotion = ConfigurableJointMotion.Limited;
                 shoulder.lowAngularXLimit = new SoftJointLimit { limit = -170f };
                 shoulder.highAngularXLimit = new SoftJointLimit { limit = 170f };
-                shoulder.angularYLimit = new SoftJointLimit { limit = 70f };
-                shoulder.angularZLimit = new SoftJointLimit { limit = 70f };
+                shoulder.angularYLimit = new SoftJointLimit { limit = 85f };
+                shoulder.angularZLimit = new SoftJointLimit { limit = 85f };
                 shoulder.enableCollision = true;
             }
 
@@ -389,7 +392,7 @@ namespace ConductorChaos.Playground
                 error.ToAngleAxis(out float angle, out Vector3 axis);
                 if (angle > 180f) angle -= 360f;
                 if (float.IsFinite(axis.x) && axis.sqrMagnitude > 0.01f)
-                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * (held ? 120f : 32f)) - rigid.angularVelocity * (held ? 10f : 5f), held ? 260f : 55f), ForceMode.Acceleration);
+                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * (held ? 180f : 32f)) - rigid.angularVelocity * (held ? 14f : 5f), held ? 420f : 55f), ForceMode.Acceleration);
 
                 if (!held) Release();
                 if (!held || grip || Time.time < nextAttempt) return;
@@ -419,11 +422,11 @@ namespace ConductorChaos.Playground
                 grip.connectedBody = chosen.rigidbody;
                 grip.connectedAnchor = chosen.rigidbody ? chosen.rigidbody.transform.InverseTransformPoint(chosen.point) : chosen.point;
                 grip.anchor = new Vector3(0, -0.205f, 0);
-                grip.spring = 240f;
-                grip.damper = 24f;
+                grip.spring = 320f;
+                grip.damper = 32f;
                 grip.minDistance = 0f;
                 grip.maxDistance = 0.03f;
-                grip.breakForce = 450f;
+                grip.breakForce = 550f;
             }
 
             public void PullUp(Vector3 force)
