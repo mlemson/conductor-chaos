@@ -67,6 +67,12 @@ Pas vormen of maten aan in de `build_*.py`-scripts, niet in de FBX. Kleuren kome
   Standaard verborgen: `Mouth_Surprised`, `Mouth_Happy`, `Prop_Key`.
 - **Uit één stuk:** gebruik `meshkit.frame_ring` (kader met verstekhoeken), `meshkit.hollow_box` (holle bak met dagkanten) en `meshkit.prism` (stapvormig profiel). Laat geen balken stomp tegen elkaar eindigen; een lijst die op een andere lijst aansluit, eindigt daarin.
 - Doorloopbaar (issue #24): de cabine-achterdeur, de kolenwagen (`FallPlate`, dekken, `Coal`) en de kopse doorgangen van de wagon zijn de ankers voor latere colliders.
+- **Prop Painter (Unity, issue #35):** *Conductor Chaos > Art > Prop Painter* schildert natuur-assets met een kwast over de map.
+  - Presets: Bomen, Rotsen, Kliffen, Water, Achtergrond en Bos + rotsen. Het palet heeft gewichten en je kunt modellen erin slepen.
+  - Instellingen: straal, aantal per stip, minimale afstand, willekeurige schaal en hoogte, draaistap (kliffen 90°), volg ondergrond, inzakken en raster.
+  - Bediening: LMB = schilderen, Shift+LMB = gummen (alleen geschilderde objecten), `[` `]` = kwastgrootte. Alles kan met Undo terug.
+  - Objecten komen onder `PaintedProps/<categorie>` als prefab-instanties.
+  - Met *Collider toevoegen* kun je daarna bomen óp kliffen schilderen.
 - Regionale wagon: `DoorLeaf_L/R` schuiven langs lokale X (dicht = +0,475 / −0,475). `KeyLock` (0,72 m) en
   `DoorSill` zijn de interactie-ankers voor P0-05.
 - **Geschilderde variatie** (zodat niets één effen kleur is) is per vertex gebakken in de vertexkleur
