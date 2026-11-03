@@ -4,7 +4,7 @@
 
 ## Aanbevolen volgorde
 
-1. **Lopen eerst stabiel:** [bestaande bug #44](https://github.com/mlemson/conductor-chaos/issues/44) is toegewezen aan een andere ontwikkelaar; **niet dubbel oppakken**.
+1. **Lopen eerst stabiel:** [bestaande bug #44](https://github.com/mlemson/conductor-chaos/issues/44) is inmiddels afgesloten; **controleer eerst de bestaande fix en bouw niets dubbel**.
 2. **Een prop oppakken:** #46 → #47 → #48; #52 is een visueel prefab, #49 targetdetectie.
 3. **De trein laat bewegen:** #53 → #54 → #55 → #56. Dan pas #57 en #58.
 4. **Conducteur worden:** #61 → #62 → #63 en NPC #68 → #71 → #72 → #75.
