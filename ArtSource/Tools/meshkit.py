@@ -597,6 +597,34 @@ def hollow_box(outer, inner, holes=(), radius=0.1, inner_radius=0.005, step=0.25
     return out
 
 
+def through_box(bounds, holes, radius=0.02, step=0.25, div=1, mat="Default"):
+    """Afgeschuinde plaat (dikte langs Z) met rechthoekige gaten er dwars doorheen, uit één stuk.
+
+    bounds: (x0, x1, y0, y1, z0, z1); holes: [(x0, x1, y0, y1), ...] in absolute coördinaten (in het vlakke deel)."""
+    b = np.array(bounds, float).reshape(3, 2)
+    c, H = b.mean(1), (b[:, 1] - b[:, 0]) / 2
+    loc = [(hx0 - c[0], hx1 - c[0], hy0 - c[1], hy1 - c[1]) for (hx0, hx1, hy0, hy1) in holes]
+    cuts = (sorted({v for h in loc for v in h[:2]}), sorted({v for h in loc for v in h[2:]}), ())
+    hl = [(2, sg) + h for h in loc for sg in (1, -1)]
+    m = rounded_box_grid(*(2 * H), radius, div=div, step=step, cuts=cuts, holes=hl, mat=mat).transform(t=c)
+    V, F = [], []
+    for (hx0, hx1, hy0, hy1) in holes:
+        ring = [(hx0, hy0), (hx1, hy0), (hx1, hy1), (hx0, hy1)]
+        mid = np.array([(hx0 + hx1) / 2, (hy0 + hy1) / 2])
+        for k in range(4):
+            (ax, ay), (bx, by) = ring[k], ring[(k + 1) % 4]
+            q = [np.array([ax, ay, b[2, 1]]), np.array([bx, by, b[2, 1]]), np.array([bx, by, b[2, 0]]), np.array([ax, ay, b[2, 0]])]
+            n = np.cross(q[1] - q[0], q[3] - q[0])
+            if np.dot(n[:2], mid - (np.array([ax, ay]) + np.array([bx, by])) / 2) < 0:
+                q = q[::-1]
+            F.append(tuple(range(len(V), len(V) + 4)))
+            V += q
+    out = merge(m, Mesh(np.array(V, float).reshape(-1, 3), F, [mat] * len(F)))
+    out.sharp = True
+    out.FS = None
+    return out
+
+
 def cylinder(r, length, seg=24, bevel=0.0, mat="Default", axis="x"):
     """Cilinder (optioneel afgeschuinde randen) langs een as, gecentreerd."""
     b = min(bevel, r * 0.5, length * 0.5)

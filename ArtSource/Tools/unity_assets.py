@@ -38,13 +38,20 @@ def folder_meta(root, rel_dir):
                         "  userData: \n  assetBundleName: \n  assetBundleVariant: \n" % guid_for(sub))
 
 
-def material(root, rel_path, name, base_hex, smoothness, emissive_hex=None):
+def material(root, rel_path, name, base_hex, smoothness, emissive_hex=None, opacity=None):
     r, g, b = _hex(base_hex)
     floats = {"_Smoothness": smoothness, "_Glossiness": smoothness, "_Metallic": 0.0, "_SpecularHighlights": 1.0,
               "_EnvironmentReflections": 1.0, "_Surface": 0.0, "_Cull": 2.0, "_ReceiveShadows": 1.0,
               "_WorkflowMode": 1.0, "_BumpScale": 1.0, "_OcclusionStrength": 1.0}
-    colors = {"_BaseColor": (r, g, b, 1.0), "_Color": (r, g, b, 1.0)}
+    alpha = 1.0 if opacity is None else float(opacity)
+    colors = {"_BaseColor": (r, g, b, alpha), "_Color": (r, g, b, alpha)}
     keywords = []
+    render_type, queue = "Opaque", -1
+    if alpha < 1.0:                                   # URP Lit transparant (alpha-blend), bv. glas
+        floats.update({"_Surface": 1.0, "_Blend": 0.0, "_SrcBlend": 5.0, "_DstBlend": 10.0, "_SrcBlendAlpha": 1.0,
+                       "_DstBlendAlpha": 10.0, "_ZWrite": 0.0, "_AlphaClip": 0.0})
+        keywords.append("_SURFACE_TYPE_TRANSPARENT")
+        render_type, queue = "Transparent", 3000
     if emissive_hex:
         er, eg, eb = _hex(emissive_hex)
         colors["_EmissionColor"] = (er, eg, eb, 1.0)
@@ -52,7 +59,7 @@ def material(root, rel_path, name, base_hex, smoothness, emissive_hex=None):
     else:
         colors["_EmissionColor"] = (0, 0, 0, 1.0)
     fl = "\n".join("    - %s: %s" % (k, v) for k, v in floats.items())
-    co = "\n".join("    - %s: {r: %.6f, g: %.6f, b: %.6f, a: %.1f}" % (k, *v) for k, v in colors.items())
+    co = "\n".join("    - %s: {r: %.6f, g: %.6f, b: %.6f, a: %.3f}" % (k, *v) for k, v in colors.items())
     kw = ("\n" + "\n".join("  - " + k for k in keywords)) if keywords else " []"
     text = f"""%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
@@ -72,9 +79,9 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: {queue}
   stringTagMap:
-    RenderType: Opaque
+    RenderType: {render_type}
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
@@ -146,7 +153,8 @@ def export_unity(root, scene, fbx_rel, mat_dir_rel):
             if os.path.exists(os.path.join(mat_abs, f + ".meta")):
                 os.remove(os.path.join(mat_abs, f + ".meta"))
     for name, md in scene.materials.items():
-        guids[name] = material(root, f"{mat_dir_rel}/{name}.mat", name, md["base"], md["smoothness"], md.get("emissive"))
+        guids[name] = material(root, f"{mat_dir_rel}/{name}.mat", name, md["base"], md["smoothness"], md.get("emissive"),
+                                 (md.get("opts") or {}).get("opacity"))
     model_meta(root, fbx_rel, guids)
     return guids
 

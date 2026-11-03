@@ -40,6 +40,7 @@ const STYLE = {
 function hex3(h) { const c = new THREE.Color(); c.setStyle(h, THREE.LinearSRGBColorSpace); return c; }
 function rampMaterial(ramp, shift = 0, opts = {}) {
   const m = new THREE.MeshLambertMaterial({ color: 0xffffff, side: opts.side ?? THREE.FrontSide });
+  if ((opts.opacity ?? 1) < 1) { m.transparent = true; m.depthWrite = false; }
   m.userData.ramp = ramp;
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uRamp = { value: ramp.map(hex3) };
@@ -54,6 +55,7 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
     sh.uniforms.uHasShade = { value: opts.hasShade ? 1.0 : 0.0 };
     sh.uniforms.uPaint = { value: (opts.paint ?? 1.0) * STYLE.noise };
     sh.uniforms.uEdge = { value: opts.edge ?? 1.0 };
+    sh.uniforms.uOpacity = { value: opts.opacity ?? 1.0 };
     sh.uniforms.uCells = { value: opts.emissive ? 0.0 : (opts.cells ?? 1.0) };   // grote vlakken met iets andere tint
     sh.uniforms.uCellSize = { value: opts.cellSize ?? 0.45 };
     sh.uniforms.uGrime = { value: opts.grime ?? 0.0 };                          // onderin viezer
@@ -67,6 +69,7 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
         uniform vec3 uRamp[5]; uniform float uShift; uniform vec3 uFog; uniform vec2 uFogRange; uniform float uEmissive;
+        uniform float uOpacity;
         uniform float uCells; uniform float uCellSize; uniform float uGrime; uniform vec2 uGrimeY; uniform vec3 uDirt;
         vec3 hash33(vec3 p){ p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33);
           return fract((p.xxy + p.yxx) * p.zyx); }
@@ -123,7 +126,9 @@ function rampMaterial(ramp, shift = 0, opts = {}) {
         col = mix(col, sampleRamp(0.25 + 0.75 * pow(max(dot(N, V), 0.), 0.9) + uShift), uEmissive);
         float fogT = smoothstep(uFogRange.x, uFogRange.y, length(vViewPosition));
         col = mix(col, uFog, fogT * 0.85);
-        gl_FragColor = vec4(col, 1.0);`);
+        // glas: doorzichtig, aan de randen (scherende hoek) iets dekkender
+        float alpha = uOpacity >= 1.0 ? 1.0 : clamp(uOpacity + fr * 0.45, 0., 1.);
+        gl_FragColor = vec4(col, alpha);`);
   };
   return m;
 }
@@ -178,6 +183,7 @@ function applyRampMaterials(root, matsJson) {
       const info = (m.userData && m.userData.ramp) ? { ramp: m.userData.ramp, rampShift: m.userData.rampShift || 0, opts: m.userData.opts } : matsJson?.[m.name];
       if (!info) return m;
       if (info.opts && info.opts.noShadow) o.receiveShadow = false;
+      if (info.opts && (info.opts.opacity ?? 1) < 1) o.castShadow = false;
       const o2 = Object.assign({}, info.opts || {}, { hasShade: !!o.geometry.attributes.color });
       const rm = rampMaterial(info.ramp, info.rampShift || 0, o2);
       rm.name = m.name; return rm;
