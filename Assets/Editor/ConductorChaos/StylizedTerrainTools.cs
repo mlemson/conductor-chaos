@@ -3,7 +3,8 @@
 // Flatten Selected Terrain / Add Layers To Selected Terrain / Add Flat Test Layers / Create Terrain Layers.
 // Daarna vorm en schilder je met Unity's eigen Terrain-tools: Raise or Lower (omhoog/omlaag trekken), Smooth, Set Height,
 // en Paint Texture (gras, bloemetjes, grond, stenen pad, rots). Vlakke grond ligt op y = 0 met 10 m ruimte omlaag.
-// Bomen, rotsen en kliffen erop zet je met de Prop Painter.
+// Kliffen krijgen automatisch een grondtextuur op steile vlakken van hetzelfde Terrain, zonder overlay of verhoogde rand.
+// Props zoals stenen en bloemen plaats je apart met de Prop Painter.
 // Statisch decor; de TerrainCollider wordt later de ondergrond voor beweging (host-autoritatief, zie ARCHITECTURE).
 using System.Collections.Generic;
 using System.Linq;
@@ -130,7 +131,7 @@ namespace ConductorChaos.EditorTools
             t.basemapDistance = 1000f;                               // textures scherp houden op afstand
             t.drawInstanced = true;
             Undo.RegisterCreatedObjectUndo(go, "Create Stylized Terrain");
-            TerrainCliffsEditor.AddTo(t);                             // steile stukken worden vanzelf klif met een grasrand
+            TerrainCliffsEditor.AddTo(t);                             // steile hellingen krijgen grondtextuur; geen extra mesh
             Selection.activeGameObject = go;
             Debug.Log($"[Terrain] Terrein gemaakt ({path}). " + SculptHelp);
         }
@@ -139,7 +140,8 @@ namespace ConductorChaos.EditorTools
             "Vormen: Terrain-component > Paint Terrain > 'Raise or Lower Terrain' (klik = omhoog, Shift+klik = omlaag), " +
             "'Smooth Height' om af te ronden, 'Set Height' voor vlakke plateaus (bv. onder het spoor). " +
             "Kleuren: 'Paint Texture' en kies een laag. Brush Size/Opacity bepalen grootte en kracht. " +
-            "Kliffen: Conductor Chaos > Art > Terrain > Cliff Painter (alleen waar je daarmee ophoogt of uitdiept).";
+            "Hellingtextuur: 'StylizedCliffs' > Start Slope Percent (standaard 30%) en Transition Slope Percent. " +
+            "Geen extra bovenrand; Cliff Painter maakt treden, ook gewone Unity-brushes krijgen slope-textuur.";
 
         [MenuItem("Conductor Chaos/Art/Terrain/Flatten Selected Terrain")]
         public static void FlattenSelected()
