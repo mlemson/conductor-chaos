@@ -1,48 +1,63 @@
 # 🚂 Conductor Chaos — live ontwikkelbord
 
-> **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand.
+> **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand. Brede epics tellen niet als uitvoertaak.
 
-**Voortgang: 1/69 afgerond (1%)**
+**Voortgang: 1/58 afgerond (2%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 67 | 0 | 1 | 0 | 1 |
+| 57 | 0 | 0 | 0 | 1 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
-    P0["P0 · Technisch fundament + stijltest · 1/26 klaar"]
-    P1["P1 · Eerste speelbare co-opervaring · 0/36 klaar"]
-    P2["P2 · Bergavontuur en chaos · 0/7 klaar"]
+    P0["P0 · Technisch fundament + stijltest · 1/22 klaar"]
+    P1["P1 · Eerste speelbare co-opervaring · 0/32 klaar"]
+    P2["P2 · Bergavontuur en chaos · 0/4 klaar"]
     P0 --> P1 --> P2
 ```
 
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
-| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 1/26 | Technisch fundament + stijltest |
-| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/36 | Eerste speelbare co-opervaring |
-| **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/7 | Bergavontuur en chaos |
+| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 1/22 | Technisch fundament + stijltest |
+| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/32 | Eerste speelbare co-opervaring |
+| **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/4 | Bergavontuur en chaos |
+
+## 🧩 Overkoepelende onderwerpen (geen uitvoertaken)
+
+Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze tellen niet mee in de voortgang. Zie [de kleine taken](AI/SMALL_TASK_INDEX.md).
+
+| Onderwerp | Fase | Deelissues |
+| :-- | :-- | :-- |
+| [#5 [P0] Twee spelers in dezelfde bewegende wagon](https://github.com/mlemson/conductor-chaos/issues/5) | P0 | 5 |
+| [#6 [P0] Conducteurssleutel en gedeelde treindeur](https://github.com/mlemson/conductor-chaos/issues/6) | P0 | 3 |
+| [#7 [P0] Netwerk-koffer oppakken, dragen en loslaten](https://github.com/mlemson/conductor-chaos/issues/7) | P0 | 5 |
+| [#28 [P0] Physics-proef: conducteur, trein en grijpen](https://github.com/mlemson/conductor-chaos/issues/28) | P0 | 3 |
+| [#10 [P1] Reizigers, tickets en eerste conducteur-taakloop](https://github.com/mlemson/conductor-chaos/issues/10) | P1 | 8 |
+| [#11 [P1] Klein station, korte route en eerste incident](https://github.com/mlemson/conductor-chaos/issues/11) | P1 | 2 |
+| [#12 [P1] Echte physics-ontsporing van één wagon](https://github.com/mlemson/conductor-chaos/issues/12) | P1 | 3 |
+| [#13 [P1] Lobby en schaaltest met 4 tot 6 spelers](https://github.com/mlemson/conductor-chaos/issues/13) | P1 | 3 |
+| [#14 [P2] Meerdere wagons koppelen en afzonderlijk laten ontsporen](https://github.com/mlemson/conductor-chaos/issues/14) | P2 | 2 |
+| [#15 [P2] Bergtrajecten met bruggen, tunnels en gevaren](https://github.com/mlemson/conductor-chaos/issues/15) | P2 | 5 |
+| [#16 [P2] HUD, menu, audio en performance polish](https://github.com/mlemson/conductor-chaos/issues/16) | P2 | 5 |
 
 ## 📋 Taken per status
 
-### 📝 Te doen (67)
+### 📝 Te doen (57)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
 | P0 | [#2 Valideer Unity-project en URP-import](https://github.com/mlemson/conductor-chaos/issues/2) | Foundation | — | — |
 | P0 | [#3 Kies en installeer Netcode, Transport en sessieservices](https://github.com/mlemson/conductor-chaos/issues/3) | Multiplayer | — | — |
 | P0 | [#4 Host en afzonderlijke client verbinden](https://github.com/mlemson/conductor-chaos/issues/4) | Multiplayer | — | — |
-| P0 | [#5 Twee spelers in dezelfde bewegende wagon](https://github.com/mlemson/conductor-chaos/issues/5) | Train | — | — |
-| P0 | [#6 Conducteurssleutel en gedeelde treindeur](https://github.com/mlemson/conductor-chaos/issues/6) | Interactions | — | — |
-| P0 | [#7 Netwerk-koffer oppakken, dragen en loslaten](https://github.com/mlemson/conductor-chaos/issues/7) | Physics | — | — |
 | P0 | [#8 Multiplayer stressproef voor eerste technische slice](https://github.com/mlemson/conductor-chaos/issues/8) | QA | — | — |
 | P0 | [#9 Eerste in-engine artproof: conducteur en wagonhoek](https://github.com/mlemson/conductor-chaos/issues/9) | Art | — | — |
 | P0 | [#17 Visueel ontwikkelbord en automatische statusupdates](https://github.com/mlemson/conductor-chaos/issues/17) | Foundation | — | — |
 | P0 | [#22 Art proof: locomotief in conceptstijl](https://github.com/mlemson/conductor-chaos/issues/22) | Art | — | — |
-| P0 | [#28 Physics-proef: conducteur, trein en grijpen](https://github.com/mlemson/conductor-chaos/issues/28) | Overig | — | — |
 | P0 | [#36 Voorkom armclippen, rig benen en herstel loslaten](https://github.com/mlemson/conductor-chaos/issues/36) | Overig | — | — |
 | P0 | [#39 UI foundation: menu, HUD en lobbyconcept volgens referenties 1 en 3](https://github.com/mlemson/conductor-chaos/issues/39) | Art | — | — |
+| P0 | [#45 Onderhoud: uitvoerbare issue-backlog en zuinige agentworkflow](https://github.com/mlemson/conductor-chaos/issues/45) | Foundation | — | — |
 | P0 | [#46 Grip: één los object vanaf de vloer kunnen oppakken](https://github.com/mlemson/conductor-chaos/issues/46) | Physics | — | — |
 | P0 | [#47 Grip: object loslaten zonder blijven kleven](https://github.com/mlemson/conductor-chaos/issues/47) | Physics | — | — |
 | P0 | [#48 Grip: twee spelers kunnen niet dezelfde koffer bezitten](https://github.com/mlemson/conductor-chaos/issues/48) | Physics | — | — |
@@ -54,10 +69,6 @@ flowchart LR
 | P0 | [#61 Conducteurssleutel: vast voorwerp en slotpunt](https://github.com/mlemson/conductor-chaos/issues/61) | Interactions | — | — |
 | P0 | [#62 Treindeur: open/dicht als gedeelde toestand](https://github.com/mlemson/conductor-chaos/issues/62) | Interactions | — | — |
 | P0 | [#76 Hoofdmenu: Play en Terug naar de bestaande proefscène](https://github.com/mlemson/conductor-chaos/issues/76) | Polish | — | — |
-| P1 | [#10 Reizigers, tickets en eerste conducteur-taakloop](https://github.com/mlemson/conductor-chaos/issues/10) | Gameplay | — | — |
-| P1 | [#11 Klein station, korte route en eerste incident](https://github.com/mlemson/conductor-chaos/issues/11) | Gameplay | — | — |
-| P1 | [#12 Echte physics-ontsporing van één wagon](https://github.com/mlemson/conductor-chaos/issues/12) | Physics | — | — |
-| P1 | [#13 Lobby en schaaltest met 4 tot 6 spelers](https://github.com/mlemson/conductor-chaos/issues/13) | Multiplayer | — | — |
 | P1 | [#50 Spelers kunnen elkaar licht fysiek aanstoten](https://github.com/mlemson/conductor-chaos/issues/50) | Physics | — | — |
 | P1 | [#51 Speler kan na een val weer opstaan](https://github.com/mlemson/conductor-chaos/issues/51) | Gameplay | — | — |
 | P1 | [#52 Prefab voor één testkoffer met collider en massainstellingen](https://github.com/mlemson/conductor-chaos/issues/52) | Gameplay | — | — |
@@ -90,9 +101,6 @@ flowchart LR
 | P1 | [#87 Kapotte rail: één herkenbaar beschadigd spoorsegment](https://github.com/mlemson/conductor-chaos/issues/87) | Physics | — | — |
 | P1 | [#88 Één wagon kan van spoorgeleiding naar Rigidbody-physics](https://github.com/mlemson/conductor-chaos/issues/88) | Physics | — | — |
 | P1 | [#91 Online uitnodigen: eenvoudige joincode of vriendenlink](https://github.com/mlemson/conductor-chaos/issues/91) | Multiplayer | — | — |
-| P2 | [#14 Meerdere wagons koppelen en afzonderlijk laten ontsporen](https://github.com/mlemson/conductor-chaos/issues/14) | Physics | — | — |
-| P2 | [#15 Bergtrajecten met bruggen, tunnels en gevaren](https://github.com/mlemson/conductor-chaos/issues/15) | World | — | — |
-| P2 | [#16 HUD, menu, audio en performance polish](https://github.com/mlemson/conductor-chaos/issues/16) | Polish | — | — |
 | P2 | [#86 Rotsval: één vallende rots als treinincident](https://github.com/mlemson/conductor-chaos/issues/86) | Gameplay | — | — |
 | P2 | [#89 Één ontsporing synchroniseren tussen host en client](https://github.com/mlemson/conductor-chaos/issues/89) | Multiplayer | — | — |
 | P2 | [#90 Koppeling kan breken bij hoge impact](https://github.com/mlemson/conductor-chaos/issues/90) | Physics | — | — |
@@ -102,11 +110,9 @@ flowchart LR
 
 *Geen taken in deze kolom.*
 
-### 👀 Klaar voor review (1)
+### 👀 Klaar voor review (0)
 
-| Fase | Taak | Onderdeel | Eigenaar | Pull request |
-| :-- | :-- | :-- | :-- | :-- |
-| P0 | [#45 Onderhoud: uitvoerbare issue-backlog en zuinige agentworkflow](https://github.com/mlemson/conductor-chaos/issues/45) | Foundation | — | [#93](https://github.com/mlemson/conductor-chaos/pull/93) |
+*Geen taken in deze kolom.*
 
 ### ⛔ Geblokkeerd (0)
 
