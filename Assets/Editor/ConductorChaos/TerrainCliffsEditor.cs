@@ -1,8 +1,6 @@
-// Conductor Chaos — kliffen op het terrein live bijwerken tijdens het boetseren (issue #38).
-// Kliffen komen alleen waar je schildert en het terrein steil genoeg is; tijdens een streek groeien ze live mee (ScheduleLive).
-// Na elke terreinwijziging (0,25 s stil) worden ze nogmaals opgebouwd en zakken/stijgen geschilderde props mee met de grond (PropGroundSnap).
-// Conductor Chaos > Art > Terrain > Auto Cliffs While Sculpting (standaard aan) doet dit ook bij Unity's penselen, zoals Raise or Lower.
-// Instellingen (hoek, facetgrootte, plooien, grasrand) staan op het object 'StylizedCliffs' onder het terrein.
+// Conductor Chaos — native Terrain-hellingtextuur automatisch bijwerken (issue #38).
+// Geen rotsmesh of graslip: enkel een gereserveerde alphamaplaag op steile hellingen.
+// Debounce na hoogtekaartwijzigingen; verf alleen de gewijzigde regio en laat props volgen.
 using System.Collections.Generic;
 using ConductorChaos.Art;
 using UnityEditor;
@@ -13,18 +11,16 @@ namespace ConductorChaos.EditorTools
     [InitializeOnLoad]
     public static class TerrainCliffsEditor
     {
-        const string CliffMat = "Assets/Art/Materials/Environment/M_Env_Cliff.mat";
-        const string GrassMat = "Assets/Art/Materials/Environment/M_Env_Grass.mat";
+        const string SlopeLayer = "Assets/Art/Terrain/Layers/TL_CliffSlopeDirt.terrainlayer";
         const string ChildName = "StylizedCliffs";
 
-        static readonly HashSet<StylizedTerrainCliffs> Pending = new HashSet<StylizedTerrainCliffs>();
+        // null betekent: volledige repaint; anders de unie van gewijzigde heightmapgebieden.
+        static readonly Dictionary<StylizedTerrainCliffs, RectInt?> Pending = new Dictionary<StylizedTerrainCliffs, RectInt?>();
         static double due;
-        static readonly HashSet<StylizedTerrainCliffs> Live = new HashSet<StylizedTerrainCliffs>();
-        static double liveDue;
 
-        const string AutoKey = "ConductorChaos.TerrainCliffs.AutoLive";
-        const string AutoMenu = "Conductor Chaos/Art/Terrain/Auto Cliffs While Sculpting";
-        static readonly Dictionary<Terrain, RectInt> BrushRegions = new Dictionary<Terrain, RectInt>();
+        const string AutoKey = "ConductorChaos.TerrainCliffs.Auto";
+        const string AutoMenu = "Conductor Chaos/Art/Terrain/Auto Slope Texturing While Sculpting";
+        static readonly HashSet<Terrain> NeedsCliffs = new HashSet<Terrain>();
         static readonly HashSet<Terrain> Changed = new HashSet<Terrain>();
 
         static TerrainCliffsEditor()
@@ -35,85 +31,80 @@ namespace ConductorChaos.EditorTools
         }
 
         [MenuItem(AutoMenu)]
-        static void ToggleAuto() => EditorPrefs.SetBool(AutoKey, !EditorPrefs.GetBool(AutoKey, true));
+        static void ToggleAuto() => EditorPrefs.SetBool(AutoKey, !EditorPrefs.GetBool(AutoKey, false));
 
         [MenuItem(AutoMenu, true)]
         static bool ToggleAutoValidate()
         {
-            Menu.SetChecked(AutoMenu, EditorPrefs.GetBool(AutoKey, true));
+            Menu.SetChecked(AutoMenu, EditorPrefs.GetBool(AutoKey, false));
             return true;
         }
 
         static void OnHeightmapChanged(Terrain terrain, RectInt heightRegion, bool synched)
         {
             if (StylizedTerrainCliffs.IsBuilding || terrain == null || EditorApplication.isPlayingOrWillChangePlaymode) return;
-            Schedule(terrain);
-            if (Undo.isProcessing || !EditorPrefs.GetBool(AutoKey, true)) return;
-            // penseelstreek (ook van Unity zelf): dit stuk mag klif worden, en de rand groeit live mee
-            if (BrushRegions.TryGetValue(terrain, out var r))
-            {
-                int xMin = Mathf.Min(r.xMin, heightRegion.xMin), yMin = Mathf.Min(r.yMin, heightRegion.yMin);
-                int xMax = Mathf.Max(r.xMax, heightRegion.xMax), yMax = Mathf.Max(r.yMax, heightRegion.yMax);
-                heightRegion = new RectInt(xMin, yMin, xMax - xMin, yMax - yMin);
-            }
-            BrushRegions[terrain] = heightRegion;
+            Schedule(terrain, heightRegion);
         }
 
-        /// <summary>Kliffen van dit terrein over 0,25 s opnieuw opbouwen.</summary>
-        public static void Schedule(Terrain terrain)
+        public static void Schedule(Terrain terrain) => ScheduleInternal(terrain, null);
+
+        public static void Schedule(Terrain terrain, RectInt changedHeightRegion) =>
+            ScheduleInternal(terrain, changedHeightRegion);
+
+        static void ScheduleInternal(Terrain terrain, RectInt? region)
         {
             if (terrain == null || EditorApplication.isPlayingOrWillChangePlaymode) return;
             Changed.Add(terrain);
-            foreach (var c in terrain.GetComponentsInChildren<StylizedTerrainCliffs>()) Pending.Add(c);
-            due = EditorApplication.timeSinceStartup + 0.25;       // pas bouwen als je even stilstaat
-        }
-
-        /// <summary>Tijdens een streek: deze kliffen zo snel mogelijk opnieuw opbouwen, zonder op stilstand te wachten.</summary>
-        public static void ScheduleLive(StylizedTerrainCliffs cliffs)
-        {
-            if (cliffs != null) Live.Add(cliffs);
-        }
-
-        static void TickLive()
-        {
-            if ((Live.Count == 0 && BrushRegions.Count == 0) || EditorApplication.timeSinceStartup < liveDue) return;
-            double start = EditorApplication.timeSinceStartup;
-            if (BrushRegions.Count > 0)
+            var found = terrain.GetComponentsInChildren<StylizedTerrainCliffs>();
+            if (found.Length == 0 && EditorPrefs.GetBool(AutoKey, false))
+                NeedsCliffs.Add(terrain);
+            foreach (var c in found)
             {
-                var regions = new List<KeyValuePair<Terrain, RectInt>>(BrushRegions);
-                BrushRegions.Clear();
-                foreach (var kv in regions)
+                if (!Pending.TryGetValue(c, out var previous))
                 {
-                    if (kv.Key == null) continue;
-                    var cliffs = kv.Key.GetComponentInChildren<StylizedTerrainCliffs>();
-                    if (cliffs == null) cliffs = AddTo(kv.Key);
-                    cliffs.MarkRegion(kv.Value, kv.Key.terrainData.heightmapResolution);
-                    EditorUtility.SetDirty(cliffs);                    // masker bewaren met de scène (Unity's penselen lopen buiten onze Undo om)
-                    Live.Add(cliffs);
+                    Pending[c] = region;
+                }
+                else if (!previous.HasValue || !region.HasValue)
+                {
+                    Pending[c] = null;
+                }
+                else
+                {
+                    var a = previous.Value;
+                    var b = region.Value;
+                    int xmin = Mathf.Min(a.xMin, b.xMin), zmin = Mathf.Min(a.yMin, b.yMin);
+                    int xmax = Mathf.Max(a.xMax, b.xMax), zmax = Mathf.Max(a.yMax, b.yMax);
+                    Pending[c] = new RectInt(xmin, zmin, xmax - xmin, zmax - zmin);
                 }
             }
-            var list = new List<StylizedTerrainCliffs>(Live);
-            Live.Clear();
-            foreach (var c in list)
-                if (c != null && c.isActiveAndEnabled) c.Rebuild();
-            double took = EditorApplication.timeSinceStartup - start;
-            liveDue = start + took + (took > 0.03 ? took : 0.03);  // minstens de helft van de tijd blijft voor de kwast
-            SceneView.RepaintAll();
+            due = EditorApplication.timeSinceStartup + 0.25;
         }
 
         static void Tick()
         {
-            TickLive();
-            if ((Pending.Count == 0 && Changed.Count == 0) || EditorApplication.timeSinceStartup < due) return;
-            var list = new List<StylizedTerrainCliffs>(Pending);
+            if ((Pending.Count == 0 && NeedsCliffs.Count == 0 && Changed.Count == 0)
+                || EditorApplication.timeSinceStartup < due) return;
+
+            if (NeedsCliffs.Count > 0)
+            {
+                var added = new List<Terrain>(NeedsCliffs);
+                NeedsCliffs.Clear();
+                foreach (var terrain in added) if (terrain != null) AddTo(terrain);
+            }
+
+            var todo = new List<KeyValuePair<StylizedTerrainCliffs, RectInt?>>(Pending);
             Pending.Clear();
-            foreach (var c in list)
-                if (c != null && c.isActiveAndEnabled) c.Rebuild();
+            foreach (var p in todo)
+            {
+                if (p.Key == null || !p.Key.isActiveAndEnabled) continue;
+                if (p.Value.HasValue) p.Key.Rebuild(p.Value.Value);
+                else p.Key.Rebuild();
+            }
+
             var changed = new List<Terrain>(Changed);
             Changed.Clear();
             foreach (var t in changed)
-                if (t != null) PropGroundSnap.SnapOver(t);             // geschilderde props zakken/stijgen mee met de grond
-            SceneView.RepaintAll();
+                if (t != null) PropGroundSnap.SnapOver(t);
         }
 
         public static StylizedTerrainCliffs AddTo(Terrain t)
@@ -121,21 +112,33 @@ namespace ConductorChaos.EditorTools
             if (t.heightmapPixelError > 1f)
             {
                 Undo.RecordObject(t, "Terrain pixel error");
-                t.heightmapPixelError = 1f;                       // terrein volgt de hoogtekaart nauwkeurig, zodat het niet door de wand prikt
+                t.heightmapPixelError = 1f;
             }
+
+            var layer = AssetDatabase.LoadAssetAtPath<TerrainLayer>(SlopeLayer);
+            if (layer == null)
+            {
+                Debug.LogWarning("[Terrain] Gereserveerde laag TL_CliffSlopeDirt ontbreekt. Controleer Assets/Art/Terrain/Layers.", t);
+            }
+
             var existing = t.GetComponentInChildren<StylizedTerrainCliffs>();
-            if (existing != null) { existing.Rebuild(); return existing; }
-            var go = new GameObject(ChildName, typeof(MeshFilter), typeof(MeshRenderer));
+            if (existing != null)
+            {
+                if (existing.slopeLayer == null && layer != null)
+                {
+                    Undo.RecordObject(existing, "Assign slope layer");
+                    existing.slopeLayer = layer;
+                }
+                existing.Rebuild();
+                return existing;
+            }
+
+            var go = new GameObject(ChildName);
             go.transform.SetParent(t.transform, false);
-            go.SetActive(false);                                  // pas bouwen als alles is ingesteld (OnEnable bouwt meteen)
             var c = go.AddComponent<StylizedTerrainCliffs>();
-            c.cliffMaterial = AssetDatabase.LoadAssetAtPath<Material>(CliffMat);
-            c.grassMaterial = AssetDatabase.LoadAssetAtPath<Material>(GrassMat);
-            if (c.cliffMaterial == null || c.grassMaterial == null)
-                Debug.LogWarning("[Terrain] M_Env_Cliff of M_Env_Grass ontbreekt in Assets/Art/Materials/Environment.");
-            c.EnsureMask(t.terrainData.heightmapResolution);      // leeg beginnen: bestaande treden krijgen niet ineens allemaal een rand
-            go.SetActive(true);
-            Undo.RegisterCreatedObjectUndo(go, "Add terrain cliffs");
+            c.slopeLayer = layer;
+            c.Rebuild();
+            Undo.RegisterCreatedObjectUndo(go, "Add terrain slope texturing");
             return c;
         }
     }

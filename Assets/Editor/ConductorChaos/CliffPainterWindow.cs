@@ -8,7 +8,7 @@
 //   - [ en ]              = kwast kleiner/groter. Alt = camera.
 // De hoogte springt per trede (standaard 2,4 m = Cliff_Pillar_Small), dus alles wat je schildert sluit netjes op elkaar aan.
 // Alleen waar je met deze kwast schildert komen kliffen (klifmasker); ander boetseerwerk krijgt geen randen.
-// De kliffen (StylizedCliffs onder het terrein) groeien live mee terwijl je schildert. Alles via Undo.
+// Na elke streek wordt de hellingtextuur op het bestaande terrein vernieuwd. Geen extra rotsmesh of verhoogde grasrand.
 using ConductorChaos.Art;
 using UnityEditor;
 using UnityEngine;
@@ -27,7 +27,8 @@ namespace ConductorChaos.EditorTools
         float strokeTarget;
         Terrain strokeTerrain;
         StylizedTerrainCliffs strokeCliffs;
-        Vector3 lastDab;
+        RectInt strokeDirtyRegion;
+        bool strokeRegionValid;
 
         [MenuItem("Conductor Chaos/Art/Terrain/Cliff Painter")]
         public static void Open() => GetWindow<CliffPainterWindow>("Cliff Painter");
@@ -53,8 +54,8 @@ namespace ConductorChaos.EditorTools
                 if (GUILayout.Button(new GUIContent("4,6", "Cliff_Pillar_Tall / Waterfall_Large"))) stepHeight = 4.6f;
             }
             EditorGUILayout.Space();
-            EditorGUILayout.HelpBox("Hoek, plooien en grasrand stel je in op het object 'StylizedCliffs' onder het terrein. " +
-                                    "Werkt op elk Unity-terrein; een nieuw vlak terrein maak je met Create Flat Terrain.", MessageType.Info);
+            EditorGUILayout.HelpBox("Hellingtextuur: stel de starthelling (%) en overgang in op 'StylizedCliffs'. " +
+                                     "Gras blijft op de originele hoogte, zonder extra randmesh. Werkt ook met Unity's terreinpenselen.", MessageType.Info);
         }
 
         void OnSceneGUI(SceneView view)
@@ -62,9 +63,6 @@ namespace ConductorChaos.EditorTools
             if (!painting) return;
             var ev = Event.current;
             if (ev.alt) return;
-            // een geselecteerd terrein laat Unity's eigen penseel de klik afpakken: dan schildert deze kwast niets
-            if (ev.type == EventType.Layout && Selection.activeGameObject != null && Selection.activeGameObject.GetComponent<Terrain>() != null)
-                Selection.activeObject = null;
             int id = GUIUtility.GetControlID(FocusType.Passive);
             if (ev.type == EventType.Layout) HandleUtility.AddDefaultControl(id);
 
@@ -87,6 +85,7 @@ namespace ConductorChaos.EditorTools
             if (ev.type == EventType.MouseDown && ev.button == 0)
             {
                 strokeTerrain = terrain;
+                strokeRegionValid = false;
                 strokeMode = mode;
                 float step = Mathf.Max(0.1f, stepHeight);
                 LevelsUnderBrush(terrain, point, step, out int low, out int high);
@@ -96,19 +95,12 @@ namespace ConductorChaos.EditorTools
                 if (strokeCliffs == null) strokeCliffs = TerrainCliffsEditor.AddTo(terrain);
                 Undo.RegisterCompleteObjectUndo(new Object[] { terrain.terrainData, strokeCliffs }, "Cliff Painter");
                 Dab(terrain, point);
-                lastDab = point;
                 GUIUtility.hotControl = id;
                 ev.Use();
             }
             else if (ev.type == EventType.MouseDrag && ev.button == 0 && GUIUtility.hotControl == id)
             {
-                if (terrain == strokeTerrain)
-                {
-                    // tussenliggende stappen: bij snel slepen een doorlopende rand in plaats van losse rondjes
-                    int steps = Mathf.Max(1, Mathf.CeilToInt(Vector3.Distance(lastDab, point) / Mathf.Max(0.25f, radius * 0.25f)));
-                    for (int k = 1; k <= steps; k++) Dab(terrain, Vector3.Lerp(lastDab, point, k / (float)steps));
-                    lastDab = point;
-                }
+                if (terrain == strokeTerrain) Dab(terrain, point);
                 ev.Use();
             }
             else if (ev.type == EventType.MouseUp && ev.button == 0 && GUIUtility.hotControl == id)
@@ -116,7 +108,7 @@ namespace ConductorChaos.EditorTools
                 if (strokeTerrain != null)
                 {
                     strokeTerrain.ApplyDelayedHeightmapModification();
-                    TerrainCliffsEditor.Schedule(strokeTerrain);
+                    if (strokeRegionValid) TerrainCliffsEditor.Schedule(strokeTerrain, strokeDirtyRegion);
                 }
                 strokeTerrain = null;
                 strokeCliffs = null;
@@ -198,8 +190,17 @@ namespace ConductorChaos.EditorTools
                     hs[j, i] = strokeMode == Mode.Raise ? Mathf.Max(cur, target) : strokeMode == Mode.Lower ? Mathf.Min(cur, target) : target;
                 }
             td.SetHeightsDelayLOD(x0, z0, hs);
-            TerrainCliffsEditor.ScheduleLive(strokeCliffs);              // live: de rand groeit mee met de kwast
-            TerrainCliffsEditor.Schedule(t);                             // props meenemen zodra je even stilhoudt
+            var region = new RectInt(x0, z0, w, h);
+            if (!strokeRegionValid) { strokeDirtyRegion = region; strokeRegionValid = true; }
+            else
+            {
+                int xmin = Mathf.Min(strokeDirtyRegion.xMin, region.xMin);
+                int zmin = Mathf.Min(strokeDirtyRegion.yMin, region.yMin);
+                int xmax = Mathf.Max(strokeDirtyRegion.xMax, region.xMax);
+                int zmax = Mathf.Max(strokeDirtyRegion.yMax, region.yMax);
+                strokeDirtyRegion = new RectInt(xmin, zmin, xmax - xmin, zmax - zmin);
+            }
+            TerrainCliffsEditor.Schedule(t, region); // live, na de editor-debounce
         }
     }
 }
