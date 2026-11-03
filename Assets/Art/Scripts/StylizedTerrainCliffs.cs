@@ -1,5 +1,5 @@
 // Conductor Chaos — klifranden op een Unity-terrein (issue #38).
-// Alleen waar met de Cliff Painter is opgehoogd of uitgediept (het 'klifmasker') en het terrein steiler is dan 'steepAngle',
+// Alleen waar is geschilderd (Cliff Painter of Unity's terreinpenselen, het 'klifmasker') en het terrein steiler is dan 'steepAngle',
 // komt er een gefacetteerde rotswand (M_Env_Cliff) over de helling,
 // en langs de bovenrand een dikke grasrand (M_Env_Grass) die net over de rand hangt: hetzelfde ontwerp als de klifmodules.
 // De mesh wordt uit de hoogtekaart opgebouwd (bij laden en, in de editor, live tijdens het boetseren) en niet opgeslagen,
@@ -30,8 +30,8 @@ namespace ConductorChaos.Art
         public Material cliffMaterial;
         public Material grassMaterial;
 
-        // klifmasker: 1 = hier is met de Cliff Painter geschilderd (per punt van de hoogtekaart). Alleen daar komen kliffen,
-        // zodat ander boetseerwerk (gladmaken, heuvels) geen randen krijgt.
+        // klifmasker: 1 = hier is geschilderd (per punt van de hoogtekaart). Alleen daar komen kliffen,
+        // zodat de rand met de kwast meegroeit en niet in één keer over het hele terrein verschijnt.
         [SerializeField, HideInInspector] byte[] cliffMask;
         [SerializeField, HideInInspector] int cliffMaskRes;
         [SerializeField, HideInInspector] bool maskInitialised;
@@ -39,14 +39,29 @@ namespace ConductorChaos.Art
         /// <summary>Markeer een punt van de hoogtekaart als klifgebied (aanroepen vanuit de Cliff Painter).</summary>
         public void MarkCliff(int x, int z, int heightmapResolution)
         {
+            EnsureMask(heightmapResolution);
+            if (x < 0 || z < 0 || x >= cliffMaskRes || z >= cliffMaskRes) return;
+            cliffMask[z * cliffMaskRes + x] = 1;
+        }
+
+        /// <summary>Markeer een heel stuk van de hoogtekaart als klifgebied (aanroepen bij Unity's terreinpenselen).</summary>
+        public void MarkRegion(RectInt region, int heightmapResolution)
+        {
+            EnsureMask(heightmapResolution);
+            for (int z = Mathf.Max(region.yMin, 0); z < Mathf.Min(region.yMax, cliffMaskRes); z++)
+                for (int x = Mathf.Max(region.xMin, 0); x < Mathf.Min(region.xMax, cliffMaskRes); x++)
+                    cliffMask[z * cliffMaskRes + x] = 1;
+        }
+
+        /// <summary>Zorg voor een klifmasker; een nieuw masker is leeg, zodat kliffen alleen verschijnen waar je schildert.</summary>
+        public void EnsureMask(int heightmapResolution)
+        {
             if (cliffMask == null || cliffMaskRes != heightmapResolution)
             {
                 cliffMask = new byte[heightmapResolution * heightmapResolution];
                 cliffMaskRes = heightmapResolution;
             }
             maskInitialised = true;
-            if (x < 0 || z < 0 || x >= cliffMaskRes || z >= cliffMaskRes) return;
-            cliffMask[z * cliffMaskRes + x] = 1;
         }
 
         /// <summary>True terwijl er gebouwd wordt (de editor negeert dan terreinmeldingen die het bouwen zelf veroorzaakt).</summary>
@@ -80,12 +95,17 @@ namespace ConductorChaos.Art
             var terrain = GetComponentInParent<Terrain>();
             if (terrain == null || terrain.terrainData == null) return;
 
-            if (transform.parent == terrain.transform &&
-                (transform.localPosition != Vector3.zero || transform.localRotation != Quaternion.identity || transform.localScale != Vector3.one))
+            if (transform.parent == terrain.transform)
             {
-                transform.localPosition = Vector3.zero;
-                transform.localRotation = Quaternion.identity;
-                transform.localScale = Vector3.one;
+                // Unity tekent een terrein altijd op schaal 1: een schaal op het terreinobject hier opheffen, anders verschuift de rand
+                var ps = terrain.transform.lossyScale;
+                var unscaled = new Vector3(1f / ps.x, 1f / ps.y, 1f / ps.z);
+                if (transform.localPosition != Vector3.zero || transform.localRotation != Quaternion.identity || transform.localScale != unscaled)
+                {
+                    transform.localPosition = Vector3.zero;
+                    transform.localRotation = Quaternion.identity;
+                    transform.localScale = unscaled;
+                }
             }
             if (mesh == null)
                 mesh = new Mesh { name = "StylizedCliffs", hideFlags = HideFlags.DontSave, indexFormat = IndexFormat.UInt32 };

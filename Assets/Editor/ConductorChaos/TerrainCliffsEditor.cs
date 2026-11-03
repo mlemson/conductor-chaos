@@ -1,7 +1,7 @@
 // Conductor Chaos — kliffen op het terrein live bijwerken tijdens het boetseren (issue #38).
-// Kliffen komen alleen waar je met de Cliff Painter ophoogt of uitdiept; tijdens een streek groeien ze live mee (ScheduleLive).
+// Kliffen komen alleen waar je schildert en het terrein steil genoeg is; tijdens een streek groeien ze live mee (ScheduleLive).
 // Na elke terreinwijziging (0,25 s stil) worden ze nogmaals opgebouwd en zakken/stijgen geschilderde props mee met de grond (PropGroundSnap).
-// Optioneel: Conductor Chaos > Art > Terrain > Auto Cliffs While Sculpting (standaard uit) voegt ze ook toe bij Unity's penselen.
+// Conductor Chaos > Art > Terrain > Auto Cliffs While Sculpting (standaard aan) doet dit ook bij Unity's penselen, zoals Raise or Lower.
 // Instellingen (hoek, facetgrootte, plooien, grasrand) staan op het object 'StylizedCliffs' onder het terrein.
 using System.Collections.Generic;
 using ConductorChaos.Art;
@@ -22,9 +22,9 @@ namespace ConductorChaos.EditorTools
         static readonly HashSet<StylizedTerrainCliffs> Live = new HashSet<StylizedTerrainCliffs>();
         static double liveDue;
 
-        const string AutoKey = "ConductorChaos.TerrainCliffs.Auto";
+        const string AutoKey = "ConductorChaos.TerrainCliffs.AutoLive";
         const string AutoMenu = "Conductor Chaos/Art/Terrain/Auto Cliffs While Sculpting";
-        static readonly HashSet<Terrain> NeedsCliffs = new HashSet<Terrain>();
+        static readonly Dictionary<Terrain, RectInt> BrushRegions = new Dictionary<Terrain, RectInt>();
         static readonly HashSet<Terrain> Changed = new HashSet<Terrain>();
 
         static TerrainCliffsEditor()
@@ -35,12 +35,12 @@ namespace ConductorChaos.EditorTools
         }
 
         [MenuItem(AutoMenu)]
-        static void ToggleAuto() => EditorPrefs.SetBool(AutoKey, !EditorPrefs.GetBool(AutoKey, false));
+        static void ToggleAuto() => EditorPrefs.SetBool(AutoKey, !EditorPrefs.GetBool(AutoKey, true));
 
         [MenuItem(AutoMenu, true)]
         static bool ToggleAutoValidate()
         {
-            Menu.SetChecked(AutoMenu, EditorPrefs.GetBool(AutoKey, false));
+            Menu.SetChecked(AutoMenu, EditorPrefs.GetBool(AutoKey, true));
             return true;
         }
 
@@ -48,16 +48,23 @@ namespace ConductorChaos.EditorTools
         {
             if (StylizedTerrainCliffs.IsBuilding || terrain == null || EditorApplication.isPlayingOrWillChangePlaymode) return;
             Schedule(terrain);
+            if (Undo.isProcessing || !EditorPrefs.GetBool(AutoKey, true)) return;
+            // penseelstreek (ook van Unity zelf): dit stuk mag klif worden, en de rand groeit live mee
+            if (BrushRegions.TryGetValue(terrain, out var r))
+            {
+                int xMin = Mathf.Min(r.xMin, heightRegion.xMin), yMin = Mathf.Min(r.yMin, heightRegion.yMin);
+                int xMax = Mathf.Max(r.xMax, heightRegion.xMax), yMax = Mathf.Max(r.yMax, heightRegion.yMax);
+                heightRegion = new RectInt(xMin, yMin, xMax - xMin, yMax - yMin);
+            }
+            BrushRegions[terrain] = heightRegion;
         }
 
-        /// <summary>Kliffen van dit terrein over 0,25 s opnieuw opbouwen (en ze toevoegen als ze er nog niet zijn).</summary>
+        /// <summary>Kliffen van dit terrein over 0,25 s opnieuw opbouwen.</summary>
         public static void Schedule(Terrain terrain)
         {
             if (terrain == null || EditorApplication.isPlayingOrWillChangePlaymode) return;
             Changed.Add(terrain);
-            var found = terrain.GetComponentsInChildren<StylizedTerrainCliffs>();
-            if (found.Length == 0 && EditorPrefs.GetBool(AutoKey, false)) NeedsCliffs.Add(terrain);
-            foreach (var c in found) Pending.Add(c);
+            foreach (var c in terrain.GetComponentsInChildren<StylizedTerrainCliffs>()) Pending.Add(c);
             due = EditorApplication.timeSinceStartup + 0.25;       // pas bouwen als je even stilstaat
         }
 
@@ -69,8 +76,22 @@ namespace ConductorChaos.EditorTools
 
         static void TickLive()
         {
-            if (Live.Count == 0 || EditorApplication.timeSinceStartup < liveDue) return;
+            if ((Live.Count == 0 && BrushRegions.Count == 0) || EditorApplication.timeSinceStartup < liveDue) return;
             double start = EditorApplication.timeSinceStartup;
+            if (BrushRegions.Count > 0)
+            {
+                var regions = new List<KeyValuePair<Terrain, RectInt>>(BrushRegions);
+                BrushRegions.Clear();
+                foreach (var kv in regions)
+                {
+                    if (kv.Key == null) continue;
+                    var cliffs = kv.Key.GetComponentInChildren<StylizedTerrainCliffs>();
+                    if (cliffs == null) cliffs = AddTo(kv.Key);
+                    cliffs.MarkRegion(kv.Value, kv.Key.terrainData.heightmapResolution);
+                    EditorUtility.SetDirty(cliffs);                    // masker bewaren met de scène (Unity's penselen lopen buiten onze Undo om)
+                    Live.Add(cliffs);
+                }
+            }
             var list = new List<StylizedTerrainCliffs>(Live);
             Live.Clear();
             foreach (var c in list)
@@ -83,13 +104,7 @@ namespace ConductorChaos.EditorTools
         static void Tick()
         {
             TickLive();
-            if ((Pending.Count == 0 && NeedsCliffs.Count == 0 && Changed.Count == 0) || EditorApplication.timeSinceStartup < due) return;
-            if (NeedsCliffs.Count > 0)
-            {
-                var add = new List<Terrain>(NeedsCliffs);
-                NeedsCliffs.Clear();
-                foreach (var t in add) if (t != null) AddTo(t);
-            }
+            if ((Pending.Count == 0 && Changed.Count == 0) || EditorApplication.timeSinceStartup < due) return;
             var list = new List<StylizedTerrainCliffs>(Pending);
             Pending.Clear();
             foreach (var c in list)
@@ -112,12 +127,14 @@ namespace ConductorChaos.EditorTools
             if (existing != null) { existing.Rebuild(); return existing; }
             var go = new GameObject(ChildName, typeof(MeshFilter), typeof(MeshRenderer));
             go.transform.SetParent(t.transform, false);
+            go.SetActive(false);                                  // pas bouwen als alles is ingesteld (OnEnable bouwt meteen)
             var c = go.AddComponent<StylizedTerrainCliffs>();
             c.cliffMaterial = AssetDatabase.LoadAssetAtPath<Material>(CliffMat);
             c.grassMaterial = AssetDatabase.LoadAssetAtPath<Material>(GrassMat);
             if (c.cliffMaterial == null || c.grassMaterial == null)
                 Debug.LogWarning("[Terrain] M_Env_Cliff of M_Env_Grass ontbreekt in Assets/Art/Materials/Environment.");
-            c.Rebuild();
+            c.EnsureMask(t.terrainData.heightmapResolution);      // leeg beginnen: bestaande treden krijgen niet ineens allemaal een rand
+            go.SetActive(true);
             Undo.RegisterCreatedObjectUndo(go, "Add terrain cliffs");
             return c;
         }

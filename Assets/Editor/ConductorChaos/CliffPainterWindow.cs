@@ -62,6 +62,9 @@ namespace ConductorChaos.EditorTools
             if (!painting) return;
             var ev = Event.current;
             if (ev.alt) return;
+            // een geselecteerd terrein laat Unity's eigen penseel de klik afpakken: dan schildert deze kwast niets
+            if (ev.type == EventType.Layout && Selection.activeGameObject != null && Selection.activeGameObject.GetComponent<Terrain>() != null)
+                Selection.activeObject = null;
             int id = GUIUtility.GetControlID(FocusType.Passive);
             if (ev.type == EventType.Layout) HandleUtility.AddDefaultControl(id);
 
