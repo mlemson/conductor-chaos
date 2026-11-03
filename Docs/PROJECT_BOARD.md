@@ -2,31 +2,31 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand.
 
-**Voortgang: 0/52 afgerond (0%)**
+**Voortgang: 0/54 afgerond (0%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 51 | 1 | 0 | 0 | 0 |
+| 53 | 1 | 0 | 0 | 0 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
-    P0["P0 · Technisch fundament + stijltest · 0/25 klaar"]
-    P1["P1 · Eerste speelbare co-opervaring · 0/24 klaar"]
+    P0["P0 · Technisch fundament + stijltest · 0/26 klaar"]
+    P1["P1 · Eerste speelbare co-opervaring · 0/25 klaar"]
     P2["P2 · Bergavontuur en chaos · 0/3 klaar"]
     P0 --> P1 --> P2
 ```
 
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
-| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/25 | Technisch fundament + stijltest |
-| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/24 | Eerste speelbare co-opervaring |
+| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/26 | Technisch fundament + stijltest |
+| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/25 | Eerste speelbare co-opervaring |
 | **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/3 | Bergavontuur en chaos |
 
 ## 📋 Taken per status
 
-### 📝 Te doen (51)
+### 📝 Te doen (53)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -54,6 +54,7 @@ flowchart LR
 | P0 | [#56 Rijdende wagon: speler blijft op vloer bij rijden/remmen](https://github.com/mlemson/conductor-chaos/issues/56) | Multiplayer | — | — |
 | P0 | [#61 Conducteurssleutel: vast voorwerp en slotpunt](https://github.com/mlemson/conductor-chaos/issues/61) | Interactions | — | — |
 | P0 | [#62 Treindeur: open/dicht als gedeelde toestand](https://github.com/mlemson/conductor-chaos/issues/62) | Interactions | — | — |
+| P0 | [#76 Hoofdmenu: Play en Terug naar de bestaande proefscène](https://github.com/mlemson/conductor-chaos/issues/76) | Polish | — | — |
 | P1 | [#10 Reizigers, tickets en eerste conducteur-taakloop](https://github.com/mlemson/conductor-chaos/issues/10) | Gameplay | — | — |
 | P1 | [#11 Klein station, korte route en eerste incident](https://github.com/mlemson/conductor-chaos/issues/11) | Gameplay | — | — |
 | P1 | [#12 Echte physics-ontsporing van één wagon](https://github.com/mlemson/conductor-chaos/issues/12) | Physics | — | — |
@@ -78,6 +79,7 @@ flowchart LR
 | P1 | [#73 NPC zegt één korte contextzin bij interactie](https://github.com/mlemson/conductor-chaos/issues/73) | Gameplay | — | — |
 | P1 | [#74 NPC: voeten op bank als kleine overtreding](https://github.com/mlemson/conductor-chaos/issues/74) | Gameplay | — | — |
 | P1 | [#75 Opdracht: controleer drie passagiers](https://github.com/mlemson/conductor-chaos/issues/75) | Gameplay | — | — |
+| P1 | [#77 HUD: één contextuele interactieprompt](https://github.com/mlemson/conductor-chaos/issues/77) | Polish | — | — |
 | P2 | [#14 Meerdere wagons koppelen en afzonderlijk laten ontsporen](https://github.com/mlemson/conductor-chaos/issues/14) | Physics | — | — |
 | P2 | [#15 Bergtrajecten met bruggen, tunnels en gevaren](https://github.com/mlemson/conductor-chaos/issues/15) | World | — | — |
 | P2 | [#16 HUD, menu, audio en performance polish](https://github.com/mlemson/conductor-chaos/issues/16) | Polish | — | — |
