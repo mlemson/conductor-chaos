@@ -26,6 +26,7 @@ namespace ConductorChaos.Editor
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             GameObject cameraRoot = new GameObject("Menu backdrop camera");
             Camera camera = cameraRoot.AddComponent<Camera>();
+            cameraRoot.AddComponent<AudioListener>();
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = ChaosUI.Hex("#85A4EC");
             camera.fieldOfView = 52f;
@@ -39,6 +40,25 @@ namespace ConductorChaos.Editor
             light.color = ChaosUI.Hex("#FFE3BC");
             light.intensity = 1.2f;
             sun.transform.rotation = Quaternion.Euler(45f, -45f, 0);
+
+            // Lightweight platform and track for a real environment rather than a floating train.
+            // These are decorative editor-generated primitives with existing art materials.
+            Material groundMat = AssetDatabase.LoadAssetAtPath<Material>(
+                "Assets/Art/Materials/Environment/M_Env_Grass.mat");
+            Material railMat = AssetDatabase.LoadAssetAtPath<Material>(
+                "Assets/Art/Materials/Train/Locomotive/M_Loco_Frame.mat");
+            Material sleeperMat = AssetDatabase.LoadAssetAtPath<Material>(
+                "Assets/Art/Materials/Environment/M_Env_Trunk.mat");
+            PreviewBlock("Grass plane", new Vector3(-5f, -1.36f, -1f), new Vector3(55f, 0.4f, 35f), groundMat);
+            for (int i = 0; i < 24; i++)
+            {
+                PreviewBlock("Rail sleeper " + i,
+                    new Vector3(-18f + i, -1.07f, -1.35f), new Vector3(0.60f, 0.12f, 3.1f), sleeperMat);
+            }
+            PreviewBlock("Rail left", new Vector3(-6f, -0.95f, -2.1f),
+                new Vector3(27f, 0.12f, 0.17f), railMat);
+            PreviewBlock("Rail right", new Vector3(-6f, -0.95f, -0.6f),
+                new Vector3(27f, 0.12f, 0.17f), railMat);
 
             // Reuse already approved FBX assets, not disconnected mockup art or new gameplay objects.
             // The models remain static decorations in this preview scene.
@@ -68,6 +88,17 @@ namespace ConductorChaos.Editor
             AssetDatabase.SaveAssets();
             Debug.Log("Conductor Chaos menu preview created with existing train/environment models. " +
                       "TrainPlayground remains the first build scene. Press Play to review UI.");
+        }
+
+        private static void PreviewBlock(string name, Vector3 pos, Vector3 scale, Material material)
+        {
+            GameObject block = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            block.name = name;
+            block.transform.position = pos;
+            block.transform.localScale = scale;
+            if (material) block.GetComponent<MeshRenderer>().sharedMaterial = material;
+            Collider collider = block.GetComponent<Collider>();
+            if (collider) Object.DestroyImmediate(collider); // visual only
         }
 
         private static void SpawnArt(string path, string label, Vector3 position)
