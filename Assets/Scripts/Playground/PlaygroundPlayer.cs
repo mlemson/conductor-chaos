@@ -17,17 +17,21 @@ namespace ConductorChaos.Playground
 
         private readonly NetworkVariable<Quaternion> leftPose = new(Quaternion.identity);
         private readonly NetworkVariable<Quaternion> rightPose = new(Quaternion.identity);
+        private readonly NetworkVariable<Quaternion> leftLegPose = new(Quaternion.identity);
+        private readonly NetworkVariable<Quaternion> rightLegPose = new(Quaternion.identity);
         private Rigidbody body;
         private RigidbodyConstraints originalConstraints;
         private Vector3 originalCenterOfMass;
         private ArmPhysics left;
         private ArmPhysics right;
+        private PlaygroundLegRig legs;
         private Vector2 requestedMove;
         private float requestedYaw;
         private float requestedPitch;
         private bool leftHeld, rightHeld, jumpQueued;
         private bool lastLeft, lastRight;
         private float nextInput, nextPose, lastJump;
+        private float lastServerInput;
         private float yaw, pitch = 18f;
         private Camera playerCamera;
         private readonly RaycastHit[] hits = new RaycastHit[32];
@@ -60,6 +64,8 @@ namespace ConductorChaos.Playground
             }
             left = new ArmPhysics(leftArm, body, IsServer);
             right = new ArmPhysics(rightArm, body, IsServer);
+            legs = PlaygroundLegRig.Create(visual, body, IsServer);
+            lastServerInput = Time.unscaledTime;
             if (left.Collider && right.Collider) Physics.IgnoreCollision(left.Collider, right.Collider);
             if (IsServer)
             {
@@ -90,7 +96,12 @@ namespace ConductorChaos.Playground
 #endif
             Keyboard keyboard = Keyboard.current;
             Mouse mouse = Mouse.current;
-            if (keyboard == null || mouse == null) return;
+            if (keyboard == null || mouse == null)
+            {
+                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false);
+                lastLeft = lastRight = false;
+                return;
+            }
             if (keyboard.escapeKey.wasPressedThisFrame)
             {
                 Cursor.lockState = CursorLockMode.None;
@@ -130,8 +141,18 @@ namespace ConductorChaos.Playground
             requestedMove = Vector2.ClampMagnitude(move, 1f);
             requestedYaw = Mathf.Repeat(direction, 360f);
             requestedPitch = Mathf.Clamp(lookPitch, -60f, 65f);
+            lastServerInput = Time.unscaledTime;
             leftHeld = l;
             rightHeld = r;
+            if (!l) left?.Release();
+            if (!r) right?.Release();
+        }
+
+        private void OnApplicationFocus(bool focused)
+        {
+            if (focused || !IsSpawned || !IsOwner) return;
+            lastLeft = lastRight = false;
+            SendInputServerRpc(Vector2.zero, yaw, pitch, false, false);
         }
 
         [ServerRpc]
@@ -142,10 +163,16 @@ namespace ConductorChaos.Playground
         {
             yield return new WaitForSeconds(1.5f);
             Vector3 start = transform.position;
+            Transform testLeg = null;
+            foreach (Transform candidate in visual.GetComponentsInChildren<Transform>())
+                if (candidate.name == "Leg_L") { testLeg = candidate; break; }
+            Quaternion initialLeg = testLeg ? testLeg.localRotation : Quaternion.identity;
+            float legAngle = 0f;
             for (int i = 0; i < 25; i++)
             {
                 SendInputServerRpc(Vector2.up, 0f, 0f, false, false);
                 yield return new WaitForSeconds(0.05f);
+                if (testLeg) legAngle = Mathf.Max(legAngle, Quaternion.Angle(initialLeg, testLeg.localRotation));
             }
             SendInputServerRpc(Vector2.zero, 0f, 0f, false, false);
             yield return new WaitForSeconds(0.3f);
@@ -158,13 +185,20 @@ namespace ConductorChaos.Playground
                 yield return new WaitForSeconds(0.03f);
                 peakY = Mathf.Max(peakY, transform.position.y);
             }
-            Debug.Log($"PLAYGROUND_REMOTE_SMOKE moved={moved:F2} jump={peakY - baseY:F2}");
+            Debug.Log($"PLAYGROUND_REMOTE_SMOKE moved={moved:F2} jump={peakY - baseY:F2} legAngle={legAngle:F1}");
         }
 #endif
 
         private void FixedUpdate()
         {
             if (!IsSpawned || !IsServer) return;
+            if (Time.unscaledTime - lastServerInput > 0.35f)
+            {
+                requestedMove = Vector2.zero;
+                leftHeld = rightHeld = false;
+                left.Release();
+                right.Release();
+            }
             Quaternion facing = Quaternion.Euler(0f, requestedYaw, 0f);
             Vector3 target = facing * new Vector3(requestedMove.x, 0f, requestedMove.y) * speed;
             Vector3 current = body.linearVelocity;
@@ -192,10 +226,16 @@ namespace ConductorChaos.Playground
             Quaternion aim = Quaternion.Euler(requestedPitch, requestedYaw, 0f);
             left.Step(leftHeld, requestedPitch, aim, hits, transform, reach);
             right.Step(rightHeld, requestedPitch, aim, hits, transform, reach);
+            legs?.Step(body.linearVelocity, IsGrounded());
             if (Time.time >= nextPose)
             {
                 leftPose.Value = left.LocalRotation;
                 rightPose.Value = right.LocalRotation;
+                if (legs != null)
+                {
+                    leftLegPose.Value = legs.LeftRotation;
+                    rightLegPose.Value = legs.RightRotation;
+                }
                 nextPose = Time.time + 0.05f;
             }
         }
@@ -216,6 +256,7 @@ namespace ConductorChaos.Playground
             {
                 left.ShowRemote(leftPose.Value);
                 right.ShowRemote(rightPose.Value);
+                legs?.ShowRemote(leftLegPose.Value, rightLegPose.Value);
             }
             if (!IsOwner || !playerCamera) return;
             Quaternion orbit = Quaternion.Euler(pitch, yaw, 0f);
@@ -232,6 +273,7 @@ namespace ConductorChaos.Playground
         {
             left?.Dispose();
             right?.Dispose();
+            legs?.Dispose();
             if (body && IsServer)
             {
                 body.constraints = originalConstraints;
@@ -273,10 +315,11 @@ namespace ConductorChaos.Playground
                 rigid.interpolation = RigidbodyInterpolation.Interpolate;
                 collider = arm.gameObject.AddComponent<CapsuleCollider>();
                 collider.direction = 1;
-                collider.center = new Vector3(0, -0.12f, 0);
-                collider.height = 0.3f;
-                collider.radius = 0.085f;
-                Physics.IgnoreCollision(collider, body.GetComponent<Collider>());
+                // Keep the shoulder clear of the torso; the forearm/hand remains
+                // solid so it cannot sweep through the body during a collision.
+                collider.center = new Vector3(0, -0.19f, 0);
+                collider.height = 0.16f;
+                collider.radius = 0.055f;
                 if (!server) return;
                 shoulder = arm.gameObject.AddComponent<ConfigurableJoint>();
                 shoulder.connectedBody = body;
@@ -284,8 +327,12 @@ namespace ConductorChaos.Playground
                 shoulder.anchor = Vector3.zero;
                 shoulder.connectedAnchor = body.transform.InverseTransformPoint(arm.position);
                 shoulder.xMotion = shoulder.yMotion = shoulder.zMotion = ConfigurableJointMotion.Locked;
-                shoulder.angularXMotion = shoulder.angularYMotion = shoulder.angularZMotion = ConfigurableJointMotion.Free;
-                shoulder.enableCollision = false;
+                shoulder.angularXMotion = shoulder.angularYMotion = shoulder.angularZMotion = ConfigurableJointMotion.Limited;
+                shoulder.lowAngularXLimit = new SoftJointLimit { limit = -110f };
+                shoulder.highAngularXLimit = new SoftJointLimit { limit = 75f };
+                shoulder.angularYLimit = new SoftJointLimit { limit = 45f };
+                shoulder.angularZLimit = new SoftJointLimit { limit = 45f };
+                shoulder.enableCollision = true;
             }
 
             public void Step(bool held, float pitch, Quaternion aim, RaycastHit[] buffer, Transform player, float reach)
@@ -299,7 +346,7 @@ namespace ConductorChaos.Playground
                 if (float.IsFinite(axis.x) && axis.sqrMagnitude > 0.01f)
                     rigid.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * 32f) - rigid.angularVelocity * 5f, 55f), ForceMode.Acceleration);
 
-                if (!held && grip) { Object.Destroy(grip); grip = null; }
+                if (!held) Release();
                 if (!held || grip || Time.time < nextAttempt) return;
                 nextAttempt = Time.time + 0.1f;
                 Vector3 hand = arm.TransformPoint(new Vector3(0, -0.205f, 0));
@@ -339,9 +386,16 @@ namespace ConductorChaos.Playground
                 if (arm) arm.localRotation = Quaternion.Slerp(arm.localRotation, rotation, 15f * Time.deltaTime);
             }
 
+            public void Release()
+            {
+                if (!grip) return;
+                Object.Destroy(grip);
+                grip = null;
+            }
+
             public void Dispose()
             {
-                if (grip) Object.Destroy(grip);
+                Release();
                 if (shoulder) Object.Destroy(shoulder);
                 if (collider) Object.Destroy(collider);
                 if (rigid) Object.Destroy(rigid);

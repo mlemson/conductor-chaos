@@ -12,6 +12,20 @@ namespace ConductorChaos.Editor
 {
     public static class PlaygroundSceneSetup
     {
+        [MenuItem("Tools/Conductor Chaos/Enable Conductor Leg Rig")]
+        public static void EnableConductorLegRig()
+        {
+            const string path = "Assets/Art/Models/Characters/Conductor/Conductor.fbx";
+            var importer = AssetImporter.GetAtPath(path) as ModelImporter;
+            if (!importer) { Debug.LogError("Conductor model importer was not found."); return; }
+            if (!importer.isReadable)
+            {
+                importer.isReadable = true;
+                importer.SaveAndReimport();
+            }
+            Debug.Log("Conductor body mesh is readable for the continuous leg rig.");
+        }
+
         [MenuItem("Tools/Conductor Chaos/Build Local Trial Client")]
         public static void BuildLocalTrialClient()
         {
