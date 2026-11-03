@@ -73,6 +73,8 @@ namespace ConductorChaos.EditorTools
             EditorGUILayout.Space();
             EditorGUILayout.HelpBox("Een zachte kwastrand maakt nieuwe kliffen minder hoekig; de bovenkant blijft vlak. " +
                                      "De grondkleur volgt de steilte via 'StylizedCliffs'.", MessageType.Info);
+            if (GUILayout.Button("Grondtextuur opnieuw berekenen (geselecteerd Terrain)"))
+                RebuildSelectedTerrainSlope();
             existingSmoothPasses = EditorGUILayout.IntSlider("Bestaande rand: passes", existingSmoothPasses, 1, 4);
             if (GUILayout.Button("Verzacht bestaande klifranden (geselecteerd Terrain)"))
                 SmoothExistingSelectedTerrain();
@@ -255,6 +257,25 @@ namespace ConductorChaos.EditorTools
                 strokeDirtyRegion = new RectInt(xmin, zmin, xmax - xmin, zmax - zmin);
             }
             TerrainCliffsEditor.Schedule(t, region); // live, na de editor-debounce
+        }
+
+
+        void RebuildSelectedTerrainSlope()
+        {
+            var selected = Selection.activeGameObject;
+            var terrain = selected != null ? selected.GetComponentInParent<Terrain>() : null;
+            if (terrain == null)
+            {
+                EditorUtility.DisplayDialog("Geen Terrain geselecteerd", "Selecteer het Terrain in de Hierarchy om de hellingtextuur opnieuw te berekenen.", "OK");
+                return;
+            }
+            var cliffs = TerrainCliffsEditor.AddTo(terrain);
+            if (cliffs != null)
+            {
+                cliffs.Rebuild();
+                SceneView.RepaintAll();
+                Debug.Log("[Cliff Painter] Hellingtextuur opnieuw berekend voor " + terrain.name + ".", terrain);
+            }
         }
 
         // Eenmalige, undo-bare correctie van bestaande hoogtekartels in de geschilderde
