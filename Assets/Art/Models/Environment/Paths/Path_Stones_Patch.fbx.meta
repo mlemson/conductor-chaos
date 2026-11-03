@@ -12,18 +12,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Env_PathStone
-    second: {fileID: 2100000, guid: 3dd855bd19f62165af73ee7a17393816, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Env_PathStoneDark
-    second: {fileID: 2100000, guid: 53d04c4d845928e57e5664ad09ce510d, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
       name: M_Env_PathStoneMid
     second: {fileID: 2100000, guid: 256910ae5fb23939f06d6f435169d796, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_PathStoneWarm
+    second: {fileID: 2100000, guid: b6b017f230907388eb2e350606866924, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -405,16 +405,16 @@
     "Stone_Single_01": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_01.fbx",
-      "tris": 56,
+      "tris": 42,
       "min": [
-        -0.343,
+        -0.314,
         -0.04,
-        -0.358
+        -0.335
       ],
       "max": [
-        0.371,
-        0.183,
-        0.327
+        0.315,
+        0.07,
+        0.306
       ],
       "materials": [
         "M_Env_PathStone"
@@ -423,16 +423,16 @@
     "Stone_Single_02": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_02.fbx",
-      "tris": 56,
+      "tris": 42,
       "min": [
-        -0.342,
+        -0.487,
         -0.04,
-        -0.393
+        -0.461
       ],
       "max": [
-        0.391,
-        0.193,
-        0.4
+        0.502,
+        0.07,
+        0.456
       ],
       "materials": [
         "M_Env_PathStoneMid"
@@ -441,16 +441,16 @@
     "Stone_Single_03": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_03.fbx",
-      "tris": 56,
+      "tris": 42,
       "min": [
-        -0.664,
+        -0.598,
         -0.04,
-        -0.581
+        -0.533
       ],
       "max": [
-        0.738,
-        0.244,
-        0.53
+        0.528,
+        0.09,
+        0.544
       ],
       "materials": [
         "M_Env_PathStoneDark"
@@ -459,16 +459,16 @@
     "Stone_Single_04": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_04.fbx",
-      "tris": 56,
+      "tris": 42,
       "min": [
-        -0.446,
+        -0.495,
         -0.04,
-        -0.427
+        -0.404
       ],
       "max": [
-        0.422,
-        0.193,
-        0.393
+        0.395,
+        0.07,
+        0.351
       ],
       "materials": [
         "M_Env_PathStoneWarm"
@@ -477,16 +477,16 @@
     "Stone_Single_05": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_05.fbx",
-      "tris": 56,
+      "tris": 42,
       "min": [
-        -0.236,
+        -0.217,
         -0.04,
-        -0.225
+        -0.278
       ],
       "max": [
-        0.229,
-        0.192,
-        0.224
+        0.252,
+        0.07,
+        0.217
       ],
       "materials": [
         "M_Env_PathStoneDark"
@@ -495,16 +495,16 @@
     "Stone_Single_06": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Stone_Single_06.fbx",
-      "tris": 56,
+      "tris": 42,
       "min": [
-        -0.485,
+        -0.522,
         -0.04,
-        -0.5
+        -0.511
       ],
       "max": [
-        0.402,
-        0.219,
-        0.499
+        0.485,
+        0.08,
+        0.468
       ],
       "materials": [
         "M_Env_PathStone"
@@ -513,7 +513,7 @@
     "Path_Stones_Straight": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Path_Stones_Straight.fbx",
-      "tris": 284,
+      "tris": 242,
       "min": [
         -1.02,
         -0.04,
@@ -521,54 +521,54 @@
       ],
       "max": [
         1.02,
-        0.195,
+        0.07,
         0.57
       ],
       "materials": [
         "M_Env_Dirt",
-        "M_Env_PathStone"
+        "M_Env_PathStone",
+        "M_Env_PathStoneMid"
       ]
     },
     "Path_Stones_Curve": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Path_Stones_Curve.fbx",
-      "tris": 496,
+      "tris": 356,
       "min": [
         -0.565,
         -0.04,
-        -2.021
+        -2.015
       ],
       "max": [
-        2.088,
-        0.198,
+        2.037,
+        0.07,
         0.565
       ],
       "materials": [
         "M_Env_Dirt",
         "M_Env_PathStone",
-        "M_Env_PathStoneDark",
-        "M_Env_PathStoneMid"
+        "M_Env_PathStoneMid",
+        "M_Env_PathStoneWarm"
       ]
     },
     "Path_Stones_Patch": {
       "category": "Paths",
       "fbx": "Assets/Art/Models/Environment/Paths/Path_Stones_Patch.fbx",
-      "tris": 304,
+      "tris": 206,
       "min": [
-        -1.004,
+        -0.983,
         -0.04,
-        -1.025
+        -1.028
       ],
       "max": [
-        1.05,
-        0.201,
-        0.981
+        0.971,
+        0.07,
+        0.956
       ],
       "materials": [
         "M_Env_Dirt",
-        "M_Env_PathStone",
-        "M_Env_PathStoneDark",
-        "M_Env_PathStoneMid"
+        "M_Env_PathStoneMid",
+        "M_Env_PathStoneWarm"
       ]
     },
     "Flower_Daisy_01": {

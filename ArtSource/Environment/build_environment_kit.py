@@ -419,17 +419,13 @@ STONE_WEIGHTS = [0.32, 0.30, 0.24, 0.14]
 
 
 def stone(r, rng, h=0.07, mat=None):
-    """Afgeronde kei (laag-poly), licht in de grond: gefacetteerde bolle bovenkant (vlakken vangen elk
-    ander licht), schuine rand. Zonder mat krijgt elke kei willekeurig een licht/middel/donker/warm tint."""
+    """Platte, afgeronde kei (laag-poly), licht in de grond: bovenkant vlak, schuine rand (de vorm die beter beviel).
+    Contrast komt uit de tint: zonder mat krijgt elke kei willekeurig licht/middel/donker/warm."""
     if mat is None:
         mat = STONE_MATS[rng.choice(len(STONE_MATS), p=STONE_WEIGHTS)]
-    seg = 7
-    rk = rng.uniform(0.85, 1.15, seg)
-    dy = rng.uniform(-0.55, 0.55, (6, seg)) * h          # scheve facetten op de bovenkant
-    prof = [(0.0, h * 2.6), (r * 0.40, h * 2.25), (r * 0.76, h * 1.45), (r, h * 0.45), (r * 0.96, -0.04), (0.0, -0.04)]
-    m = lathe_mod(prof, seg, rmod=lambda i, k, rk=rk: rk[k],
-                  ymod=lambda i, k, dy=dy: dy[i, k] if i in (1, 2) else (dy[0, 0] * 0.5 if i == 0 else 0.0),
-                  phase=rng.uniform(0, 6.28), mat=mat)
+    rk = rng.uniform(0.85, 1.15, 7)
+    m = lathe_mod([(0.0, h), (r * 0.78, h), (r, h * 0.45), (r * 0.96, -0.04), (0.0, -0.04)], 7,
+                  rmod=lambda i, k, rk=rk: rk[k], phase=rng.uniform(0, 6.28), mat=mat)
     m.V[:, 0] *= rng.uniform(0.85, 1.15)
     return m
 

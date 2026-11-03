@@ -130,6 +130,7 @@ namespace ConductorChaos.EditorTools
             t.basemapDistance = 1000f;                               // textures scherp houden op afstand
             t.drawInstanced = true;
             Undo.RegisterCreatedObjectUndo(go, "Create Stylized Terrain");
+            TerrainCliffsEditor.AddTo(t);                             // steile stukken worden vanzelf klif met een grasrand
             Selection.activeGameObject = go;
             Debug.Log($"[Terrain] Terrein gemaakt ({path}). " + SculptHelp);
         }
@@ -137,7 +138,8 @@ namespace ConductorChaos.EditorTools
         const string SculptHelp =
             "Vormen: Terrain-component > Paint Terrain > 'Raise or Lower Terrain' (klik = omhoog, Shift+klik = omlaag), " +
             "'Smooth Height' om af te ronden, 'Set Height' voor vlakke plateaus (bv. onder het spoor). " +
-            "Kleuren: 'Paint Texture' en kies een laag. Brush Size/Opacity bepalen grootte en kracht.";
+            "Kleuren: 'Paint Texture' en kies een laag. Brush Size/Opacity bepalen grootte en kracht. " +
+            "Steile stukken worden automatisch klif (object 'StylizedCliffs'; anders: Add Cliffs To Selected Terrain).";
 
         [MenuItem("Conductor Chaos/Art/Terrain/Flatten Selected Terrain")]
         public static void FlattenSelected()
