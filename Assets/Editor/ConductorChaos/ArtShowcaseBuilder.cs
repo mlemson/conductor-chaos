@@ -118,9 +118,17 @@ namespace ConductorChaos.EditorTools
             if (cam == null) { Debug.LogError("[ArtShowcase] Geen Main Camera in de open scène."); return; }
             const int w = 1920, h = 1080;
             var rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4 };
+            // URP: Camera.Render() naar een RenderTexture tekent in de editor alleen de achtergrond;
+            // een render request gaat wel door de volledige pipeline.
             var prev = cam.targetTexture;
-            cam.targetTexture = rt;
-            cam.Render();
+            var request = new RenderPipeline.StandardRequest { destination = rt };
+            if (RenderPipeline.SupportsRenderRequest(cam, request))
+                RenderPipeline.SubmitRenderRequest(cam, request);
+            else
+            {
+                cam.targetTexture = rt;
+                cam.Render();
+            }
             var old = RenderTexture.active;
             RenderTexture.active = rt;
             var tex = new Texture2D(w, h, TextureFormat.RGB24, false);
