@@ -1,0 +1,528 @@
+{
+  "assets": {
+    "Tree_Pine_Small_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Pine_Small_01.fbx",
+      "tris": 202,
+      "min": [
+        -0.886,
+        -0.15,
+        -0.886
+      ],
+      "max": [
+        0.886,
+        2.2,
+        0.886
+      ],
+      "materials": [
+        "M_Env_PineLeaf",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Pine_Medium_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Pine_Medium_01.fbx",
+      "tris": 282,
+      "min": [
+        -1.226,
+        -0.15,
+        -1.226
+      ],
+      "max": [
+        1.226,
+        3.6,
+        1.226
+      ],
+      "materials": [
+        "M_Env_PineLeaf",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Pine_Large_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Pine_Large_01.fbx",
+      "tris": 362,
+      "min": [
+        -1.822,
+        -0.15,
+        -1.822
+      ],
+      "max": [
+        1.822,
+        5.6,
+        1.822
+      ],
+      "materials": [
+        "M_Env_PineLeaf",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Pine_Variant_02": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Pine_Variant_02.fbx",
+      "tris": 252,
+      "min": [
+        -1.241,
+        -0.15,
+        -1.317
+      ],
+      "max": [
+        1.439,
+        4.2,
+        1.374
+      ],
+      "materials": [
+        "M_Env_PineLeaf",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Pine_Background_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Pine_Background_01.fbx",
+      "tris": 162,
+      "min": [
+        -1.606,
+        -0.15,
+        -1.612
+      ],
+      "max": [
+        1.606,
+        6.5,
+        1.612
+      ],
+      "materials": [
+        "M_Env_PineFar",
+        "M_Env_Trunk"
+      ]
+    },
+    "Bush_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Bush_01.fbx",
+      "tris": 168,
+      "min": [
+        -0.761,
+        0.0,
+        -0.448
+      ],
+      "max": [
+        0.9,
+        0.854,
+        0.543
+      ],
+      "materials": [
+        "M_Env_Bush"
+      ]
+    },
+    "Rock_Small_01": {
+      "category": "Rocks",
+      "fbx": "Assets/Art/Models/Environment/Rocks/Rock_Small_01.fbx",
+      "tris": 42,
+      "min": [
+        -0.314,
+        -0.048,
+        -0.367
+      ],
+      "max": [
+        0.35,
+        0.382,
+        0.274
+      ],
+      "materials": [
+        "M_Env_Rock"
+      ]
+    },
+    "Rock_Medium_01": {
+      "category": "Rocks",
+      "fbx": "Assets/Art/Models/Environment/Rocks/Rock_Medium_01.fbx",
+      "tris": 42,
+      "min": [
+        -0.677,
+        -0.096,
+        -0.511
+      ],
+      "max": [
+        0.592,
+        0.757,
+        0.619
+      ],
+      "materials": [
+        "M_Env_Rock"
+      ]
+    },
+    "Rock_Large_01": {
+      "category": "Rocks",
+      "fbx": "Assets/Art/Models/Environment/Rocks/Rock_Large_01.fbx",
+      "tris": 78,
+      "min": [
+        -1.374,
+        -0.192,
+        -1.142
+      ],
+      "max": [
+        1.852,
+        1.616,
+        1.189
+      ],
+      "materials": [
+        "M_Env_Rock"
+      ]
+    },
+    "Cliff_Module_A": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_A.fbx",
+      "tris": 312,
+      "min": [
+        -1.191,
+        -0.3,
+        -1.195
+      ],
+      "max": [
+        1.181,
+        2.17,
+        1.188
+      ],
+      "materials": [
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Module_B": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_B.fbx",
+      "tris": 512,
+      "min": [
+        -2.178,
+        -0.3,
+        -1.198
+      ],
+      "max": [
+        2.205,
+        3.17,
+        1.2
+      ],
+      "materials": [
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Cliff_Module_C": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Cliff_Module_C.fbx",
+      "tris": 416,
+      "min": [
+        -1.191,
+        -0.3,
+        -1.187
+      ],
+      "max": [
+        1.154,
+        2.77,
+        1.198
+      ],
+      "materials": [
+        "M_Env_Cliff",
+        "M_Env_Grass"
+      ]
+    },
+    "Hill_Grass_01": {
+      "category": "Cliffs",
+      "fbx": "Assets/Art/Models/Environment/Cliffs/Hill_Grass_01.fbx",
+      "tris": 236,
+      "min": [
+        -3.114,
+        -0.25,
+        -2.102
+      ],
+      "max": [
+        3.113,
+        1.12,
+        2.111
+      ],
+      "materials": [
+        "M_Env_Grass"
+      ]
+    },
+    "Mountain_Back_01": {
+      "category": "Mountains",
+      "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_01.fbx",
+      "tris": 90,
+      "min": [
+        -22.652,
+        -2.0,
+        -12.906
+      ],
+      "max": [
+        22.58,
+        30.25,
+        11.508
+      ],
+      "materials": [
+        "M_Env_Mountain",
+        "M_Env_Snow"
+      ]
+    },
+    "Mountain_Back_02": {
+      "category": "Mountains",
+      "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_02.fbx",
+      "tris": 180,
+      "min": [
+        -27.697,
+        -2.0,
+        -18.046
+      ],
+      "max": [
+        38.778,
+        34.25,
+        18.028
+      ],
+      "materials": [
+        "M_Env_Mountain",
+        "M_Env_Snow"
+      ]
+    },
+    "Mountain_Back_03": {
+      "category": "Mountains",
+      "fbx": "Assets/Art/Models/Environment/Mountains/Mountain_Back_03.fbx",
+      "tris": 240,
+      "min": [
+        -53.273,
+        -2.0,
+        -17.156
+      ],
+      "max": [
+        46.24,
+        22.25,
+        18.082
+      ],
+      "materials": [
+        "M_Env_Mountain",
+        "M_Env_Snow"
+      ]
+    },
+    "Cloud_01": {
+      "category": "Sky",
+      "fbx": "Assets/Art/Models/Environment/Sky/Cloud_01.fbx",
+      "tris": 720,
+      "min": [
+        -3.117,
+        0.0,
+        -1.122
+      ],
+      "max": [
+        3.661,
+        2.077,
+        1.283
+      ],
+      "materials": [
+        "M_Env_Cloud"
+      ]
+    },
+    "Cloud_02": {
+      "category": "Sky",
+      "fbx": "Assets/Art/Models/Environment/Sky/Cloud_02.fbx",
+      "tris": 576,
+      "min": [
+        -2.746,
+        0.0,
+        -1.077
+      ],
+      "max": [
+        2.651,
+        1.938,
+        1.198
+      ],
+      "materials": [
+        "M_Env_Cloud"
+      ]
+    },
+    "Cloud_03": {
+      "category": "Sky",
+      "fbx": "Assets/Art/Models/Environment/Sky/Cloud_03.fbx",
+      "tris": 432,
+      "min": [
+        -1.73,
+        0.0,
+        -0.936
+      ],
+      "max": [
+        1.701,
+        1.745,
+        1.006
+      ],
+      "materials": [
+        "M_Env_Cloud"
+      ]
+    }
+  },
+  "materials": {
+    "M_Env_PineLeaf": {
+      "base": "#3D5655",
+      "ramp": [
+        "#2B3B37",
+        "#395251",
+        "#3D5655",
+        "#466162",
+        "#5B7A7A"
+      ],
+      "rampShift": 0.16,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.6,
+        "rim": 0.3
+      }
+    },
+    "M_Env_PineFar": {
+      "base": "#466162",
+      "ramp": [
+        "#2B3B37",
+        "#395251",
+        "#3D5655",
+        "#466162",
+        "#5B7A7A"
+      ],
+      "rampShift": 0.16,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 1.2,
+        "rim": 0.25
+      }
+    },
+    "M_Env_Trunk": {
+      "base": "#814C32",
+      "ramp": [
+        "#6C422A",
+        "#814C32",
+        "#8D543A",
+        "#A56945",
+        "#E59843"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.5
+      }
+    },
+    "M_Env_Bush": {
+      "base": "#6B7F38",
+      "ramp": [
+        "#566D3A",
+        "#6B7F38",
+        "#8B9F3B",
+        "#A1B044",
+        "#ADBC4A"
+      ],
+      "rampShift": -0.18,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.5
+      }
+    },
+    "M_Env_Rock": {
+      "base": "#8E8796",
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "rampShift": 0.06,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 1.0,
+        "cellSize": 0.6,
+        "rim": 0.25
+      }
+    },
+    "M_Env_Cliff": {
+      "base": "#AC7F75",
+      "ramp": [
+        "#6A4C4B",
+        "#906959",
+        "#AC7F75",
+        "#BE907B",
+        "#CA957A"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 1.0,
+        "cellSize": 0.8,
+        "rim": 0.22
+      }
+    },
+    "M_Env_Grass": {
+      "base": "#8B9F3B",
+      "ramp": [
+        "#566D3A",
+        "#6B7F38",
+        "#8B9F3B",
+        "#A1B044",
+        "#ADBC4A"
+      ],
+      "rampShift": 0.02,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.8,
+        "cellSize": 0.9
+      }
+    },
+    "M_Env_Mountain": {
+      "base": "#747FB3",
+      "ramp": [
+        "#5D6EAC",
+        "#6475B3",
+        "#747FB3",
+        "#8187B4",
+        "#878EBC"
+      ],
+      "rampShift": 0.02,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.8,
+        "cellSize": 6.0,
+        "rim": 0.12,
+        "edge": 0.6
+      }
+    },
+    "M_Env_Snow": {
+      "base": "#E7E1EA",
+      "ramp": [
+        "#C2CAEA",
+        "#C7D0F0",
+        "#DFDDEE",
+        "#E7E1EA",
+        "#FDF2EB"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 5.0,
+        "rim": 0.1
+      }
+    },
+    "M_Env_Cloud": {
+      "base": "#E7E1EA",
+      "ramp": [
+        "#C2CAEA",
+        "#C7D0F0",
+        "#DFDDEE",
+        "#E7E1EA",
+        "#FDF2EB"
+      ],
+      "rampShift": 0.12,
+      "smoothness": 0.0,
+      "opts": {
+        "cells": 0.0,
+        "flat": 0.35,
+        "rim": 0.25,
+        "noShadow": true,
+        "edge": 0.0
+      }
+    }
+  }
+}

@@ -137,16 +137,20 @@ window.rampMaterial = rampMaterial;
 // --------------------------------------------------------------------- licht
 const key = new THREE.DirectionalLight(0xffffff, Math.PI); // Lambert: max = intensiteit/π -> 1.0
 const az = THREE.MathUtils.degToRad(+(Q.get('lightAz') ?? 38)), el = THREE.MathUtils.degToRad(+(Q.get('lightEl') ?? 42));
-key.position.set(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)).multiplyScalar(10);
+const sc = +(Q.get('shadowSize') || 3);
+const lightDist = Math.max(10, sc * 2);
+const sctr = (Q.get('shadowCenter') || '0,0,0').split(',').map(Number);
+key.position.set(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)).multiplyScalar(lightDist).add(new THREE.Vector3(...sctr));
+key.target.position.set(...sctr);
 key.castShadow = true;
 key.shadow.mapSize.set(4096, 4096);
-const sc = +(Q.get('shadowSize') || 3);
-Object.assign(key.shadow.camera, { left: -sc, right: sc, top: sc, bottom: -sc, near: 0.1, far: 40 });
+Object.assign(key.shadow.camera, { left: -sc, right: sc, top: sc, bottom: -sc, near: 0.1, far: Math.max(40, lightDist * 4) });
 key.shadow.bias = -0.0004; key.shadow.normalBias = 0.012; key.shadow.radius = 3;
 scene.add(key); scene.add(key.target);
 // lichtrichting is t.o.v. de camera-kijkrichting wanneer 'lightRel' gezet is
 // ------------------------------------------------------------------- camera
-const cam = new THREE.PerspectiveCamera(+(Q.get('fov') || 22), W / H, 0.05, 200);
+const FAR = +(Q.get('far') || 200);
+const cam = new THREE.PerspectiveCamera(+(Q.get('fov') || 22), W / H, 0.05, FAR);
 const tgt = (Q.get('target') || '0,0.62,0').split(',').map(Number);
 const yaw = THREE.MathUtils.degToRad(+(Q.get('yaw') || 0)), pitch = THREE.MathUtils.degToRad(+(Q.get('pitch') || 4));
 const dist = +(Q.get('dist') || 4.2);
@@ -154,12 +158,12 @@ cam.position.set(tgt[0] + Math.sin(yaw) * Math.cos(pitch) * dist, tgt[1] + Math.
 cam.lookAt(...tgt);
 if (Q.get('ortho')) {
   const hh = +Q.get('ortho');
-  const oc = new THREE.OrthographicCamera(-hh * W / H, hh * W / H, hh, -hh, 0.05, 200);
+  const oc = new THREE.OrthographicCamera(-hh * W / H, hh * W / H, hh, -hh, 0.05, FAR);
   oc.position.copy(cam.position); oc.quaternion.copy(cam.quaternion);
   window.__cam = oc;
 }
 if (Q.get('lightRel')) { // licht meedraaien met de camera (turnarounds: steeds dezelfde belichting)
-  const v = key.position.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+  const v = key.position.clone().sub(new THREE.Vector3(...sctr)).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw).add(new THREE.Vector3(...sctr));
   key.position.copy(v);
 }
 
@@ -211,6 +215,7 @@ function setPose(root, pose) {
       if (it.mats) applyRampMaterials(root, await (await fetch(it.mats)).json().then(j => j.materials || j));
       else applyRampMaterials(root, null);
       if (it.unitScale) root.scale.setScalar(it.unitScale);
+      if (it.scale) root.scale.set(...it.scale);
       // glTF: verborgen nodes (extras.hidden) verbergen
       root.traverse(o => { if (o.userData && o.userData.hidden) o.visible = false; });
       if (it.pos) root.position.set(...it.pos);
