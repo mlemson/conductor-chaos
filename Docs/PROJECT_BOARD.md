@@ -68,7 +68,7 @@ flowchart LR
 
 ## 🔗 Open pull requests zonder gekoppelde roadmap-taak
 
-- [#31 Art: doorzichtige ramen regionale wagon](https://github.com/mlemson/conductor-chaos/pull/31) — verwijs in de PR-omschrijving naar `Refs #nummer` of `Closes #nummer`.
+Alle open PR's zijn gekoppeld of er zijn geen open PR's.
 
 ## 🤝 Samenwerken met mensen en agents
 
