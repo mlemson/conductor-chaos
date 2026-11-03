@@ -6,7 +6,7 @@
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 15 | 1 | 1 | 0 | 0 |
+| 16 | 0 | 1 | 0 | 0 |
 
 ## 🗺️ Mijlpalen
 
@@ -26,10 +26,11 @@ flowchart LR
 
 ## 📋 Taken per status
 
-### 📝 Te doen (15)
+### 📝 Te doen (16)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
+| P0 | [#2 Valideer Unity-project en URP-import](https://github.com/mlemson/conductor-chaos/issues/2) | Foundation | — | — |
 | P0 | [#3 Kies en installeer Netcode, Transport en sessieservices](https://github.com/mlemson/conductor-chaos/issues/3) | Multiplayer | — | — |
 | P0 | [#4 Host en afzonderlijke client verbinden](https://github.com/mlemson/conductor-chaos/issues/4) | Multiplayer | — | — |
 | P0 | [#5 Twee spelers in dezelfde bewegende wagon](https://github.com/mlemson/conductor-chaos/issues/5) | Train | — | — |
@@ -46,11 +47,9 @@ flowchart LR
 | P2 | [#15 Bergtrajecten met bruggen, tunnels en gevaren](https://github.com/mlemson/conductor-chaos/issues/15) | World | — | — |
 | P2 | [#16 HUD, menu, audio en performance polish](https://github.com/mlemson/conductor-chaos/issues/16) | Polish | — | — |
 
-### 🔧 Bezig (1)
+### 🔧 Bezig (0)
 
-| Fase | Taak | Onderdeel | Eigenaar | Pull request |
-| :-- | :-- | :-- | :-- | :-- |
-| P0 | [#2 Valideer Unity-project en URP-import](https://github.com/mlemson/conductor-chaos/issues/2) | Foundation | — | [#27](https://github.com/mlemson/conductor-chaos/pull/27) |
+*Geen taken in deze kolom.*
 
 ### 👀 Klaar voor review (1)
 
