@@ -1,0 +1,249 @@
+{
+  "model": "Locomotive_Blockout",
+  "stats": {
+    "parts": 13,
+    "tris": 35492,
+    "verts": 18854,
+    "materials": 14
+  },
+  "materials": {
+    "M_Loco_Red": {
+      "base": "#C54D3E",
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.4,
+        "edge": 1.2,
+        "grime": 1.0
+      }
+    },
+    "M_Loco_RedDark": {
+      "base": "#8D3432",
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "rampShift": -0.26,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.3,
+        "edge": 1.2,
+        "grime": 1.0
+      }
+    },
+    "M_Loco_Panel": {
+      "base": "#8D3432",
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "rampShift": -0.22,
+      "smoothness": 0.2,
+      "opts": {
+        "paint": 1.6,
+        "edge": 0.0,
+        "grime": 1.0
+      }
+    },
+    "M_Loco_Roof": {
+      "base": "#995F53",
+      "ramp": [
+        "#503330",
+        "#995F53",
+        "#A3685D",
+        "#B27261",
+        "#BB8472"
+      ],
+      "rampShift": -0.14,
+      "smoothness": 0.2,
+      "opts": {
+        "paint": 1.4,
+        "edge": 1.2,
+        "grime": 1.0
+      }
+    },
+    "M_Loco_Gold": {
+      "base": "#FBBA39",
+      "ramp": [
+        "#9D662F",
+        "#AD7031",
+        "#DA993A",
+        "#FBBA39",
+        "#FCCF53"
+      ],
+      "rampShift": 0.04,
+      "smoothness": 0.4,
+      "opts": {
+        "paint": 0.8,
+        "edge": 1.4,
+        "grime": 1.0
+      }
+    },
+    "M_Loco_Frame": {
+      "base": "#33303B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.06,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.0,
+        "edge": 1.4,
+        "grime": 1.0
+      }
+    },
+    "M_Loco_Trim": {
+      "base": "#482826",
+      "ramp": [
+        "#3B2524",
+        "#482826",
+        "#4B1F18",
+        "#634330",
+        "#7A5A48"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.2,
+      "opts": {
+        "paint": 1.2,
+        "edge": 1.4,
+        "grime": 1.0
+      }
+    },
+    "M_Loco_Interior": {
+      "base": "#462A21",
+      "ramp": [
+        "#462A21",
+        "#553022",
+        "#593323",
+        "#723F29",
+        "#A66739"
+      ],
+      "rampShift": -0.25,
+      "smoothness": 0.1,
+      "opts": {
+        "paint": 0.6,
+        "grime": 1.0
+      }
+    },
+    "M_Loco_Wheel": {
+      "base": "#33303B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "paint": 0.8,
+        "edge": 1.4,
+        "grime": 1.0
+      }
+    },
+    "M_Loco_Interact": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "paint": 0.6,
+        "grime": 1.0
+      }
+    },
+    "M_Loco_Lamp": {
+      "base": "#FEECA1",
+      "ramp": [
+        "#E59C2F",
+        "#F5B038",
+        "#FDE080",
+        "#FEF2B0",
+        "#FFF8DA"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.5,
+      "opts": {
+        "emissive": 1.0,
+        "rim": 0.0,
+        "paint": 0.2,
+        "grime": 1.0
+      }
+    },
+    "M_Loco_Fire": {
+      "base": "#E2722B",
+      "ramp": [
+        "#B5531F",
+        "#E2722B",
+        "#F5B038",
+        "#FDE080",
+        "#FEF2B0"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.4,
+      "opts": {
+        "emissive": 1.0,
+        "rim": 0.0,
+        "paint": 0.6,
+        "grime": 1.0
+      }
+    },
+    "M_Loco_Coal": {
+      "base": "#302629",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": -0.1,
+      "smoothness": 0.3,
+      "opts": {
+        "paint": 1.0,
+        "edge": 1.6,
+        "grime": 1.0
+      }
+    },
+    "M_Loco_Dial": {
+      "base": "#F4DCC0",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "flat": 0.5,
+        "paint": 0.3,
+        "grime": 1.0
+      }
+    }
+  }
+}

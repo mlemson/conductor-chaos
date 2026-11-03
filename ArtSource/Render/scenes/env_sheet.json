@@ -1,0 +1,1564 @@
+[
+ {
+  "name": "env_Tree_Pine_Small_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 8.01,
+   "target": "0.00,1.03,0.00",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 4.29,
+   "shadowSize": 2.75,
+   "far": 82.1,
+   "items": [
+    {
+     "url": "../Exports/Environment/Tree_Pine_Small_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Tree_Pine_Medium_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 11.91,
+   "target": "0.00,1.73,0.00",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 6.38,
+   "shadowSize": 4.09,
+   "far": 97.7,
+   "items": [
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Tree_Pine_Large_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 18.01,
+   "target": "0.00,2.72,0.00",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 9.65,
+   "shadowSize": 6.18,
+   "far": 122.0,
+   "items": [
+    {
+     "url": "../Exports/Environment/Tree_Pine_Large_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Tree_Pine_Variant_02",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 13.47,
+   "target": "0.10,2.02,0.03",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 7.22,
+   "shadowSize": 4.62,
+   "far": 103.9,
+   "items": [
+    {
+     "url": "../Exports/Environment/Tree_Pine_Variant_02.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Tree_Pine_Background_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 18.8,
+   "target": "0.00,3.17,0.00",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 10.07,
+   "shadowSize": 6.45,
+   "far": 125.2,
+   "items": [
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Bush_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 4.93,
+   "target": "0.07,0.43,0.05",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 2.64,
+   "shadowSize": 1.69,
+   "far": 69.7,
+   "items": [
+    {
+     "url": "../Exports/Environment/Bush_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Rock_Small_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 2.37,
+   "target": "0.02,0.17,-0.05",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 1.27,
+   "shadowSize": 0.81,
+   "far": 59.5,
+   "items": [
+    {
+     "url": "../Exports/Environment/Rock_Small_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Rock_Medium_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 4.43,
+   "target": "-0.04,0.33,0.05",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 2.38,
+   "shadowSize": 1.52,
+   "far": 67.7,
+   "items": [
+    {
+     "url": "../Exports/Environment/Rock_Medium_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Rock_Large_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 10.2,
+   "target": "0.24,0.71,0.02",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 5.46,
+   "shadowSize": 3.5,
+   "far": 90.8,
+   "items": [
+    {
+     "url": "../Exports/Environment/Rock_Large_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Cliff_Module_A",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 9.73,
+   "target": "-0.01,0.93,-0.00",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 5.22,
+   "shadowSize": 3.34,
+   "far": 88.9,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cliff_Module_A.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Cliff_Module_B",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 14.19,
+   "target": "0.01,1.44,0.00",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 7.6,
+   "shadowSize": 4.87,
+   "far": 106.8,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Cliff_Module_C",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 10.59,
+   "target": "-0.02,1.24,0.01",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 5.68,
+   "shadowSize": 3.63,
+   "far": 92.4,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cliff_Module_C.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Hill_Grass_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 28,
+   "pitch": 14,
+   "dist": 17.83,
+   "target": "-0.00,0.44,0.00",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 9.55,
+   "shadowSize": 6.11,
+   "far": 121.3,
+   "items": [
+    {
+     "url": "../Exports/Environment/Hill_Grass_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Mountain_Back_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 8,
+   "pitch": 6,
+   "dist": 141.54,
+   "target": "-0.04,14.12,-0.70",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 75.85,
+   "shadowSize": 48.54,
+   "far": 616.2,
+   "items": [
+    {
+     "url": "../Exports/Environment/Mountain_Back_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Mountain_Back_02",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 8,
+   "pitch": 6,
+   "dist": 195.63,
+   "target": "5.54,16.12,-0.01",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 104.84,
+   "shadowSize": 67.1,
+   "far": 832.5,
+   "items": [
+    {
+     "url": "../Exports/Environment/Mountain_Back_02.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Mountain_Back_03",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 8,
+   "pitch": 6,
+   "dist": 252.65,
+   "target": "-3.52,10.12,0.46",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 135.4,
+   "shadowSize": 86.65,
+   "far": 1060.6,
+   "items": [
+    {
+     "url": "../Exports/Environment/Mountain_Back_03.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Cloud_01",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 8,
+   "pitch": 6,
+   "dist": 17.46,
+   "target": "0.27,1.04,0.08",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 9.36,
+   "shadowSize": 5.99,
+   "far": 119.8,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cloud_01.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Cloud_02",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 8,
+   "pitch": 6,
+   "dist": 14.39,
+   "target": "-0.05,0.97,0.06",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 7.71,
+   "shadowSize": 4.94,
+   "far": 107.6,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cloud_02.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_Cloud_03",
+  "params": {
+   "w": 700,
+   "h": 600,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 8,
+   "pitch": 6,
+   "dist": 10.06,
+   "target": "-0.01,0.87,0.03",
+   "lightAz": -35,
+   "lightEl": 50,
+   "groundShadowOnly": 1,
+   "groundR": 5.39,
+   "shadowSize": 3.45,
+   "far": 90.2,
+   "items": [
+    {
+     "url": "../Exports/Environment/Cloud_03.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "env_example",
+  "params": {
+   "w": 1800,
+   "h": 1000,
+   "ss": 1.5,
+   "fov": 44,
+   "yaw": 32,
+   "pitch": 4,
+   "dist": 17,
+   "target": "-2.5,2.6,-2.5",
+   "lightAz": -40,
+   "lightEl": 48,
+   "shadowSize": 26,
+   "shadowCenter": "-2,0,-3",
+   "ground": "0",
+   "fogNear": 28,
+   "fogFar": 240,
+   "far": 700,
+   "items": [
+    {
+     "url": "../Exports/ArtCheck_Environment.glb",
+     "pose": {
+      "Platform": {
+       "visible": false
+      },
+      "Bench": {
+       "visible": false
+      },
+      "Lantern": {
+       "visible": false
+      },
+      "Pines": {
+       "visible": false
+      },
+      "Mountains": {
+       "visible": false
+      }
+     }
+    },
+    {
+     "url": "../Exports/Locomotive_Blockout.glb"
+    },
+    {
+     "url": "../Exports/Tender_Blockout.glb",
+     "pos": [
+      -4.9,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/RegionalWagon_Blockout.glb",
+     "pos": [
+      -11.2,
+      0,
+      0.05
+     ]
+    },
+    {
+     "url": "../Exports/Conductor.glb",
+     "pos": [
+      -1.02,
+      1.02,
+      -0.34
+     ],
+     "rotY": 62,
+     "pose": {
+      "Mouth_Neutral": {
+       "visible": false
+      },
+      "Mouth_Surprised": {
+       "visible": true
+      }
+     }
+    },
+    {
+     "url": "../Exports/Environment/Hill_Grass_01.glb",
+     "pos": [
+      -1,
+      -0.9,
+      4.6
+     ],
+     "scale": [
+      3.2,
+      0.32,
+      2.2
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Hill_Grass_01.glb",
+     "pos": [
+      12,
+      -0.9,
+      6.5
+     ],
+     "rotY": 20,
+     "scale": [
+      1.6,
+      0.6,
+      1.4
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Rock_Large_01.glb",
+     "pos": [
+      7.5,
+      -0.75,
+      3.2
+     ],
+     "rotY": 40
+    },
+    {
+     "url": "../Exports/Environment/Rock_Small_01.glb",
+     "pos": [
+      6.2,
+      -0.7,
+      2.4
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Rock_Medium_01.glb",
+     "pos": [
+      -6.5,
+      -0.75,
+      3.0
+     ],
+     "rotY": 120
+    },
+    {
+     "url": "../Exports/Environment/Bush_01.glb",
+     "pos": [
+      4.6,
+      -0.65,
+      2.6
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Bush_01.glb",
+     "pos": [
+      -8.5,
+      -0.7,
+      3.6
+     ],
+     "rotY": 90
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Small_01.glb",
+     "pos": [
+      10.5,
+      -0.7,
+      3.8
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
+     "pos": [
+      13,
+      -0.5,
+      5.5
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Mountain_Back_02.glb",
+     "pos": [
+      -25,
+      -2,
+      -150
+     ],
+     "scale": [
+      1.4,
+      1.4,
+      1.4
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Mountain_Back_01.glb",
+     "pos": [
+      35,
+      -2,
+      -170
+     ],
+     "scale": [
+      1.5,
+      1.6,
+      1.5
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Mountain_Back_03.glb",
+     "pos": [
+      -90,
+      -2,
+      -180
+     ],
+     "scale": [
+      1.4,
+      1.3,
+      1.4
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Mountain_Back_01.glb",
+     "pos": [
+      80,
+      -2,
+      -130
+     ],
+     "rotY": 90
+    },
+    {
+     "url": "../Exports/Environment/Cloud_01.glb",
+     "pos": [
+      -30,
+      38,
+      -90
+     ],
+     "scale": [
+      2.2,
+      2.2,
+      2.2
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cloud_02.glb",
+     "pos": [
+      20,
+      46,
+      -110
+     ],
+     "scale": [
+      2.6,
+      2.6,
+      2.6
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cloud_03.glb",
+     "pos": [
+      55,
+      30,
+      -80
+     ],
+     "scale": [
+      2.0,
+      2.0,
+      2.0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cloud_02.glb",
+     "pos": [
+      -70,
+      42,
+      -120
+     ],
+     "scale": [
+      2.4,
+      2.4,
+      2.4
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Hill_Grass_01.glb",
+     "pos": [
+      -30,
+      -0.9,
+      -34
+     ],
+     "scale": [
+      5,
+      1.6,
+      3
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      -24.857181408695013,
+      0.29200000000000026,
+      -36.088092792036974
+     ],
+     "rotY": 176.02671617129002
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      -39.21585485905125,
+      0.29200000000000026,
+      -32.99070486079363
+     ],
+     "rotY": 275.2455118366127
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      -28.53948119445232,
+      0.29200000000000026,
+      -31.74713312901467
+     ],
+     "rotY": 112.94910462531483
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      -26.094092674526813,
+      0.29200000000000026,
+      -33.43378073736989
+     ],
+     "rotY": 208.7622735416972
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      -30.87589337397174,
+      0.29200000000000026,
+      -31.96019331692475
+     ],
+     "rotY": 340.08519423885747
+    },
+    {
+     "url": "../Exports/Environment/Hill_Grass_01.glb",
+     "pos": [
+      5,
+      -0.9,
+      -40
+     ],
+     "scale": [
+      6,
+      1.4,
+      3
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      4.481966748392889,
+      0.06800000000000006,
+      -39.015086767151956
+     ],
+     "rotY": 21.840993934999098
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      9.029840426088478,
+      0.06800000000000006,
+      -39.11722687283399
+     ],
+     "rotY": 357.51453820798827
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      11.438495732194298,
+      0.06800000000000006,
+      -41.292426807435106
+     ],
+     "rotY": 138.8849192808159
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      8.373054317683764,
+      0.06800000000000006,
+      -42.86462243166647
+     ],
+     "rotY": 166.2103030679157
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      -1.6390324218691088,
+      0.06800000000000006,
+      -42.29742523310961
+     ],
+     "rotY": 21.223590959271746
+    },
+    {
+     "url": "../Exports/Environment/Hill_Grass_01.glb",
+     "pos": [
+      40,
+      -0.9,
+      -36
+     ],
+     "scale": [
+      5,
+      1.8,
+      3
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      45.36465976945041,
+      0.5160000000000006,
+      -38.22395866788789
+     ],
+     "rotY": 89.14134013088915
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      37.818994062664544,
+      0.5160000000000006,
+      -33.771468155242204
+     ],
+     "rotY": 29.009268432049904
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      38.98374801898662,
+      0.5160000000000006,
+      -35.70336054513577
+     ],
+     "rotY": 318.01817751894447
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      46.385596756714826,
+      0.5160000000000006,
+      -33.81609318180891
+     ],
+     "rotY": 100.23158322500296
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      38.30593034423397,
+      0.5160000000000006,
+      -36.84737300801025
+     ],
+     "rotY": 318.3094177913581
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -34.0,
+      -0.9,
+      -5.090947299171525
+     ],
+     "rotY": 180,
+     "scale": [
+      1,
+      1.11,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_A.glb",
+     "pos": [
+      -31.0,
+      -0.9,
+      -5.585709633149833
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      0.9,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Small_01.glb",
+     "pos": [
+      -31.429845844888654,
+      1.0031263782403643,
+      -5.785709633149833
+     ],
+     "rotY": 193.92966308796426
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_A.glb",
+     "pos": [
+      -29.0,
+      -0.9,
+      -5.0213678950414655
+     ],
+     "rotY": 180,
+     "scale": [
+      1,
+      0.82,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_A.glb",
+     "pos": [
+      -27.0,
+      -0.9,
+      -5.201958049580026
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.14,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
+     "pos": [
+      -26.544522032958778,
+      1.4854412966705923,
+      -5.401958049580026
+     ],
+     "rotY": 215.8625105830262
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "pos": [
+      -25.0,
+      -0.9,
+      -5.189087445777761
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.04,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "pos": [
+      -23.0,
+      -0.9,
+      -6.098013486349613
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      0.8,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -20.0,
+      -0.9,
+      -5.08197773241804
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.1,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -16.0,
+      -0.9,
+      -5.853152063222957
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      0.93,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -12.0,
+      -0.9,
+      -5.850916528226314
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      0.86,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_A.glb",
+     "pos": [
+      -9.0,
+      -0.9,
+      -5.0875494219934465
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      0.92,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "pos": [
+      -7.0,
+      -0.9,
+      -5.5205099049557305
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.03,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Variant_02.glb",
+     "pos": [
+      -7.276269295779829,
+      1.880301703396774,
+      -5.720509904955731
+     ],
+     "rotY": 31.371911406781248
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -4.0,
+      -0.9,
+      -5.290351379607489
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.33,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Variant_02.glb",
+     "pos": [
+      -4.478744429251954,
+      3.1907257573797114,
+      -5.490351379607489
+     ],
+     "rotY": 21.561625058787612
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_A.glb",
+     "pos": [
+      -1.0,
+      -0.9,
+      -5.97393743889846
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.18,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "pos": [
+      1.0,
+      -0.9,
+      -6.060190414832353
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.15,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      4.0,
+      -0.9,
+      -5.034885132537569
+     ],
+     "rotY": 180,
+     "scale": [
+      1,
+      0.95,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      8.0,
+      -0.9,
+      -5.004997135510651
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      0.9,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
+     "pos": [
+      7.655892042293027,
+      1.9090571451973406,
+      -5.204997135510651
+     ],
+     "rotY": 92.97992083018336
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "pos": [
+      11.0,
+      -0.9,
+      -5.736596053182495
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.26,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
+     "pos": [
+      11.099281757801062,
+      2.4673139532934463,
+      -5.9365960531824955
+     ],
+     "rotY": 87.48465124952246
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "pos": [
+      13.0,
+      -0.9,
+      -6.047334689267266
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.14,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_A.glb",
+     "pos": [
+      15.0,
+      -0.9,
+      -5.980606741065578
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.28,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -32.0,
+      2.0,
+      -8.32953084239542
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.14,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_A.glb",
+     "pos": [
+      -29.0,
+      2.0,
+      -8.734148074249717
+     ],
+     "rotY": 180,
+     "scale": [
+      1,
+      1.18,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -26.0,
+      2.0,
+      -9.15356423396746
+     ],
+     "rotY": 180,
+     "scale": [
+      1,
+      0.86,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
+     "pos": [
+      -26.291622322015627,
+      4.671335474252164,
+      -9.35356423396746
+     ],
+     "rotY": 296.53842483264697
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "pos": [
+      -23.0,
+      2.0,
+      -8.08491657626313
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.09,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -20.0,
+      2.0,
+      -8.41579088402629
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.06,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
+     "pos": [
+      -19.70121786579572,
+      5.290844846687872,
+      -8.61579088402629
+     ],
+     "rotY": 24.89555669508733
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -16.0,
+      2.0,
+      -9.144082234714146
+     ],
+     "rotY": 180,
+     "scale": [
+      1,
+      0.94,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
+     "pos": [
+      -16.489369451742068,
+      4.91095564737731,
+      -9.344082234714145
+     ],
+     "rotY": 49.826991563577046
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -12.0,
+      2.0,
+      -8.320513877053067
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      0.98,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "pos": [
+      -9.0,
+      2.0,
+      -8.358835977508383
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.3,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -6.0,
+      2.0,
+      -8.621317132706011
+     ],
+     "rotY": 180,
+     "scale": [
+      1,
+      1.15,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
+     "pos": [
+      -6.50968451988914,
+      5.549704460602071,
+      -8.82131713270601
+     ],
+     "rotY": 196.5943292707154
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_A.glb",
+     "pos": [
+      -3.0,
+      2.0,
+      -9.044546659649015
+     ],
+     "rotY": 180,
+     "scale": [
+      1,
+      1.21,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
+     "pos": [
+      -2.5189968728035455,
+      4.510864225581733,
+      -9.244546659649014
+     ],
+     "rotY": 313.5964532839239
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      0.0,
+      2.0,
+      -8.16383279115028
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.23,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      4.0,
+      2.0,
+      -8.469359719107308
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.12,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
+     "pos": [
+      4.591986625705987,
+      5.461420171488358,
+      -8.669359719107307
+     ],
+     "rotY": 316.7250584799697
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "pos": [
+      -29.0,
+      5.0,
+      -11.36701223330838
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.31,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -26.0,
+      5.0,
+      -11.577563431112079
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.1,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
+     "pos": [
+      -26.02285182158091,
+      8.39306552177847,
+      -11.777563431112078
+     ],
+     "rotY": 82.8797917415386
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "pos": [
+      -23.0,
+      5.0,
+      -11.407842094417235
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.23,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "pos": [
+      -21.0,
+      5.0,
+      -11.386235625042694
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      0.97,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
+     "pos": [
+      -20.695474452623234,
+      7.610476676783003,
+      -11.586235625042693
+     ],
+     "rotY": 123.30873815414607
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_C.glb",
+     "pos": [
+      -19.0,
+      5.0,
+      -11.80764725740471
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.29,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -16.0,
+      5.0,
+      -11.232813920784327
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.04,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Cliff_Module_B.glb",
+     "pos": [
+      -12.0,
+      5.0,
+      -11.820215786607033
+     ],
+     "rotY": 0,
+     "scale": [
+      1,
+      1.12,
+      1
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Background_01.glb",
+     "pos": [
+      -11.595485259035353,
+      8.462126859794003,
+      -12.020215786607032
+     ],
+     "rotY": 305.53930978928565
+    }
+   ]
+  }
+ }
+]

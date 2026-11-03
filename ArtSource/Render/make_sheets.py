@@ -1,8 +1,10 @@
 """Stelt de ontwerpbladen samen uit de renders (ArtSource/Render/out) -> Docs/Art/.
 
   Docs/Art/Conductor_DesignSheet.png   turnaround, expressies, pose, ramps, proporties
-  Docs/Art/ArtCheck_WagonCorner.png    conducteur bij de deur (dicht shot) + wijd shot
+  Docs/Art/ArtCheck_Wagon.png          conducteur bij de wagondeur (dicht shot) + wijd shot
   Docs/Art/ArtCheck_vs_Concept.png     render naast de conceptafbeelding
+  Docs/Art/Locomotive_DesignSheet.png  locomotief + kolenwagen
+  Docs/Art/CattleWagon_DesignSheet.png veewagen
 """
 import json
 import os
@@ -79,7 +81,7 @@ def crop_alpha(im, pad=10):
 
 # ------------------------------------------------------------- design sheet
 def design_sheet():
-    W, H = 3000, 1740
+    W, H = 3000, 1820
     sheet = Image.new("RGBA", (W, H), BG + (255,))
     d = ImageDraw.Draw(sheet)
     label(d, (60, 50), "Conducteur · ontwerpblad v1", 58)
@@ -161,7 +163,8 @@ def design_sheet():
         "Ogen raken elkaar: elk oog ≈ 37% van de lijfbreedte, bol, warm-wit; kleine verticale pupillen",
         "Geen neus, oren of wenkbrauwen; expressie via mond, pupillen, pet en houding",
         "Pet = silhouet-sleutel: bolle kroon ≈ 1,3× lijfbreedte, gouden band + embleem, donkere klep",
-        "Stompe mouwen, ronde mitten-handen (≈ oog-grootte), korte benen met brede schoenen",
+        "Dikke mouwen hoog uit de schouder, grote ronde handen; korte dikke beentjes met ronde kiezelvoeten",
+        "Kraag: platte revers in V-vorm; pet-embleem = bolle gouden knop op de kroon",
     ]
     for k, t in enumerate(colL):
         d.text((90, by + 96 + k * 40), "✓  " + t, font=font(22, False), fill=TXT)
@@ -171,6 +174,7 @@ def design_sheet():
         f"{st['tris']:,} driehoeken (incl. 2 verborgen monden + sleutel) · {st['materials']} materialen · geen textures".replace(",", "."),
         "Hiërarchie: Body › Cap, Eye_L/R › Pupil, Mouth_*, Arm_L/R › Hand › Prop_Key · Leg_L/R",
         "Starre 'poppen'-rig: elk onderdeel draait om zijn eigen pivot (schouder, heup, pet)",
+        "Geschilderde variatie gebakken in vertexkleur: R occlusie · G randlicht · B verfvlekken",
         "Bron: ArtSource/Characters/Conductor/build_conductor.py → Conductor.fbx (Unity)",
     ]
     for k, t in enumerate(colR):
@@ -194,22 +198,24 @@ def art_check():
     sheet = Image.new("RGBA", (W, H), BG + (255,))
     d = ImageDraw.Draw(sheet)
     label(d, (60, 40), "Art check · conducteur bij de wagondeur", 50)
-    d.text((64, 140), "Blockout regionale wagon (P0) · sleutelslot en gele drempel = interactie-ankers voor de gedeelde deur (P0-05)",
+    d.text((64, 140), "Regionale wagon in facetstijl (P0 blockout) · geel = interactie: sleutelslot, grepen, drempel (anker voor P0-05)",
            font=font(24, False), fill=SUB)
     sheet.alpha_composite(close_rgb.resize((cw, ch), Image.LANCZOS), (60, 200))
     ww = W - cw - 160
     wh = int(bgw.height * ww / bgw.width)
     sheet.alpha_composite(bgw.resize((ww, wh), Image.LANCZOS), (cw + 100, 200))
     d.text((cw + 100, 220 + wh), "Wijd shot: schaal t.o.v. wagon en landschap", font=font(22), fill=TXT)
-    notes = ["Conducteur 1,25 m · deur 1,70 m hoog, 1,15 m breed",
+    notes = ["Low-poly: effen facetten, grote kleurvlakken, vuil onderin",
+             "Doorloopbaar: kopse doorgangen met balkons, interieur met banken",
+             "Conducteur 1,25 m · wagon 7,2 m · deur 1,76 m hoog, 1,20 m breed",
              "Slot op 0,72 m: binnen bereik van de korte armpjes",
-             "Pocketdeuren met donkere rubberrand; geel alleen voor slot, paal, drempel",
+             "Livrei: treinrood, lichtere inzetpanelen, gouden bies, donkerbruin dak",
              "Deurlamp boven de deur = warm 'open'-signaal",
              "Decor (perron, bergen, dennen) alleen voor deze render",
              "Render = doel-look (ramp-shader), nog geen Unity-screenshot"]
     for k, t in enumerate(notes):
         d.text((cw + 100, 280 + wh + k * 40), "•  " + t, font=font(22, False), fill=SUB)
-    sheet.convert("RGB").save(os.path.join(DOCS, "ArtCheck_WagonCorner.png"), optimize=True)
+    sheet.convert("RGB").save(os.path.join(DOCS, "ArtCheck_Wagon.png"), optimize=True)
     return close_rgb
 
 
@@ -241,7 +247,7 @@ def vs_concept(close_rgb):
               ("Ogen", "✓ groot, rakend, kleine pupillen"),
               ("Kleuren", "✓ gemeten ramps; geen #000/#FFF"),
               ("Licht", "✓ warm key, koele rim; schaduw → violet"),
-              ("Materiaal", "~ satijn ok; nog geen penseelstructuur"),
+              ("Materiaal", "✓ geschilderd: AO, randlicht, verfvlekken"),
               ("Interactie leesbaar", "✓ geel = slot, paal, drempel"),
               ("Unity in-engine", "✗ NOT RUN (vereist Editor)")]
     for k, (a, b) in enumerate(checks):
@@ -250,8 +256,199 @@ def vs_concept(close_rgb):
     sheet.convert("RGB").save(os.path.join(DOCS, "ArtCheck_vs_Concept.png"), optimize=True)
 
 
+# --------------------------------------------------------------- locomotief
+def loco_sheet():
+    W, H = 3000, 2180
+    sheet = Image.new("RGBA", (W, H), BG + (255,))
+    d = ImageDraw.Draw(sheet)
+    label(d, (60, 40), "Locomotief + kolenwagen · ontwerpblad v2.1", 56)
+    d.text((64, 148), "P0 art proof (issue #22) · v2 na art review: rondere neus, geïntegreerde koplamp, stevigere cabine, sierlijsten · kleuren uit palette.json",
+           font=font(25, False), fill=SUB)
+    hero = sky(load("loco_hero").size)
+    hero.alpha_composite(load("loco_hero"))
+    hw = 1640
+    hh = int(hero.height * hw / hero.width)
+    sheet.alpha_composite(hero.resize((hw, hh), Image.LANCZOS), (60, 200))
+    label(d, (84, 216), "In het spel: loc, kolenwagen en regionale wagon", 28)
+    # textuur naast het concept
+    concept = Image.open(os.path.join(ROOT, "Docs", "References", "conductor-chaos-concept.png")).convert("RGBA")
+    rx = 60 + hw + 40
+    rw = W - rx - 50
+    d.rounded_rectangle([rx, 200, W - 50, 200 + hh], 22, fill=PANEL)
+    d.text((rx + 24, 222), "Textuur naast het concept", font=font(28), fill=YEL)
+    cc = fit(concept.crop((400, 250, 900, 440)), rw - 48, 400)
+    sheet.alpha_composite(cc, (rx + 24, 270))
+    d.text((rx + 24, 280 + cc.height), "concept", font=font(20, False), fill=MUTED)
+    tex = sky(load("loco_tex").size)
+    tex.alpha_composite(load("loco_tex"))
+    tx = fit(tex.crop((0, int(tex.height * 0.22), tex.width, int(tex.height * 0.80))), rw - 48, 400)
+    ty = 320 + cc.height
+    sheet.alpha_composite(tx, (rx + 24, ty))
+    d.text((rx + 24, ty + tx.height + 10), "3D-model (render)", font=font(20, False), fill=MUTED)
+    notes = ["Doorloopbaar: cabine-achterdeur → loopplaat → kolenwagen → wagon",
+             "Achthoekige rookkastring met 4 gouden bouten, lens geel → oranje",
+             "Ruime cabine met kooloventje (gloeiend deurtje, drukmeter, hendel)",
+             "Kolenwagen: rode bak, gouden rand/hoekstrips, panelen met klinknagels",
+             "Low-poly: effen vlakken, harde facetten, donkerder ingezette panelen"]
+    for k, t in enumerate(notes):
+        d.text((rx + 24, ty + tx.height + 50 + k * 32), "•  " + t, font=font(19, False), fill=SUB)
+    # aanzichten
+    by = 200 + hh + 30
+    d.rounded_rectangle([60, by, W - 50, by + 560], 22, fill=PANEL)
+    label(d, (84, by + 14), "Aanzichten", 30)
+    views = [("loco_front34", "Voor 3/4"), ("loco_side", "Zijaanzicht met kolenwagen"), ("loco_rear34", "Achter 3/4"),
+             ("tender_front34", "Kolenwagen: ladder, sluitlampen"), ("loco_cab", "Cabine: kooloventje")]
+    cw = (W - 170) // 5
+    for i, (n, cap) in enumerate(views):
+        im = fit(crop_alpha(load(n)), cw - 40, 430)
+        x = 90 + i * cw + (cw - im.width) // 2
+        sheet.alpha_composite(im, (x, by + 80 + (430 - im.height) // 2))
+        d.text((90 + i * cw + cw // 2, by + 520), cap, font=font(24), fill=TXT, anchor="ma")
+    # onderste strook: materialen + bouw
+    ly = by + 590
+    d.rounded_rectangle([60, ly, W - 50, H - 40], 22, fill=PANEL)
+    mats = json.load(open(os.path.join(ROOT, "ArtSource", "Exports", "Locomotive_Blockout.materials.json"), encoding="utf-8"))
+    d.text((90, ly + 24), "Materialen (ramp schaduw → licht)", font=font(24), fill=YEL)
+    for i, (name, m) in enumerate(mats["materials"].items()):
+        x = 90 + (i % 7) * 205
+        y = ly + 70 + (i // 7) * 80
+        d.text((x, y), name.replace("M_Loco_", ""), font=font(18), fill=TXT)
+        for j, hx in enumerate(m["ramp"]):
+            c = tuple(int(hx[k:k + 2], 16) for k in (1, 3, 5))
+            d.rounded_rectangle([x + j * 36, y + 28, x + j * 36 + 31, y + 54], 5, fill=c)
+    st = mats["stats"]
+    tst = json.load(open(os.path.join(ROOT, "ArtSource", "Exports", "Tender_Blockout.materials.json"), encoding="utf-8"))["stats"]
+    info = [f"Loc ≈ 6,8 m · cabine 2,6 m · vloer 0,74 m · kolenwagen 3,8 m",
+            f"Loc {st['tris']:,} · kolenwagen {tst['tris']:,} driehoeken".replace(",", "."),
+            "Low-poly: effen platte vlakken, schaduw per facet, donkere inzetpanelen",
+            "Kolenwagen: Frame, Body › Coal/Ladder/TailLights/DeckRails, FallPlate, Wheels",
+            "Bron: ArtSource/Train/{Locomotive,Tender}/build_*.py → *_Blockout.fbx"]
+    for k, t in enumerate(info):
+        d.text((1560, ly + 70 + k * 40), "•  " + t, font=font(20, False), fill=SUB)
+    sheet.convert("RGB").save(os.path.join(DOCS, "Locomotive_DesignSheet.png"), optimize=True)
+
+
+def cattle_sheet():
+    W, H = 3000, 2120
+    sheet = Image.new("RGBA", (W, H), BG + (255,))
+    d = ImageDraw.Draw(sheet)
+    label(d, (60, 40), "Veewagen · ontwerpblad v1", 56)
+    d.text((64, 148), "Tweede wagontype (issue #25) · rode kooi uit één stuk om een houten lattenwand · doorloopbaar · kleuren uit palette.json",
+           font=font(25, False), fill=SUB)
+    hero = sky(load("cattle_hero").size)
+    hero.alpha_composite(load("cattle_hero"))
+    hw = 1560
+    hh = int(hero.height * hw / hero.width)
+    sheet.alpha_composite(hero.resize((hw, hh), Image.LANCZOS), (60, 200))
+    label(d, (84, 216), "Op het perron: schuifdeur open, regionale wagon erachter", 28)
+    rx = 60 + hw + 40
+    d.rounded_rectangle([rx, 200, W - 50, 200 + hh], 22, fill=PANEL)
+    d.text((rx + 24, 222), "Ontwerp", font=font(28), fill=YEL)
+    notes = ["Kooi (hoekstijlen, regels, deurstijlen) is één",
+             "  doorlopend stuk; geen losse latten tegen elkaar",
+             "Latten = één geheel met de wand; de kieren zijn",
+             "  echte openingen (stro en hooibalen zichtbaar)",
+             "Schuifdeur met Z-schoor uit één stuk, gele greep;",
+             "  schuift over het vak ernaast (anker SlideDoor_*)",
+             "Kopse doorgangen + balkons + gele relingen,",
+             "  zelfde maten als de regionale wagon",
+             "Gewelfd dak, weinig facetten; vuil onderin",
+             "Interieur: stro, hooibalen, voerbak; gangpad vrij"]
+    for k, t in enumerate(notes):
+        d.text((rx + 24, 280 + k * 44), ("•  " if not t.startswith("  ") else "    ") + t.strip(), font=font(21, False), fill=SUB)
+    det = sky(load("cattle_detail").size)
+    det.alpha_composite(load("cattle_detail"))
+    det = fit(det, W - 50 - rx - 48, 200 + hh - (280 + len(notes) * 44) - 70)
+    sheet.alpha_composite(det, (rx + 24, 300 + len(notes) * 44))
+    d.text((rx + 24, 306 + len(notes) * 44 + det.height), "Hoek: kooi, latten en dagkanten lopen naadloos door", font=font(20, False), fill=MUTED)
+    by = 200 + hh + 30
+    d.rounded_rectangle([60, by, W - 50, by + 560], 22, fill=PANEL)
+    label(d, (84, by + 14), "Aanzichten", 30)
+    views = [("cattle_34", "Voor 3/4"), ("cattle_side", "Zijaanzicht"), ("cattle_end", "Kopse kant: doorgang"),
+             ("cattle_door", "Schuifdeur open"), ("cattle_in", "Binnen: stro, hooi")]
+    cw = (W - 170) // 5
+    for i, (n, cap) in enumerate(views):
+        im = load(n)
+        im = fit(crop_alpha(im) if n not in ("cattle_door", "cattle_in") else im, cw - 40, 430)
+        x = 90 + i * cw + (cw - im.width) // 2
+        sheet.alpha_composite(im, (x, by + 80 + (430 - im.height) // 2))
+        d.text((90 + i * cw + cw // 2, by + 520), cap, font=font(24), fill=TXT, anchor="ma")
+    ly = by + 590
+    d.rounded_rectangle([60, ly, W - 50, H - 40], 22, fill=PANEL)
+    mats = json.load(open(os.path.join(ROOT, "ArtSource", "Exports", "CattleWagon_Blockout.materials.json"), encoding="utf-8"))
+    d.text((90, ly + 24), "Materialen (ramp schaduw → licht)", font=font(24), fill=YEL)
+    for i, (name, m) in enumerate(mats["materials"].items()):
+        x = 90 + (i % 5) * 270
+        y = ly + 70 + (i // 5) * 80
+        d.text((x, y), name.replace("M_Cattle_", ""), font=font(18), fill=TXT)
+        for j, hx in enumerate(m["ramp"]):
+            c = tuple(int(hx[k:k + 2], 16) for k in (1, 3, 5))
+            d.rounded_rectangle([x + j * 40, y + 28, x + j * 40 + 35, y + 54], 5, fill=c)
+    st = mats["stats"]
+    info = ["Bak 6,4 × 2,6 m · vloer 0,10 m · deur 1,5 m breed · doorgang 0,9 m",
+            f"{st['tris']:,} driehoeken · {st['materials']} materialen".replace(",", "."),
+            "Onderdelen: Walls, Cage, Roof, Interior, SlideDoor_Near/Far, DoorTracks, Underframe, Ends",
+            "Bron: ArtSource/Train/CattleWagon/build_cattle_wagon.py → CattleWagon_Blockout.fbx"]
+    for k, t in enumerate(info):
+        d.text((1500, ly + 70 + k * 40), "•  " + t, font=font(20, False), fill=SUB)
+    sheet.convert("RGB").save(os.path.join(DOCS, "CattleWagon_DesignSheet.png"), optimize=True)
+
+
+def env_sheet():
+    kit = json.load(open(os.path.join(ROOT, "ArtSource", "Exports", "Environment", "EnvironmentKit.json"), encoding="utf-8"))
+    assets = kit["assets"]
+    W = 3000
+    ex = sky(load("env_example").size)
+    ex.alpha_composite(load("env_example"))
+    hw = 2000
+    hh = int(ex.height * hw / ex.width)
+    cols = 7
+    rows = (len(assets) + cols - 1) // cols
+    tw, th = (W - 120 - (cols - 1) * 20) // cols, 330
+    H = 200 + hh + 40 + 70 + rows * (th + 80) + 40
+    sheet = Image.new("RGBA", (W, H), BG + (255,))
+    d = ImageDraw.Draw(sheet)
+    label(d, (60, 40), "Natuur- en achtergrondkit · v1", 56)
+    d.text((64, 148), "Modulair (issue #30) · chunky low-poly, grote leesbare vormen · warm vooraan, koel achteraan · kleuren uit palette.json",
+           font=font(25, False), fill=SUB)
+    sheet.alpha_composite(ex.resize((hw, hh), Image.LANCZOS), (60, 200))
+    label(d, (84, 216), "Voorbeeldscène: trein + omgeving in lagen", 28)
+    rx = 60 + hw + 40
+    d.rounded_rectangle([rx, 200, W - 50, 200 + hh], 22, fill=PANEL)
+    d.text((rx + 24, 222), "Lagen", font=font(28), fill=YEL)
+    notes = ["1  Bij het spoor: grasheuvel, rotsen,", "   struiken, een enkele kleine boom",
+             "2  Midden: klifmodules op een raster", "   van 2 m, in terrassen gestapeld,", "   bomen op de randen",
+             "3  Achter: beboste heuvelrug, verre", "   blauwe bergen, wolken, mist", "",
+             "Stijl", "•  grote vormen, weinig details", "•  facetten met afgeschuinde overgangen",
+             "•  bovenkant licht, onderkant donker", "•  grote kleurvlakken in de shader",
+             "•  pivot midden-onder, 1 unit = 1 m", "•  elk asset een eigen FBX + GLB"]
+    for k, t in enumerate(notes):
+        is_head = t in ("Stijl",)
+        d.text((rx + 24, 280 + k * 40), t, font=font(24 if is_head else 21, is_head), fill=YEL if is_head else SUB)
+    by = 200 + hh + 40
+    label(d, (60, by), "Kit", 30)
+    for i, (name, a) in enumerate(assets.items()):
+        x = 60 + (i % cols) * (tw + 20)
+        y = by + 70 + (i // cols) * (th + 80)
+        d.rounded_rectangle([x, y, x + tw, y + th + 60], 18, fill=PANEL)
+        im = load("env_" + name)
+        im = fit(crop_alpha(im), tw - 30, th - 20)
+        sheet.alpha_composite(im, (x + (tw - im.width) // 2, y + 10 + (th - 20 - im.height) // 2))
+        d.text((x + tw // 2, y + th + 4), name, font=font(19), fill=TXT, anchor="ma")
+        sz = [round(a["max"][k] - a["min"][k], 1) for k in range(3)]
+        d.text((x + tw // 2, y + th + 30), f"{sz[0]}×{sz[1]}×{sz[2]} m · {a['tris']} tris".replace(".", ","), font=font(16, False),
+               fill=MUTED, anchor="ma")
+    sheet.convert("RGB").save(os.path.join(DOCS, "Environment_DesignSheet.png"), optimize=True)
+
+
 if __name__ == "__main__":
     design_sheet()
     c = art_check()
     vs_concept(c)
+    if os.path.exists(os.path.join(OUT, "loco_hero.png")):
+        loco_sheet()
+    if os.path.exists(os.path.join(OUT, "cattle_hero.png")):
+        cattle_sheet()
+    if os.path.exists(os.path.join(OUT, "env_example.png")):
+        env_sheet()
     print("ok ->", DOCS)

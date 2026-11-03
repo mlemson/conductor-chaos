@@ -110,7 +110,7 @@ Richtlijn:
   - hele lichaamshouding en hoofdkanteling
 
 ## Basismodel conducteur (P0 art proof, issue #9)
-Maatvoering, gemeten in het concept en vastgelegd in het [ontwerpblad](Art/Conductor_DesignSheet.png) en het [art-check-beeld](Art/ArtCheck_WagonCorner.png):
+Maatvoering, gemeten in het concept en vastgelegd in het [ontwerpblad](Art/Conductor_DesignSheet.png) en het [art-check-beeld](Art/ArtCheck_Wagon.png):
 - totaal **1,25 m** incl. pet; lijf 0,56 m breed (superellips-doorsnede, iets platte voorkant); kraaglijn 0,53 m; ogen op 0,835 m
 - pet = silhouet-sleutel: bolle kroon ≈ 1,3× lijfbreedte, gouden band met rond embleem, donkere klep die net boven de ogen valt
 - handen ≈ oog-grootte; schoudels op 0,49 m → **interactiepunten (sloten, knoppen) op ca. 0,6–0,8 m** zodat de korte armpjes erbij kunnen
@@ -182,6 +182,15 @@ Omgevingen bestaan uit simpele grote vormen met weinig micro-detail.
 - bergen en rotsen in gestileerde vormen
 - bomen als simpele volumes
 
+### Natuur- en achtergrondkit (issue #30)
+Zie `Docs/Art/Environment_DesignSheet.png` en `ArtSource/Environment/build_environment_kit.py`.
+- **Lagen:** (1) bij het spoor: grasheuvels, rotsen, struiken, een enkele kleine boom; (2) midden: klifmodules in terrassen met bomen op de randen; (3) achter: een beboste heuvelrug, verre blauwe bergen, wolken en mist. Vooraan warm en contrastrijk, achteraan koel, licht en rustig.
+- **Bomen:** een korte zeskantige stam met 2–4 gestapelde kegellagen, een afgeronde en licht gekartelde onderrand en een duidelijk driehoekig silhouet. Gedempt blauwgroen (`pine`), geen takken of naalden.
+- **Rotsen:** chunky grijs-mauve klonten (`metal`-ramp) met weinig facetten, iets in de grond gezet.
+- **Kliffen:** modules op een raster van 2 m (A 2×2×2 m, B 4×2×3 m, C een terras van 1,2 en 2,6 m) met verticale facetkolommen, een terrasrand halverwege en een grasdek dat een fractie overhangt. Randen bollen tot ongeveer 0,1 m uit, zodat buren elkaar overlappen. Stapelen en roteren (0/180°) mag, ook in hoogte schalen (0,8–1,35).
+- **Verre bergen:** grote facetsilhouetten in `mountain` (blauw-paars) met een simpele, gekartelde sneeuwkap; plat in de diepte.
+- **Wolken:** zachte, ronde puffen (`cloud_snow`), zonder facetten en zonder schaduw.
+
 ### Interieur trein
 - duidelijk gangpad
 - grote simpele stoelen
@@ -220,7 +229,10 @@ Een prop moet al herkenbaar zijn als silhouette, nog vóór textuur of detail.
 
 ## Materiaalrichting
 - mat tot satijn: zacht "klei/vinyl-speelgoed"-gevoel, brede zachte highlight, geen scherpe spiegeling
-- zacht verloop over grote vlakken (geschilderd, niet fotografisch)
+- **low-poly met effen vlakken** (besluit @mlemson): elk vlak/facet heeft één effen tint, bepaald door zijn richting (boven licht, zijkant midden, onder donker). Variatie komt van **grote vormen**: facetten, afschuiningen en ingezette panelen, niet van ruis, vlekken of penseeltextuur. Alleen een zachte occlusie in hoeken en naar de onderkant (vertexkleur R) en lichte randjes (G). Trein en decor: harde normalen; personages blijven glad.
+- **grote vlakken met iets andere tint** (referentie @mlemson): een Voronoi-patroon met cellen van ongeveer 0,45 m (decor 1,1 m), elke cel effen en een fractie lichter of donkerder, met harde randen en zonder ruis
+- **onderin viezer:** treinen worden naar de onderkant donkerder en bruiner (vuilkleur `wagon_brown[0]`), ook per cel, dus het vuil bestaat ook uit vlakken. Zie [ArtSource](../ArtSource/README.md)
+- geschilderde **inzetpanelen**: een iets donkerder vlak (dezelfde ramp, lagere positie) zonder lichte rand, zoals op de concept-loc. Gebruik ze spaarzaam op grote wanden, eventueel met gouden klinknagels
 - koele rimlight langs de randen (zie Lighting)
 - geen heavy realism
 
@@ -313,7 +325,7 @@ Licht moet warmte, sfeer en leesbaarheid geven.
 | Rim light | `#B2C5F3`, sterkte ≈ 0.3 | smalle fresnel |
 | Lampen | `#FEF2B0` emissive | lichte bloom (threshold ≈ 1.0, lage intensiteit) |
 
-Aanpak: één gedeelde stylized-lit shader (Shader Graph) met zachte 2–3-staps lichtramp, schaduwtint en rim, plus per materiaal een basiskleur uit de ramp. Eerst valideren in de art-test (één conducteur + één wagonhoek) voordat er meer assets komen. Dit zijn startwaarden: stem af door de Unity-screenshot naast de conceptafbeelding te leggen.
+Aanpak: één gedeelde stylized-lit shader (Shader Graph) met zachte 2–3-staps lichtramp, schaduwtint en rim, plus per materiaal een basiskleur uit de ramp. Eerst valideren in de art-test (één conducteur + één wagon) voordat er meer assets komen. Dit zijn startwaarden: stem af door de Unity-screenshot naast de conceptafbeelding te leggen.
 
 ## Per type gebied
 ### Startgebieden
