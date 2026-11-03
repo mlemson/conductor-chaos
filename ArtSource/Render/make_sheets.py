@@ -443,21 +443,30 @@ def env_sheet():
 
 
 def terrain_sheet():
-    names = [("T_Ground_Grass", "Gras"), ("T_Ground_GrassFlowers", "Gras + bloemetjes"), ("T_Ground_Dirt", "Grond / berm"),
-             ("T_Ground_PathStones", "Stenen pad"), ("T_Ground_Rock", "Rots (steil)")]
+    rows = [("Detail (v1)", [("T_Ground_Grass", "Gras"), ("T_Ground_GrassFlowers", "Gras + bloemetjes"), ("T_Ground_Dirt", "Grond / berm"),
+                             ("T_Ground_PathStones", "Stenen pad"), ("T_Ground_Rock", "Rots (steil)")]),
+            ("Effen set (test) · zoals het gras en de rots op de kliffen",
+             [("T_Flat_Grass", "Gras"), ("T_Flat_GrassSmall", "Gras, kleine vlakken"), ("T_Flat_GrassShade", "Gras, schaduw"),
+              ("T_Flat_GrassFlowers", "Gras + bloemetjes"), ("T_Flat_Dirt", "Grond / berm")]),
+            ("", [("T_Flat_Sand", "Zandpad"), ("T_Flat_Rock", "Rots"), ("T_Flat_Stone", "Stenen vloer"), ("T_Flat_Snow", "Sneeuw")])]
     W, tw = 3000, 540
-    H = 200 + tw + 140
+    rh = tw + 170
+    H = 200 + rh * len(rows)
     sheet = Image.new("RGBA", (W, H), BG + (255,))
     d = ImageDraw.Draw(sheet)
-    label(d, (60, 40), "Terrein · grondtextures v1", 56)
-    d.text((64, 148), "Issue #38 · tegelbaar (hier 2×2 getoond) · Unity: Conductor Chaos > Art > Terrain > Create Stylized Terrain · kleuren uit palette.json",
+    label(d, (60, 40), "Terrein · grondtextures", 56)
+    d.text((64, 148), "Issue #38 · tegelbaar (hier 2×2 getoond) · Unity: Conductor Chaos > Art > Terrain · kleuren uit palette.json",
            font=font(25, False), fill=SUB)
-    for i, (n, cap) in enumerate(names):
-        im = Image.open(os.path.join(ROOT, "ArtSource", "Exports", "Terrain", n + "_preview.png")).convert("RGBA").resize((tw, tw))
-        x = 60 + i * (tw + 30)
-        sheet.alpha_composite(im, (x, 200))
-        d.text((x + tw // 2, 220 + tw), cap, font=font(26), fill=TXT, anchor="ma")
-        d.text((x + tw // 2, 258 + tw), n, font=font(18, False), fill=MUTED, anchor="ma")
+    for r, (title, names) in enumerate(rows):
+        y0 = 200 + r * rh
+        if title:
+            d.text((64, y0), title, font=font(26), fill=TXT)
+        for i, (n, cap) in enumerate(names):
+            im = Image.open(os.path.join(ROOT, "ArtSource", "Exports", "Terrain", n + "_preview.png")).convert("RGBA").resize((tw, tw))
+            x = 60 + i * (tw + 30)
+            sheet.alpha_composite(im, (x, y0 + 44))
+            d.text((x + tw // 2, y0 + 58 + tw), cap, font=font(26), fill=TXT, anchor="ma")
+            d.text((x + tw // 2, y0 + 96 + tw), n, font=font(18, False), fill=MUTED, anchor="ma")
     sheet.convert("RGB").save(os.path.join(DOCS, "Terrain_DesignSheet.png"), optimize=True)
 
 

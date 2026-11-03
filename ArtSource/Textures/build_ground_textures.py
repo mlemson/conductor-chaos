@@ -11,6 +11,9 @@ Uitvoer (1024 x 1024, sRGB, naadloos tegelbaar):
   Assets/Art/Terrain/Textures/T_Ground_PathStones.png    stenen pad (keien)
   Assets/Art/Terrain/Textures/T_Ground_Rock.png          rots (steile hellingen)
   ArtSource/Exports/Terrain/*_preview.png                2x2 getegeld ter controle
+
+Effen set (T_Flat_*): dezelfde look als het gras/de rots op de kliffen (StylizedRamp-cellen): een effen
+kleur met grote, hoekige vlakken die net iets van tint verschillen, plus een heel zachte facetschaduw.
 """
 import json
 import os
@@ -129,24 +132,27 @@ def dirt():
     return img
 
 
+# Generatorstand waarmee de goedgekeurde v1 van het stenen pad (commit a5f7838) is gemaakt; zo blijft die exact gelijk.
+PATHSTONES_V1_STATE = {"bit_generator": "PCG64", "state": {"state": 244382717133595458871174245543954773606,
+                       "inc": 83116957542241617309460614540412402693}, "has_uint32": 0, "uinteger": 0}
+
+
 def path_stones():
-    """Keien met duidelijk contrast: elke kei een eigen tint (breed bereik), een lichte rand naar het licht
-    (linksboven), een donkere rand eraf, en donkere voegen met hier en daar wat gras."""
+    """v1 (goedgekeurd): effen keien met een eigen tint, zachte afgeschuinde rand, grond en wat gras in de voegen."""
     ids, edge, vec, n = voronoi(64, 0.55)
-    tone = rng.uniform(0.12, 0.92, n)[ids]
+    tone = rng.uniform(0.35, 0.75, n)[ids]                 # elke kei een eigen effen tint
     img = ramp("metal", tone)
-    gap = 8.0
-    L = np.array([-0.6, -0.8])                                    # licht van linksboven (beeld: y omlaag)
+    gap = 7.0
+    L = np.array([-0.6, -0.8])
     dirn = vec / (np.linalg.norm(vec, axis=-1, keepdims=True) + 1e-6)
-    lam = dirn @ L                                                 # > 0: rand aan de lichtkant
-    bevel = np.clip(1 - (edge - gap) / 12.0, 0, 1)[..., None]
-    img = img * (1 + 0.32 * bevel * np.clip(lam, 0, 1)[..., None])
-    img = img * (1 - 0.40 * bevel * np.clip(-lam, 0, 1)[..., None])
-    # voegen: donkere grond, soms een sprietje gras
+    lam = (dirn @ L)
+    bevel = np.clip(1 - (edge - gap) / 14.0, 0, 1)
+    img = img * (1 + 0.16 * bevel[..., None] * np.clip(-lam, 0, 1)[..., None])
+    img = img * (1 - 0.22 * bevel[..., None] * np.clip(lam, 0, 1)[..., None])
     v = pnoise(90)
-    joint = np.where((v > 0.9)[..., None], ramp("grass", np.full(v.shape, 0.15)), ramp("cliff", 0.02 + 0.05 * np.clip(v + 1, 0, 2)))
-    joint = joint * 0.78
-    m = np.clip((gap - edge) / 1.2, 0, 1)[..., None]
+    joint = np.where((v > 0.35)[..., None], ramp("grass", 0.3 + 0.2 * np.clip(v, 0, 1))[..., :],
+                     ramp("cliff", 0.15 + 0.1 * np.clip(v + 1, 0, 2)))
+    m = np.clip((gap - edge) / 1.5, 0, 1)[..., None]
     return np.clip(img * (1 - m) + joint * m, 0, 255)
 
 
@@ -156,6 +162,47 @@ def rock():
     img = ramp("cliff", tone * 0.8 + 0.1 + 0.05 * pnoise(200))
     m = np.clip((3.0 - edge) / 1.5, 0, 1)[..., None]
     return img * (1 - 0.25 * m)
+
+
+def flat(name, lo, hi, cells=100, jitter=0.9, facet=0.035, drift=0.025, joints=0.0):
+    """Effen kleur met grote hoekige vlakken (zoals de cellen van de StylizedRamp-shader op de kliffen):
+    elk vlak een eigen tint tussen lo en hi, een lichte schuine facetschaduw, en een heel zachte drift."""
+    ids, edge, vec, n = voronoi(cells, jitter)
+    tone = rng.uniform(lo, hi, n)[ids]
+    ang = rng.uniform(0, 2 * np.pi, n)
+    cell_r = N / np.sqrt(n)
+    tilt = (vec[..., 0] * np.cos(ang)[ids] + vec[..., 1] * np.sin(ang)[ids]) / cell_r
+    tone = tone + facet * tilt + drift * pnoise(320)
+    img = ramp(name, tone)
+    if joints > 0:                                           # dunne, zachte voeg (stenen vloer)
+        img = img * (1 - joints * np.clip((2.5 - edge) / 1.5, 0, 1))[..., None]
+    return img
+
+
+def flowers(img, count, rmin=3.0, rmax=4.5):
+    petal, heart = rgb(R["cloud_snow"][4]), rgb(R["accent_yellow"][2])
+    for _ in range(count):
+        cx, cy = rng.uniform(0, N, 2)
+        r = rng.uniform(rmin, rmax)
+        for a in np.linspace(0, 2 * np.pi, 5, endpoint=False) + rng.uniform(0, 1):
+            px, py = np.cos(a) * r, np.sin(a) * r
+            stamp(img, cx, cy, lambda X, Y, px=px, py=py: (r * 0.75 - np.hypot(X - px, Y - py)) / 1.0, petal, r * 2)
+        stamp(img, cx, cy, lambda X, Y: (r * 0.55 - np.hypot(X, Y)) / 1.0, heart, r)
+    return img
+
+
+# naam -> (maker, tegelgrootte in m voor de TerrainLayer); de tegelgroottes staan ook in StylizedTerrainTools.cs
+FLAT = {
+    "T_Flat_Grass": lambda: flat("grass", 0.80, 0.94),                       # zoals het gras op de kliffen
+    "T_Flat_GrassSmall": lambda: flat("grass", 0.76, 0.96, cells=256),      # kleinere vlakken, iets levendiger
+    "T_Flat_GrassShade": lambda: flat("grass", 0.50, 0.66),                  # donkerder gras (onder bomen, randen)
+    "T_Flat_GrassFlowers": lambda: flowers(flat("grass", 0.80, 0.94), 35),
+    "T_Flat_Dirt": lambda: flat("cliff", 0.30, 0.48),                        # grond / spoorberm
+    "T_Flat_Sand": lambda: flat("parchment", 0.10, 0.22, facet=0.025),                    # zandpad
+    "T_Flat_Rock": lambda: flat("cliff", 0.55, 0.80, cells=49, facet=0.05),  # zoals de kliffen
+    "T_Flat_Stone": lambda: flat("metal", 0.40, 0.80, cells=64, facet=0.05, joints=0.22),   # stenen vloer, effen platen
+    "T_Flat_Snow": lambda: flat("cloud_snow", 0.70, 0.92, cells=64, facet=0.025),
+}
 
 
 def save(name, img):
@@ -177,11 +224,19 @@ def save(name, img):
 
 
 def main():
-    save("T_Ground_Grass", grass(False))
-    save("T_Ground_GrassFlowers", grass(True))
-    save("T_Ground_Dirt", dirt())
+    global rng
+    def seeded(seed):
+        global rng
+        rng = np.random.default_rng([38, seed])              # eigen reeks per textuur: wijzigingen lopen niet door
+    seeded(1); save("T_Ground_Grass", grass(False))
+    seeded(2); save("T_Ground_GrassFlowers", grass(True))
+    seeded(3); save("T_Ground_Dirt", dirt())
+    rng = np.random.default_rng(); rng.bit_generator.state = PATHSTONES_V1_STATE
     save("T_Ground_PathStones", path_stones())
-    save("T_Ground_Rock", rock())
+    seeded(5); save("T_Ground_Rock", rock())
+    for k, (name, make) in enumerate(FLAT.items()):
+        seeded(100 + k)
+        save(name, make())
 
 
 if __name__ == "__main__":

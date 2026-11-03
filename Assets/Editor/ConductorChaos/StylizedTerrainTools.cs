@@ -26,6 +26,20 @@ namespace ConductorChaos.EditorTools
             ("T_Ground_Rock", "TL_Rock", 6f),
         };
 
+        // effen set (test): effen kleur met grote, net iets andere vlakken, zoals het gras/de rots op de kliffen
+        static readonly (string tex, string layer, float tile)[] FlatDefs =
+        {
+            ("T_Flat_Grass", "TL_Flat_Grass", 10f),
+            ("T_Flat_GrassSmall", "TL_Flat_GrassSmall", 10f),
+            ("T_Flat_GrassShade", "TL_Flat_GrassShade", 10f),
+            ("T_Flat_GrassFlowers", "TL_Flat_GrassFlowers", 10f),
+            ("T_Flat_Dirt", "TL_Flat_Dirt", 8f),
+            ("T_Flat_Sand", "TL_Flat_Sand", 8f),
+            ("T_Flat_Rock", "TL_Flat_Rock", 8f),
+            ("T_Flat_Stone", "TL_Flat_Stone", 5f),
+            ("T_Flat_Snow", "TL_Flat_Snow", 10f),
+        };
+
         static void EnsureFolder(string path)
         {
             if (AssetDatabase.IsValidFolder(path)) return;
@@ -37,11 +51,13 @@ namespace ConductorChaos.EditorTools
         [MenuItem("Conductor Chaos/Art/Terrain/Create Terrain Layers")]
         public static void CreateLayersMenu() => EnsureLayers();
 
-        public static TerrainLayer[] EnsureLayers()
+        public static TerrainLayer[] EnsureLayers() => EnsureLayers(Defs);
+
+        public static TerrainLayer[] EnsureLayers((string tex, string layer, float tile)[] defs)
         {
             EnsureFolder(LayerDir);
             var list = new List<TerrainLayer>();
-            foreach (var d in Defs)
+            foreach (var d in defs)
             {
                 var path = $"{LayerDir}/{d.layer}.terrainlayer";
                 var tl = AssetDatabase.LoadAssetAtPath<TerrainLayer>(path);
@@ -108,11 +124,16 @@ namespace ConductorChaos.EditorTools
         }
 
         [MenuItem("Conductor Chaos/Art/Terrain/Add Layers To Selected Terrain")]
-        public static void AddToSelected()
+        public static void AddToSelected() => AddToSelected(Defs);
+
+        [MenuItem("Conductor Chaos/Art/Terrain/Add Flat Test Layers To Selected Terrain")]
+        public static void AddFlatToSelected() => AddToSelected(FlatDefs);
+
+        static void AddToSelected((string tex, string layer, float tile)[] defs)
         {
             var t = Selection.activeGameObject ? Selection.activeGameObject.GetComponent<Terrain>() : null;
             if (t == null) { Debug.LogWarning("[Terrain] Selecteer eerst een Terrain."); return; }
-            var layers = EnsureLayers();
+            var layers = EnsureLayers(defs);
             var list = (t.terrainData.terrainLayers ?? new TerrainLayer[0]).ToList();
             foreach (var l in layers) if (!list.Contains(l)) list.Add(l);
             Undo.RecordObject(t.terrainData, "Add terrain layers");
