@@ -125,7 +125,11 @@ namespace ConductorChaos.EditorTools
             var prev = cam.targetTexture;
             var request = new RenderPipeline.StandardRequest { destination = rt };
             if (RenderPipeline.SupportsRenderRequest(cam, request))
+            {
+                // twee keer: de eerste frame na het openen van de scène warmt de pipeline op (anders alleen lucht)
                 RenderPipeline.SubmitRenderRequest(cam, request);
+                RenderPipeline.SubmitRenderRequest(cam, request);
+            }
             else
             {
                 cam.targetTexture = rt;
