@@ -2,18 +2,18 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand.
 
-**Voortgang: 0/54 afgerond (0%)**
+**Voortgang: 0/60 afgerond (0%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 53 | 1 | 0 | 0 | 0 |
+| 59 | 1 | 0 | 0 | 0 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
     P0["P0 · Technisch fundament + stijltest · 0/26 klaar"]
-    P1["P1 · Eerste speelbare co-opervaring · 0/25 klaar"]
+    P1["P1 · Eerste speelbare co-opervaring · 0/31 klaar"]
     P2["P2 · Bergavontuur en chaos · 0/3 klaar"]
     P0 --> P1 --> P2
 ```
@@ -21,12 +21,12 @@ flowchart LR
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
 | **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/26 | Technisch fundament + stijltest |
-| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/25 | Eerste speelbare co-opervaring |
+| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/31 | Eerste speelbare co-opervaring |
 | **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/3 | Bergavontuur en chaos |
 
 ## 📋 Taken per status
 
-### 📝 Te doen (53)
+### 📝 Te doen (59)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -80,6 +80,12 @@ flowchart LR
 | P1 | [#74 NPC: voeten op bank als kleine overtreding](https://github.com/mlemson/conductor-chaos/issues/74) | Gameplay | — | — |
 | P1 | [#75 Opdracht: controleer drie passagiers](https://github.com/mlemson/conductor-chaos/issues/75) | Gameplay | — | — |
 | P1 | [#77 HUD: één contextuele interactieprompt](https://github.com/mlemson/conductor-chaos/issues/77) | Polish | — | — |
+| P1 | [#78 HUD: teller voor actuele opdracht](https://github.com/mlemson/conductor-chaos/issues/78) | Polish | — | — |
+| P1 | [#79 Lobby: toon echte aangesloten spelers in bestaand menu](https://github.com/mlemson/conductor-chaos/issues/79) | Multiplayer | — | — |
+| P1 | [#80 UI: knoppen en iconen op één schaal en juiste navigatie](https://github.com/mlemson/conductor-chaos/issues/80) | Polish | — | — |
+| P1 | [#81 Geluid: vier eenvoudige feedbackmomenten](https://github.com/mlemson/conductor-chaos/issues/81) | Polish | — | — |
+| P1 | [#82 Omgeving: korte houten spoorbrugmodule](https://github.com/mlemson/conductor-chaos/issues/82) | World | — | — |
+| P1 | [#83 Omgeving: tunnelportaal als herbruikbaar prefab](https://github.com/mlemson/conductor-chaos/issues/83) | World | — | — |
 | P2 | [#14 Meerdere wagons koppelen en afzonderlijk laten ontsporen](https://github.com/mlemson/conductor-chaos/issues/14) | Physics | — | — |
 | P2 | [#15 Bergtrajecten met bruggen, tunnels en gevaren](https://github.com/mlemson/conductor-chaos/issues/15) | World | — | — |
 | P2 | [#16 HUD, menu, audio en performance polish](https://github.com/mlemson/conductor-chaos/issues/16) | Polish | — | — |
