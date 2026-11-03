@@ -12,5 +12,15 @@ namespace ConductorChaos.Art
         public bool followGround = true;
         [Tooltip("Hoogte t.o.v. de ondergrond in meter (negatief = in de grond).")]
         public float groundOffset;
+
+        [SerializeField, HideInInspector]
+        [Tooltip("Intern: automatisch verborgen omdat gras of bloemen op een te steile helling staan. Wordt op vlakke grond weer hersteld.")]
+        bool hiddenBySteepTerrain;
+
+        public bool HiddenBySteepTerrain
+        {
+            get => hiddenBySteepTerrain;
+            set => hiddenBySteepTerrain = value;
+        }
     }
 }
