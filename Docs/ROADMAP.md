@@ -3,7 +3,7 @@
 > **Projectstatus:** volg het [live ontwikkelbord](PROJECT_BOARD.md) en de individuele [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues). De onderstaande vakjes beschrijven inhoudelijke test-/ontwikkelfasen, maar worden **niet automatisch** bij iedere commit bijgewerkt. Sluit taken pas af via geverifieerde issues/PR's. Zie [samenwerkingsafspraken](DEVELOPMENT_WORKFLOW.md).
 
 
-Alle taken zijn open. Afhankelijkheden en acceptatie zijn verplicht; tests met twee spelers zijn nodig voor netwerkgedrag. Mijlpalen beschrijven toekomstig werk, niet huidige functionaliteit.
+**Let op:** dit is de oorspronkelijke, grove fasering. Inmiddels bestaat er gameplay-/artcode. [Kleine uitvoertaken met actuele nummers](AI/SMALL_TASK_INDEX.md) zijn voor agents leidend en [AGENTS.md](../AGENTS.md) schrijft een minimale passende test voor. Onderstaande checkboxes zijn **geen actuele featurestatus** en hoeven niet bij iedere kleine commit te veranderen.
 
 ## P0 — technisch fundament
 
@@ -34,4 +34,4 @@ Alle taken zijn open. Afhankelijkheden en acceptatie zijn verplicht; tests met t
 
 ## Volgende agent
 
-Start met P0-01; rapporteer concrete Console- en packagebevindingen. Werk P0-02 daarna af. Voer P0-08 eventueel parallel uit na succesvolle import. Bouw pas op expliciete opdracht gameplay of assets. Bespreek ontwerponbekenden in [besluiten](DECISIONS.md), zonder openstaande taken als gereed te markeren.
+Kies één kleine, niet-toegewezen [GitHub Issue](https://github.com/mlemson/conductor-chaos/issues), begin bij de [issue-index](AI/SMALL_TASK_INDEX.md) en volg de [kleine-taakregels](AI/SMALL_TASK_PLAYBOOK.md). Controleer actuele scripts, scène en eerdere PR's vóór je iets opnieuw implementeert. Aan grote epics niet in één PR beginnen. Vraag alleen naar wezenlijke ontwerpbesluiten; laat gewone Play-/feel-tests waar passend aan de gebruiker.

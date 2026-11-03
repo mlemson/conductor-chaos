@@ -2,13 +2,13 @@
 
 Een warme, speelse co-opgame in ontwikkeling: 1–6 spelers proberen samen een treinreis te voltooien. Singleplayer moet mogelijk blijven. Werknaam; ontwerp en omvang kunnen veranderen.
 
-**Status:** fundament en documentatie. Er is nog geen gameplay, scène, kaart, netwerkverbinding of speelbare build. De Unity-basis is samengesteld uit de lokaal geïnstalleerde Unity URP-template en moet nog in de editor worden geopend en gevalideerd. Unity 6000.5.7f1 is de beoogde editorversie; package-resolutie en licentie zijn nog niet gecontroleerd.
+**Status (3 november 2026):** er zijn 3D-assets, een lokale Netcode/physics-proef in `TrainPlayground`, UI-basiscomponenten en meerdere art-/editor-tools. Nog geen volledige speelbare conducteurreis met rijdende trein, NPC-opdrachten en online lobby. Bekijk de actuele issues en code: oudere projectstatusdocumenten kunnen achterlopen.
 
 ## 🚂 Live roadmap en samenwerken
 
 [**Bekijk het ontwikkelbord**](Docs/PROJECT_BOARD.md) · [**Openstaande taken**](https://github.com/mlemson/conductor-chaos/issues) · [**Samenwerkingsregels**](Docs/DEVELOPMENT_WORKFLOW.md)
 
-Het bord toont automatisch *te doen*, *bezig*, *review*, *geblokkeerd* en *klaar* zodra [de GitHub-workflow](.github/workflows/update-development-board.yml) in `main` is samengevoegd. De daadwerkelijke status komt uit GitHub Issues en gekoppelde PR's; niet uit losse commitberichten.
+Het bord toont automatisch *te doen*, *bezig*, *review*, *geblokkeerd* en *klaar* via [de GitHub-workflow](.github/workflows/update-development-board.yml). De daadwerkelijke status komt uit GitHub Issues en gekoppelde PR's; niet uit losse commitberichten.
 
 ## UI en menu proef
 
@@ -26,7 +26,7 @@ De runtime HUD in `TrainPlayground` toont alleen echte netwerkproefinformatie. H
 
 ## Eerstvolgende agenttaak
 
-Gebruik de afgebakende [P0-01 prompt voor de volgende agent](Docs/AI/NEXT_AGENT_TASK.md). Begin niet met allerlei gameplay voordat de Unity-import is gevalideerd.
+**Kies één [kleine uitvoertaak](Docs/AI/SMALL_TASK_INDEX.md)**. Lees [tokenzuinige agentregels](Docs/AI/SMALL_TASK_PLAYBOOK.md), check actuele PR's en inspecteer eerst de bestaande code. De [oude P0-01 prompt](Docs/AI/NEXT_AGENT_TASK.md) is historisch; niet opnieuw de baseline bouwen alleen omdat een oud document dat zegt.
 
 ## Project openen
 

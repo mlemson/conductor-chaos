@@ -1,6 +1,6 @@
 # Samenwerken aan Conductor Chaos — levend ontwikkelbord
 
-De **GitHub Issues zijn de bron van waarheid**. Het [visuele ontwikkelbord](PROJECT_BOARD.md) wordt hiervan automatisch afgeleid. Deze aparte pagina bevat de werkwijze; verander geen automatisch gegenereerde statussen met de hand.
+De **GitHub Issues zijn de bron van waarheid**. Het [visuele ontwikkelbord](PROJECT_BOARD.md) wordt hiervan automatisch afgeleid. **Agents werken uit één [klein issue](AI/SMALL_TASK_INDEX.md) volgens het [zuinige playbook](AI/SMALL_TASK_PLAYBOOK.md)**. Brede epics (gemarkeerd met `<!-- conductor-chaos-epic -->`) dienen alleen voor overzicht en tellen niet mee in het voortgangscijfer. Deze aparte pagina bevat de werkwijze; verander geen automatisch gegenereerde statussen met de hand.
 
 | Waar | Wat vind je? |
 | --- | --- |
@@ -25,7 +25,7 @@ De **GitHub Issues zijn de bron van waarheid**. Het [visuele ontwikkelbord](PROJ
 1. **Begin altijd bij een issue.** Maak indien nodig een nieuwe via het formulier *Roadmap task* en geef fase P0/P1/P2, onderdeel, doel en toetsbare acceptatiecriteria.
 2. **Reserveer de taak:** wijs iemand toe; als een AI-agent geen assignbare GitHub-identiteit heeft, vermeld dat in de issue en open een draft PR met `Refs #nummer`.
 3. **Werk in een kleine branch**, bijvoorbeeld `feature/5-moving-wagon`. Eén PR per samenhangende taak.
-4. **Werk de issue/PR onderweg bij:** voortgang en blockers kort vermelden. Bestaande tests en functies blijven werken; voor gedeelde game-state zijn host en afzonderlijke client nodig.
+4. **Werk de issue/PR bij als er iets wezenlijks verandert:** voortgang en blockers kort vermelden. Test **alleen relevant gewijzigd gedrag**; gedeelde netwerkstate: één gerichte host/remote proef als uitvoerbaar. Statische modellen/docs vereisen geen Play-test. Gebruiker kan feel-testen.
 5. **Laat het verschil zien tussen code en oplevering:** rapporteer testomgeving, bewijs, beperkingen en wat nog open staat. De agent verandert de projectstatus niet naar klaar zonder test en review.
 6. **Review en merge:** zet een draft PR pas op ready als de criteria zijn afgedekt. Sluit dan via merge of na expliciete beoordeling de issue; het bord werkt zichzelf bij.
 7. **Nieuwe taken:** voeg ze toe als nieuwe issues, niet alleen als tekst in een agentantwoord. Dit houdt het werk zichtbaar voor iedereen.
@@ -40,14 +40,14 @@ De [GitHub Actions-workflow](../.github/workflows/update-development-board.yml) 
 - GitHub Actions moet aanstaan; het `GITHUB_TOKEN` moet `contents: write` mogen gebruiken.
 - Bij een beschermde `main` kunnen automatische bot-commits worden geblokkeerd. Controleer dan de Actions-log en gebruik een toegestane update-PR-workflow.
 - GitHub Issues blijft altijd bruikbaar, ook als de dashboard-workflow tijdelijk faalt.
-- Houd het bord in de **private repository**; publiceer het niet ongewenst via GitHub Pages.
+- Let op de gewenste zichtbaarheid: deze repository was bij laatste inspectie **public**. Zet inhoud niet onbedoeld op GitHub Pages of in andere openbare publicaties.
 
 ## Optioneel: echte versleepbare GitHub Projects-weergave
 
 Het ingebouwde [GitHub Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects) is de mooiste oplossing voor drag-and-drop, filters en tijdlijnen. Het kan niet met de huidige GitHub-connector automatisch worden aangemaakt. Je hoeft daarvoor maar één keer in de webinterface iets te doen:
 
 1. Ga naar [Your Projects](https://github.com/users/mlemson/projects) en maak een **private** Project: `Conductor Chaos Development`.
-2. Voeg de bestaande issues **#2–#16** uit deze repository toe.
+2. Voeg de **kleine open issues** uit deze repository toe; [de actuele index](AI/SMALL_TASK_INDEX.md) vermeldt de relevante nummers. Gebruik epics alleen als overzicht.
 3. Maak een **Board** met Status: `Todo`, `In Progress`, `In Review`, `Blocked`, `Done`. Gebruik daarnaast een **Table** en optioneel **Roadmap**.
 4. Zet onder **Workflows** automatisch toevoegen van repository-issues aan, en zet gesloten issues op Done. Optioneel: velden **Priority (P0/P1/P2)**, **Area**, **Iteration** en **Target date**.
 5. Zorg dat het project privé blijft. GitHub Projects-statusvelden en het Markdown-board zijn twee aparte presentatielagen; alleen de issue/PR-status is gemeenschappelijke waarheid. Configureer aparte Projects-workflows voor custom velden als je die wilt synchroniseren.

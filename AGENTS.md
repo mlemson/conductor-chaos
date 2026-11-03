@@ -1,6 +1,14 @@
 # Agentinstructies — eerst lezen
 
-**CRITICAL – MULTIPLAYER FIRST:** This is a cooperative multiplayer game, not a singleplayer game with multiplayer added later. Every new gameplay feature, interaction, physics object, animation and train system must be designed and tested for networked play. Never introduce local-only gameplay state for shared interactions. Preserve existing multiplayer functionality when modifying code. Test changes with at least two connected players whenever possible.
+**CRITICAL — MULTIPLAYER FIRST:** Conductor Chaos is co-op first. Shared objects, train, door, NPCs and collision outcomes remain server-authoritative. **A short host+remote check is required when shared network behavior changes and it is feasible**; documentation, local art and local UI do not require a multiplayer/Play-test. Never claim a test was run if it was not. See the [small-task playbook](Docs/AI/SMALL_TASK_PLAYBOOK.md) for lean checks.
+
+## Verplichte werkafspraak: klein, zuinig, geen dubbel werk
+
+- **START HERE:** [small-task playbook](Docs/AI/SMALL_TASK_PLAYBOOK.md) en [kleine issues per thema](Docs/AI/SMALL_TASK_INDEX.md). **Eén issue = één afgebakende feature/asset en één PR**. Een grote issue met `<!-- conductor-chaos-epic -->` is alleen een overzicht, nooit een opdracht om alles tegelijk te bouwen.
+- Lees eerst de **huidige code** en open PR's, niet alleen de oudere statusdocumenten. Er bestaat al een `TrainPlayground` met NGO-physics, 3D-assets en UI. **Loopbug #44 is inmiddels afgesloten**: inspecteer die wijziging eerst en bouw geen tweede loopfix zonder nieuwe reproduceerbare bug.
+- **Minimale controle per wijziging:** art/docs = import of inspectie; lokale UI = compile/één actie als haalbaar; gedeelde state = één host+remote rooktest waar uitvoerbaar; een lange Play/latency/6-player-test alleen als afzonderlijke QA-issue dat vraagt. Laat de gebruiker gamefeel handmatig testen. Schrijf `NOT RUN — user Play-test` wanneer niet getest.
+- **Stel een korte vraag bij wezenlijke keuzes** (controls, feel, onverwachte art-richting, externe diensten/licenties, destructieve wijzigingen, conflicterende agents). Kleine technische keuzes zelf maken en kort rapporteren.
+- Voer geen herhaalde volledige Unity imports/Blender-renders uit voor een kleine issue. Rapporteer maximaal vijf regels, zonder grote logs of analyse.
 
 ## Verplichte live taakregistratie (alle agents)
 
@@ -13,10 +21,10 @@
 
 ## Start elke taak
 
-1. Lees [status](Docs/AI/UnityProjectContext.md), [gamevisie](Docs/GAME_VISION.md), [architectuur](Docs/ARCHITECTURE.md), [roadmap](Docs/ROADMAP.md), relevante guide en recente wijzigingen.
-2. Inspecteer de echte projectbestanden, packages en Editor-status; documenten zijn een momentopname, geen bewijs dat een feature bestaat.
-3. Behoud bestaande inhoud en los geen andere taken stilzwijgend op. De huidige opdracht is een fundament: voeg geen gameplay, scènes, map of spelassets toe tenzij expliciet gevraagd.
-4. Markeer onbekenden, ontbrekende tests en risico's eerlijk. Werk status, taakacceptatie en beslissingen bij wanneer die daadwerkelijk veranderen.
+1. Lees **de gekozen kleine issue**, dit document en het [korte playbook](Docs/AI/SMALL_TASK_PLAYBOOK.md); voeg hooguit één of twee echt relevante guides toe. Niet alle documentatie elke keer.
+2. Inspecteer echte bestanden en recente PR's; lange historische status/roadmap is mogelijk verouderd.
+3. Behoud bestaande inhoud; maak precies wat de gekozen issue vraagt en niet stiekem vijf extra onderdelen.
+4. Leg alleen relevante gewijzigde gedrag, tests en eventuele blockers vast; laat ongeteste Play-ervaring aan de gebruiker.
 
 ## Art direction en scope
 
@@ -42,7 +50,7 @@
 ## Ontwerpregels
 
 - De host/server valideert en beslist over gedeelde toestand, inclusief trein, deur, objecten en events; clients sturen intenties, geen vertrouwde uitkomsten. Lokale UI en cosmetische feedback mogen lokaal zijn.
-- Test met host én remote client. Een host die iets ziet is geen multiplayerbewijs. Dek gelijktijdige verzoeken, late join, disconnect en opnieuw verbinden af waar relevant; zeg expliciet als een test ontbreekt.
+- **Bij wijzigingen aan gedeelde netwerkstate**: test zo mogelijk exact één relevante interactie op host én remote client. Alleen gelijktijdige verzoeken, late join, disconnect, netwerkstress of zes spelers testen als het issue **die specifieke gedraging** verandert. Meld eerlijk wanneer test ontbreekt.
 - **CRITICAL — REAL DERAILMENT:** de trein moet bij bijvoorbeeld kapotte rails, botsingen of te hoge snelheid **echt fysiek kunnen ontsporen**; dit is geen cutscene of animatie-only. Plan rail-guided normal travel zonder crash-onmogelijk te maken en een host/server-autoritatieve overgang naar dynamische physics. Lees [DERAILMENT_PHYSICS.md](Docs/DERAILMENT_PHYSICS.md) voordat je trein, spoor, koppelingen, spelersphysics of botsingen ontwerpt. Voer geen uitgebreide derailmentsimulatie uit tijdens P0-01: eerst P0, dan een afzonderlijke test.
 - Kies voor stabiele, uitlegbare physics; definieer wereldruimte versus treinruimte. Gebruik geen aparte simulaties als autoritatieve waarheid. Voorspelling/correctie pas na meting.
 - Houd systemen klein, verantwoordelijkheden en afhankelijkheden duidelijk; geen globale gameplay-singletons als verborgen bron van waarheid. Gebruik bestaand idioom nadat implementatie ontstaat.
@@ -51,4 +59,4 @@
 
 ## Oplevering per taak
 
-Beschrijf wijziging, autoriteit/state, scenario's die zijn getest, concrete resultaten, resterende risico's en volgende taak. Raadpleeg [testplan](Docs/TESTPLAN.md) en [risico's](Docs/RISKS.md).
+Maximaal vijf korte regels: **gedaan, gerichte controle of NOT RUN, handmatige check voor gebruiker, open blocker, PR/issue**. Alleen bij een wijziging aan gedeelde state één zin over server-authoriteit. Niet bij iedere kleine taak het hele TESTPLAN of ROADMAP herschrijven.
