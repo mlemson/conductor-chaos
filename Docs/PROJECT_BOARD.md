@@ -2,18 +2,18 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand. Brede epics tellen niet als uitvoertaak.
 
-**Voortgang: 1/61 afgerond (2%)**
+**Voortgang: 1/62 afgerond (2%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 59 | 0 | 1 | 0 | 1 |
+| 60 | 1 | 0 | 0 | 1 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
     P0["P0 · Technisch fundament + stijltest · 1/23 klaar"]
-    P1["P1 · Eerste speelbare co-opervaring · 0/34 klaar"]
+    P1["P1 · Eerste speelbare co-opervaring · 0/35 klaar"]
     P2["P2 · Bergavontuur en chaos · 0/4 klaar"]
     P0 --> P1 --> P2
 ```
@@ -21,7 +21,7 @@ flowchart LR
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
 | **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 1/23 | Technisch fundament + stijltest |
-| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/34 | Eerste speelbare co-opervaring |
+| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/35 | Eerste speelbare co-opervaring |
 | **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/4 | Bergavontuur en chaos |
 
 ## 🧩 Overkoepelende onderwerpen (geen uitvoertaken)
@@ -44,7 +44,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 📋 Taken per status
 
-### 📝 Te doen (59)
+### 📝 Te doen (60)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -103,20 +103,21 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P1 | [#91 Online uitnodigen: eenvoudige joincode of vriendenlink](https://github.com/mlemson/conductor-chaos/issues/91) | Multiplayer | — | — |
 | P1 | [#101 Fysiek klimmen en over randen klauteren](https://github.com/mlemson/conductor-chaos/issues/101) | Overig | — | — |
 | P1 | [#104 Houd grasplukken en bloemen vrij van mesh colliders](https://github.com/mlemson/conductor-chaos/issues/104) | Overig | — | — |
+| P1 | [#115 Houd de third-personcamera buiten de conducteur](https://github.com/mlemson/conductor-chaos/issues/115) | Overig | — | — |
 | P2 | [#86 Rotsval: één vallende rots als treinincident](https://github.com/mlemson/conductor-chaos/issues/86) | Gameplay | — | — |
 | P2 | [#89 Één ontsporing synchroniseren tussen host en client](https://github.com/mlemson/conductor-chaos/issues/89) | Multiplayer | — | — |
 | P2 | [#90 Koppeling kan breken bij hoge impact](https://github.com/mlemson/conductor-chaos/issues/90) | Physics | — | — |
 | P2 | [#92 Optionele mijlpaalcheck: sessie met vier en later zes spelers](https://github.com/mlemson/conductor-chaos/issues/92) | QA | — | — |
 
-### 🔧 Bezig (0)
-
-*Geen taken in deze kolom.*
-
-### 👀 Klaar voor review (1)
+### 🔧 Bezig (1)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
-| P0 | [#53 Spoorasset: recht segment en bocht als Unity-prefabs](https://github.com/mlemson/conductor-chaos/issues/53) | Train | @mlemson | [#113](https://github.com/mlemson/conductor-chaos/pull/113) |
+| P0 | [#53 Spoorasset: recht segment en bocht als Unity-prefabs](https://github.com/mlemson/conductor-chaos/issues/53) | Train | @mlemson | — |
+
+### 👀 Klaar voor review (0)
+
+*Geen taken in deze kolom.*
 
 ### ⛔ Geblokkeerd (0)
 
