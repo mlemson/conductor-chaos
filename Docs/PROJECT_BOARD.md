@@ -129,7 +129,6 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 🔗 Open pull requests zonder gekoppelde roadmap-taak
 
-- [#112 Art: loc-schoorsteen, drijfstang, grijpstangen naar main (#108 opnieuw)](https://github.com/mlemson/conductor-chaos/pull/112) — verwijs in de PR-omschrijving naar `Refs #nummer` of `Closes #nummer`.
 - [#111 Art: gestileerd water v2 (diepte-kleur, schuimrand, golfstreepjes)](https://github.com/mlemson/conductor-chaos/pull/111) — verwijs in de PR-omschrijving naar `Refs #nummer` of `Closes #nummer`.
 
 ## 🤝 Samenwerken met mensen en agents
