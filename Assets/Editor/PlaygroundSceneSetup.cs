@@ -34,14 +34,14 @@ namespace ConductorChaos.Editor
                 }
             }
             var track = Selection.activeGameObject ? Selection.activeGameObject.GetComponentInParent<TrackPiece>() : null;
-            if (track && (!track.gameObject.scene.IsValid() || !track.HasSockets)) track = null;
+            if (track && (track.gameObject.scene != locomotive.scene || !track.HasSockets)) track = null;
             var selectedTrack = track;
             float closest = float.PositiveInfinity;
             float fraction = 0f;
             foreach (var candidate in Object.FindObjectsByType<TrackPiece>(FindObjectsSortMode.None))
             {
                 if (selectedTrack && candidate != selectedTrack) continue;
-                if (!candidate.HasSockets || candidate.Length < 0.01f || candidate.name.Contains("Broken")) continue;
+                if (candidate.gameObject.scene != locomotive.scene || !candidate.HasSockets || candidate.Length < 0.01f || candidate.name.Contains("Broken")) continue;
                 for (int i = 0; i <= 32; i++)
                 {
                     float t = i / 32f;
