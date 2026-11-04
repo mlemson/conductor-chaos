@@ -112,6 +112,68 @@ Material:
     return guid_for(rel_path)
 
 
+WATER_SHADER = "Assets/Art/Shaders/StylizedWater.shader"
+
+# Gemeten uit Docs/References/water-reference.png (issue #110): ondiep turquoise, diep azuur, lichte horizon.
+WATER_DEFAULTS = {
+    "colors": {"_ShallowColor": ("#3DC7BD", 0.35), "_DeepColor": ("#0385C2", 0.97), "_HorizonColor": ("#5CC9EB", 1.0),
+               "_BedTint": ("#8CEBE0", 1.0), "_FoamColor": ("#F7FFFF", 1.0), "_StreakColor": ("#9EE6FA", 1.0)},
+    "floats": {"_DepthDistance": 2.2, "_FoamWidth": 0.16, "_FoamLine": 0.42, "_FoamLineWidth": 0.035, "_FoamWobble": 0.45,
+               "_StreakAmount": 0.55, "_StreakScale": 3.2, "_GlintAmount": 1.0, "_Refraction": 0.025, "_FlowSpeed": 0.0,
+               "_SceneTextures": 1.0, "_ReceiveShadowsF": 0.35, "_Cull": 0.0},
+}
+
+
+def water_material(root, rel_path, name):
+    """Materiaal voor ConductorChaos/StylizedWater (diepte-kleur, schuimrand, golfstreepjes, schittering)."""
+    write(os.path.join(root, WATER_SHADER + ".meta"),
+          "fileFormatVersion: 2\nguid: %s\nShaderImporter:\n  externalObjects: {}\n  defaultTextures: []\n"
+          "  nonModifiableTextures: []\n  preprocessorOverride: 0\n  userData: \n  assetBundleName: \n"
+          "  assetBundleVariant: \n" % guid_for(WATER_SHADER))
+    fl = "\n".join("    - %s: %s" % (k, float(v)) for k, v in WATER_DEFAULTS["floats"].items())
+    co = "\n".join("    - %s: {r: %.6f, g: %.6f, b: %.6f, a: %.3f}" % ((k,) + tuple(_hex(h)) + (a,))
+                    for k, (h, a) in WATER_DEFAULTS["colors"].items())
+    co += "\n    - _FlowDir: {r: 1.000000, g: 0.350000, b: 0.000000, a: 0.000}"
+    text = f"""%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {{fileID: 0}}
+  m_PrefabInstance: {{fileID: 0}}
+  m_PrefabAsset: {{fileID: 0}}
+  m_Name: {name}
+  m_Shader: {{fileID: 4800000, guid: {guid_for(WATER_SHADER)}, type: 3}}
+  m_Parent: {{fileID: 0}}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {{}}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+{fl}
+    m_Colors:
+{co}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
+"""
+    path = os.path.join(root, rel_path)
+    write(path, text)
+    write(path + ".meta", "fileFormatVersion: 2\nguid: %s\nNativeFormatImporter:\n  externalObjects: {}\n"
+                          "  mainObjectFileID: 2100000\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n" % guid_for(rel_path))
+    return guid_for(rel_path)
+
+
 def material(root, rel_path, name, base_hex, smoothness, emissive_hex=None, opacity=None, ramp=None, ramp_shift=0.0, opts=None):
     if USE_STYLIZED and ramp:
         shader_meta(root)
