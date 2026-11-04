@@ -1,0 +1,55 @@
+fileFormatVersion: 2
+guid: 0198ebef7b4e0ee061a148ff680db2e4
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_BeamDark
+    second: {fileID: 2100000, guid: 9b987b222d1023c84031d17a0836e275, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_Collider
+    second: {fileID: 2100000, guid: 491b7749eecf737630e32d7db4476d43, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_Ink
+    second: {fileID: 2100000, guid: f5e961e29b0d3efcb3f7a8a868c14b2b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_Red
+    second: {fileID: 2100000, guid: 561459480aa8790e009ddd131c751afe, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_Warn
+    second: {fileID: 2100000, guid: 9423e197aaa8064df52ff4f38ca0d824, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

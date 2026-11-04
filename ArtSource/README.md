@@ -16,6 +16,7 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 | `Train/CattleWagon/build_cattle_wagon.py` | Veewagen: rode kooi uit één stuk om een lattenwand met echte kieren, schuifdeuren, gewelfd dak, interieur (stro, hooibalen), doorloopbaar — issue #25 |
 | `Train/Tender/build_tender.py` | Kolenwagen direct achter de loc (rode bak, gouden rand, panelen met klinknagels, kolenberg, ladder, sluitlampen) — issue #22 |
 | `Environment/build_environment_kit.py` | Modulaire natuurkit (issue #30): bomen, struik, rotsen, klifmodules + klifclusters (v2), grasheuvel, stilstaande watervallen, verre bergen, wolken; elk asset een eigen FBX + GLB, gedeelde materialen |
+| `Environment/build_track_kit.py` | Spoorkit (issue #53): rechte stukken, bochten R20 15°/30° links/rechts, stootblok, kapot stuk, houten schraagbrug, waarschuwingsbord en slagboom. Sockets voor aansluiten; prefabs + Track Builder in Unity (`Conductor Chaos > Art > Track`) |
 | `Textures/build_ground_textures.py` | Tegelbare grondtextures voor het Unity-terrein (gras, bloemetjes, grond, stenen pad, rots), issue #38 |
 | `Tools/meshkit.py` | Kleine numpy-toolkit: lathe/superellips, afgeronde box, ellipsoïde, capsule, profielextrusie (ketel/dak); export naar FBX (ASCII) en glTF (.glb) |
 | `Tools/spatial_fallback.py` | NumPy-terugval voor de straalzoekopdracht bij het bakken van vertexkleur als SciPy ontbreekt |

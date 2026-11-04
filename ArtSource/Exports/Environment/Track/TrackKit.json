@@ -1,0 +1,244 @@
+{
+  "track": {
+    "gauge": 2.58,
+    "railTop": 0.43000000000000005,
+    "trainPivotAboveTrack": 1.05,
+    "sleeperSpacing": 0.75
+  },
+  "assets": {
+    "Track_Straight_1_5m": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Straight_1_5m.fbx",
+      "tris": 1248,
+      "length": 1.5,
+      "radius": null,
+      "angleDeg": 0.0,
+      "side": 0,
+      "min": [
+        0.0,
+        -0.06,
+        -2.15
+      ],
+      "max": [
+        1.5,
+        0.43,
+        2.15
+      ]
+    },
+    "Track_Straight_3m": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Straight_3m.fbx",
+      "tris": 2424,
+      "length": 3.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "side": 0,
+      "min": [
+        0.0,
+        -0.06,
+        -2.15
+      ],
+      "max": [
+        3.0,
+        0.43,
+        2.15
+      ]
+    },
+    "Track_Straight_6m": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Straight_6m.fbx",
+      "tris": 4800,
+      "length": 6.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "side": 0,
+      "min": [
+        0.0,
+        -0.06,
+        -2.15
+      ],
+      "max": [
+        6.0,
+        0.43,
+        2.15
+      ]
+    },
+    "Track_Straight_12m": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Straight_12m.fbx",
+      "tris": 9528,
+      "length": 12.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "side": 0,
+      "min": [
+        0.0,
+        -0.06,
+        -2.15
+      ],
+      "max": [
+        12.0,
+        0.43,
+        2.15
+      ]
+    },
+    "Track_Curve_R20_15_A": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Curve_R20_15_A.fbx",
+      "tris": 4228,
+      "length": 5.236,
+      "radius": 20.0,
+      "angleDeg": 15.0,
+      "side": 1,
+      "min": [
+        0.0,
+        -0.06,
+        -2.15
+      ],
+      "max": [
+        5.733,
+        0.43,
+        2.758
+      ]
+    },
+    "Track_Curve_R20_15_B": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Curve_R20_15_B.fbx",
+      "tris": 4228,
+      "length": 5.236,
+      "radius": 20.0,
+      "angleDeg": 15.0,
+      "side": -1,
+      "min": [
+        0.0,
+        -0.06,
+        -2.758
+      ],
+      "max": [
+        5.733,
+        0.43,
+        2.15
+      ]
+    },
+    "Track_Curve_R20_30_A": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Curve_R20_30_A.fbx",
+      "tris": 8352,
+      "length": 10.472,
+      "radius": 20.0,
+      "angleDeg": 30.0,
+      "side": 1,
+      "min": [
+        0.0,
+        -0.06,
+        -2.15
+      ],
+      "max": [
+        11.075,
+        0.43,
+        4.541
+      ]
+    },
+    "Track_Curve_R20_30_B": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Curve_R20_30_B.fbx",
+      "tris": 8352,
+      "length": 10.472,
+      "radius": 20.0,
+      "angleDeg": 30.0,
+      "side": -1,
+      "min": [
+        0.0,
+        -0.06,
+        -4.541
+      ],
+      "max": [
+        11.075,
+        0.43,
+        2.15
+      ]
+    },
+    "Track_BufferStop": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_BufferStop.fbx",
+      "tris": 6192,
+      "length": 3.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "side": 0,
+      "min": [
+        0.0,
+        -0.06,
+        -2.15
+      ],
+      "max": [
+        4.0,
+        1.58,
+        2.15
+      ]
+    },
+    "Track_Broken_6m": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Broken_6m.fbx",
+      "tris": 4768,
+      "length": 6.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "side": 0,
+      "min": [
+        0.0,
+        -0.06,
+        -3.127
+      ],
+      "max": [
+        6.0,
+        0.571,
+        2.15
+      ]
+    },
+    "Track_Bridge_Trestle_6m": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Bridge_Trestle_6m.fbx",
+      "tris": 7784,
+      "length": 6.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "side": 0,
+      "min": [
+        -0.02,
+        -10.42,
+        -2.764
+      ],
+      "max": [
+        6.02,
+        0.43,
+        2.764
+      ]
+    },
+    "Prop_WarningSign": {
+      "fbx": "Assets/Art/Models/Environment/Track/Prop_WarningSign.fbx",
+      "tris": 988,
+      "length": null,
+      "radius": null,
+      "angleDeg": null,
+      "side": 0,
+      "min": [
+        -0.09,
+        0.0,
+        -0.605
+      ],
+      "max": [
+        0.23,
+        2.658,
+        0.605
+      ]
+    },
+    "Prop_Barrier": {
+      "fbx": "Assets/Art/Models/Environment/Track/Prop_Barrier.fbx",
+      "tris": 2496,
+      "length": null,
+      "radius": null,
+      "angleDeg": null,
+      "side": 0,
+      "min": [
+        -0.16,
+        0.0,
+        -1.447
+      ],
+      "max": [
+        0.19,
+        1.15,
+        1.447
+      ]
+    }
+  }
+}
