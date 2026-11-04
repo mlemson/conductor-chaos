@@ -248,6 +248,13 @@ def build_scene(arm_angle_deg=50.0):
     sc.material("M_Conductor_Mouth", R_["mouth"][1], R_["mouth"], 0.20, ramp_shift=-0.55)
     sc.material("M_Conductor_Tongue", R_["mouth"][3], R_["mouth"], 0.25, ramp_shift=0.05)
     sc.material("M_Conductor_Shoe", R_["ui_bg"][2], R_["ui_bg"], 0.25)
+    # mat, zoals de rest van de wereld (issue #114): geen glans en minder randlicht op de ronde vormen,
+    # iets minder contrast in de verloop (oogt minder als plastic); alleen een klein glinstertje in de pupillen
+    for name, m in sc.materials.items():
+        m["opts"].setdefault("spec", 0.25 if name == "M_Conductor_Pupil" else 0.0)
+        m["opts"].setdefault("rim", 0.10)
+        m["opts"].setdefault("edge", 0.35)
+        m["opts"].setdefault("flat", 0.15)
 
     hip = np.array([0.0, HIP_Y, 0.0])
     sc.add(mk.Part("Conductor", None))
