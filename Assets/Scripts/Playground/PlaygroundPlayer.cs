@@ -49,6 +49,8 @@ namespace ConductorChaos.Playground
         private Renderer[] cameraBodyRenderers;
         private bool[] cameraBodyRenderingOff;
         private bool cameraHidesBody;
+        private int cameraOrbit;
+        private float preferredOrbitClearSince;
         private static readonly Vector2[] AlternateCameraAngles =
         {
             new(0f, 25f), new(-35f, 25f), new(35f, 25f), new(0f, 60f), new(-70f, 45f), new(70f, 45f)
@@ -639,11 +641,41 @@ namespace ConductorChaos.Playground
             Vector3 fallbackPosition = focus;
             Quaternion fallbackLook = look;
             float fallbackDistance = -1f;
-            if (TryCameraOrbit(focus, look, radius, modelBounds, ref fallbackPosition, ref fallbackLook, ref fallbackDistance)) return;
-            foreach (Vector2 alternate in AlternateCameraAngles)
+            if (cameraOrbit > 0)
             {
+                Vector2 alternate = AlternateCameraAngles[cameraOrbit - 1];
                 Quaternion rotated = Quaternion.Euler(Mathf.Max(pitch, alternate.y), yaw + alternate.x, 0f);
-                if (TryCameraOrbit(focus, rotated, radius, modelBounds, ref fallbackPosition, ref fallbackLook, ref fallbackDistance)) return;
+                if (TryCameraOrbit(focus, rotated, radius, modelBounds, ref fallbackPosition, ref fallbackLook, ref fallbackDistance))
+                {
+                    Vector3 selectedPosition = playerCamera.transform.position;
+                    Quaternion selectedRotation = playerCamera.transform.rotation;
+                    float preferredDistance = -1f;
+                    Vector3 unusedPosition = focus;
+                    Quaternion unusedLook = look;
+                    bool preferredClear = TryCameraOrbit(focus, look, radius, modelBounds, ref unusedPosition, ref unusedLook, ref preferredDistance)
+                                          && preferredDistance > 3.75f;
+                    if (preferredClear)
+                    {
+                        if (preferredOrbitClearSince <= 0f) preferredOrbitClearSince = Time.unscaledTime;
+                        if (Time.unscaledTime - preferredOrbitClearSince >= 0.5f) { cameraOrbit = 0; return; }
+                    }
+                    else preferredOrbitClearSince = 0f;
+                    playerCamera.transform.SetPositionAndRotation(selectedPosition, selectedRotation);
+                    return;
+                }
+                cameraOrbit = 0;
+                preferredOrbitClearSince = 0f;
+            }
+            if (TryCameraOrbit(focus, look, radius, modelBounds, ref fallbackPosition, ref fallbackLook, ref fallbackDistance)) return;
+            for (int i = 0; i < AlternateCameraAngles.Length; i++)
+            {
+                Vector2 alternate = AlternateCameraAngles[i];
+                Quaternion rotated = Quaternion.Euler(Mathf.Max(pitch, alternate.y), yaw + alternate.x, 0f);
+                if (TryCameraOrbit(focus, rotated, radius, modelBounds, ref fallbackPosition, ref fallbackLook, ref fallbackDistance))
+                {
+                    cameraOrbit = i + 1;
+                    return;
+                }
             }
 
             // A gap can be narrower than the camera and the model together.
@@ -917,3 +949,4 @@ namespace ConductorChaos.Playground
         }
     }
 }
+
