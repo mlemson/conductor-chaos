@@ -31,8 +31,8 @@ Material:
     - _Edge: 1.0
     - _Rim: 0.32
     - _Spec: 0.55
-    - _Cells: 1.0
-    - _CellSize: 0.45
+    - _Cells: 0.55
+    - _CellSize: 0.8
     - _Grime: 1.0
     - _Emissive: 0.0
     - _Opacity: 1.0

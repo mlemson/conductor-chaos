@@ -215,7 +215,7 @@ def build_cattle_wagon():
     for p in sc.parts:
         p.gradient = 0.25
     sc.facet_all()
-    sc.style_all(grime=1.0)
+    sc.style_all(grime=1.0, **mk.TRAIN_CELLS)
     sc.bake_shading(density=900, radius=0.30, noise_freq=1.1, edge_range=(3.0, 10.0))
     return sc
 

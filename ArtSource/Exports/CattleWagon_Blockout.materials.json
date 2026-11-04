@@ -19,7 +19,9 @@
       "rampShift": -0.04,
       "smoothness": 0.25,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Cattle_Slat": {
@@ -34,7 +36,9 @@
       "rampShift": 0.02,
       "smoothness": 0.15,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Cattle_Plank": {
@@ -49,7 +53,9 @@
       "rampShift": 0.1,
       "smoothness": 0.15,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Cattle_Inner": {
@@ -64,7 +70,9 @@
       "rampShift": 0.05,
       "smoothness": 0.1,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Cattle_Roof": {
@@ -79,7 +87,9 @@
       "rampShift": -0.18,
       "smoothness": 0.2,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Cattle_Trim": {
@@ -94,7 +104,9 @@
       "rampShift": 0.0,
       "smoothness": 0.2,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Cattle_Wheel": {
@@ -109,7 +121,9 @@
       "rampShift": 0.0,
       "smoothness": 0.3,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Cattle_Gold": {
@@ -124,7 +138,9 @@
       "rampShift": 0.04,
       "smoothness": 0.4,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Cattle_Straw": {
@@ -139,7 +155,9 @@
       "rampShift": 0.02,
       "smoothness": 0.05,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Cattle_Interact": {
@@ -154,7 +172,9 @@
       "rampShift": 0.0,
       "smoothness": 0.3,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     }
   }

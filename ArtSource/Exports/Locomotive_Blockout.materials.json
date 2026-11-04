@@ -21,7 +21,9 @@
       "opts": {
         "paint": 1.4,
         "edge": 1.2,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Loco_RedDark": {
@@ -38,7 +40,9 @@
       "opts": {
         "paint": 1.3,
         "edge": 1.2,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Loco_Panel": {
@@ -55,7 +59,9 @@
       "opts": {
         "paint": 1.6,
         "edge": 0.0,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Loco_Roof": {
@@ -72,7 +78,9 @@
       "opts": {
         "paint": 1.4,
         "edge": 1.2,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Loco_Gold": {
@@ -89,7 +97,9 @@
       "opts": {
         "paint": 0.8,
         "edge": 1.4,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Loco_Frame": {
@@ -106,7 +116,9 @@
       "opts": {
         "paint": 1.0,
         "edge": 1.4,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Loco_Trim": {
@@ -123,7 +135,9 @@
       "opts": {
         "paint": 1.2,
         "edge": 1.4,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Loco_Interior": {
@@ -139,7 +153,9 @@
       "smoothness": 0.1,
       "opts": {
         "paint": 0.6,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Loco_Wheel": {
@@ -156,7 +172,9 @@
       "opts": {
         "paint": 0.8,
         "edge": 1.4,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Loco_Interact": {
@@ -172,7 +190,9 @@
       "smoothness": 0.3,
       "opts": {
         "paint": 0.6,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Loco_Lamp": {
@@ -190,7 +210,9 @@
         "emissive": 1.0,
         "rim": 0.0,
         "paint": 0.2,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Loco_Fire": {
@@ -208,7 +230,9 @@
         "emissive": 1.0,
         "rim": 0.0,
         "paint": 0.6,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Loco_Coal": {
@@ -225,7 +249,9 @@
       "opts": {
         "paint": 1.0,
         "edge": 1.6,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Loco_Dial": {
@@ -242,7 +268,9 @@
       "opts": {
         "flat": 0.5,
         "paint": 0.3,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     }
   }
