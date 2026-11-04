@@ -9,7 +9,7 @@ namespace ConductorChaos.UI
     /// </summary>
     public sealed class ChaosUIIcon : MaskableGraphic
     {
-        public enum Symbol { Play, Train, Settings, Door, Ticket, Wrench, Key, Warning, Person }
+        public enum Symbol { Play, Train, Settings, Door, Ticket, Wrench, Key, Warning, Person, Back, Audio, Quit, Route, Chat }
 
         [SerializeField] public Symbol symbol;
 
@@ -72,6 +72,28 @@ namespace ConductorChaos.UI
                 case Symbol.Person:
                     Circle(vh, 0, 19, 18);
                     Box(vh, -28, -34, 56, 39);
+                    break;
+                case Symbol.Back:
+                    Line(vh, new Vector2(-26, 0), new Vector2(31, 0), 12f);
+                    Triangle(vh, P(-36, 0), P(-4, 28), P(-4, -28));
+                    break;
+                case Symbol.Audio:
+                    Box(vh, -34, -13, 19, 26);
+                    Triangle(vh, P(-23, -13), P(1, -32), P(1, 32));
+                    Line(vh, new Vector2(14, -18), new Vector2(25, 0), 6f);
+                    Line(vh, new Vector2(25, 0), new Vector2(14, 18), 6f);
+                    break;
+                case Symbol.Quit:
+                    Ring(vh, 0, -3, 29, 19);
+                    Line(vh, new Vector2(0, 6), new Vector2(0, 39), 12f);
+                    break;
+                case Symbol.Route:
+                    Triangle(vh, P(-40, -32), P(-10, 32), P(16, -32));
+                    Triangle(vh, P(-5, -32), P(19, 18), P(42, -32));
+                    break;
+                case Symbol.Chat:
+                    RingRect(vh, -36, -25, 72, 52, 7);
+                    Triangle(vh, P(-18, -24), P(-30, -42), P(-3, -25));
                     break;
             }
 
