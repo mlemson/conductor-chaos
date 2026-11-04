@@ -76,6 +76,11 @@ namespace ConductorChaos.UI
             switch (key)
             {
                 case "play": return ChaosUIIcon.Symbol.Play;
+                case "back": return ChaosUIIcon.Symbol.Back;
+                case "audio": return ChaosUIIcon.Symbol.Audio;
+                case "quit": return ChaosUIIcon.Symbol.Quit;
+                case "route": return ChaosUIIcon.Symbol.Route;
+                case "chat": return ChaosUIIcon.Symbol.Chat;
                 case "door": return ChaosUIIcon.Symbol.Door;
                 case "key": return ChaosUIIcon.Symbol.Key;
                 case "ticket": return ChaosUIIcon.Symbol.Ticket;
