@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37d9c1ab7f2f4e1c9116270b8a9e03a4, type: 3}
+  m_Name: ChaosUISpriteCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.UI.ChaosUISpriteCatalog
+  entries:
+  - key: accessibility
+    sprite: {fileID: 21300000, guid: dc35568f813f527281d5e1cd1cc4241e, type: 3}
+  - key: audio
+    sprite: {fileID: 21300000, guid: 4458680ce8ee5f5f89c7030ddb9810ad, type: 3}
+  - key: back
+    sprite: {fileID: 21300000, guid: f636b5176ac0522ba164beeee30e0ea0, type: 3}
+  - key: chat
+    sprite: {fileID: 21300000, guid: 9107823f04415fa0b5dd31f3a8c90f95, type: 3}
+  - key: close
+    sprite: {fileID: 21300000, guid: 332b2859336753b6b93e8598da7123be, type: 3}
+  - key: coal
+    sprite: {fileID: 21300000, guid: ca0c7c7fbc575abc8988a886ce3382d5, type: 3}
+  - key: controls
+    sprite: {fileID: 21300000, guid: d4885aa09e585356bae28884668859c9, type: 3}
+  - key: door
+    sprite: {fileID: 21300000, guid: 739c9bfb947155928766ec2403ecf2f6, type: 3}
+  - key: invite
+    sprite: {fileID: 21300000, guid: ad84581728845bbe8a0b28f8da4093a3, type: 3}
+  - key: key
+    sprite: {fileID: 21300000, guid: 9af25fab66495b488c1e07da33223b3f, type: 3}
+  - key: lantern
+    sprite: {fileID: 21300000, guid: fb97a8e2301257bb991303acf0fa224c, type: 3}
+  - key: options
+    sprite: {fileID: 21300000, guid: b9681f05e9325d66943e69de9332fa28, type: 3}
+  - key: play
+    sprite: {fileID: 21300000, guid: e99fbf6d7579569793628511778fb92b, type: 3}
+  - key: player-group
+    sprite: {fileID: 21300000, guid: dca023e506f25ff18ffa24b44bd11aa1, type: 3}
+  - key: player
+    sprite: {fileID: 21300000, guid: 85c0a14d6c5f5c8d8214c82fd7b71f4b, type: 3}
+  - key: quit
+    sprite: {fileID: 21300000, guid: 70f6a57989c650faaa980b7b77ee1b1d, type: 3}
+  - key: ready
+    sprite: {fileID: 21300000, guid: 7dbada137f0c588b835f22d5fde7c7a5, type: 3}
+  - key: route
+    sprite: {fileID: 21300000, guid: 0b836fe449655036891210dcf31ae895, type: 3}
+  - key: speed-gauge
+    sprite: {fileID: 21300000, guid: c1b8847bb89c5cdba298286ee5f0d8f3, type: 3}
+  - key: ticket
+    sprite: {fileID: 21300000, guid: 10e0486dcb4d5485983d91d80746d9b1, type: 3}
+  - key: train
+    sprite: {fileID: 21300000, guid: fcef29ee6940539a830bfbb5475bec74, type: 3}
+  - key: upgrades
+    sprite: {fileID: 21300000, guid: c9658e98a3e058a2bce21c9910a6ec42, type: 3}
+  - key: warning
+    sprite: {fileID: 21300000, guid: 7f53f39d2529517ab55d0384d20896e1, type: 3}
+  - key: wrench
+    sprite: {fileID: 21300000, guid: d4158feea87c542da4c502ee3aa1c3e5, type: 3}
