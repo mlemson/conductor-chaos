@@ -2,7 +2,8 @@
 //
 // Helder turquoise in het ondiepe, diep azuurblauw in het midden, een wit schuimrandje langs de oever met
 // een tweede dunne lijn erachter, lichte golfstreepjes en kleine zonneschitteringen. Alles procedureel
-// (geen textures); standaard staat alles stil ("alsof je in een plaatje staat"), _FlowSpeed > 0 laat het
+// (geen textures). Beweegt standaard rustig (issue #125): golfjes drijven en vervormen langzaam, schitteringen
+// twinkelen en het schuim langs de oever ademt. _FlowSpeed = 0 zet alles stil; daarvoor liet _FlowSpeed > 0 het
 // patroon langzaam drijven.
 //
 // Diepte = verticale afstand van het oppervlak tot de bodem eronder, gereconstrueerd uit de depth texture.
@@ -33,7 +34,7 @@ Shader "ConductorChaos/StylizedWater"
         _StreakScale ("Golfstreepjes schaal (m)", Range(0.5, 12)) = 3.2
         _GlintAmount ("Zonneschittering", Range(0, 2)) = 1.0
         _Refraction ("Breking", Range(0, 0.1)) = 0.025
-        _FlowSpeed ("Drijfsnelheid (0 = stil)", Range(0, 0.5)) = 0
+        _FlowSpeed ("Drijfsnelheid (0 = stil)", Range(0, 0.5)) = 0.12
         _FlowDir ("Drijfrichting (xz)", Vector) = (1, 0.35, 0, 0)
 
         [Header(Techniek)]
@@ -135,6 +136,7 @@ Shader "ConductorChaos/StylizedWater"
                 float3 posWS = i.positionWS;
                 float3 toCam = _WorldSpaceCameraPos - posWS;
                 float3 V = normalize(toCam);
+                float tm = _Time.y * (_FlowSpeed > 0.0 ? 1.0 : 0.0);         // 0 = alles stil
                 float2 flow = normalize(_FlowDir.xy + 1e-4) * _FlowSpeed * _Time.y;
                 float2 xz = posWS.xz + flow;
 
@@ -178,7 +180,7 @@ Shader "ConductorChaos/StylizedWater"
 
                 // ------------------------------------------------ golfstreepjes: korte, gebogen lichte strepen
                 float2 sq = float2(q.x * 0.55 + q.y * 0.20, q.y * 1.9 - q.x * 0.25) * 2.2;   // uitgerekt: lange smalle vormen
-                float wave = Fbm(sq + Fbm(sq * 0.35) * 1.4);
+                float wave = Fbm(sq + Fbm(sq * 0.35 + tm * 0.06) * 1.4);           // golfjes vervormen langzaam
                 float line_ = 1.0 - smoothstep(0.0, 0.05, abs(wave - 0.5));                // contourlijnen = golfjes
                 float dashes = smoothstep(0.52, 0.68, ValueNoise(sq * 0.8 + 11.3));          // in losse stukjes
                 float streak = line_ * dashes * _StreakAmount * lerp(0.35, 1.0, depth01) * (1.0 - fres * 0.6);
@@ -188,7 +190,7 @@ Shader "ConductorChaos/StylizedWater"
                 // ------------------------------------------------ zonneschittering: kleine sterretjes in de spiegeling
                 float3 H = normalize(light.direction + V);
                 half sunRefl = pow(saturate(dot(N, H)), 60.0);
-                float sparkleN = ValueNoise(xz * 7.0 + 41.0) * ValueNoise(xz * 12.7 - 13.0);
+                float sparkleN = ValueNoise(xz * 7.0 + 41.0 + tm * 0.35) * ValueNoise(xz * 12.7 - 13.0 - tm * 0.5);   // twinkelen
                 half glint = smoothstep(0.47, 0.55, sparkleN) * smoothstep(0.25, 0.8, sunRefl) * _GlintAmount * shadow;
                 glint += pow(saturate(dot(N, H)), 400.0) * 0.6 * _GlintAmount * shadow;
                 water += light.color * glint;
@@ -213,9 +215,9 @@ Shader "ConductorChaos/StylizedWater"
                 if (_SceneTextures > 0.5)
                 {
                     float n = Fbm(xz * 1.7) - 0.5;
-                    float d = depth + n * _FoamWobble * 0.35;
+                    float d = depth + n * _FoamWobble * 0.35 + sin(tm * 1.3 + n * 12.0) * _FoamWidth * 0.25;   // schuim ademt
                     half foam = 1.0 - smoothstep(_FoamWidth * 0.75, _FoamWidth, d);
-                    half line2 = 1.0 - smoothstep(_FoamLineWidth * 0.5, _FoamLineWidth, abs(d - _FoamLine));
+                    half line2 = 1.0 - smoothstep(_FoamLineWidth * 0.5, _FoamLineWidth, abs(d - _FoamLine - sin(tm * 0.7) * _FoamWidth * 0.4));
                     line2 *= smoothstep(0.35, 0.6, ValueNoise(xz * 0.9 + 5.0));                // tweede lijn onderbroken
                     half f = saturate(max(foam, line2 * 0.85));
                     col = lerp(col, _FoamColor.rgb * lerp(0.85, 1.0, shadow), f);

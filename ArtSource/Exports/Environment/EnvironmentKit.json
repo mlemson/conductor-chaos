@@ -992,7 +992,8 @@
         "cells": 0.0,
         "flat": 0.15,
         "rim": 0.2,
-        "edge": 0.0
+        "edge": 0.0,
+        "flow": 0.9
       }
     },
     "M_Env_WaterLight": {
@@ -1010,7 +1011,9 @@
         "cells": 0.0,
         "flat": 0.55,
         "rim": 0.1,
-        "edge": 0.0
+        "edge": 0.0,
+        "flow": 0.9,
+        "flowStreaks": 0.4
       }
     },
     "M_Env_WaterDeep": {
@@ -1028,7 +1031,8 @@
         "cells": 0.0,
         "flat": 0.15,
         "rim": 0.15,
-        "edge": 0.0
+        "edge": 0.0,
+        "flow": 0.9
       }
     },
     "M_Env_WaterSurface": {
@@ -1071,7 +1075,9 @@
         "opacity": 0.45,
         "softEdge": 1.0,
         "noShadow": true,
-        "edge": 0.0
+        "edge": 0.0,
+        "bubble": 0.07,
+        "bubbleSpeed": 0.5
       }
     },
     "M_Env_Foam": {
@@ -1090,7 +1096,9 @@
         "flat": 0.45,
         "rim": 0.2,
         "noShadow": true,
-        "edge": 0.0
+        "edge": 0.0,
+        "bubble": 0.045,
+        "bubbleSpeed": 1.1
       }
     },
     "M_Env_PathStone": {

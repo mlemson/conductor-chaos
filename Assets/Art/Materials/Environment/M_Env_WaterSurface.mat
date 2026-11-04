@@ -34,7 +34,7 @@ Material:
     - _StreakScale: 3.2
     - _GlintAmount: 1.0
     - _Refraction: 0.025
-    - _FlowSpeed: 0.0
+    - _FlowSpeed: 0.12
     - _SceneTextures: 1.0
     - _ReceiveShadowsF: 0.35
     - _Cull: 0.0
