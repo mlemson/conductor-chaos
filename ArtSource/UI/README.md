@@ -1,12 +1,17 @@
-# Bronbestanden UI-sprites
+# Conductor Chaos UI — source assets
 
-De originele (niet opnieuw gegenereerde) twee iconensheets horen hier:
+De bronbladen zijn nu **daadwerkelijk onderdeel van deze repository**:
 
-- `source-icons.png` — 24 losse pictogrammen, met namen in `extract_sprites.py`
-- `source-components.png` — 20 knop-/interface-elementen
+- [source-icons.png](source-icons.png) — verbeterd blad met 24 volledige pictogrammen (de eerdere sheet was deels afgesneden)
+- [source-components.png](source-components.png) — UI-voorbeelden: knoppen, meldingen, slots en badges
 
-De kant-en-klare bestanden zijn als een ZIP vanuit deze ChatGPT-sessie beschikbaar gesteld en hebben exact deze mapstructuur.
+De **gebruiksklare PNG's** staan in `Assets/Art/UI/Icons/` (24) en `Assets/Art/UI/Buttons/` (20). Gebruik de bestanden inclusief de Unity `.meta`-bestanden.
 
-Gebruik na toevoegen van de bron-PNG's `python ArtSource/UI/extract_sprites.py` als je de sprites opnieuw wilt genereren. Let op: de ZIP bevat al zorgvuldigere alpha-opruiming; die heeft de voorkeur.
+**Belangrijk:** het oorspronkelijke automatisch uitsnijscript is bewust vervangen door een *niet-destructieve controle-/previewtool*. De assets in `Assets/Art/UI/` zijn samengesteld en deels handmatig opgeschoond. Een naïeve crop van de bron zou achtergrondvlakjes, overlappingen of afgesneden randen opnieuw introduceren. De previewtool mag daarom de gepubliceerde sprites nooit overschrijven.
 
-**Status:** de GitHub-koppeling kan in deze sessie wel tekstbestanden maar geen lokale binaire PNG-bestanden uploaden. Source sheets en uitgesneden PNG's zijn daarom nog niet in de GitHub-branch aanwezig. Zie issue #129.
+```bash
+python -m pip install Pillow
+python ArtSource/UI/extract_sprites.py
+```
+
+Het commando maakt een controlecontactblad in `ArtSource/UI/Review/` zonder assets te wijzigen. Dit is visuele conceptart (PNG), geen echte schaalbare SVG- of negen-slice-sprite. Voor nieuwe interacties blijf je gebruikmaken van de bestaande Unity UI-componenten en het kleurenpalet.
