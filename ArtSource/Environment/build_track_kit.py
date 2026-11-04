@@ -82,15 +82,29 @@ def rbox(x0, x1, y0, y1, z0, z1, r, mat, div=2):
 
 
 class Path:
-    """Hartlijn van een stuk: recht (radius None) of een cirkelboog die naar +z (side=+1) of -z (side=-1) buigt."""
+    """Hartlijn van een stuk: recht (radius None) of een cirkelboog die naar +z (side=+1) of -z (side=-1) buigt.
+    Optioneel hoogteverloop (issue #136): rise = hoogteverschil met een zachte S-curve (vlak begin en eind, zodat
+    stukken naadloos aansluiten), hill = bult die halverwege zo hoog is en aan beide uiteinden weer vlak op 0 ligt."""
 
-    def __init__(self, length=None, radius=None, angle_deg=None, side=1):
-        self.radius, self.side = radius, side
+    def __init__(self, length=None, radius=None, angle_deg=None, side=1, rise=0.0, hill=0.0):
+        self.radius, self.side, self.rise, self.hill = radius, side, rise, hill
         if radius is None:
             self.length, self.angle = length, 0.0
         else:
             self.angle = math.radians(angle_deg)
             self.length = radius * self.angle
+
+    @property
+    def sloped(self):
+        return abs(self.rise) > 1e-6 or abs(self.hill) > 1e-6
+
+    def elev(self, s):
+        u = np.clip(np.asarray(s, float) / self.length, 0.0, 1.0)
+        return self.rise * u * u * (3 - 2 * u) + self.hill * np.sin(np.pi * u) ** 2
+
+    def slope(self, s):
+        u = np.clip(s / self.length, 0.0, 1.0)
+        return (self.rise * 6 * u * (1 - u) + self.hill * np.pi * np.sin(2 * np.pi * u)) / self.length
 
     def frame(self, s):
         """Positie (x, z) en koers (rad, + = naar +z) op booglengte s."""
@@ -100,21 +114,29 @@ class Path:
         return np.array([self.radius * math.sin(phi), self.side * self.radius * (1 - math.cos(phi))]), self.side * phi
 
     def bend(self, m):
-        """Vervorm een recht gemodelleerde mesh (x = booglengte, z = dwars) naar deze hartlijn."""
-        if self.radius is None:
+        """Vervorm een recht gemodelleerde mesh (x = booglengte, z = dwars) naar deze hartlijn (incl. hoogte)."""
+        if self.radius is None and not self.sloped:
             return m
         m = m.copy()
         V = m.V
+        y = V[:, 1] + (self.elev(V[:, 0]) if self.sloped else 0.0)
+        if self.radius is None:
+            m.V = np.stack([V[:, 0], y, V[:, 2]], axis=1)
+            return m
         phi = V[:, 0] / self.radius
         r = self.radius - self.side * V[:, 2]
-        V2 = np.stack([r * np.sin(phi), V[:, 1], self.side * (self.radius - r * np.cos(phi))], axis=1)
-        m.V = V2
+        m.V = np.stack([r * np.sin(phi), y, self.side * (self.radius - r * np.cos(phi))], axis=1)
         return m
 
-    def place(self, m, s):
-        """Plaats een star onderdeel (gemodelleerd rond x = 0) op booglengte s, meegedraaid met de koers."""
+    def place(self, m, s, pitch=True, lift=True):
+        """Plaats een star onderdeel (gemodelleerd rond x = 0) op booglengte s, meegedraaid met de koers
+        (en met de helling als pitch=True; lift=False als de hoogte al in het onderdeel zit)."""
         p, h = self.frame(s)
-        return m.transform(R=mk.rot_y(-h), t=(p[0], 0.0, p[1]))
+        R = mk.rot_y(-h)
+        if pitch and self.sloped:
+            R = R @ mk.rot_z(math.atan(self.slope(s)))
+        y = float(self.elev(s)) if (lift and self.sloped) else 0.0
+        return m.transform(R=R, t=(p[0], y, p[1]))
 
 
 def stations(length, spacing=SPACING):
@@ -221,12 +243,84 @@ def collider_track(path, with_bed=True, deck_half=SLEEPER[2] / 2 - 0.05, deck_y0
 
 
 def sockets(path):
-    """Lege nodes aan begin en eind (+ een punt 1 m verder in rijrichting) voor TrackPiece in Unity."""
-    p_end, h_end = path.frame(path.length)
-    fwd = np.array([math.cos(h_end), math.sin(h_end)])
-    return [("Socket_Start", (0.0, RAIL_TOP, 0.0)), ("Socket_Start_Fwd", (1.0, RAIL_TOP, 0.0)),
-            ("Socket_End", (p_end[0], RAIL_TOP, p_end[1])),
-            ("Socket_End_Fwd", (p_end[0] + fwd[0], RAIL_TOP, p_end[1] + fwd[1]))]
+    """Lege nodes aan begin en eind (+ een punt 1 m verder in rijrichting) voor TrackPiece in Unity. Stukken met
+    hoogteverloop krijgen ook Path_00..Path_12 langs de hartlijn, zodat TrackPiece het verloop precies volgt."""
+    def at(s_):
+        p, h = path.frame(s_)
+        y = RAIL_TOP + (float(path.elev(s_)) if path.sloped else 0.0)
+        return p, h, y
+    p0, h0, y0 = at(0.0)
+    p1, h1, y1 = at(path.length)
+    def fwd(h, s_):
+        a = math.atan(path.slope(s_)) if path.sloped else 0.0
+        return np.array([math.cos(h) * math.cos(a), math.sin(a), math.sin(h) * math.cos(a)])
+    f0, f1 = fwd(h0, 0.0), fwd(h1, path.length)
+    out = [("Socket_Start", (0.0, y0, 0.0)), ("Socket_Start_Fwd", (f0[0], y0 + f0[1], f0[2])),
+           ("Socket_End", (p1[0], y1, p1[1])), ("Socket_End_Fwd", (p1[0] + f1[0], y1 + f1[1], p1[1] + f1[2]))]
+    if path.sloped:
+        for k in range(13):
+            pk, _, yk = at(path.length * k / 12)
+            out.append(("Path_%02d" % k, (pk[0], yk, pk[1])))
+    return out
+
+
+def beam(path, z, y0, y1, half_w, mat, c=0.03, step=0.75):
+    """Langsbalk die de hartlijn volgt (ook in bochten en op hellingen)."""
+    prof = [(z - half_w, y0), (z + half_w, y0), (z + half_w, y1 - c), (z + half_w - c, y1), (z - half_w + c, y1), (z - half_w, y1 - c)]
+    nx = max(2, int(math.ceil(path.length / step)))
+    return path.bend(mk.extrude_profile(prof, 0.0, path.length, nx=nx, rings=1, mat=mat))
+
+
+def bent(cap_top, bottom):
+    """Eén schraag (vier poten, kesp, klossen en X-schoren) rond x = 0, van cap_top omlaag tot bottom."""
+    parts = [rbox(-0.24, 0.24, cap_top - 0.32, cap_top, -2.35, 2.35, 0.06, "M_Track_BeamDark")]
+    legs = [(-0.75, -0.75), (0.75, 0.75), (-1.55, -2.6), (1.55, 2.6)]       # (z boven, z onder): buitenste poten schuin
+    for zt, zb in legs:
+        post = mk.capsule_between((0.0, cap_top - 0.2, zt), (0.0, bottom, zb), 0.17, 0.19, 6, 1, mat="M_Track_Beam")
+        post.sharp = True
+        parts.append(post)
+    tiers = np.arange(cap_top - 0.3, bottom, -3.3)
+    for k in range(len(tiers) - 1):
+        ya, yb = tiers[k], tiers[k + 1]
+        za = np.interp(ya, [bottom, cap_top], [2.6, 1.55])
+        zb_ = np.interp(yb, [bottom, cap_top], [2.6, 1.55])
+        parts.append(rbox(-0.12, 0.12, yb - 0.10, yb + 0.10, -zb_ - 0.2, zb_ + 0.2, 0.04, "M_Track_BeamDark"))
+        for sgn in (1, -1):
+            br = mk.capsule_between((0.22 * sgn, ya, -za), (0.22 * sgn, yb, zb_), 0.08, 0.08, 5, 1, mat="M_Track_BeamDark")
+            br2 = mk.capsule_between((0.22 * sgn, ya, za), (0.22 * sgn, yb, -zb_), 0.08, 0.08, 5, 1, mat="M_Track_BeamDark")
+            br.sharp = br2.sharp = True
+            parts += [br, br2]
+    return mk.merge(*parts)
+
+
+def trestle_path(rng, path, spacing=3.0, depth=10.0):
+    """Schraagbrug langs een willekeurige hartlijn (bocht, helling, bult): bielzen en rails volgen het verloop,
+    elke ~3 m een schraag waarvan de poten tot een vaste diepte (pivot - depth) doorlopen: laat ze in het terrein
+    zakken. Zo gaat het spoor 'de lucht in' op hout, zoals de brug in het concept."""
+    parts = [rail(path, -RAIL_Z), rail(path, RAIL_Z)]
+    for st in stations(path.length):
+        parts.append(path.place(sleeper(rng, length=3.9), st))
+    stringer_top = SLEEPER_TOP - SLEEPER[1]
+    cap0 = stringer_top - 0.34
+    for zs in (-RAIL_Z, -RAIL_Z + 0.55, RAIL_Z - 0.55, RAIL_Z):
+        parts.append(beam(path, zs, cap0, stringer_top, 0.15, "M_Track_Beam"))
+    for zs in (-1.78, 1.78):
+        parts.append(beam(path, zs, SLEEPER_TOP, SLEEPER_TOP + 0.14, 0.10, "M_Track_BeamDark"))
+    for zs in (-0.75, 0.75):
+        parts.append(beam(path, zs, cap0 - 1.07, cap0 - 0.93, 0.07, "M_Track_BeamDark"))
+    n = max(1, int(round(path.length / spacing)))
+    bottom = cap0 - depth
+    cols = []
+    for k in range(n):
+        sk = (k + 0.5) * path.length / n
+        ct = cap0 + (float(path.elev(sk)) if path.sloped else 0.0)
+        parts.append(path.place(bent(ct, bottom), sk, pitch=False, lift=False))
+        cols += [path.place(rbox(-0.2, 0.2, bottom, ct - 0.3, z - 0.2, z + 0.2, 0.0, "M_Track_Collider", div=1), sk,
+                            pitch=False, lift=False) for z in (-1.4, 1.4)]
+    cols += [_col_extrude(path, [(zs - 0.1, SLEEPER_TOP), (zs + 0.1, SLEEPER_TOP), (zs + 0.1, SLEEPER_TOP + 0.14),
+                                 (zs - 0.1, SLEEPER_TOP + 0.14)]) for zs in (-1.78, 1.78)]
+    col = collider_track(path, with_bed=False, deck_half=1.9, deck_y0=cap0 - 0.3, extra=cols)
+    return mk.merge(*parts), col
 
 
 # ------------------------------------------------------------------ bijzondere stukken
@@ -409,6 +503,17 @@ def build_all():
     rng = np.random.default_rng([2026, 82])
     p, m, c = trestle(rng)
     A["Track_Bridge_Trestle_6m"] = (p, m, c, sockets(p))
+    # spoor de lucht in (issue #136): hellingen, een bult en bochten op houten schragen
+    rng = np.random.default_rng([2026, 135])
+    for name, path in (("Track_Ramp_Up_12m", Path(12.0, rise=1.5)), ("Track_Ramp_Down_12m", Path(12.0, rise=-1.5)),
+                       ("Track_Ramp_Up_18m_Steep", Path(18.0, rise=3.0)), ("Track_Ramp_Down_18m_Steep", Path(18.0, rise=-3.0)),
+                       ("Track_Hill_12m", Path(12.0, hill=1.2))):
+        m, c = trestle_path(rng, path)
+        A[name] = (path, m, c, sockets(path))
+    for side, tag in ((1, "A"), (-1, "B")):
+        path = Path(radius=20.0, angle_deg=15, side=side)
+        m, c = trestle_path(rng, path, spacing=2.6)
+        A[f"Track_Bridge_Curve_R20_15_{tag}"] = (path, m, c, sockets(path))
     rng = np.random.default_rng([2026, 87])
     m, c = warning_sign(rng)
     A["Prop_WarningSign"] = (None, m, c, [])
@@ -433,6 +538,7 @@ def build_all():
                           "length": round(path.length, 4) if path else None,
                           "radius": path.radius if path else None,
                           "angleDeg": round(math.degrees(path.angle), 3) if path else None,
+                          "rise": path.rise if path else 0.0, "hill": path.hill if path else 0.0,
                           "side": path.side if path and path.radius else 0,
                           "min": np.round(V.min(0), 3).tolist(), "max": np.round(V.max(0), 3).tolist()}
         print(f"{name:28s} {mesh.tri_count():6d} tris")

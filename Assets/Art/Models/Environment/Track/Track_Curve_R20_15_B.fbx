@@ -190,7 +190,7 @@ Objects:  {
 			P: "RotationActive", "bool", "", "",1
 			P: "InheritType", "enum", "", "",1
 			P: "DefaultAttributeIndex", "int", "Integer", "",0
-			P: "Lcl Translation", "Lcl Translation", "", "A",1.000000,0.430000,0.000000
+			P: "Lcl Translation", "Lcl Translation", "", "A",1.000000,0.430000,-0.000000
 		}
 		Shading: T
 		Culling: "CullingOff"
