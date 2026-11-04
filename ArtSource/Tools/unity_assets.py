@@ -62,6 +62,8 @@ def stylized_material(root, rel_path, name, ramp, ramp_shift=0.0, opts=None, emi
         "_Cells": 0.0 if emissive else float(o.get("cells", 1.0)), "_CellSize": float(o.get("cellSize", 0.45)),
         "_Grime": float(o.get("grime", 0.0)), "_Emissive": emissive, "_Opacity": alpha, "_HasShade": 1.0, "_SoftEdge": float(o.get("softEdge", 0.0)),
         "_ReceiveShadowsF": 0.0 if o.get("noShadow") else 1.0, "_Cull": float(o.get("cull", 2.0)),
+        "_Flow": float(o.get("flow", 0.0)), "_FlowStreaks": float(o.get("flowStreaks", 0.6)),
+        "_Bubble": float(o.get("bubble", 0.0)), "_BubbleSpeed": float(o.get("bubbleSpeed", 1.0)),
         "_SrcBlend": 5.0 if alpha < 1 else 1.0, "_DstBlend": 10.0 if alpha < 1 else 0.0, "_ZWrite": 0.0 if alpha < 1 else 1.0,
     }
     gy = o.get("grimeY", [-0.35, 0.85])
@@ -119,7 +121,7 @@ WATER_DEFAULTS = {
     "colors": {"_ShallowColor": ("#3DC7BD", 0.35), "_DeepColor": ("#0385C2", 0.97), "_HorizonColor": ("#5CC9EB", 1.0),
                "_BedTint": ("#8CEBE0", 1.0), "_FoamColor": ("#F7FFFF", 1.0), "_StreakColor": ("#9EE6FA", 1.0)},
     "floats": {"_DepthDistance": 2.2, "_FoamWidth": 0.16, "_FoamLine": 0.42, "_FoamLineWidth": 0.035, "_FoamWobble": 0.45,
-               "_StreakAmount": 0.55, "_StreakScale": 3.2, "_GlintAmount": 1.0, "_Refraction": 0.025, "_FlowSpeed": 0.0,
+               "_StreakAmount": 0.55, "_StreakScale": 3.2, "_GlintAmount": 1.0, "_Refraction": 0.025, "_FlowSpeed": 0.12,
                "_SceneTextures": 1.0, "_ReceiveShadowsF": 0.35, "_Cull": 0.0},
 }
 

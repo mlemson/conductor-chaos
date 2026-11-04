@@ -6,7 +6,8 @@
 //   - naar boven gerichte vlakken lichter, gebakken occlusie (vertexkleur R) en randlicht (vertexkleur G);
 //   - grote, effen kleurvlakken (3D-Voronoi in objectruimte, harde randen);
 //   - vuil onderin (per cel), koele rim, emissieve lenzen, URP-fog;
-//   - optioneel transparant (glas) via _SrcBlend/_DstBlend/_ZWrite.
+//   - optioneel transparant (glas) via _SrcBlend/_DstBlend/_ZWrite;
+//   - optioneel stromend water (_Flow) en borrelend schuim/mist (_Bubble), voor de watervallen.
 // De materialen worden gegenereerd door ArtSource/Tools/unity_assets.py; terugvallen op URP Lit kan via
 // het menu Conductor Chaos > Art > Use URP Lit (fallback).
 Shader "ConductorChaos/StylizedRamp"
@@ -33,6 +34,10 @@ Shader "ConductorChaos/StylizedRamp"
         _Emissive ("Emissive", Range(0, 1)) = 0
         _Opacity ("Opacity", Range(0, 1)) = 1
         _SoftEdge ("Soft Edge (mist)", Range(0, 1)) = 0
+        _Flow ("Water Flow (0 = stil)", Float) = 0
+        _FlowStreaks ("Water Flow Streaks", Range(0, 1)) = 0.6
+        _Bubble ("Bubble (m, schuim/mist)", Float) = 0
+        _BubbleSpeed ("Bubble Speed", Float) = 1
         _HasShade ("Use Vertex Shade", Float) = 1
         _ReceiveShadowsF ("Receive Shadows", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
@@ -55,8 +60,21 @@ Shader "ConductorChaos/StylizedRamp"
             half4 _DirtColor;
             float4 _GrimeY;
             half _RampShift, _Flat, _Edge, _Rim, _Spec, _Cells, _CellSize, _Grime, _Emissive, _Opacity, _HasShade, _SoftEdge;
+            half _Flow, _FlowStreaks, _Bubble, _BubbleSpeed;
             half _ReceiveShadowsF, _SrcBlend, _DstBlend, _ZWrite, _Cull;
         CBUFFER_END
+
+        // Schuim/mist laten borrelen (issue #125): een zachte, plaatsafhankelijke verschuiving per vertex. Afhankelijk van
+        // alleen de positie, dus vertices op dezelfde plek (harde facetten) bewegen samen: geen scheuren.
+        float3 CC_Bubble(float3 p)
+        {
+            if (_Bubble <= 0.0) return p;
+            float t = _Time.y * _BubbleSpeed;
+            float3 o = float3(sin(t * 2.3 + dot(p, float3(5.1, 3.7, 4.3))),
+                              sin(t * 3.1 + dot(p, float3(-2.9, 6.1, 1.7))) * 1.3 + 0.3,
+                              sin(t * 2.7 + dot(p, float3(3.3, -4.4, 6.6))));
+            return p + o * _Bubble;
+        }
         ENDHLSL
 
         Pass
@@ -102,11 +120,12 @@ Shader "ConductorChaos/StylizedRamp"
                 Varyings o = (Varyings)0;
                 UNITY_SETUP_INSTANCE_ID(v);
                 UNITY_TRANSFER_INSTANCE_ID(v, o);
-                VertexPositionInputs p = GetVertexPositionInputs(v.positionOS.xyz);
+                float3 posOS = CC_Bubble(v.positionOS.xyz);
+                VertexPositionInputs p = GetVertexPositionInputs(posOS);
                 o.positionCS = p.positionCS;
                 o.positionWS = p.positionWS;
                 o.normalWS = TransformObjectToWorldNormal(v.normalOS);
-                o.positionOS = v.positionOS.xyz;
+                o.positionOS = v.positionOS.xyz;          // cellen/stroming op de rustpositie: kleur 'zwemt' niet mee
                 o.shade = v.color;
                 o.fogFactor = ComputeFogFactor(p.positionCS.z);
                 return o;
@@ -186,6 +205,21 @@ Shader "ConductorChaos/StylizedRamp"
                 half cellA = 0.05 * _Cells * (1.0 - _Flat);
                 t = max(t, cellA) + cellT * (1.0 - _Flat);
 
+                // stromend water (watervallen, issue #125): lichte strepen schuiven langs de stroom. In objectruimte:
+                // bovenop loopt het water naar +z, daarna valt het (-y), dus 'stroomafwaarts' = z - y.
+                if (_Flow > 0.0)
+                {
+                    float sAlong = i.positionOS.z - i.positionOS.y;
+                    float2 q = float2(i.positionOS.x * 2.6, (sAlong - _Time.y * _Flow) * 0.55);
+                    float3 qi = float3(floor(q), 0);
+                    float2 qf = frac(q);
+                    float2 u = qf * qf * (3.0 - 2.0 * qf);
+                    float n00 = Hash33(qi).x, n10 = Hash33(qi + float3(1, 0, 0)).x;
+                    float n01 = Hash33(qi + float3(0, 1, 0)).x, n11 = Hash33(qi + float3(1, 1, 0)).x;
+                    float nz = lerp(lerp(n00, n10, u.x), lerp(n01, n11, u.x), u.y);
+                    half streak = smoothstep(0.62, 0.80, nz) * _FlowStreaks;
+                    t += streak * 0.28 - (1.0 - smoothstep(0.15, 0.40, nz)) * 0.06 * _FlowStreaks;
+                }
                 half3 col = SampleRamp(t);
                 col = lerp(col, _DirtColor.rgb, grime * 0.22);
                 col *= 1.0 + (cl.x - 0.5) * 0.09 * _Cells;
@@ -231,7 +265,7 @@ Shader "ConductorChaos/StylizedRamp"
             float4 vertShadow(AttributesS v) : SV_POSITION
             {
                 UNITY_SETUP_INSTANCE_ID(v);
-                float3 positionWS = TransformObjectToWorld(v.positionOS.xyz);
+                float3 positionWS = TransformObjectToWorld(CC_Bubble(v.positionOS.xyz));
                 float3 normalWS = TransformObjectToWorldNormal(v.normalOS);
             #if _CASTING_PUNCTUAL_LIGHT_SHADOW
                 float3 lightDir = normalize(_LightPosition - positionWS);
@@ -279,7 +313,7 @@ Shader "ConductorChaos/StylizedRamp"
             float4 vertDepth(AttributesD v) : SV_POSITION
             {
                 UNITY_SETUP_INSTANCE_ID(v);
-                return TransformObjectToHClip(v.positionOS.xyz);
+                return TransformObjectToHClip(CC_Bubble(v.positionOS.xyz));
             }
 
             half fragDepth(float4 positionCS : SV_POSITION) : SV_Target
