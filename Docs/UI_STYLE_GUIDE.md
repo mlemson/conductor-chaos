@@ -1,14 +1,14 @@
 # Conductor Chaos — UI design system v1
 
-**Status:** eerste implementeerbare UI-basis (niet de definitieve game-interface). **Primaire referenties:** de eerder in de ontwerpchat gemaakte **afbeelding 1 (UI Style Guide)** en **afbeelding 3 (Main Menu + Multiplayer Lobby)**. De drukke full-screen HUD uit afbeelding 2 is *niet* leidend. De primaire game-artreferentie blijft [de originele conceptposter](References/conductor-chaos-concept.png) en het [palet](References/palette.json). De twee UI-mockups zijn nog niet als PNG in de repository opgeslagen; dit document vertaalt hun richting naar bruikbare componenten.
+**Status:** eerste implementeerbare UI-basis (niet de definitieve game-interface). De gekozen **originele** UI-mockups uit de ontwerpchat zijn [afbeelding 1 — UI Style Guide](References/UI/01-ui-style-guide.png) en [afbeelding 3 — Main Menu + Multiplayer Lobby](References/UI/03-main-menu-lobby.png). Zie de [referentie-index](References/UI/README.md) voor de actuele uploadstatus: de twee PNG's worden via issue #127 toegevoegd. De drukke full-screen HUD uit afbeelding 2 is *niet* leidend. Voor de algemene gamewereld blijven [de conceptposter](References/conductor-chaos-concept.png) en het [palet](References/palette.json) aanvullende bronnen.
 
 ## Uitstraling
 
 **Game UI, geen AI-poster:** rustig en compact; matte, warme, eenvoudige oppervlakken. Leesbare labels en een paar illustratieve details, maar geen verloopglans, glow, gouden omlijning om alles heen, transparante sci-fi glasplaten of overdreven 3D-knoppen. Een zichtbare vlakke rand en weinig schaduw is genoeg. De wereld moet meer aandacht krijgen dan de HUD.
 
 **Referentieprioriteit**
-1. Afbeelding **1** bepaalt componenten, knoppen, iconen, kleuren en hierarchie.
-2. Afbeelding **3** bepaalt menucompositie, lobbykaarten, routes en instellingen.
+1. [Afbeelding **1**](References/UI/01-ui-style-guide.png) bepaalt componenten, knoppen, iconen, kleuren en hiërarchie.
+2. [Afbeelding **3**](References/UI/03-main-menu-lobby.png) bepaalt menucompositie, lobbykaarten, routes en instellingen.
 3. De oorspronkelijke conceptposter bepaalt de algemene warme cartoon-art direction.
 4. Afbeelding **2** toont mogelijke informatie maar is te vol om als standaard HUD te kopiëren.
 
