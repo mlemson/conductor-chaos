@@ -4,6 +4,7 @@
 // hoe Unity de assen van het FBX-bestand omzet. Recht stuk = lijn, bocht = cirkelboog door begin en eind.
 // Hoogte: de sockets liggen op de bovenkant van de rails. Een trein staat goed met zijn pivot RailToTrainPivot
 // boven die hoogte (de treinmodellen hebben hun railhoogte op y = -0,62).
+// Stukken met hoogteverloop (helling, bult) hebben extra punten Path_00..Path_12; dan volgt Evaluate die.
 // Alleen gegevens en gizmo's; de treinbeweging (#55) kan Evaluate gebruiken.
 using UnityEngine;
 
@@ -20,6 +21,9 @@ namespace ConductorChaos.Track
         public Transform startForward;
         public Transform end;
         public Transform endForward;
+
+        [Tooltip("Punten langs de hartlijn (Path_00..Path_12) voor stukken met hoogteverloop: helling, bult (#136).")]
+        public Transform[] pathPoints;
 
         [Tooltip("Volgend stuk (optioneel, wordt gezet door de Track Builder). Handig voor een route (#54).")]
         public TrackPiece next;
@@ -45,6 +49,24 @@ namespace ConductorChaos.Track
             startForward = FindDeep(transform, "Socket_Start_Fwd");
             end = FindDeep(transform, "Socket_End");
             endForward = FindDeep(transform, "Socket_End_Fwd");
+            var pts = new System.Collections.Generic.List<Transform>();
+            for (int k = 0; k < 100; k++)
+            {
+                var t = FindDeep(transform, "Path_" + k.ToString("00"));
+                if (t == null) break;
+                pts.Add(t);
+            }
+            pathPoints = pts.Count >= 2 ? pts.ToArray() : null;
+        }
+
+        bool HasPath
+        {
+            get
+            {
+                if (pathPoints == null || pathPoints.Length < 2) return false;
+                foreach (var p in pathPoints) if (p == null) return false;
+                return true;
+            }
         }
 
         static Transform FindDeep(Transform root, string name)
@@ -67,6 +89,12 @@ namespace ConductorChaos.Track
             get
             {
                 if (!HasSockets) return 0f;
+                if (HasPath)
+                {
+                    float sum = 0f;
+                    for (int k = 1; k < pathPoints.Length; k++) sum += Vector3.Distance(pathPoints[k - 1].position, pathPoints[k].position);
+                    return sum;
+                }
                 Arc(out var center, out var axis, out float angle, out float radius);
                 return angle < 1e-4f ? Vector3.Distance(StartPosition, EndPosition) : radius * angle;
             }
@@ -76,6 +104,17 @@ namespace ConductorChaos.Track
         public void Evaluate(float t, out Vector3 position, out Vector3 direction)
         {
             t = Mathf.Clamp01(t);
+            if (HasPath)
+            {
+                // langs de padpunten (gelijk verdeeld over de booglengte van het model)
+                float f = t * (pathPoints.Length - 1);
+                int k = Mathf.Min(Mathf.FloorToInt(f), pathPoints.Length - 2);
+                var a = pathPoints[k].position;
+                var b = pathPoints[k + 1].position;
+                position = Vector3.Lerp(a, b, f - k);
+                direction = t <= 0f ? StartDirection : t >= 1f ? EndDirection : (b - a).normalized;
+                return;
+            }
             Arc(out var center, out var axis, out float angle, out _);
             if (angle < 1e-4f)
             {

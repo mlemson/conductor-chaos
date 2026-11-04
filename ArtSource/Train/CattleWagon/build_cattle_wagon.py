@@ -45,6 +45,7 @@ SIDE_BAYS = [(-3.06, -2.05), (-1.93, -0.92), (0.92, 1.93), (2.05, 3.06)]
 END_BAYS = [(ZC - 1.18, ZC - 0.62), (ZC + 0.62, ZC + 1.18)]
 BOGIE_X = 2.05
 RAIL_Y = -0.62
+WHEEL_Z = 1.29                  # wielhart t.o.v. hartlijn = spoorwijdte 2,58 m (gelijk aan loc/tender en de spoorkit)
 
 
 def box(x0, x1, y0, y1, z0, z1, r, mat, div=1):
@@ -152,12 +153,12 @@ def build_underframe():
     for bx in (-BOGIE_X, BOGIE_X):
         parts.append(box(bx - 0.95, bx + 0.95, -0.40, -0.16, ZC - W / 2 + 0.14, ZC + W / 2 - 0.14, 0.06, "M_Cattle_Trim"))
         for ax in (bx - 0.62, bx + 0.62):
-            for zs in (ZC + W / 2 - 0.20, ZC - W / 2 + 0.20):
+            for zs in (ZC + WHEEL_Z, ZC - WHEEL_Z):
                 w = mk.cylinder(0.33, 0.12, 12, 0.035, mat="M_Cattle_Wheel", axis="z")
                 hub = mk.cylinder(0.13, 0.16, 8, 0.03, mat="M_Cattle_Red", axis="z")
                 w.sharp = hub.sharp = True
                 parts.append(mk.merge(w, hub).transform(t=(ax, RAIL_Y + 0.33, zs)))
-        for zs in (ZC + W / 2 - 0.08, ZC - W / 2 + 0.08):
+        for zs in (ZC + WHEEL_Z + 0.13, ZC - WHEEL_Z - 0.13):      # aspotten buiten de wielen
             parts.append(box(bx - 0.22, bx + 0.22, -0.36, -0.10, zs - 0.06, zs + 0.06, 0.02, "M_Cattle_Red"))
     return mk.merge(*parts)
 

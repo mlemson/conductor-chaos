@@ -52,6 +52,7 @@ END_TOP = 1.92
 WINDOWS_FAR = WINDOWS + [(-0.02, 0.80)]
 BOGIE_X = 2.30
 RAIL_Y = -0.62
+WHEEL_Z = 1.29                  # wielhart t.o.v. hartlijn = spoorwijdte 2,58 m (gelijk aan loc/tender en de spoorkit)
 
 
 def box(x0, x1, y0, y1, z0, z1, r, mat, div=1, sharp=True):
@@ -232,9 +233,9 @@ def build_wagon():
     for bx in (-BOGIE_X, BOGIE_X):
         under.append(box(bx - 0.95, bx + 0.95, -0.40, -0.16, ZC - W / 2 + 0.14, ZC + W / 2 - 0.14, 0.06, "M_Train_Trim"))
         for ax in (bx - 0.62, bx + 0.62):
-            for zs in (ZC + W / 2 - 0.20, ZC - W / 2 + 0.20):
+            for zs in (ZC + WHEEL_Z, ZC - WHEEL_Z):
                 under.append(build_wheel(ax, zs))
-        for zs in (ZC + W / 2 - 0.08, ZC - W / 2 + 0.08):
+        for zs in (ZC + WHEEL_Z + 0.13, ZC - WHEEL_Z - 0.13):      # aspotten buiten de wielen
             under.append(box(bx - 0.22, bx + 0.22, -0.36, -0.10, zs - 0.06, zs + 0.06, 0.02, "M_Train_RedLow"))
     sc.add(mk.Part("Underframe", mk.merge(*under), (0, 0, 0), "RegionalWagon"))
 
@@ -290,10 +291,10 @@ def build_env():
     plat = mk.merge(box(-7.5, 7.5, -0.75, 0.0, 0.10, 4.2, 0.14, "M_Env_Platform", 3),
                     box(-7.4, 7.4, -0.02, 0.008, 0.36, 0.50, 0.01, "M_Env_PlatformEdge"))
     sc.add(mk.Part("Platform", plat, (0, 0, 0), "ArtCheck_Environment"))
-    trk = [box(-14, 14, -1.05, -0.78, -W - 0.6, 0.15, 0.10, "M_Env_Ballast")]
+    trk = [box(-14, 14, -1.05, -0.78, -W - 0.6, 0.09, 0.10, "M_Env_Ballast")]
     for x in np.arange(-13.5, 14, 0.62):
-        trk.append(box(x - 0.13, x + 0.13, -0.80, -0.68, -W - 0.25, -0.05, 0.03, "M_Env_Sleeper"))
-    for zr in (ZC + 1.05 - 0.02, ZC - 1.05 + 0.02):
+        trk.append(box(x - 0.13, x + 0.13, -0.80, -0.68, -W - 0.30, 0.08, 0.03, "M_Env_Sleeper"))
+    for zr in (ZC + WHEEL_Z, ZC - WHEEL_Z):
         trk.append(box(-14, 14, -0.68, -0.60, zr - 0.04, zr + 0.04, 0.015, "M_Env_Rail"))
     sc.add(mk.Part("Track", mk.merge(*trk), (0, 0, 0), "ArtCheck_Environment"))
     bench = mk.merge(box(-0.7, 0.7, 0.38, 0.46, -0.25, 0.25, 0.04, "M_Env_Bench"),
