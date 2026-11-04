@@ -163,10 +163,11 @@ def build_ladder():
 def build_rails():
     """Gele dekrelingen (één gebogen stang per kant: uit de opstap, langs, omlaag naar het dek)."""
     parts = []
-    for (xa, xb) in ((XF + 0.02, L / 2 - 0.07), (XR - 0.02, -L / 2 + 0.07)):
+    # de bovenregel begint in de bunkerwand (tot BODY_TOP), niet boven de lagere opstap: geen los zwevend eind
+    for (xa, xb) in ((BUNK[1] - 0.04, L / 2 - 0.07), (BUNK[0] + 0.04, -L / 2 + 0.07)):
         for dz in (-(BODY_W / 2 - 0.07), BODY_W / 2 - 0.07):
             z = ZC + dz
-            parts += [mk.capsule_between((xa - (0.06 if xb > xa else -0.06), 1.38, z), (xb, 1.38, z), 0.03, 0.03, 10, 2, mat="M_Tender_Interact"),
+            parts += [mk.capsule_between((xa, 1.38, z), (xb, 1.38, z), 0.03, 0.03, 10, 2, mat="M_Tender_Interact"),
                       mk.capsule_between((xb, 1.38, z), (xb, DECK - 0.01, z), 0.03, 0.03, 10, 2, mat="M_Tender_Interact")]
     return mk.merge(*parts)
 
