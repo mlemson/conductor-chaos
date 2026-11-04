@@ -7,6 +7,7 @@ De gekozen conceptafbeelding is de **primaire referentie** voor characters, kleu
 | [conductor-chaos-concept.png](conductor-chaos-concept.png) | De originele conceptafbeelding (1536×1024). Altijd eerst bekijken. |
 | [STYLE_PALETTE.svg](STYLE_PALETTE.svg) | Stijlkaart v2: kernprincipes, licht/schaduw per materiaal, 34 kleurramps met bronuitsnede, vormentaal personages, URP-vertaling. |
 | [palette.json](palette.json) | Dezelfde ramps machine-leesbaar, voor scripts, materialen en agents. |
+| [UI/README.md](UI/README.md) | Geselecteerde **UI-designs (beeld 1 en 3)**, exacte PNG-bestandsnamen en uploadstatus. Leidende referentie voor menu, knoppen, lobby en HUD-onderdelen. |
 | [water-reference.png](water-reference.png) | Doel-look voor meren/rivieren (issue #110): helder turquoise ondiep, diep azuur, wit schuimrandje langs de oever, lichte golfstreepjes. Kleuren hieruit gemeten staan in `ArtSource/Tools/unity_assets.py` (`WATER_DEFAULTS`). |
 | [tools/build_style_card.py](tools/build_style_card.py) | Genereert SVG en JSON uit één bron. Pas ramps alleen hier aan. |
 
