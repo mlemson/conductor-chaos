@@ -6,7 +6,7 @@
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 64 | 1 | 0 | 0 | 3 |
+| 63 | 2 | 0 | 0 | 3 |
 
 ## 🗺️ Mijlpalen
 
@@ -44,7 +44,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 📋 Taken per status
 
-### 📝 Te doen (64)
+### 📝 Te doen (63)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -107,17 +107,17 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P1 | [#120 Achteruit bouwen in Track Builder](https://github.com/mlemson/conductor-chaos/issues/120) | Overig | — | — |
 | P1 | [#122 Maak het grijpen van klifranden vergevingsgezinder](https://github.com/mlemson/conductor-chaos/issues/122) | Overig | — | — |
 | P1 | [#131 Koppel goedgekeurde UI-sprites aan bestaande Unity-menu's en HUD](https://github.com/mlemson/conductor-chaos/issues/131) | Polish | — | — |
-| P1 | [#135 Spoorstukken laten aansluiten op wisselende terreinhoogte](https://github.com/mlemson/conductor-chaos/issues/135) | Overig | — | — |
 | P2 | [#86 Rotsval: één vallende rots als treinincident](https://github.com/mlemson/conductor-chaos/issues/86) | Gameplay | — | — |
 | P2 | [#89 Één ontsporing synchroniseren tussen host en client](https://github.com/mlemson/conductor-chaos/issues/89) | Multiplayer | — | — |
 | P2 | [#90 Koppeling kan breken bij hoge impact](https://github.com/mlemson/conductor-chaos/issues/90) | Physics | — | — |
 | P2 | [#92 Optionele mijlpaalcheck: sessie met vier en later zes spelers](https://github.com/mlemson/conductor-chaos/issues/92) | QA | — | — |
 
-### 🔧 Bezig (1)
+### 🔧 Bezig (2)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
 | P0 | [#53 Spoorasset: recht segment en bocht als Unity-prefabs](https://github.com/mlemson/conductor-chaos/issues/53) | Train | @mlemson | — |
+| P1 | [#135 Spoorstukken laten aansluiten op wisselende terreinhoogte](https://github.com/mlemson/conductor-chaos/issues/135) | Overig | — | [#138](https://github.com/mlemson/conductor-chaos/pull/138) |
 
 ### 👀 Klaar voor review (0)
 
