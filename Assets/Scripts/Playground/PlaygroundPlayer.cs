@@ -228,14 +228,16 @@ namespace ConductorChaos.Playground
             bool pulling = requestedMove.y > 0.1f;
             left.Step(leftHeld, aim, hits, transform, reach, pulling);
             right.Step(rightHeld, aim, hits, transform, reach, pulling);
-            bool climbing = ApplyClimbAssist(pulling && !jumpQueued);
+            bool climbing = ApplyClimbAssist(pulling && !jumpQueued && (leftHeld || rightHeld));
             float walkSpeed = Mathf.Min(sprinting ? sprintSpeed : speed, sprinting ? 3.8f : 1.5f);
             bool stepped = false;
             if (climbing) legs?.BraceForClimb(mantling);
             bool supported = !climbing && legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting, out stepped);
             Vector3 groundVelocity = supported ? legs.SupportVelocity : Vector3.zero;
             Vector3 target = groundVelocity + facing * new Vector3(requestedMove.x, 0f, requestedMove.y) * walkSpeed * uprightControl;
-            float movementAcceleration = grounded ? (supported ? acceleration * (sprinting ? 1.35f : 1f) : 0f) : acceleration * (sprinting ? 0.45f : 0.2f);
+            // Keep some steering when the torso touches uneven ground but neither foot probe finds support.
+            float movementAcceleration = grounded ? acceleration * (supported ? (sprinting ? 1.35f : 1f) : 0.45f)
+                : acceleration * (sprinting ? 0.45f : 0.2f);
             Vector3 change = Vector3.ClampMagnitude(new Vector3(target.x - current.x, 0f, target.z - current.z), movementAcceleration * Time.fixedDeltaTime);
             if (climbing) change = Vector3.zero;
             else body.AddForce(change, ForceMode.VelocityChange);

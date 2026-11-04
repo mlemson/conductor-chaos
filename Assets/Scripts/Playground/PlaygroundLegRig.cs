@@ -184,12 +184,16 @@ namespace ConductorChaos.Playground
             private readonly Rigidbody rigid;
             private readonly CapsuleCollider collider;
             private readonly ConfigurableJoint hip;
-            private SpringJoint support;
+            private Collider supportSurface;
+            private Rigidbody supportBody;
+            private Vector3 supportAnchor;
+            private Vector3 footAnchor;
             public Quaternion Rotation => bone ? bone.localRotation : Quaternion.identity;
             public Collider Collider => collider;
-            public bool HasSupport => support;
-            public Vector3 SupportVelocity => support && support.connectedBody
-                ? support.connectedBody.GetPointVelocity(support.connectedBody.transform.TransformPoint(support.connectedAnchor))
+            public bool HasSupport => supportSurface;
+            private Vector3 SupportPoint => supportBody ? supportBody.transform.TransformPoint(supportAnchor) : supportAnchor;
+            public Vector3 SupportVelocity => supportSurface && supportBody
+                ? supportBody.GetPointVelocity(SupportPoint)
                 : Vector3.zero;
 
             public Leg(Transform bone, Rigidbody torso, bool server)
@@ -224,13 +228,10 @@ namespace ConductorChaos.Playground
             {
                 if (!rigid) return;
                 Quaternion desired = bone.parent.rotation * rest * Quaternion.Euler(angle, 0f, side);
-                if (support)
+                if (supportSurface)
                 {
-                    Vector3 anchor = support.connectedBody
-                        ? support.connectedBody.transform.TransformPoint(support.connectedAnchor)
-                        : support.connectedAnchor;
-                    Vector3 desiredFoot = bone.parent.InverseTransformPoint(anchor) - bone.localPosition;
-                    Vector3 restingFoot = rest * support.anchor;
+                    Vector3 desiredFoot = bone.parent.InverseTransformPoint(SupportPoint) - bone.localPosition;
+                    Vector3 restingFoot = rest * footAnchor;
                     if (desiredFoot.sqrMagnitude > 0.001f && restingFoot.sqrMagnitude > 0.001f)
                         desired = bone.parent.rotation * Quaternion.FromToRotation(restingFoot, desiredFoot) * rest;
                 }
@@ -269,25 +270,18 @@ namespace ConductorChaos.Playground
             public void SetSupport(bool planted, RaycastHit hit)
             {
                 if (!planted) { ReleaseSupport(); return; }
-                if (support && support.connectedBody == hit.rigidbody) return;
-                ReleaseSupport();
-                support = bone.gameObject.AddComponent<SpringJoint>();
-                support.autoConfigureConnectedAnchor = false;
-                support.connectedBody = hit.rigidbody;
-                support.anchor = rigid.transform.InverseTransformPoint(hit.point);
-                support.connectedAnchor = hit.rigidbody ? hit.rigidbody.transform.InverseTransformPoint(hit.point) : hit.point;
-                // Allow the torso to travel over the planted foot without the spring acting as a brake.
-                support.spring = 180f;
-                support.damper = 8f;
-                support.maxDistance = 0.025f;
-                support.breakForce = 120f;
+                // Keep a pose target, rather than fastening the leg to the terrain.
+                if (supportSurface == hit.collider && (SupportPoint - hit.point).sqrMagnitude <= 0.16f * 0.16f) return;
+                supportSurface = hit.collider;
+                supportBody = hit.rigidbody;
+                footAnchor = rigid.transform.InverseTransformPoint(hit.point);
+                supportAnchor = supportBody ? supportBody.transform.InverseTransformPoint(hit.point) : hit.point;
             }
 
             public void ReleaseSupport()
             {
-                if (!support) return;
-                Object.Destroy(support);
-                support = null;
+                supportSurface = null;
+                supportBody = null;
             }
 
             public void ShowRemote(Quaternion pose)
