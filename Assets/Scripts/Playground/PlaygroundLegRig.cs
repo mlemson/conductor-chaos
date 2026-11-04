@@ -96,7 +96,8 @@ namespace ConductorChaos.Playground
             stepped = false;
             Vector3 localVelocity = torso.transform.InverseTransformDirection(velocity);
             float speed = new Vector2(localVelocity.x, localVelocity.z).magnitude;
-            float amount = Mathf.Clamp01(speed / 2.5f) * Mathf.Clamp01(input.magnitude);
+            // Start the step from input so stationary feet can get the body moving.
+            float amount = Mathf.Lerp(0.65f, 1f, Mathf.Clamp01(speed / 2.5f)) * Mathf.Clamp01(input.magnitude);
             bool moving = grounded && input.sqrMagnitude > 0.01f;
             if (moving) stride += Time.fixedDeltaTime * Mathf.Max(2f, targetSpeed / 0.32f * Mathf.PI);
             float phase = Mathf.Sin(stride) * amount;
@@ -120,10 +121,15 @@ namespace ConductorChaos.Playground
             else
             {
                 bool wantsLeft = Mathf.Sin(stride) >= 0f;
+                bool nextLeft = leftStance;
                 if ((wantsLeft && leftContact) || (!wantsLeft && rightContact))
+                    nextLeft = wantsLeft;
+                else if ((leftStance && !leftContact && rightContact) || (!leftStance && !rightContact && leftContact))
+                    nextLeft = !leftStance;
+                if (nextLeft != leftStance)
                 {
-                    stepped = wantsLeft != leftStance;
-                    leftStance = wantsLeft;
+                    stepped = true;
+                    leftStance = nextLeft;
                 }
                 left.SetSupport(leftStance && leftContact, leftHit);
                 right.SetSupport(!leftStance && rightContact, rightHit);
@@ -199,12 +205,22 @@ namespace ConductorChaos.Playground
             {
                 if (!rigid) return;
                 Quaternion desired = bone.parent.rotation * rest * Quaternion.Euler(angle, 0f, side);
+                if (support)
+                {
+                    Vector3 anchor = support.connectedBody
+                        ? support.connectedBody.transform.TransformPoint(support.connectedAnchor)
+                        : support.connectedAnchor;
+                    Vector3 desiredFoot = bone.parent.InverseTransformPoint(anchor) - bone.localPosition;
+                    Vector3 restingFoot = rest * support.anchor;
+                    if (desiredFoot.sqrMagnitude > 0.001f && restingFoot.sqrMagnitude > 0.001f)
+                        desired = bone.parent.rotation * Quaternion.FromToRotation(restingFoot, desiredFoot) * rest;
+                }
                 Quaternion error = desired * Quaternion.Inverse(rigid.rotation);
                 error.ToAngleAxis(out float difference, out Vector3 axis);
                 if (difference > 180f) difference -= 360f;
                 if (float.IsFinite(axis.x) && axis.sqrMagnitude > 0.01f)
-                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (difference * Mathf.Deg2Rad * 30f) -
-                        rigid.angularVelocity * 6f, 35f), ForceMode.Acceleration);
+                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (difference * Mathf.Deg2Rad * 95f) -
+                        rigid.angularVelocity * 12f, 100f), ForceMode.Acceleration);
             }
 
             public bool FindGround(RaycastHit[] buffer, Transform player, out RaycastHit nearest)
@@ -241,10 +257,11 @@ namespace ConductorChaos.Playground
                 support.connectedBody = hit.rigidbody;
                 support.anchor = rigid.transform.InverseTransformPoint(hit.point);
                 support.connectedAnchor = hit.rigidbody ? hit.rigidbody.transform.InverseTransformPoint(hit.point) : hit.point;
-                support.spring = 700f;
-                support.damper = 45f;
+                // Allow the torso to travel over the planted foot without the spring acting as a brake.
+                support.spring = 180f;
+                support.damper = 8f;
                 support.maxDistance = 0.025f;
-                support.breakForce = 400f;
+                support.breakForce = 120f;
             }
 
             public void ReleaseSupport()
