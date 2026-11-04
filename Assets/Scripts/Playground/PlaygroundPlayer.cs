@@ -107,7 +107,7 @@ namespace ConductorChaos.Playground
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
-            if (mouse.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
+            if (mouse.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked && !TrainDrive.PointerOverPanel())
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
@@ -405,3 +405,4 @@ namespace ConductorChaos.Playground
         }
     }
 }
+
