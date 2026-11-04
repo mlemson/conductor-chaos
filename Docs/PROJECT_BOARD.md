@@ -6,7 +6,7 @@
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 60 | 3 | 0 | 0 | 1 |
+| 61 | 2 | 0 | 0 | 1 |
 
 ## 🗺️ Mijlpalen
 
@@ -44,7 +44,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 📋 Taken per status
 
-### 📝 Te doen (60)
+### 📝 Te doen (61)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -103,19 +103,19 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P1 | [#91 Online uitnodigen: eenvoudige joincode of vriendenlink](https://github.com/mlemson/conductor-chaos/issues/91) | Multiplayer | — | — |
 | P1 | [#101 Fysiek klimmen en over randen klauteren](https://github.com/mlemson/conductor-chaos/issues/101) | Overig | — | — |
 | P1 | [#104 Houd grasplukken en bloemen vrij van mesh colliders](https://github.com/mlemson/conductor-chaos/issues/104) | Overig | — | — |
+| P1 | [#120 Achteruit bouwen in Track Builder](https://github.com/mlemson/conductor-chaos/issues/120) | Overig | — | — |
 | P1 | [#122 Maak het grijpen van klifranden vergevingsgezinder](https://github.com/mlemson/conductor-chaos/issues/122) | Overig | — | — |
 | P2 | [#86 Rotsval: één vallende rots als treinincident](https://github.com/mlemson/conductor-chaos/issues/86) | Gameplay | — | — |
 | P2 | [#89 Één ontsporing synchroniseren tussen host en client](https://github.com/mlemson/conductor-chaos/issues/89) | Multiplayer | — | — |
 | P2 | [#90 Koppeling kan breken bij hoge impact](https://github.com/mlemson/conductor-chaos/issues/90) | Physics | — | — |
 | P2 | [#92 Optionele mijlpaalcheck: sessie met vier en later zes spelers](https://github.com/mlemson/conductor-chaos/issues/92) | QA | — | — |
 
-### 🔧 Bezig (3)
+### 🔧 Bezig (2)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
 | P0 | [#53 Spoorasset: recht segment en bocht als Unity-prefabs](https://github.com/mlemson/conductor-chaos/issues/53) | Train | @mlemson | — |
 | P1 | [#115 Houd de third-personcamera buiten de conducteur](https://github.com/mlemson/conductor-chaos/issues/115) | Overig | — | [#117](https://github.com/mlemson/conductor-chaos/pull/117) |
-| P1 | [#120 Achteruit bouwen in Track Builder](https://github.com/mlemson/conductor-chaos/issues/120) | Overig | — | [#121](https://github.com/mlemson/conductor-chaos/pull/121) |
 
 ### 👀 Klaar voor review (0)
 
