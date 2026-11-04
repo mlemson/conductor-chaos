@@ -152,6 +152,16 @@ namespace ConductorChaos.Playground
             ReleaseSupport();
         }
 
+        public void BraceForClimb(bool mantling)
+        {
+            ReleaseSupport();
+            // Drive the existing leg joints toward the face while leaving their contacts physical.
+            float effort = Mathf.Sin(Time.time * 13f) * 13f;
+            float forward = mantling ? 8f : -16f;
+            left.Drive(forward + effort, -6f);
+            right.Drive(forward - effort, 6f);
+        }
+
         public void ShowRemote(Quaternion leftPose, Quaternion rightPose)
         {
             left.ShowRemote(leftPose);
