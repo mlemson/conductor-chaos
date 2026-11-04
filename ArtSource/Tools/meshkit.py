@@ -702,6 +702,11 @@ class Part:
     edges: bool = True                # randlicht op afrondingen/facetranden bakken
 
 
+# Kleurvlakken voor alle treinen (issue #102): grotere, rustigere cellen, net als de omgeving
+# (omgeving: cells 0.5-0.8, cellSize 0.6-1.1). Eerder: cells 1.0 / cellSize 0.45 = te druk.
+TRAIN_CELLS = {"cells": 0.55, "cellSize": 0.8}
+
+
 def _value_noise(P, seed=0):
     """Gladde 3D value noise (0..1) op punten P (N,3)."""
     rng = np.random.default_rng(seed)

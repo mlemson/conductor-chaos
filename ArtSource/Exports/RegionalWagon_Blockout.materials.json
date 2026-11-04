@@ -20,7 +20,9 @@
       "smoothness": 0.25,
       "opts": {
         "paint": 1.5,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Train_RedPanel": {
@@ -36,7 +38,9 @@
       "smoothness": 0.25,
       "opts": {
         "paint": 1.5,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Train_RedLow": {
@@ -52,7 +56,9 @@
       "smoothness": 0.25,
       "opts": {
         "paint": 1.3,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Train_Roof": {
@@ -68,7 +74,9 @@
       "smoothness": 0.2,
       "opts": {
         "paint": 1.6,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Train_Trim": {
@@ -84,7 +92,9 @@
       "smoothness": 0.2,
       "opts": {
         "paint": 1.2,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Train_Wheel": {
@@ -100,7 +110,9 @@
       "smoothness": 0.3,
       "opts": {
         "paint": 0.8,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Train_Gold": {
@@ -115,7 +127,9 @@
       "rampShift": 0.0,
       "smoothness": 0.4,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Train_Glass": {
@@ -134,7 +148,8 @@
         "rim": 0.35,
         "opacity": 0.22,
         "cells": 0.0,
-        "grime": 0.0
+        "grime": 0.0,
+        "cellSize": 0.8
       }
     },
     "M_Train_GlassShine": {
@@ -153,7 +168,8 @@
         "rim": 0,
         "opacity": 0.55,
         "cells": 0.0,
-        "grime": 0.0
+        "grime": 0.0,
+        "cellSize": 0.8
       }
     },
     "M_Train_Interact": {
@@ -168,7 +184,9 @@
       "rampShift": 0.0,
       "smoothness": 0.3,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Train_Inner": {
@@ -183,7 +201,9 @@
       "rampShift": 0.05,
       "smoothness": 0.15,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Train_Floor": {
@@ -198,7 +218,9 @@
       "rampShift": -0.12,
       "smoothness": 0.15,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Train_Seat": {
@@ -213,7 +235,9 @@
       "rampShift": 0.04,
       "smoothness": 0.15,
       "opts": {
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     },
     "M_Train_Lamp": {
@@ -231,7 +255,9 @@
         "emissive": 0.85,
         "rim": 0.0,
         "paint": 0,
-        "grime": 1.0
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
       }
     }
   }
