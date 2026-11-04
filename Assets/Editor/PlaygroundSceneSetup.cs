@@ -38,29 +38,38 @@ namespace ConductorChaos.Editor
             var selectedTrack = track;
             float closest = float.PositiveInfinity;
             float fraction = 0f;
+            float selectedDistance = float.PositiveInfinity;
+            float selectedFraction = 0f;
+            track = null;
             foreach (var candidate in Object.FindObjectsByType<TrackPiece>(FindObjectsSortMode.None))
             {
-                if (selectedTrack && candidate != selectedTrack) continue;
                 if (candidate.gameObject.scene != locomotive.scene || !candidate.HasSockets || candidate.Length < 0.01f || candidate.name.Contains("Broken")) continue;
                 for (int i = 0; i <= 32; i++)
                 {
                     float t = i / 32f;
                     candidate.Evaluate(t, out var p, out _);
                     float d = (p - locomotive.transform.position).sqrMagnitude;
+                    if (candidate == selectedTrack && d < selectedDistance) { selectedDistance = d; selectedFraction = t; }
                     if (d >= closest) continue;
                     closest = d;
                     fraction = t;
                     track = candidate;
                 }
             }
+            if (selectedTrack && selectedDistance <= 100f)
+            {
+                track = selectedTrack;
+                fraction = selectedFraction;
+                closest = selectedDistance;
+            }
             if (!track || !float.IsFinite(closest))
             {
                 EditorUtility.DisplayDialog("Trein configureren", "Geen bruikbaar spoorstuk gevonden. Plaats eerst een spoorstuk met aansluitpunten in de scène.", "OK");
                 return;
             }
-            if (!selectedTrack && closest > 100f)
+            if (closest > 100f)
             {
-                EditorUtility.DisplayDialog("Trein configureren", "Er ligt geen spoor dichtbij de locomotief. Selecteer het gewenste spoorstuk in de Hierarchy.", "OK");
+                EditorUtility.DisplayDialog("Trein configureren", "Er ligt geen spoor binnen 10 meter van de locomotief. Zet de locomotief dichter bij het spoor en probeer opnieuw.", "OK");
                 return;
             }
             Undo.SetCurrentGroupName("Configure train");
