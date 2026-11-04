@@ -133,7 +133,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 🔗 Open pull requests zonder gekoppelde roadmap-taak
 
-Alle open PR's zijn gekoppeld of er zijn geen open PR's.
+- [#126 Art: bewegend water en bewegende watervallen](https://github.com/mlemson/conductor-chaos/pull/126) — verwijs in de PR-omschrijving naar `Refs #nummer` of `Closes #nummer`.
 
 ## 🤝 Samenwerken met mensen en agents
 
