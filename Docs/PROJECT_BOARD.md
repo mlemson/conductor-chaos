@@ -6,7 +6,7 @@
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 63 | 2 | 0 | 0 | 3 |
+| 62 | 3 | 0 | 0 | 3 |
 
 ## 🗺️ Mijlpalen
 
@@ -44,7 +44,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 📋 Taken per status
 
-### 📝 Te doen (63)
+### 📝 Te doen (62)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -63,7 +63,6 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P0 | [#48 Grip: twee spelers kunnen niet dezelfde koffer bezitten](https://github.com/mlemson/conductor-chaos/issues/48) | Physics | — | — |
 | P0 | [#49 Interacties: één herbruikbare focusdetectie voor props](https://github.com/mlemson/conductor-chaos/issues/49) | Gameplay | — | — |
 | P0 | [#54 Spoorroute: korte testbaan uit bestaande railstukken](https://github.com/mlemson/conductor-chaos/issues/54) | Train | — | — |
-| P0 | [#55 Treinbeweging: één wagon volgt testspoor](https://github.com/mlemson/conductor-chaos/issues/55) | Train | — | — |
 | P0 | [#56 Rijdende wagon: speler blijft op vloer bij rijden/remmen](https://github.com/mlemson/conductor-chaos/issues/56) | Multiplayer | — | — |
 | P0 | [#61 Conducteurssleutel: vast voorwerp en slotpunt](https://github.com/mlemson/conductor-chaos/issues/61) | Interactions | — | — |
 | P0 | [#62 Treindeur: open/dicht als gedeelde toestand](https://github.com/mlemson/conductor-chaos/issues/62) | Interactions | — | — |
@@ -112,11 +111,12 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P2 | [#90 Koppeling kan breken bij hoge impact](https://github.com/mlemson/conductor-chaos/issues/90) | Physics | — | — |
 | P2 | [#92 Optionele mijlpaalcheck: sessie met vier en later zes spelers](https://github.com/mlemson/conductor-chaos/issues/92) | QA | — | — |
 
-### 🔧 Bezig (2)
+### 🔧 Bezig (3)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
 | P0 | [#53 Spoorasset: recht segment en bocht als Unity-prefabs](https://github.com/mlemson/conductor-chaos/issues/53) | Train | @mlemson | — |
+| P0 | [#55 Treinbeweging: één wagon volgt testspoor](https://github.com/mlemson/conductor-chaos/issues/55) | Train | — | [#140](https://github.com/mlemson/conductor-chaos/pull/140) |
 | P1 | [#135 Spoorstukken laten aansluiten op wisselende terreinhoogte](https://github.com/mlemson/conductor-chaos/issues/135) | Overig | — | [#138](https://github.com/mlemson/conductor-chaos/pull/138) |
 
 ### 👀 Klaar voor review (0)
