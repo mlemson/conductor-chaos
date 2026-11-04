@@ -191,12 +191,23 @@ def flowers(img, count, rmin=3.0, rmax=4.5):
     return img
 
 
+# Terreingras ijken op het gras bovenop de klifmodellen (issue #118). Het terrein gebruikt URP Terrain Lit: het warme
+# zonlicht vermenigvuldigt de textuur en trekt het gras naar olijf (gemeten in de playground: #A3AE38), terwijl de
+# StylizedRamp-shader op de kliffen de ramp zelf toont (#B1C953). Deze winst per kanaal (doel / gemeten terrein)
+# maakt het terrein in het spel ongeveer gelijk aan de kliftop.
+GRASS_TERRAIN_GAIN = np.array([177 / 163, 201 / 174, 83 / 56])
+
+
+def terrain_grass(lo, hi, **kw):
+    return flat("grass", lo, hi, **kw) * GRASS_TERRAIN_GAIN
+
+
 # naam -> (maker, tegelgrootte in m voor de TerrainLayer); de tegelgroottes staan ook in StylizedTerrainTools.cs
 FLAT = {
-    "T_Flat_Grass": lambda: flat("grass", 0.80, 0.94),                       # zoals het gras op de kliffen
-    "T_Flat_GrassSmall": lambda: flat("grass", 0.76, 0.96, cells=256),      # kleinere vlakken, iets levendiger
-    "T_Flat_GrassShade": lambda: flat("grass", 0.50, 0.66),                  # donkerder gras (onder bomen, randen)
-    "T_Flat_GrassFlowers": lambda: flowers(flat("grass", 0.80, 0.94), 35),
+    "T_Flat_Grass": lambda: terrain_grass(0.80, 0.94),                       # zoals het gras op de kliffen
+    "T_Flat_GrassSmall": lambda: terrain_grass(0.76, 0.96, cells=256),      # kleinere vlakken, iets levendiger
+    "T_Flat_GrassShade": lambda: terrain_grass(0.50, 0.66),                  # donkerder gras (onder bomen, randen)
+    "T_Flat_GrassFlowers": lambda: flowers(terrain_grass(0.80, 0.94), 35),
     "T_Flat_Dirt": lambda: flat("cliff", 0.30, 0.48),                        # grond / spoorberm
     "T_Flat_Sand": lambda: flat("parchment", 0.10, 0.22, facet=0.025),                    # zandpad
     "T_Flat_Rock": lambda: flat("cliff", 0.55, 0.80, cells=49, facet=0.05),  # zoals de kliffen
