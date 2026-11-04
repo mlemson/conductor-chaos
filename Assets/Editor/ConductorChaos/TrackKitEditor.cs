@@ -212,7 +212,7 @@ namespace ConductorChaos.EditorTools
                         pos = hit.point;
                 }
                 go.transform.position = pos;
-                if (piece != null && piece.HasSockets && !piece.name.Contains("Bridge"))
+                if (piece != null && piece.HasSockets && FollowsTerrain(piece))
                 {
                     var terrain = PropGroundSnap.TerrainAt(piece.StartPosition);
                     if (terrain != null)
@@ -229,8 +229,7 @@ namespace ConductorChaos.EditorTools
 
         internal static void FitToTerrain(TrackPiece piece, bool backwards)
         {
-            // Bridges deliberately span gaps; never pull them down to the terrain.
-            if (piece.name.Contains("Bridge")) return;
+            if (!FollowsTerrain(piece)) return;
             // shortcut: rigid pieces only fit their endpoints; use deformable track for uneven ground between them.
             for (int i = 0; i < 4; i++)
             {
@@ -249,6 +248,9 @@ namespace ConductorChaos.EditorTools
                 piece.transform.RotateAround(anchor, axis, (targetAngle - currentAngle) * Mathf.Rad2Deg);
             }
         }
+
+        static bool FollowsTerrain(TrackPiece piece) =>
+            !piece.name.Contains("Bridge") && !piece.name.Contains("Ramp") && !piece.name.Contains("Hill");
     }
 }
 
