@@ -1,5 +1,6 @@
 using System.Linq;
 using ConductorChaos.Playground;
+using ConductorChaos.Track;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using Unity.Netcode.Transports.UTP;
@@ -12,6 +13,40 @@ namespace ConductorChaos.Editor
 {
     public static class PlaygroundSceneSetup
     {
+        [MenuItem("Tools/Conductor Chaos/Configure Train On Selected Track")]
+        public static void ConfigureTrain()
+        {
+            var track = Selection.activeGameObject ? Selection.activeGameObject.GetComponentInParent<TrackPiece>() : null;
+            var locomotive = GameObject.Find("Locomotive_Blockout");
+            if (!track || !track.HasSockets || !locomotive)
+            {
+                Debug.LogError("Select the first connected track piece in the scene; Locomotive_Blockout must also be present.");
+                return;
+            }
+            Undo.SetCurrentGroupName("Configure train");
+            var rb = locomotive.GetComponent<Rigidbody>() ? locomotive.GetComponent<Rigidbody>() : Undo.AddComponent<Rigidbody>(locomotive);
+            Undo.RecordObject(rb, "Configure train physics");
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            if (!locomotive.GetComponent<NetworkObject>()) Undo.AddComponent<NetworkObject>(locomotive);
+            if (!locomotive.GetComponent<NetworkTransform>()) Undo.AddComponent<NetworkTransform>(locomotive);
+            var drive = locomotive.GetComponent<TrainDrive>() ? locomotive.GetComponent<TrainDrive>() : Undo.AddComponent<TrainDrive>(locomotive);
+            Undo.RecordObject(drive, "Set train track");
+            drive.Configure(track);
+            float railCenter = 0f;
+            var wheels = locomotive.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Wheels");
+            if (wheels && wheels.TryGetComponent<Renderer>(out var wheelRenderer))
+                railCenter = locomotive.transform.InverseTransformPoint(wheelRenderer.bounds.center).z;
+            track.Evaluate(0f, out var position, out var direction);
+            var rotation = Quaternion.LookRotation(direction, track.transform.up) * Quaternion.Euler(0, -90, 0);
+            Undo.RecordObject(locomotive.transform, "Place locomotive on track");
+            locomotive.transform.SetPositionAndRotation(position + track.transform.up * TrackPiece.RailToTrainPivot -
+                                                        rotation * new Vector3(0, 0, railCenter), rotation);
+            EditorUtility.SetDirty(drive);
+            EditorSceneManager.MarkSceneDirty(locomotive.scene);
+            Debug.Log("Train configured. Save the scene before playing.");
+        }
+
         [MenuItem("Tools/Conductor Chaos/Enable Conductor Leg Rig")]
         public static void EnableConductorLegRig()
         {
@@ -164,3 +199,4 @@ namespace ConductorChaos.Editor
         }
     }
 }
+
