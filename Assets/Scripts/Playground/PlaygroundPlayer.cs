@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -46,9 +47,15 @@ namespace ConductorChaos.Playground
         private Camera playerCamera;
         private readonly RaycastHit[] hits = new RaycastHit[32];
         private readonly Collider[] ledgeObstacles = new Collider[16];
+        private readonly Vector3[] nearbyWallNormals = new Vector3[16];
         private Vector3 ledgeLip, ledgeInward;
         private float nextLedgeProbe;
         private bool hasLedge, mantling;
+        private Vector3 clearGroundPosition;
+        private Vector3 blockedRecoveryDirection;
+        private Quaternion clearGroundRotation;
+        private bool hasClearGround, clearingLimbs;
+        private float stalledTime, nextClearanceProbe, nextRecoveryProbe, restoreLimbsAt;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private bool automatedInput;
 #endif
@@ -71,6 +78,9 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkSpawn()
         {
+            hasClearGround = clearingLimbs = false;
+            blockedRecoveryDirection = Vector3.zero;
+            stalledTime = nextClearanceProbe = nextRecoveryProbe = 0f;
             body.isKinematic = !IsServer;
             // Leave clearance for the short arms at the shoulders while keeping
             // a solid torso core for collisions and hand interaction.
@@ -229,12 +239,17 @@ namespace ConductorChaos.Playground
             left.Step(leftHeld, aim, hits, transform, reach, pulling);
             right.Step(rightHeld, aim, hits, transform, reach, pulling);
             bool climbing = ApplyClimbAssist(pulling && !jumpQueued && (leftHeld || rightHeld));
+            Vector3 moveDirection = facing * new Vector3(requestedMove.x, 0f, requestedMove.y);
+            if (Vector3.Dot(moveDirection.normalized, blockedRecoveryDirection) < 0.80f)
+                blockedRecoveryDirection = Vector3.zero;
+            if (blockedRecoveryDirection != Vector3.zero) moveDirection = Vector3.zero;
+            if (RecoverFromPinch(moveDirection, grounded)) return;
             float walkSpeed = Mathf.Min(sprinting ? sprintSpeed : speed, sprinting ? 3.8f : 1.5f);
             bool stepped = false;
             if (climbing) legs?.BraceForClimb(mantling);
             bool supported = !climbing && legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting, out stepped);
             Vector3 groundVelocity = supported ? legs.SupportVelocity : Vector3.zero;
-            Vector3 target = groundVelocity + facing * new Vector3(requestedMove.x, 0f, requestedMove.y) * walkSpeed * uprightControl;
+            Vector3 target = groundVelocity + moveDirection * walkSpeed * uprightControl;
             // Keep some steering when the torso touches uneven ground but neither foot probe finds support.
             float movementAcceleration = grounded ? acceleration * (supported ? (sprinting ? 1.35f : 1f) : 0.45f)
                 : acceleration * (sprinting ? 0.45f : 0.2f);
@@ -291,6 +306,139 @@ namespace ConductorChaos.Playground
                 }
                 nextPose = Time.time + 0.05f;
             }
+        }
+
+        private bool RecoverFromPinch(Vector3 move, bool grounded)
+        {
+            if (!bodyCapsule || left.HasGrip || right.HasGrip)
+            {
+                stalledTime = 0f;
+                SetLimbClearance(false);
+                return false;
+            }
+
+            if (clearingLimbs && Time.time >= restoreLimbsAt) SetLimbClearance(false);
+            if (!clearingLimbs && stalledTime < 0.10f && grounded && Time.time >= nextClearanceProbe &&
+                Vector3.Dot(body.rotation * Vector3.up, Vector3.up) > 0.94f && Mathf.Abs(body.linearVelocity.y) < 0.6f)
+            {
+                nextClearanceProbe = Time.time + 0.12f;
+                Quaternion upright = Quaternion.Euler(0f, body.rotation.eulerAngles.y, 0f);
+                if (IsClearGround(body.position, upright))
+                {
+                    clearGroundPosition = body.position;
+                    clearGroundRotation = upright;
+                    hasClearGround = true;
+                }
+            }
+
+            Vector3 direction = move.normalized;
+            if (move.sqrMagnitude < 0.04f || jumpQueued || Mathf.Abs(body.linearVelocity.y) > 1f ||
+                Vector3.Dot(body.linearVelocity, direction) >= 0.18f)
+            {
+                stalledTime = 0f;
+                return false;
+            }
+            stalledTime += Time.fixedDeltaTime;
+            if (stalledTime < 0.25f || Time.time < nextRecoveryProbe) return false;
+            nextRecoveryProbe = Time.time + 0.12f;
+
+            Vector3 origin = body.worldCenterOfMass;
+            bool canBackOut = false, pinched = false;
+            int wallCount = 0;
+            for (int i = 0; i < nearbyWallNormals.Length; i++)
+            {
+                Vector3 ray = Quaternion.AngleAxis((i % 8) * 45f, Vector3.up) * direction;
+                Vector3 sample = i < 8 ? origin : origin - Vector3.up * 0.20f;
+                if (!LedgeRay(sample, ray, bodyCapsule.radius + 0.21f, out RaycastHit wall) ||
+                    wall.rigidbody || Mathf.Abs(wall.normal.y) > 0.60f) continue;
+                Vector3 normal = Vector3.ProjectOnPlane(wall.normal, Vector3.up).normalized;
+                for (int j = 0; j < wallCount; j++)
+                    if (Vector3.Dot(nearbyWallNormals[j], normal) < -0.40f) pinched = true;
+                nearbyWallNormals[wallCount++] = normal;
+                canBackOut |= Vector3.Dot(direction, normal) >= -0.10f;
+            }
+            if (!pinched && stalledTime >= 0.85f) pinched = TorsoInsideStaticWall();
+            if (!pinched && !canBackOut) return false;
+
+            // Give loose limbs time to slip free while the torso continues to collide normally.
+            SetLimbClearance(true);
+            restoreLimbsAt = Time.time + 0.28f;
+            Vector3 fromClearGround = body.position - clearGroundPosition;
+            if (!pinched || stalledTime < 0.85f || !hasClearGround || fromClearGround.sqrMagnitude < 0.20f * 0.20f ||
+                fromClearGround.sqrMagnitude > 1.5f * 1.5f ||
+                Mathf.Abs(fromClearGround.y) > 0.55f || !IsClearGround(clearGroundPosition, clearGroundRotation)) return false;
+
+            ReturnToClearGround();
+            blockedRecoveryDirection = direction;
+            stalledTime = 0f;
+            return true;
+        }
+
+        private bool IsClearGround(Vector3 position, Quaternion rotation)
+        {
+            if (!LedgeRay(position + Vector3.up * 0.24f, Vector3.down, 0.41f, out RaycastHit floor) ||
+                floor.rigidbody || floor.normal.y < 0.72f) return false;
+            float radius = bodyCapsule.radius + 0.20f;
+            float halfSegment = Mathf.Max(0f, bodyCapsule.height * 0.5f - radius);
+            Vector3 center = position + rotation * bodyCapsule.center + Vector3.up * 0.045f;
+            int count = Physics.OverlapCapsuleNonAlloc(center - Vector3.up * halfSegment,
+                center + Vector3.up * halfSegment, radius, ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
+            if (count == ledgeObstacles.Length) return false;
+            for (int i = 0; i < count; i++)
+                if (!ledgeObstacles[i].transform.IsChildOf(transform)) return false;
+            return true;
+        }
+
+        private bool TorsoInsideStaticWall()
+        {
+            float radius = bodyCapsule.radius;
+            Vector3 center = body.position + body.rotation * bodyCapsule.center;
+            Vector3 axis = body.rotation * Vector3.up * Mathf.Max(0f, bodyCapsule.height * 0.5f - radius);
+            int count = Physics.OverlapCapsuleNonAlloc(center - axis, center + axis, radius, ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+            {
+                Collider obstacle = ledgeObstacles[i];
+                if (obstacle.attachedRigidbody || obstacle.transform.IsChildOf(transform)) continue;
+                if (Physics.ComputePenetration(bodyCapsule, body.position, body.rotation, obstacle,
+                        obstacle.transform.position, obstacle.transform.rotation, out Vector3 normal, out float depth) &&
+                    depth > 0.08f && Mathf.Abs(normal.y) < 0.60f) return true;
+            }
+            return false;
+        }
+
+        private void SetLimbClearance(bool clearing)
+        {
+            if (clearing == clearingLimbs) return;
+            clearingLimbs = clearing;
+            if (left.Collider) left.Collider.enabled = !clearing;
+            if (right.Collider) right.Collider.enabled = !clearing;
+            legs?.SetContactEnabled(!clearing);
+            if (clearing) legs?.ReleaseSupport();
+        }
+
+        private void ReturnToClearGround()
+        {
+            Rigidbody[] parts = GetComponentsInChildren<Rigidbody>();
+            Vector3[] positions = new Vector3[parts.Length];
+            Quaternion[] rotations = new Quaternion[parts.Length];
+            Quaternion turn = clearGroundRotation * Quaternion.Inverse(body.rotation);
+            for (int i = 0; i < parts.Length; i++)
+            {
+                positions[i] = clearGroundPosition + turn * (parts[i].position - body.position);
+                rotations[i] = turn * parts[i].rotation;
+            }
+
+            if (TryGetComponent(out NetworkTransform networkTransform))
+                networkTransform.Teleport(clearGroundPosition, clearGroundRotation, transform.localScale);
+            for (int i = 0; i < parts.Length; i++)
+            {
+                parts[i].position = positions[i];
+                parts[i].rotation = rotations[i];
+                parts[i].linearVelocity = Vector3.zero;
+                parts[i].angularVelocity = Vector3.zero;
+            }
+            legs?.ReleaseSupport();
+            smoothedLean = Vector3.zero;
         }
 
         private bool ApplyClimbAssist(bool pulling)
@@ -462,6 +610,7 @@ namespace ConductorChaos.Playground
 
             public Quaternion LocalRotation => arm ? arm.localRotation : Quaternion.identity;
             public Collider Collider => collider;
+            public bool HasGrip => grip;
             public bool TryStaticAnchor(out Vector3 anchor)
             {
                 anchor = default;

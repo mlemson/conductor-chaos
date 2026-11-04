@@ -146,6 +146,12 @@ namespace ConductorChaos.Playground
             right.ReleaseSupport();
         }
 
+        public void SetContactEnabled(bool enabled)
+        {
+            if (left.Collider) left.Collider.enabled = enabled;
+            if (right.Collider) right.Collider.enabled = enabled;
+        }
+
         public void BeginSprintHop()
         {
             leftForwardInAir = !leftForwardInAir;
@@ -246,7 +252,7 @@ namespace ConductorChaos.Playground
             public bool FindGround(RaycastHit[] buffer, Transform player, out RaycastHit nearest)
             {
                 nearest = default;
-                if (!collider) return false;
+                if (!collider || !collider.enabled) return false;
                 Vector3 origin = collider.bounds.center + Vector3.up * 0.08f;
                 int count = Physics.SphereCastNonAlloc(origin, 0.05f, Vector3.down, buffer, 0.18f, ~0, QueryTriggerInteraction.Ignore);
                 float distance = float.PositiveInfinity;
