@@ -6,7 +6,7 @@
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 63 | 2 | 0 | 0 | 1 |
+| 63 | 1 | 1 | 0 | 1 |
 
 ## 🗺️ Mijlpalen
 
@@ -112,16 +112,17 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P2 | [#90 Koppeling kan breken bij hoge impact](https://github.com/mlemson/conductor-chaos/issues/90) | Physics | — | — |
 | P2 | [#92 Optionele mijlpaalcheck: sessie met vier en later zes spelers](https://github.com/mlemson/conductor-chaos/issues/92) | QA | — | — |
 
-### 🔧 Bezig (2)
+### 🔧 Bezig (1)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
 | P0 | [#53 Spoorasset: recht segment en bocht als Unity-prefabs](https://github.com/mlemson/conductor-chaos/issues/53) | Train | @mlemson | — |
+
+### 👀 Klaar voor review (1)
+
+| Fase | Taak | Onderdeel | Eigenaar | Pull request |
+| :-- | :-- | :-- | :-- | :-- |
 | P0 | [#129 Losse PNG-sprites voor menu, HUD en iconen importeren](https://github.com/mlemson/conductor-chaos/issues/129) | Art | — | [#130](https://github.com/mlemson/conductor-chaos/pull/130) |
-
-### 👀 Klaar voor review (0)
-
-*Geen taken in deze kolom.*
 
 ### ⛔ Geblokkeerd (0)
 
