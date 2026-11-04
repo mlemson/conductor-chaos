@@ -194,8 +194,9 @@ def flowers(img, count, rmin=3.0, rmax=4.5):
 # Terreingras ijken op het gras bovenop de klifmodellen (issue #118). Het terrein gebruikt URP Terrain Lit: het warme
 # zonlicht vermenigvuldigt de textuur en trekt het gras naar olijf. Gemeten in de playground (zelfde zon): een
 # terreintextuur van #93B84E wordt #A3B03B in beeld, de kliftop (StylizedRamp, toont de ramp zelf) is #AFC852.
-# Doel-textuur = kliftop / (beeld / textuur) = ~#9ED16C; de winst hieronder brengt de ramp-mediaan (#A7B647) daarheen.
-GRASS_TERRAIN_GAIN = np.array([158 / 167, 209 / 182, 108 / 71])
+# Doel-textuur = kliftop / (beeld / textuur) = ~#9ED16C. Tweede meting (review @mlemson, 'net iets warmer'): terrein
+# #ADC15C naast kliftop #B2CC4C -> per kanaal bijgesteld naar ~#A3DD59. De winst brengt de ramp-mediaan (#A7B647) daarheen.
+GRASS_TERRAIN_GAIN = np.array([163 / 167, 221 / 182, 89 / 71])
 
 
 def terrain_grass(lo, hi, **kw):
