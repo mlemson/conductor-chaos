@@ -1,0 +1,181 @@
+<!doctype html>
+<!-- Conductor Chaos — preview van ConductorChaos/StylizedWater (issue #110) in three.js.
+     Zelfde logica als Assets/Art/Shaders/StylizedWater.shader: eerst de vaste scène naar een render target
+     (kleur + diepte), dan het wateroppervlak dat die kleur en diepte leest, zoals URP's Opaque/Depth Texture.
+     Gebruik: python -m http.server 8766 in ArtSource/, open /Render/water_preview.html?yaw=..&pitch=..&dist=.. -->
+<html><head><meta charset="utf-8"><title>Water preview</title>
+<style>html,body{margin:0;background:#9cc4f0;overflow:hidden}</style>
+<script type="importmap">{"imports":{"three":"./three/build/three.module.js","three/addons/":"./three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const P = new URLSearchParams(location.search);
+const num = (k, d) => P.has(k) ? parseFloat(P.get(k)) : d;
+const W = num('w', 1400), H = num('h', 900);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(num('ss', 1));
+renderer.setSize(W, H);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#98C4FC');
+const cam = new THREE.PerspectiveCamera(num('fov', 40), W / H, 0.1, 400);
+const yaw = num('yaw', 20) * Math.PI / 180, pitch = num('pitch', 42) * Math.PI / 180, dist = num('dist', 34);
+const tgt = new THREE.Vector3(0, -0.6, 0);
+cam.position.set(tgt.x + Math.sin(yaw) * Math.cos(pitch) * dist, tgt.y + Math.sin(pitch) * dist, tgt.z + Math.cos(yaw) * Math.cos(pitch) * dist);
+cam.lookAt(tgt);
+
+scene.add(new THREE.HemisphereLight('#cfe0ff', '#7a6a50', 1.4));
+const sun = new THREE.DirectionalLight('#fff1d6', 2.4);
+sun.position.set(-14, 22, -10); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 80 });
+scene.add(sun);
+
+// ------------------------------------------------------------- terrein met een meer-kom
+const LAKE = { rx: 10.5, rz: 15, y: 0 };
+const g = new THREE.PlaneGeometry(70, 70, 280, 280); g.rotateX(-Math.PI / 2);
+const pos = g.attributes.position, cols = [];
+const cGrass = new THREE.Color('#A1B044'), cMud = new THREE.Color('#C98A55'), cBed = new THREE.Color('#9C8C5A');
+for (let k = 0; k < pos.count; k++) {
+  const x = pos.getX(k), z = pos.getZ(k);
+  const wob = Math.sin(z * 0.45) * 0.9 + Math.sin(z * 0.17 + 1.3) * 1.3;
+  const r = Math.hypot((x - wob) / LAKE.rx, z / LAKE.rz);             // < 1 = in het meer
+  let y;
+  if (r < 1) y = -0.15 - 2.6 * Math.pow(1 - r, 0.8);                   // kom: schuin oplopende oever
+  else y = 0.35 + Math.min(1, (r - 1) * 4) * 0.25;
+  pos.setY(k, y);
+  const c = r < 0.97 ? cBed.clone().lerp(cMud, Math.max(0, (r - 0.75) / 0.22)) : (r < 1.06 ? cMud : cGrass);
+  cols.push(c.r, c.g, c.b);
+}
+g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+g.computeVertexNormals();
+const ground = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true }));
+ground.receiveShadow = true; scene.add(ground);
+// stenen op de bodem
+for (const [x, z, s] of [[-6, 6, 0.7], [-4, 9, 0.5], [5.5, 8, 0.6], [3, -11, 0.5], [-2, -13, 0.4]]) {
+  const m = new THREE.Mesh(new THREE.IcosahedronGeometry(s, 0), new THREE.MeshLambertMaterial({ color: '#7f8a78', flatShading: true }));
+  m.position.set(x, -1.1 + s * 0.3, z); m.scale.y = 0.5; scene.add(m);
+}
+
+const loader = new GLTFLoader();
+async function place(file, x, y, z, ry = 0, s = 1) {
+  try {
+    const o = (await loader.loadAsync('../Exports/Environment/' + file)).scene;
+    o.position.set(x, y, z); o.rotation.y = ry; o.scale.setScalar(s);
+    o.traverse(m => { if (m.isMesh) { m.castShadow = m.receiveShadow = true;
+      m.material = new THREE.MeshLambertMaterial({ color: m.material.color, flatShading: true }); } });
+    scene.add(o);
+  } catch (e) { console.log('skip', file, e.message); }
+}
+await Promise.all([
+  place('Cliff_Cluster_Step.glb', -19, 0.3, 2, Math.PI / 2, 1.3),
+  place('Cliff_Cluster_Tall.glb', -18, 0.3, -12, Math.PI / 2, 1.2),
+  place('Cliff_Big_01.glb', 18, 0.3, 4, -Math.PI / 2, 1.1),
+  place('Tree_Pine_Large_01.glb', -6, 0.4, -20),
+  place('Tree_Pine_Medium_01.glb', -2, 0.4, -22),
+  place('Tree_Pine_Medium_01.glb', 7, 0.4, -19, 1),
+  place('Tree_Pine_Small_01.glb', 11, 0.4, -16),
+  place('Rock_Medium_01.glb', 4, 0.3, -16.5),
+  place('Bush_01.glb', -13, 0.4, 14),
+]);
+
+// ------------------------------------------------------------- opaque pass (kleur + diepte), zoals URP
+const rt = new THREE.WebGLRenderTarget(W * renderer.getPixelRatio(), H * renderer.getPixelRatio());
+rt.depthTexture = new THREE.DepthTexture();
+rt.texture.colorSpace = THREE.SRGBColorSpace;
+
+// ------------------------------------------------------------- water (GLSL-port van StylizedWater.shader)
+const lin = h => new THREE.Color(h);            // Color() is lineair in three; de shader rekent lineair
+const U = {
+  tColor: { value: rt.texture }, tDepth: { value: rt.depthTexture },
+  uNear: { value: cam.near }, uFar: { value: cam.far }, uRes: { value: new THREE.Vector2(rt.width, rt.height) },
+  uInvProj: { value: cam.projectionMatrixInverse }, uCamWorld: { value: cam.matrixWorld },
+  uShallow: { value: new THREE.Vector4(...lin('#3DC7BD').toArray(), num('shallowA', 0.35)) },
+  uDeep: { value: new THREE.Vector4(...lin('#0385C2').toArray(), 0.97) },
+  uHorizon: { value: lin('#5CC9EB') }, uBedTint: { value: lin('#8CEBE0') },
+  uFoam: { value: lin('#F7FFFF') }, uStreak: { value: lin('#9EE6FA') },
+  uDepthDistance: { value: num('depthDist', 2.2) }, uFoamWidth: { value: 0.16 }, uFoamLine: { value: 0.42 },
+  uFoamLineWidth: { value: 0.035 }, uFoamWobble: { value: 0.45 },
+  uStreakAmount: { value: 0.55 }, uStreakScale: { value: 3.2 }, uGlint: { value: 1.0 }, uRefraction: { value: 0.025 },
+  uSunDir: { value: sun.position.clone().normalize() }, uSunCol: { value: new THREE.Color('#fff1d6') },
+};
+const water = new THREE.Mesh(new THREE.PlaneGeometry(30, 40).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({
+  uniforms: U, transparent: true, depthWrite: false,
+  vertexShader: `varying vec3 vW; varying vec4 vClip;
+    void main(){ vec4 w = modelMatrix * vec4(position,1.); vW = w.xyz; vClip = projectionMatrix * viewMatrix * w; gl_Position = vClip; }`,
+  fragmentShader: `
+    uniform sampler2D tColor, tDepth; uniform float uNear, uFar; uniform vec2 uRes;
+    uniform vec4 uShallow, uDeep; uniform vec3 uHorizon, uBedTint, uFoam, uStreak, uSunDir, uSunCol;
+    uniform float uDepthDistance, uFoamWidth, uFoamLine, uFoamLineWidth, uFoamWobble, uStreakAmount, uStreakScale, uGlint, uRefraction;
+    varying vec3 vW; varying vec4 vClip;
+    float hash21(vec2 p){ p = fract(p*vec2(123.34,456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
+    float vnoise(vec2 p){ vec2 i=floor(p), f=fract(p); vec2 u=f*f*(3.-2.*f);
+      return mix(mix(hash21(i),hash21(i+vec2(1,0)),u.x), mix(hash21(i+vec2(0,1)),hash21(i+vec2(1,1)),u.x), u.y); }
+    float fbm(vec2 p){ return vnoise(p)*.6 + vnoise(p*2.13+7.1)*.3 + vnoise(p*4.37+3.7)*.1; }
+    float eyeDepth(float d){ float z = d*2.-1.; return 2.*uNear*uFar/(uFar+uNear - z*(uFar-uNear)); }
+    void main(){
+      vec3 toCam = cameraPosition - vW; vec3 V = normalize(toCam);
+      vec2 xz = vW.xz;
+      vec2 suv = gl_FragCoord.xy / uRes;
+      float sceneEye = eyeDepth(texture2D(tDepth, suv).r);
+      float surfEye = vClip.w;
+      vec3 bedW = cameraPosition + (vW - cameraPosition) * (sceneEye / max(surfEye, 1e-4));
+      float depth = max(0., vW.y - bedW.y);
+      float depth01 = 1. - exp(-depth / max(uDepthDistance, .05) * 1.6);
+      vec2 q = xz / max(uStreakScale, .1);
+      float hx = fbm(q*.9+vec2(.05,0.)) - fbm(q*.9-vec2(.05,0.));
+      float hz = fbm(q*.9+vec2(0.,.05)) - fbm(q*.9-vec2(0.,.05));
+      vec3 N = normalize(vec3(-hx*1.6, 1., -hz*1.6));
+      vec3 water = mix(uShallow.rgb, uDeep.rgb, depth01);
+      float alpha = mix(uShallow.a, uDeep.a, depth01);
+      float fres = pow(1. - clamp(dot(V, vec3(0,1,0)), 0., 1.), 4.);
+      water = mix(water, uHorizon, fres*.45);
+      float shadow = 1.;
+      vec2 sq = vec2(q.x*.55 + q.y*.20, q.y*1.9 - q.x*.25) * 2.2;
+      float wave = fbm(sq + fbm(sq*.35)*1.4);
+      float line_ = 1. - smoothstep(0., .05, abs(wave - .5));
+      float dashes = smoothstep(.52, .68, vnoise(sq*.8 + 11.3));
+      float streak = line_ * dashes * uStreakAmount * mix(.35, 1., depth01) * (1. - fres*.6);
+      water = mix(water, uStreak, streak);
+      alpha = max(alpha, streak*.9);
+      vec3 Hh = normalize(uSunDir + V);
+      float sunRefl = pow(clamp(dot(N, Hh),0.,1.), 60.);
+      float sparkleN = vnoise(xz*7.+41.) * vnoise(xz*12.7-13.);
+      float glint = smoothstep(.47, .55, sparkleN) * smoothstep(.25, .8, sunRefl) * uGlint * shadow;
+      glint += pow(clamp(dot(N, Hh),0.,1.), 400.) * .6 * uGlint * shadow;
+      water += uSunCol * glint;
+      alpha = max(alpha, clamp(glint,0.,1.));
+      vec2 off = N.xz * uRefraction * clamp(depth*2., 0., 1.);
+      vec2 ruv = suv + off;
+      float rEye = eyeDepth(texture2D(tDepth, ruv).r);
+      ruv = rEye < surfEye ? suv : ruv;
+      vec3 bed = texture2D(tColor, ruv).rgb * uBedTint;
+      vec3 col = mix(bed, water, alpha);
+      float outA = 1.;
+      float n = fbm(xz*1.7) - .5;
+      float d = depth + n*uFoamWobble*.35;
+      float foam = 1. - smoothstep(uFoamWidth*.75, uFoamWidth, d);
+      float line2 = 1. - smoothstep(uFoamLineWidth*.5, uFoamLineWidth, abs(d - uFoamLine));
+      line2 *= smoothstep(.35, .6, vnoise(xz*.9 + 5.));
+      float f = clamp(max(foam, line2*.85), 0., 1.);
+      col = mix(col, uFoam, f);
+      gl_FragColor = vec4(col, outA);
+      #include <colorspace_fragment>
+    }`,
+}));
+water.position.y = LAKE.y - 0.12;
+scene.add(water);
+
+// tColor is al sRGB-gecodeerd opgeslagen; terug naar lineair voor de mix -> three regelt dat via colorSpace.
+water.visible = false;
+renderer.setRenderTarget(rt); renderer.render(scene, cam);
+renderer.setRenderTarget(null);
+water.visible = true;
+renderer.render(scene, cam);
+window.done = true;
+</script></body></html>

@@ -648,6 +648,8 @@ def build_all():
     unity_assets.folder_meta(ROOT, MAT_DIR)
     guids = {n: unity_assets.material(ROOT, f"{MAT_DIR}/{n}.mat", n, b, sm, None, op.get("opacity"), ramp, sh, op)
              for n, (b, ramp, sm, sh, op) in MATERIALS.items()}
+    # wateroppervlak (StylizedWater-component) gebruikt een eigen shader: diepte-kleur, schuimrand, schittering (#110)
+    guids["M_Env_WaterSurface"] = unity_assets.water_material(ROOT, f"{MAT_DIR}/M_Env_WaterSurface.mat", "M_Env_WaterSurface")
     manifest = {}
     for rel, (mesh, dens, rad) in A.items():
         name = os.path.basename(rel)
