@@ -19,6 +19,7 @@ namespace ConductorChaos.Playground
         private readonly RaycastHit[] contacts = new RaycastHit[16];
         private float stride;
         private bool leftStance = true;
+        private bool leftForwardInAir;
 
         public Quaternion LeftRotation => left.Rotation;
         public Quaternion RightRotation => right.Rotation;
@@ -101,9 +102,9 @@ namespace ConductorChaos.Playground
             bool moving = grounded && input.sqrMagnitude > 0.01f;
             if (moving) stride += Time.fixedDeltaTime * Mathf.Max(2f, targetSpeed / 0.32f * Mathf.PI);
             float phase = Mathf.Sin(stride) * amount;
-            float airbornePhase = sprinting && input.sqrMagnitude > 0.01f ? (leftStance ? -1f : 1f) : 0f;
-            float swing = grounded ? phase * (sprinting ? 44f : 32f) * input.y
-                : (airbornePhase != 0f ? airbornePhase * 30f * input.y : -10f);
+            float airbornePhase = sprinting && input.sqrMagnitude > 0.01f ? (leftForwardInAir ? -1f : 1f) : 0f;
+            float swing = grounded ? phase * (sprinting ? 52f : 32f) * input.y
+                : (airbornePhase != 0f ? airbornePhase * 48f * input.y : -10f);
             float side = grounded ? phase * input.x * (sprinting ? 30f : 25f) : airbornePhase * input.x * 20f;
             left.Drive(swing, side);
             right.Drive(-swing, -side);
@@ -143,6 +144,12 @@ namespace ConductorChaos.Playground
         {
             left.ReleaseSupport();
             right.ReleaseSupport();
+        }
+
+        public void BeginSprintHop()
+        {
+            leftForwardInAir = !leftForwardInAir;
+            ReleaseSupport();
         }
 
         public void ShowRemote(Quaternion leftPose, Quaternion rightPose)
@@ -196,8 +203,8 @@ namespace ConductorChaos.Playground
                 hip.connectedAnchor = torso.transform.InverseTransformPoint(bone.position);
                 hip.xMotion = hip.yMotion = hip.zMotion = ConfigurableJointMotion.Locked;
                 hip.angularXMotion = hip.angularYMotion = hip.angularZMotion = ConfigurableJointMotion.Limited;
-                hip.lowAngularXLimit = new SoftJointLimit { limit = -40f };
-                hip.highAngularXLimit = new SoftJointLimit { limit = 40f };
+                hip.lowAngularXLimit = new SoftJointLimit { limit = -55f };
+                hip.highAngularXLimit = new SoftJointLimit { limit = 55f };
                 hip.angularYLimit = new SoftJointLimit { limit = 15f };
                 hip.angularZLimit = new SoftJointLimit { limit = 15f };
                 hip.enableCollision = false;

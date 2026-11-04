@@ -222,7 +222,7 @@ namespace ConductorChaos.Playground
             bool supported = legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting, out stepped);
             Vector3 groundVelocity = supported ? legs.SupportVelocity : Vector3.zero;
             Vector3 target = groundVelocity + facing * new Vector3(requestedMove.x, 0f, requestedMove.y) * walkSpeed * uprightControl;
-            float movementAcceleration = grounded ? (supported ? acceleration * (sprinting ? 1.35f : 1f) : 0f) : acceleration * (sprinting ? 0.35f : 0.2f);
+            float movementAcceleration = grounded ? (supported ? acceleration * (sprinting ? 1.35f : 1f) : 0f) : acceleration * (sprinting ? 0.45f : 0.2f);
             Vector3 change = Vector3.ClampMagnitude(new Vector3(target.x - current.x, 0f, target.z - current.z), movementAcceleration * Time.fixedDeltaTime);
             body.AddForce(change, ForceMode.VelocityChange);
 
@@ -233,9 +233,9 @@ namespace ConductorChaos.Playground
                 (stepped || Time.time >= nextSprintHop + 0.12f) &&
                 Time.time >= nextSprintHop && Time.time - lastJump > 0.3f)
             {
-                legs.ReleaseSupport();
-                body.AddForce(Vector3.up * Mathf.Clamp(1.8f - relativeVelocity.y, 0f, 2.2f), ForceMode.VelocityChange);
-                nextSprintHop = Time.time + 0.26f;
+                legs.BeginSprintHop();
+                body.AddForce(Vector3.up * Mathf.Clamp(2.05f - relativeVelocity.y, 0f, 2.45f), ForceMode.VelocityChange);
+                nextSprintHop = Time.time + 0.32f;
             }
 
             // A damped upright motor yields to impacts instead of freezing body rotation.
