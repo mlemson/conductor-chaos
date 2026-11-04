@@ -11,6 +11,7 @@ namespace ConductorChaos.Playground
     public sealed class TrainDrive : NetworkBehaviour
     {
         [SerializeField] private TrackPiece firstTrack;
+        [SerializeField] private float startDistance;
         [SerializeField] private float maximumSpeed = 6f;
         [SerializeField] private float acceleration = 2f;
         private readonly NetworkVariable<bool> powered = new(false);
@@ -24,7 +25,7 @@ namespace ConductorChaos.Playground
         private readonly Dictionary<TrackPiece, TrackPiece> previous = new();
         private bool panelVisible;
 
-        public void Configure(TrackPiece first) => firstTrack = first;
+        public void Configure(TrackPiece first, float start) { firstTrack = first; startDistance = start; }
 
         public override void OnNetworkSpawn()
         {
@@ -39,6 +40,7 @@ namespace ConductorChaos.Playground
             }
             if (!IsServer) return;
             track = firstTrack;
+            if (track) distance = Mathf.Clamp(startDistance, 0f, track.Length);
             foreach (var piece in FindObjectsByType<TrackPiece>(FindObjectsSortMode.None))
                 if (piece.next && !previous.ContainsKey(piece.next)) previous.Add(piece.next, piece);
             if (!track || !track.HasSockets || track.Length < 0.01f)
