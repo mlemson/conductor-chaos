@@ -2,17 +2,17 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand. Brede epics tellen niet als uitvoertaak.
 
-**Voortgang: 1/65 afgerond (2%)**
+**Voortgang: 1/66 afgerond (2%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 62 | 2 | 0 | 0 | 1 |
+| 63 | 2 | 0 | 0 | 1 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
-    P0["P0 · Technisch fundament + stijltest · 1/24 klaar"]
+    P0["P0 · Technisch fundament + stijltest · 1/25 klaar"]
     P1["P1 · Eerste speelbare co-opervaring · 0/37 klaar"]
     P2["P2 · Bergavontuur en chaos · 0/4 klaar"]
     P0 --> P1 --> P2
@@ -20,7 +20,7 @@ flowchart LR
 
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
-| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 1/24 | Technisch fundament + stijltest |
+| **P0** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 1/25 | Technisch fundament + stijltest |
 | **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/37 | Eerste speelbare co-opervaring |
 | **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/4 | Bergavontuur en chaos |
 
@@ -44,7 +44,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 📋 Taken per status
 
-### 📝 Te doen (62)
+### 📝 Te doen (63)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -69,6 +69,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P0 | [#62 Treindeur: open/dicht als gedeelde toestand](https://github.com/mlemson/conductor-chaos/issues/62) | Interactions | — | — |
 | P0 | [#76 Hoofdmenu: Play en Terug naar de bestaande proefscène](https://github.com/mlemson/conductor-chaos/issues/76) | Polish | — | — |
 | P0 | [#99 Verbeter third-personbesturing en armrichting](https://github.com/mlemson/conductor-chaos/issues/99) | Overig | — | — |
+| P0 | [#129 Losse PNG-sprites voor menu, HUD en iconen importeren](https://github.com/mlemson/conductor-chaos/issues/129) | Art | — | — |
 | P1 | [#50 Spelers kunnen elkaar licht fysiek aanstoten](https://github.com/mlemson/conductor-chaos/issues/50) | Physics | — | — |
 | P1 | [#51 Speler kan na een val weer opstaan](https://github.com/mlemson/conductor-chaos/issues/51) | Gameplay | — | — |
 | P1 | [#52 Prefab voor één testkoffer met collider en massainstellingen](https://github.com/mlemson/conductor-chaos/issues/52) | Gameplay | — | — |
