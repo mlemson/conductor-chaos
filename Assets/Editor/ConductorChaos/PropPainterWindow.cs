@@ -120,7 +120,7 @@ namespace ConductorChaos.EditorTools
             EditorGUILayout.LabelField("Ondergrond", EditorStyles.boldLabel);
             surfaceMask = LayerMaskField("Lagen", surfaceMask);
             addColliders = EditorGUILayout.ToggleLeft(new GUIContent("Collider toevoegen aan geschilderde objecten", "dan kun je er later bomen óp schilderen (bv. op kliffen) en lopen spelers er niet doorheen"), addColliders);
-            if (GUILayout.Button(new GUIContent("Colliders op alle bestaande geschilderde objecten", "voor objecten die zonder collider zijn geschilderd (bloemen/gras uitgezonderd)")))
+            if (GUILayout.Button(new GUIContent("Colliders van geschilderde props controleren", "Voegt ontbrekende colliders toe aan geschilderde props en verwijdert mesh colliders van gras en bloemen in de open scènes.")))
                 AddCollidersToExisting();
             paintOnPainted = EditorGUILayout.ToggleLeft("Op geschilderde objecten schilderen", paintOnPainted);
             EditorGUILayout.HelpBox("Bloemen en gras worden alleen op voldoende vlak Unity Terrain geplaatst. " +
@@ -522,6 +522,7 @@ namespace ConductorChaos.EditorTools
             marker.groundOffset = go.transform.position.y - hit.point.y;
             marker.followGround = category != "Sky";
 
+            ColliderTools.RemoveDecorativePlantMeshColliders(go);
             if (addColliders && category != "Plants") AddColliders(go);
             return go;
         }
@@ -530,23 +531,29 @@ namespace ConductorChaos.EditorTools
         {
             if (go.GetComponentInParent<Rigidbody>()) return;            // nooit een holle mesh collider op een Rigidbody
             foreach (var mf in go.GetComponentsInChildren<MeshFilter>())
-                if (mf.sharedMesh && !mf.GetComponent<Collider>() && !mf.GetComponentInParent<Rigidbody>())
+                if (mf.sharedMesh && !ColliderTools.IsDecorativePlantMesh(mf.sharedMesh) &&
+                    !mf.GetComponent<Collider>() && !mf.GetComponentInParent<Rigidbody>())
                     Undo.AddComponent<MeshCollider>(mf.gameObject).sharedMesh = mf.sharedMesh;
         }
 
         void AddCollidersToExisting()
         {
             var root = GameObject.Find(rootName);
-            if (!root) return;
             Undo.IncrementCurrentGroup();
+            int group = Undo.GetCurrentGroup();
+            int removed = ColliderTools.RemoveDecorativePlantMeshCollidersInOpenScenes();
             int n = 0;
-            foreach (Transform cat in root.transform)
+            if (root)
             {
-                if (cat.name == "Plants") continue;
-                foreach (Transform t in cat) { int before = t.GetComponentsInChildren<Collider>().Length; AddColliders(t.gameObject); if (t.GetComponentsInChildren<Collider>().Length > before) n++; }
+                foreach (Transform cat in root.transform)
+                {
+                    if (cat.name == "Plants") continue;
+                    foreach (Transform t in cat) { int before = t.GetComponentsInChildren<Collider>().Length; AddColliders(t.gameObject); if (t.GetComponentsInChildren<Collider>().Length > before) n++; }
+                }
             }
             Undo.SetCurrentGroupName("Prop Painter: colliders");
-            ShowNotification(new GUIContent($"{n} objecten kregen een collider"));
+            Undo.CollapseUndoOperations(group);
+            ShowNotification(new GUIContent($"{n} props aangevuld, {removed} gras- of bloemcolliders verwijderd"));
         }
 
         void Erase(Vector3 center)

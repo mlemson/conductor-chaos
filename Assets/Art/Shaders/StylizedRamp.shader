@@ -174,7 +174,7 @@ Shader "ConductorChaos/StylizedRamp"
 
                 // grote kleurvlakken + vuil onderin (objectruimte: beweegt mee met de trein)
                 float4 cl = Cell3(i.positionOS / max(_CellSize, 0.01));
-                t += (cl.x - 0.5) * 0.10 * _Cells;
+                half cellT = (cl.x - 0.5) * 0.10 * _Cells;   // pas na de ramp-shift: ook op donkere panelen zichtbaar
                 float cy = _Cells > 0.001 ? cl.z * _CellSize : i.positionOS.y;   // hoogte van het celmiddelpunt
                 half grime = (1.0 - smoothstep(_GrimeY.x, _GrimeY.y, cy + (Hash33(cl.yzw).y - 0.5) * 0.45)) * _Grime;
                 t -= grime * 0.11;
@@ -182,6 +182,9 @@ Shader "ConductorChaos/StylizedRamp"
                 half spec = pow(saturate(dot(N, normalize(light.direction + V))), 18.0) * band;
                 t += spec * 0.30 * _Spec;
                 t = lerp(t + _RampShift, 0.5 + _RampShift, _Flat);
+                // celvariatie na de shift en boven de ramp-bodem, zodat donkere vlakken (panelen) niet tot één effen tint clampen
+                half cellA = 0.05 * _Cells * (1.0 - _Flat);
+                t = max(t, cellA) + cellT * (1.0 - _Flat);
 
                 half3 col = SampleRamp(t);
                 col = lerp(col, _DirtColor.rgb, grime * 0.22);

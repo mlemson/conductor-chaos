@@ -32,7 +32,7 @@ Material:
     - _Rim: 0.35
     - _Spec: 0.55
     - _Cells: 0.0
-    - _CellSize: 0.45
+    - _CellSize: 0.8
     - _Grime: 0.0
     - _Emissive: 0.0
     - _Opacity: 0.22
