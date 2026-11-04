@@ -17,6 +17,7 @@ namespace ConductorChaos.EditorTools
         const string MaterialPath = "Assets/Art/Terrain/M_StylizedTerrain.mat";
         const string ShaderName = "ConductorChaos/StylizedTerrain";
         const string AutoKey = "ConductorChaos.StylizedTerrain.AutoApplied.v1";
+        const string UrpTerrainLit = "Packages/com.unity.render-pipelines.universal/Runtime/Materials/TerrainLit.mat";
 
         static StylizedTerrainShaderTools()
         {
@@ -51,15 +52,15 @@ namespace ConductorChaos.EditorTools
 
         static int Apply(bool stylized)
         {
-            // null = het standaard terreinmateriaal van de render pipeline (URP Terrain Lit)
-            Material mat = stylized ? GetOrCreateMaterial() : null;
-            if (stylized && mat == null)
+            Material mat = stylized ? GetOrCreateMaterial() : AssetDatabase.LoadAssetAtPath<Material>(UrpTerrainLit);
+            if (mat == null)
             {
-                Debug.LogWarning("[Terrain] Shader ConductorChaos/StylizedTerrain niet gevonden.");
+                Debug.LogWarning(stylized ? "[Terrain] Shader ConductorChaos/StylizedTerrain niet gevonden."
+                                          : "[Terrain] URP TerrainLit-materiaal niet gevonden: " + UrpTerrainLit);
                 return 0;
             }
             int n = 0;
-            foreach (var t in Object.FindObjectsByType<Terrain>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var t in Object.FindObjectsByType<Terrain>(FindObjectsInactive.Include))
             {
                 Undo.RecordObject(t, stylized ? "Use Stylized Terrain" : "Use URP Terrain Lit");
                 t.materialTemplate = mat;
