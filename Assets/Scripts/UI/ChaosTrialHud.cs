@@ -11,9 +11,14 @@ namespace ConductorChaos.UI
     /// </summary>
     public sealed class ChaosTrialHud : MonoBehaviour
     {
+        public static bool IsVisible { get; private set; }
+
         private Text networkText;
         private Text playerText;
         private float nextRefresh;
+
+        private void OnEnable() => IsVisible = true;
+        private void OnDisable() => IsVisible = false;
 
         private static Vector2 V(float x, float y) => new Vector2(x, y);
 
