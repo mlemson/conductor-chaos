@@ -6,10 +6,10 @@ De **bronbladen** staan in [ArtSource/UI](../../../../ArtSource/UI/) en de stijl
 
 ## Gebruik
 
-- **Iconen:** kies in Unity het losse sprite, gebruik `Image` met `Preserve Aspect`.
+- **Iconen:** de 24 PNG's zijn nu rechtstreeks aangesloten via [ChaosUISpriteCatalog](../../Scripts/UI/ChaosUISpriteCatalog.cs) en [het Resources-catalogusasset](../../Resources/ChaosUISpriteCatalog.asset) (geen dubbele PNG's). Gebruik `ChaosUI.Action(..., iconKey: "play")` of `ChaosUISpriteCatalog.Add`. De `Image` bewaart de aspectratio en vangt geen pointerevents.
 - **Knoppen/UI-elementen:** dit zijn afbeeldingen, *niet* al werkende `UnityEngine.UI.Button`-componenten. Bouw gedrag en states met de bestaande `Assets/Scripts/UI/` code.
 - **Tekst:** sommige grotere knopafbeeldingen bevatten ingebakken Engelse tekst. Gebruik die bij voorkeur alleen als visuele mockup; dynamische, vertaalbare tekst hoort een apart UI-tekstelement te zijn.
 - **Kwaliteit:** AI-conceptart en overlap tussen onderdelen kunnen bij enkele complexere voorbeelden artefacten opleveren. Beoordeel de betreffende sprite op 100% vóór productiegebruik. De afzonderlijke iconen zijn op uniforme 256×256-canvas geplaatst; geen spritesheet-cropping meer nodig.
 - **Niet-destructief:** draai het contactbladscript uit `ArtSource/UI/` voor review; het overschrijft geen geïmporteerde sprites.
 
-De huidige gameplay-, menu- en multiplayercode is niet veranderd door deze assetupload.
+De gameplay- en multiplayercode wordt niet gewijzigd door de spritekoppeling. `ChaosMenuPreview` en `ChaosTrialHud` gebruiken de iconen nu daadwerkelijk; de samengestelde knoppen blijven referenties omdat hun tekst ingebakken is.

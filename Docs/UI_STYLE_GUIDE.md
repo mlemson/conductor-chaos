@@ -1,6 +1,6 @@
 # Conductor Chaos — UI design system v1
 
-**Status:** eerste implementeerbare UI-basis (niet de definitieve game-interface). De gekozen **originele** UI-mockups uit de ontwerpchat zijn [afbeelding 1 — UI Style Guide](References/UI/01-ui-style-guide.png) en [afbeelding 3 — Main Menu + Multiplayer Lobby](References/UI/03-main-menu-lobby.png). Zie de [referentie-index](References/UI/README.md) voor de actuele uploadstatus: de twee PNG's worden via issue #127 toegevoegd. De drukke full-screen HUD uit afbeelding 2 is *niet* leidend. Voor de algemene gamewereld blijven [de conceptposter](References/conductor-chaos-concept.png) en het [palet](References/palette.json) aanvullende bronnen.
+**Status:** eerste implementeerbare UI-basis (niet de definitieve game-interface). De gekozen **originele** UI-mockups uit de ontwerpchat zijn [afbeelding 1 — UI Style Guide](References/UI/01-ui-style-guide.png) en [afbeelding 3 — Main Menu + Multiplayer Lobby](References/UI/03-main-menu-lobby.png). De twee originele PNG's staan inmiddels op GitHub; zie de [referentie-index](References/UI/README.md). De drukke full-screen HUD uit afbeelding 2 is *niet* leidend. Voor de algemene gamewereld blijven [de conceptposter](References/conductor-chaos-concept.png) en het [palet](References/palette.json) aanvullende bronnen.
 
 ## Uitstraling
 
@@ -79,11 +79,14 @@ Alleen informatie die tijdens die handeling relevant is:
 
 ## Wat is nu al in de code?
 
-- [ChaosUI.cs](../Assets/Scripts/UI/ChaosUI.cs): negen-sliced afgeronde matte panelen, knoppen, labels, slider, gedeeld palet en Input System UI-module.
+- [ChaosUI.cs](../Assets/Scripts/UI/ChaosUI.cs): negen-sliced afgeronde matte panelen, knoppen met optionele `iconKey`, labels, slider, gedeeld palet en Input System UI-module.
+- [ChaosUISpriteCatalog.cs](../Assets/Scripts/UI/ChaosUISpriteCatalog.cs): runtime-spritecatalogus voor de **24 bestaande iconen**, met directe Unity-GUID-verwijzingen vanuit [het asset](../Assets/Resources/ChaosUISpriteCatalog.asset). Ontbrekende sprites vallen terug op de bestaande vectorvormen. Bronafbeeldingen staan ongewijzigd onder [Icons](../Assets/Art/UI/Icons/).
 - [ChaosMenuPreview.cs](../Assets/Scripts/UI/ChaosMenuPreview.cs): interactief menulayout, niet-functionele lobby duidelijk benoemd, routevoorbeelden, settings die master audio/mute daadwerkelijk aanpassen, knop die de **bestaande lokale physics-proef** start.
 - [ChaosTrialHud.cs](../Assets/Scripts/UI/ChaosTrialHud.cs): automatisch zichtbare, **read-only** HUD in TrainPlayground met echte lokale Netcode-status en controls. Blokkeert geen muisklikken.
 - [ChaosUIEditor.cs](../Assets/Editor/ChaosUIEditor.cs): maak/open afzonderlijke testscene via `Tools > Conductor Chaos > UI > Create or Open Menu Preview`.
 
+**Spritebeleid:** de samengestelde [Button-PNG's](../Assets/Art/UI/Buttons/) blijven vormreferenties en worden niet als volledig ingebrande interactieve knoppen gebruikt; tekst, hover, disabled en click blijven in de bestaande Unity UI-componenten. Gebruik `iconKey` voor beschikbare sprites. Als de spritecatalogus in Unity leeg lijkt, kies `Tools > Conductor Chaos > UI > Refresh Approved Icons`.
+
 ## Wat bewust nog niet klaar is
 
-Geen echte online lobby/uitnodigingen/ready-state, geen game-startflow voor multiplayer, geen crew-avatar-art, nog geen definitieve iconset, route-unlocks of definitieve train-HUD. Er is ook nog geen Unity Editor-import/visuele test uitgevoerd voor deze nieuwe UI-code. Maak ze niet af in deze ene design-PR: plan ze als afzonderlijke issues en sluit alleen wat werkelijk getest is.
+Geen echte online lobby/uitnodigingen/ready-state, geen game-startflow voor multiplayer, geen crew-avatar-art, nog geen complete icon- of interactieve inventory-HUD, route-unlocks of definitieve train-HUD. Er is ook nog geen Unity Editor-import/visuele test uitgevoerd voor deze nieuwe UI-code. Maak ze niet af in deze ene design-PR: plan ze als afzonderlijke issues en sluit alleen wat werkelijk getest is.

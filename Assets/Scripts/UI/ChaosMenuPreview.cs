@@ -52,22 +52,17 @@ namespace ConductorChaos.UI
                 TextAnchor.MiddleCenter, FontStyle.Normal, V(0.05f, 0.665f), V(0.95f, 0.72f));
 
             ChaosUI.Action(left, "Play trial", "PLAY LOCAL TRIAL", V(0.08f, 0.53f), V(0.92f, 0.64f),
-                ChaosUI.Gold, ChaosUI.Ink, StartLocalTrial, 22);
+                ChaosUI.Gold, ChaosUI.Ink, StartLocalTrial, 22, iconKey: "play");
             ChaosUI.Action(left, "Lobby tab", "LOBBY PREVIEW", V(0.08f, 0.405f), V(0.92f, 0.515f),
-                ChaosUI.Paper, ChaosUI.Ink, ShowLobby, 21);
+                ChaosUI.Paper, ChaosUI.Ink, ShowLobby, 21, iconKey: "player-group");
             ChaosUI.Action(left, "Settings tab", "SETTINGS", V(0.08f, 0.28f), V(0.92f, 0.39f),
-                ChaosUI.Paper, ChaosUI.Ink, ShowSettings, 21);
+                ChaosUI.Paper, ChaosUI.Ink, ShowSettings, 21, iconKey: "options");
             ChaosUI.Action(left, "HUD preview tab", "HUD PREVIEW", V(0.08f, 0.155f), V(0.92f, 0.265f),
-                ChaosUI.Paper, ChaosUI.Ink, ShowHud, 21);
+                ChaosUI.Paper, ChaosUI.Ink, ShowHud, 21, iconKey: "controls");
             ChaosUI.Action(left, "Quit", "QUIT", V(0.08f, 0.035f), V(0.92f, 0.14f),
-                ChaosUI.TrainRed, ChaosUI.Paper, QuitGame, 20);
+                ChaosUI.TrainRed, ChaosUI.Paper, QuitGame, 20, iconKey: "quit");
 
-            // Flat pictograms: no emoji, stock 3D icons or glow.
-            ChaosUIIcon.Add(left, "Play icon", ChaosUIIcon.Symbol.Play, V(0.105f, 0.555f), V(0.175f, 0.615f), ChaosUI.Ink);
-            ChaosUIIcon.Add(left, "Lobby icon", ChaosUIIcon.Symbol.Person, V(0.105f, 0.43f), V(0.175f, 0.49f), ChaosUI.Ink);
-            ChaosUIIcon.Add(left, "Settings icon", ChaosUIIcon.Symbol.Settings, V(0.105f, 0.305f), V(0.175f, 0.365f), ChaosUI.Ink);
-            ChaosUIIcon.Add(left, "HUD icon", ChaosUIIcon.Symbol.Wrench, V(0.105f, 0.18f), V(0.175f, 0.24f), ChaosUI.Ink);
-
+            // Action() now places the approved artwork inside each button once.
             info = ChaosUI.Label(root, "Feedback", "Join/Relay komt later. Probeer de lokale physics-test.",
                 16, ChaosUI.Muted, TextAnchor.MiddleLeft, FontStyle.Normal, V(0.35f, 0.035f), V(0.97f, 0.105f));
             BuildLobby(root);
@@ -85,42 +80,50 @@ namespace ConductorChaos.UI
             ChaosUI.Label(lobby, "Lobby context", "0 connected  /  1–6 planned", 16, ChaosUI.GoldLight,
                 TextAnchor.MiddleRight, FontStyle.Normal, V(0.69f, 0.895f), V(0.97f, 0.96f));
 
-            Row(lobby, "Host", 0.75f, "LOCAL HOST", "Not started · play trial to host");
-            Row(lobby, "Friend 1", 0.645f, "PLAYER SLOT 2", "Empty · inviting friends not implemented");
-            Row(lobby, "Friend 2", 0.54f, "PLAYER SLOT 3", "Empty");
-            Row(lobby, "Friend 3", 0.435f, "PLAYER SLOT 4", "Empty");
+            Row(lobby, "Host", 0.75f, "LOCAL HOST", "Not started · play trial to host", "player");
+            Row(lobby, "Friend 1", 0.645f, "PLAYER SLOT 2", "Empty · inviting friends not implemented", "invite");
+            Row(lobby, "Friend 2", 0.54f, "PLAYER SLOT 3", "Empty", "player-group");
+            Row(lobby, "Friend 3", 0.435f, "PLAYER SLOT 4", "Empty", "player-group");
 
             RectTransform route = ChaosUI.Panel(lobby, "Route card", V(0.035f, 0.18f), V(0.965f, 0.415f),
                 ChaosUI.Dark, 2, ChaosUI.TrainRedDark);
+            ChaosUISpriteCatalog.Add(route, "Route sprite", "route",
+                V(0.04f, 0.21f), V(0.17f, 0.66f), ChaosUI.Gold);
             ChaosUI.Label(route, "Eyebrow", "ROUTE CONCEPT · VISUAL PREVIEW ONLY", 14, ChaosUI.Gold,
                 TextAnchor.MiddleLeft, FontStyle.Bold, V(0.04f, 0.68f), V(0.96f, 0.98f));
-            routeName = ChaosUI.Label(route, "Route name", routes[0], 29, ChaosUI.Paper,
-                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.04f, 0.25f), V(0.73f, 0.72f));
+            routeName = ChaosUI.Label(route, "Route name", routes[0], 28, ChaosUI.Paper,
+                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.19f, 0.25f), V(0.72f, 0.72f));
             ChaosUI.Action(route, "Change route", "CHANGE", V(0.73f, 0.25f), V(0.96f, 0.73f),
                 ChaosUI.Paper, ChaosUI.Ink, NextRoute, 17);
             ChaosUI.Action(lobby, "Start real trial", "START LOCAL PHYSICS TEST", V(0.035f, 0.045f), V(0.965f, 0.15f),
-                ChaosUI.Gold, ChaosUI.Ink, StartLocalTrial, 21);
+                ChaosUI.Gold, ChaosUI.Ink, StartLocalTrial, 21, iconKey: "play");
         }
 
-        private static void Row(RectTransform parent, string name, float y, string title, string subtitle)
+        private static void Row(RectTransform parent, string name, float y, string title, string subtitle, string iconKey)
         {
             RectTransform row = ChaosUI.Panel(parent, name, V(0.035f, y), V(0.965f, y + 0.092f), ChaosUI.Dark);
+            ChaosUISpriteCatalog.Add(row, "Avatar icon", iconKey,
+                V(0.025f, 0.07f), V(0.145f, 0.93f), ChaosUI.Paper);
             ChaosUI.Label(row, "Title", title, 20, ChaosUI.Paper,
-                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.04f, 0.45f), V(0.68f, 0.98f));
+                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.16f, 0.45f), V(0.76f, 0.98f));
             ChaosUI.Label(row, "State", subtitle, 14, ChaosUI.Muted,
-                TextAnchor.MiddleLeft, FontStyle.Normal, V(0.04f, 0.04f), V(0.94f, 0.48f));
+                TextAnchor.MiddleLeft, FontStyle.Normal, V(0.16f, 0.04f), V(0.94f, 0.48f));
         }
 
         private void BuildSettings(RectTransform root)
         {
             settings = ChaosUI.Panel(root, "Settings", V(0.575f, 0.13f), V(0.965f, 0.9f),
                 ChaosUI.Slate, 2, ChaosUI.Muted);
+            ChaosUISpriteCatalog.Add(settings, "Settings sprite", "options",
+                V(0.035f, 0.87f), V(0.12f, 0.97f), ChaosUI.Paper);
             ChaosUI.Label(settings, "Heading", "SETTINGS", 32, ChaosUI.Paper,
-                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.035f, 0.88f), V(0.90f, 0.97f));
+                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.13f, 0.88f), V(0.90f, 0.97f));
             ChaosUI.Label(settings, "Subtitle", "Simple controls. No chrome, no glossy effects.", 17,
                 ChaosUI.Muted, TextAnchor.MiddleLeft, FontStyle.Normal, V(0.035f, 0.80f), V(0.96f, 0.87f));
+            ChaosUISpriteCatalog.Add(settings, "Audio sprite", "audio",
+                V(0.04f, 0.665f), V(0.115f, 0.75f), ChaosUI.Gold);
             ChaosUI.Label(settings, "Audio heading", "AUDIO", 24, ChaosUI.Gold,
-                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.04f, 0.66f), V(0.96f, 0.75f));
+                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.12f, 0.66f), V(0.96f, 0.75f));
             ChaosUI.Label(settings, "Volume label", "Master volume", 20, ChaosUI.Paper,
                 TextAnchor.MiddleLeft, FontStyle.Bold, V(0.04f, 0.52f), V(0.34f, 0.64f));
             ChaosUI.VolumeSlider(settings, V(0.36f, 0.555f), V(0.78f, 0.60f),
@@ -131,7 +134,7 @@ namespace ConductorChaos.UI
             ChaosUI.Label(settings, "Mute label", "Mute all sound", 20, ChaosUI.Paper,
                 TextAnchor.MiddleLeft, FontStyle.Bold, V(0.04f, 0.39f), V(0.55f, 0.51f));
             ChaosUI.Action(settings, "Mute toggle", "TOGGLE", V(0.65f, 0.395f), V(0.96f, 0.495f),
-                ChaosUI.Paper, ChaosUI.Ink, ToggleMute, 18);
+                ChaosUI.Paper, ChaosUI.Ink, ToggleMute, 18, iconKey: "audio");
             muteValue = ChaosUI.Label(settings, "Mute state", muted ? "Muted" : "Sound on",
                 17, ChaosUI.GoldLight, TextAnchor.MiddleLeft, FontStyle.Normal,
                 V(0.04f, 0.30f), V(0.55f, 0.38f));
@@ -151,22 +154,27 @@ namespace ConductorChaos.UI
                 17, ChaosUI.Gold, TextAnchor.MiddleLeft, FontStyle.Normal, V(0.035f, 0.79f), V(0.95f, 0.86f));
             RectTransform task = ChaosUI.Panel(hudExample, "Objective", V(0.04f, 0.48f),
                 V(0.53f, 0.76f), ChaosUI.Paper);
-            ChaosUI.Label(task, "Label", "ROUND OBJECTIVES", 22, ChaosUI.Ink,
-                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.025f, 0.63f), V(0.97f, 0.94f));
+            ChaosUISpriteCatalog.Add(task, "Ticket sprite", "ticket",
+                V(0.04f, 0.63f), V(0.22f, 0.94f), ChaosUI.Ink);
+            ChaosUI.Label(task, "Label", "ROUND OBJECTIVES", 20, ChaosUI.Ink,
+                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.23f, 0.63f), V(0.97f, 0.94f));
             ChaosUI.Label(task, "Rows", "[ ] Check 3 tickets\n[ ] Close train doors", 17, ChaosUI.Ink,
                 TextAnchor.MiddleLeft, FontStyle.Normal, V(0.035f, 0.08f), V(0.96f, 0.64f));
             RectTransform warning = ChaosUI.Panel(hudExample, "Warning", V(0.56f, 0.48f),
                 V(0.96f, 0.76f), ChaosUI.TrainRed);
-            ChaosUI.Label(warning, "Warning title", "TRAIN NEEDS ATTENTION", 19,
-                ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(0.04f, 0.46f), V(0.96f, 0.95f));
-            ChaosUIIcon.Add(warning, "Warning symbol", ChaosUIIcon.Symbol.Warning,
-                V(0.055f, 0.51f), V(0.15f, 0.83f), ChaosUI.Paper);
+            ChaosUISpriteCatalog.Add(warning, "Warning sprite", "warning",
+                V(0.035f, 0.52f), V(0.20f, 0.92f), ChaosUI.Paper);
+            ChaosUI.Label(warning, "Warning title", "TRAIN NEEDS ATTENTION", 18,
+                ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(0.19f, 0.46f), V(0.96f, 0.95f));
             ChaosUI.Label(warning, "Warning explanation", "Show this only when a real event exists.",
                 15, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Normal, V(0.07f, 0.08f), V(0.93f, 0.53f));
             RectTransform prompt = ChaosUI.Panel(hudExample, "Prompt", V(0.23f, 0.27f),
                 V(0.76f, 0.39f), ChaosUI.Paper);
+            ChaosUISpriteCatalog.Add(prompt, "Door sprite", "door",
+                V(0.045f, 0.12f), V(0.19f, 0.88f), ChaosUI.Ink);
             ChaosUI.Label(prompt, "Prompt label", "[ E ]  INTERACT  ·  door lock",
-                21, ChaosUI.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+                19, ChaosUI.Ink, TextAnchor.MiddleCenter, FontStyle.Bold,
+                V(0.19f, 0f), V(0.96f, 1f));
             ChaosUI.Action(hudExample, "Back to lobby", "BACK TO LOBBY", V(0.65f, 0.05f), V(0.96f, 0.14f),
                 ChaosUI.Paper, ChaosUI.Ink, ShowLobby, 18);
         }

@@ -284,7 +284,8 @@ namespace ConductorChaos.Playground
 
         private void OnGUI()
         {
-            if (!IsSpawned || !IsOwner) return;
+            if (!IsSpawned || !IsOwner || ConductorChaos.UI.ChaosTrialHud.IsVisible) return;
+            // Read-only fallback for scenes without the current UI canvas.
             GUI.Label(new Rect(16, 16, 1000, 24), "WASD lopen | spatie springen | muis kijken | linker/rechter muisknop: hand grijpen | Esc cursor");
         }
 
