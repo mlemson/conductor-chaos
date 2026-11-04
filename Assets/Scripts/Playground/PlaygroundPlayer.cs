@@ -712,6 +712,11 @@ namespace ConductorChaos.Playground
         private sealed class ArmPhysics
         {
             private static readonly Vector3 HandOffset = new(0f, -0.205f, 0f);
+            private const float GripAssistRadius = 0.28f;
+            private static readonly Vector3[] GripAssistRays =
+            {
+                Vector3.forward, new(-0.62f, 0f, 1f), new(0.62f, 0f, 1f), new(0f, -0.62f, 1f), new(0f, 0.62f, 1f)
+            };
             private readonly Transform arm;
             private readonly Rigidbody parent;
             private readonly Rigidbody rigid;
@@ -798,10 +803,11 @@ namespace ConductorChaos.Playground
                         - rigid.angularVelocity * (looseGrip ? 7f : held ? 14f : 5f), looseGrip ? 150f : held ? 420f : 55f), ForceMode.Acceleration);
 
                 if (!held || grip || releasedAtCrest || Time.time < nextAttempt) return;
-                nextAttempt = Time.time + 0.1f;
+                nextAttempt = Time.time + 0.04f;
                 Vector3 hand = arm.TransformPoint(HandOffset);
                 Vector3 direction = aim * Vector3.forward;
                 if (!TryGripCast(hand, direction, 0.13f, 0.38f, buffer, player, reach, false, out RaycastHit chosen) &&
+                    !TryGripAssist(hand, aim, buffer, player, reach, out chosen) &&
                     (!pulling || !TryGripCast(hand, Vector3.ProjectOnPlane(direction, Vector3.up).normalized,
                         0.09f, 0.18f, buffer, player, reach, true, out chosen))) return;
 
@@ -811,11 +817,12 @@ namespace ConductorChaos.Playground
                 grip.connectedBody = chosen.rigidbody;
                 grip.connectedAnchor = chosen.rigidbody ? chosen.rigidbody.transform.InverseTransformPoint(chosen.point) : chosen.point;
                 grip.anchor = HandOffset;
-                grip.spring = 320f;
-                grip.damper = 32f;
+                bool climbingGrip = IsClimbSurface(chosen);
+                grip.spring = climbingGrip ? 380f : 320f;
+                grip.damper = climbingGrip ? 36f : 32f;
                 grip.minDistance = 0f;
                 grip.maxDistance = 0.03f;
-                grip.breakForce = 550f;
+                grip.breakForce = climbingGrip ? 725f : 550f;
             }
 
             private bool TryGripCast(Vector3 hand, Vector3 direction, float radius, float distance,
@@ -827,7 +834,7 @@ namespace ConductorChaos.Playground
                 for (int i = 0; i < count; i++)
                 {
                     RaycastHit hit = buffer[i];
-                    if (hit.collider.transform.IsChildOf(player) || hit.distance >= closest ||
+                    if (hit.collider.transform.IsChildOf(player) || hit.distance <= 0f || hit.distance >= closest ||
                         (wallOnly && (hit.rigidbody || Mathf.Abs(hit.normal.y) > 0.55f)) ||
                         Vector3.Distance(parent.position, hit.point) > reach) continue;
                     if (hit.rigidbody)
@@ -840,6 +847,43 @@ namespace ConductorChaos.Playground
                 }
                 return chosen.collider != null;
             }
+
+            private bool TryGripAssist(Vector3 hand, Quaternion aim, RaycastHit[] buffer, Transform player, float reach, out RaycastHit chosen)
+            {
+                chosen = default;
+                float closest = GripAssistRadius * GripAssistRadius;
+                Vector3 forward = aim * Vector3.forward;
+                foreach (Vector3 ray in GripAssistRays)
+                {
+                    Vector3 direction = aim * ray.normalized;
+                    // Start just behind the hand so a palm already touching a mesh can still find its surface.
+                    const float backtrack = 0.12f;
+                    int count = Physics.RaycastNonAlloc(hand - direction * backtrack, direction, buffer,
+                        backtrack + GripAssistRadius, ~0, QueryTriggerInteraction.Ignore);
+                    if (count == buffer.Length) continue;
+                    RaycastHit surface = default;
+                    float firstDistance = float.PositiveInfinity;
+                    for (int i = 0; i < count; i++)
+                    {
+                        RaycastHit hit = buffer[i];
+                        if (hit.collider.transform.IsChildOf(player) || hit.distance >= firstDistance) continue;
+                        firstDistance = hit.distance;
+                        surface = hit;
+                    }
+
+                    if (!surface.collider || !IsClimbSurface(surface)) continue;
+                    Vector3 offset = surface.point - hand;
+                    float distance = offset.sqrMagnitude;
+                    if (distance >= closest || Vector3.Dot(offset, forward) < -0.06f ||
+                        (surface.point - parent.position).sqrMagnitude > reach * reach) continue;
+                    closest = distance;
+                    chosen = surface;
+                }
+                return chosen.collider != null;
+            }
+
+            private bool IsClimbSurface(RaycastHit hit) => !hit.rigidbody &&
+                (hit.normal.y <= 0.65f || hit.point.y >= parent.worldCenterOfMass.y + 0.06f);
 
             public void FinishClimb()
             {
@@ -857,6 +901,7 @@ namespace ConductorChaos.Playground
                 if (grip) Object.Destroy(grip);
                 grip = null;
                 gripSurface = null;
+                nextAttempt = 0f;
             }
 
             public void Dispose()
