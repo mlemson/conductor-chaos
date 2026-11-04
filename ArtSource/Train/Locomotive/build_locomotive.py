@@ -55,6 +55,7 @@ WHEEL_R = 0.40
 WHEEL_X = (-1.45, 0.42, 2.28)
 WHEEL_W = 0.22              # brede, stevige wielen
 WHEEL_Z = W / 2 + 0.14      # wielhart t.o.v. hartlijn (buitenliggend)
+MAIN_ROD_Z = WHEEL_Z + WHEEL_W / 2 + 0.135   # drijfstang: buiten de koppelstang (die ligt op +0.06)
 
 
 def rbox(x0, x1, y0, y1, z0, z1, r, mat, grid=None, div=2):
@@ -96,7 +97,23 @@ def build_boiler():
     whistle = mk.merge(mk.capsule_between((BOILER[0] + 0.55, BOILER_TOP - 0.10, ZC), (BOILER[0] + 0.55, BOILER_TOP + 0.20, ZC),
                                           0.045, 0.045, 12, 2, mat="M_Loco_Gold"),
                        mk.ellipsoid(0.075, 0.05, 0.075, 12, 6, mat="M_Loco_Gold").transform(t=(BOILER[0] + 0.55, BOILER_TOP + 0.22, ZC)))
-    return mk.merge(boiler, *panels, cap, whistle)
+    return mk.merge(boiler, *panels, cap, whistle, build_chimney())
+
+
+def build_chimney():
+    """Schoorsteen op de rookkast (issue #107): rode voet die in de ketel zakt, donkere pijp met
+    uitlopende kraag en een gouden kroonrand bovenop. Twaalf facetten, net als de rest van de loc."""
+    xc, y0 = BOILER[1] - 0.85, BOILER_TOP - 0.06
+    seg = 12
+    foot = mk.lathe([(0.0, -0.10), (0.27, -0.10), (0.27, 0.08), (0.21, 0.17), (0.16, 0.24), (0.0, 0.24)], seg,
+                    mat="M_Loco_Red", phase=math.pi / seg)
+    stack = mk.lathe([(0.0, 0.18), (0.155, 0.18), (0.155, 0.70), (0.19, 0.78), (0.0, 0.78)], seg,
+                     mat="M_Loco_Trim", phase=math.pi / seg)
+    crown = mk.lathe([(0.0, 0.76), (0.215, 0.76), (0.235, 0.80), (0.235, 0.90), (0.20, 0.93), (0.13, 0.93),
+                      (0.11, 0.89), (0.0, 0.89)], seg, mat="M_Loco_Gold", phase=math.pi / seg)
+    soot = mk.cylinder(0.115, 0.02, seg, 0.0, mat="M_Loco_Frame", axis="y").transform(t=(0, 0.895, 0))
+    band = mk.lathe([(0.0, 0.30), (0.17, 0.30), (0.17, 0.36), (0.0, 0.36)], seg, mat="M_Loco_Gold", phase=math.pi / seg)
+    return mk.merge(foot, stack, crown, soot, band).transform(t=(xc, y0, ZC))
 
 
 def build_headlight():
@@ -211,10 +228,15 @@ def build_cylinders():
         bands = [mk.cylinder(0.225, 0.05, 16, 0.015, mat="M_Loco_Gold", axis="x").transform(t=(xb, yc, z))
                  for xb in (x0c + 0.07, x1c - 0.07)]
         cap = mk.cylinder(0.12, 0.06, 16, 0.02, mat="M_Loco_Frame", axis="x").transform(t=(x1c + 0.02, yc, z))
-        piston = mk.capsule_between((x0c - 0.02, yc, z + sgn * 0.06), (WHEEL_X[-1] + 0.10, RAIL_Y + WHEEL_R - 0.12, z + sgn * 0.17),
-                                    0.032, 0.032, 10, 2, mat="M_Loco_Gold")
+        # drijfstang ligt buiten wiel én koppelstang (issue #107): kruiskop aan het cilindereinde steekt naar buiten,
+        # de stang loopt daarvandaan recht naar een verlengde krukpen op het voorwiel
+        z_rod = ZC + sgn * MAIN_ROD_Z
+        y_pin = RAIL_Y + WHEEL_R - 0.12
+        za, zb = sorted((z, z_rod + sgn * 0.05))
+        crosshead = rbox(x0c - 0.07, x0c + 0.05, yc - 0.07, yc + 0.07, za, zb, 0.03, "M_Loco_Gold")
+        piston = mk.capsule_between((x0c - 0.02, yc, z_rod), (WHEEL_X[-1], y_pin, z_rod), 0.034, 0.034, 10, 2, mat="M_Loco_Gold")
         saddle = rbox(x0c + 0.05, x1c - 0.05, yc + 0.12, FRAME[3] - 0.10, z - 0.12, z + 0.12, 0.05, "M_Loco_Frame")
-        parts += [body, *bands, cap, piston, saddle]
+        parts += [body, *bands, cap, crosshead, piston, saddle]
     return mk.merge(*parts)
 
 
@@ -278,6 +300,11 @@ def build_wheels():
         parts.append(rbox(WHEEL_X[0] - 0.09, WHEEL_X[-1] + 0.09, yc - 0.17, yc - 0.07, rz - 0.035, rz + 0.035, 0.03, "M_Loco_Gold"))
         for x in WHEEL_X:
             parts.append(mk.cylinder(0.06, 0.12, 10, 0.02, mat="M_Loco_Gold", axis="z").transform(t=(x, yc - 0.12, rz)))
+        # verlengde krukpen op het voorwiel: draagt de drijfstang buiten de koppelstang
+        z_rod = ZC + sgn * MAIN_ROD_Z
+        zp0, zp1 = sorted((rz, z_rod + sgn * 0.05))
+        parts.append(mk.cylinder(0.05, zp1 - zp0, 10, 0.015, mat="M_Loco_Gold", axis="z").transform(
+            t=(WHEEL_X[-1], yc - 0.12, (zp0 + zp1) / 2)))
     return mk.merge(*parts)
 
 
@@ -287,7 +314,7 @@ def build_grabrails():
     x0, x1 = CAB
     for zf, sgn in ((ZC + CAB_W / 2, 1), (ZC - CAB_W / 2, -1)):
         z = zf + sgn * 0.13
-        for xg in (x0 + 0.42,):
+        for xg in (x0 + 0.12,):                     # midden op de achterstijl (raam begint op x0 + 0.26)
             ya, yb = CAB_FLOOR + 0.08, WALL_TOP + 0.70
             parts.append(mk.capsule_between((xg, ya, z), (xg, yb, z), 0.035, 0.035, 12, 3, mat="M_Loco_Interact"))
             for y in (ya, yb):
