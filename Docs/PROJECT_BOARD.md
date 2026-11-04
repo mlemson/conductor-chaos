@@ -131,6 +131,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 🔗 Open pull requests zonder gekoppelde roadmap-taak
 
+- [#119 Art: terreingras gelijk aan het gras op de kliffen](https://github.com/mlemson/conductor-chaos/pull/119) — verwijs in de PR-omschrijving naar `Refs #nummer` of `Closes #nummer`.
 - [#116 Art: conducteur mat maken](https://github.com/mlemson/conductor-chaos/pull/116) — verwijs in de PR-omschrijving naar `Refs #nummer` of `Closes #nummer`.
 
 ## 🤝 Samenwerken met mensen en agents
