@@ -35,7 +35,7 @@
 ## UI-richtlijn (verplicht voor UI-agents)
 
 - Lees [UI Style Guide](Docs/UI_STYLE_GUIDE.md) voordat je menu, lobby, knoppen, HUD, iconen of interactiefeedback maakt.
-- **Primair visueel:** conceptbeeld **1** = UI-componenten; conceptbeeld **3** = hoofdmenu en lobby. Kopieer de drukke full-HUD van conceptbeeld 2 **niet** als standaard. Houd de UI mat, compact, leesbaar en zonder AI-glow/glassy effect.
+- **Primair visueel:** de originele [UI Style Guide (beeld 1)](Docs/References/UI/01-ui-style-guide.png) voor componenten/knoppen en [Main Menu & Lobby (beeld 3)](Docs/References/UI/03-main-menu-lobby.png) voor menucompositie. Controleer de [referentie-index en huidige bestandsstatus](Docs/References/UI/README.md). Beide PNG's worden via issue #127 toegevoegd; zolang ze ontbreken, gebruik de tekstgids en doe niet alsof je de afbeelding hebt gezien. De drukke full-HUD van beeld 2 is **niet** leidend. Houd de UI mat, compact, leesbaar, zonder AI-glow/glassy effect.
 - Gebruik de bestaande uGUI-bouwstenen in `Assets/Scripts/UI/` en de bestaande kleurbron `Docs/References/palette.json`; maak geen tweede los UI-thema. Houd presentatie lokaal en puur; gedeelde data uit de server/Netcode.
 - Geen schijnfunctionaliteit: de echte Lobby/Relay/route-, coal-, integrity- en ticketsystemen ontbreken nog. Toon ze alleen als gelabelde demo in de menuproef, nooit als echte online of gameplaystatus.
 - Bij veranderingen aan de physics-playground: HUD mag het camera-/muis-/gripsysteem niet kapen. Geen dubbele EventSystem of niet-functionerende permanente inputprompts. Test host en remote client waar relevant.

@@ -12,7 +12,7 @@ Het bord toont automatisch *te doen*, *bezig*, *review*, *geblokkeerd* en *klaar
 
 ## UI en menu proef
 
-[**UI-stijlgids (afbeeldingen 1 en 3)**](Docs/UI_STYLE_GUIDE.md) · [**Zo open je de interactieve Unity-menu-preview**](Docs/UI_TESTING.md)
+[**UI-stijlgids**](Docs/UI_STYLE_GUIDE.md) · [**Originele UI-concepten (beeld 1 en 3)**](Docs/References/UI/README.md) · [**Zo open je de interactieve Unity-menu-preview**](Docs/UI_TESTING.md)
 
 De runtime HUD in `TrainPlayground` toont alleen echte netwerkproefinformatie. Het losse hoofdmenu/lobby-preview wordt eenmalig in Unity aangemaakt via `Tools > Conductor Chaos > UI > Create or Open Menu Preview`. De lobby is nog geen werkende online sessie; het menu kan de lokale physics-proef wel starten. Niet als afgeronde gameplay-UI presenteren voordat de editorchecks zijn uitgevoerd.
 

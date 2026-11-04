@@ -7,7 +7,7 @@ De code op deze branch is **nog niet in de echte Unity Editor gecompileerd of vi
 1. Open een schone checkout van de repository in Unity 6000.5.7f1 met de bestaande Input System + uGUI packages.
 2. Laat Unity volledig importeren. Controleer de Console; herstel eventuele compilefouten vóór verdere visuele aanpassingen.
 3. Kies `Tools > Conductor Chaos > UI > Create or Open Menu Preview`. Dit maakt een losse `Assets/Scenes/ChaosMenuPreview.unity` als die nog niet bestaat en voegt hem **als tweede** scene toe aan Build Settings; `TrainPlayground` blijft op buildindex 0.
-4. Druk Play en controleer het **hoofdmenu, lobby-preview en HUD-voorbeeld** op 1280×720 en 1920×1080. Vergelijk visueel vooral met ontwerpafbeelding 1 en 3 uit de chat.
+4. Druk Play en controleer het **hoofdmenu, lobby-preview en HUD-voorbeeld** op 1280×720 en 1920×1080. Vergelijk met de [oorspronkelijke UI Style Guide (1)](References/UI/01-ui-style-guide.png) en [Main Menu / Lobby (3)](References/UI/03-main-menu-lobby.png). Zie [uploadstatus](References/UI/README.md) wanneer de bestanden nog ontbreken.
 5. Klik `SETTINGS`; pas de master-volume-slider aan en activeer/deactiveer mute. Controleer de echte Unity-audiostatus.
 6. Klik `LOBBY PREVIEW`, daarna `CHANGE`: alleen de voorbeeldroute en uitleg mogen veranderen. Er mag nergens staan dat echte vrienden joined/ready zijn.
 7. Klik `PLAY LOCAL TRIAL`. De bestaande scène `TrainPlayground` moet laden en de proefhost starten. De daadwerkelijke online lobby/Relay zijn niet geïmplementeerd.
