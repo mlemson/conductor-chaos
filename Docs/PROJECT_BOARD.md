@@ -6,7 +6,7 @@
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 62 | 1 | 1 | 0 | 3 |
+| 63 | 1 | 0 | 0 | 3 |
 
 ## 🗺️ Mijlpalen
 
@@ -44,7 +44,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 📋 Taken per status
 
-### 📝 Te doen (62)
+### 📝 Te doen (63)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -106,6 +106,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P1 | [#115 Houd de third-personcamera buiten de conducteur](https://github.com/mlemson/conductor-chaos/issues/115) | Overig | — | — |
 | P1 | [#120 Achteruit bouwen in Track Builder](https://github.com/mlemson/conductor-chaos/issues/120) | Overig | — | — |
 | P1 | [#122 Maak het grijpen van klifranden vergevingsgezinder](https://github.com/mlemson/conductor-chaos/issues/122) | Overig | — | — |
+| P1 | [#131 Koppel goedgekeurde UI-sprites aan bestaande Unity-menu's en HUD](https://github.com/mlemson/conductor-chaos/issues/131) | Polish | — | — |
 | P2 | [#86 Rotsval: één vallende rots als treinincident](https://github.com/mlemson/conductor-chaos/issues/86) | Gameplay | — | — |
 | P2 | [#89 Één ontsporing synchroniseren tussen host en client](https://github.com/mlemson/conductor-chaos/issues/89) | Multiplayer | — | — |
 | P2 | [#90 Koppeling kan breken bij hoge impact](https://github.com/mlemson/conductor-chaos/issues/90) | Physics | — | — |
@@ -117,11 +118,9 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | :-- | :-- | :-- | :-- | :-- |
 | P0 | [#53 Spoorasset: recht segment en bocht als Unity-prefabs](https://github.com/mlemson/conductor-chaos/issues/53) | Train | @mlemson | — |
 
-### 👀 Klaar voor review (1)
+### 👀 Klaar voor review (0)
 
-| Fase | Taak | Onderdeel | Eigenaar | Pull request |
-| :-- | :-- | :-- | :-- | :-- |
-| P1 | [#131 Koppel goedgekeurde UI-sprites aan bestaande Unity-menu's en HUD](https://github.com/mlemson/conductor-chaos/issues/131) | Polish | — | [#132](https://github.com/mlemson/conductor-chaos/pull/132) |
+*Geen taken in deze kolom.*
 
 ### ⛔ Geblokkeerd (0)
 
