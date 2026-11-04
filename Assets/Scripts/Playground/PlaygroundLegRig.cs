@@ -146,6 +146,14 @@ namespace ConductorChaos.Playground
             right.ReleaseSupport();
         }
 
+        public void SetContactEnabled(bool enabled)
+        {
+            if (left.Collider) left.Collider.enabled = enabled;
+            if (right.Collider) right.Collider.enabled = enabled;
+        }
+
+        public bool HasFootContact() => left.TouchesGround(contacts, torso.transform) || right.TouchesGround(contacts, torso.transform);
+
         public void BeginSprintHop()
         {
             leftForwardInAir = !leftForwardInAir;
@@ -246,7 +254,7 @@ namespace ConductorChaos.Playground
             public bool FindGround(RaycastHit[] buffer, Transform player, out RaycastHit nearest)
             {
                 nearest = default;
-                if (!collider) return false;
+                if (!collider || !collider.enabled) return false;
                 Vector3 origin = collider.bounds.center + Vector3.up * 0.08f;
                 int count = Physics.SphereCastNonAlloc(origin, 0.05f, Vector3.down, buffer, 0.18f, ~0, QueryTriggerInteraction.Ignore);
                 float distance = float.PositiveInfinity;
@@ -266,6 +274,9 @@ namespace ConductorChaos.Playground
                 }
                 return found;
             }
+
+            public bool TouchesGround(RaycastHit[] buffer, Transform player)
+                => FindGround(buffer, player, out RaycastHit hit) && hit.point.y >= collider.bounds.min.y - 0.06f;
 
             public void SetSupport(bool planted, RaycastHit hit)
             {
