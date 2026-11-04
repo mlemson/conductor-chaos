@@ -88,6 +88,8 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkSpawn()
         {
+            cameraOrbit = 0;
+            preferredOrbitClearSince = 0f;
             hasClearGround = clearingLimbs = false;
             blockedRecoveryDirection = Vector3.zero;
             stalledTime = nextClearanceProbe = nextRecoveryProbe = 0f;
