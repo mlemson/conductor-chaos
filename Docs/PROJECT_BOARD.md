@@ -6,7 +6,7 @@
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 63 | 1 | 1 | 0 | 1 |
+| 64 | 1 | 0 | 0 | 1 |
 
 ## 🗺️ Mijlpalen
 
@@ -44,7 +44,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 📋 Taken per status
 
-### 📝 Te doen (63)
+### 📝 Te doen (64)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -70,6 +70,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P0 | [#76 Hoofdmenu: Play en Terug naar de bestaande proefscène](https://github.com/mlemson/conductor-chaos/issues/76) | Polish | — | — |
 | P0 | [#99 Verbeter third-personbesturing en armrichting](https://github.com/mlemson/conductor-chaos/issues/99) | Overig | — | — |
 | P0 | [#127 Originele UI-referentieafbeeldingen toevoegen aan repository](https://github.com/mlemson/conductor-chaos/issues/127) | Art | — | — |
+| P0 | [#129 Losse PNG-sprites voor menu, HUD en iconen importeren](https://github.com/mlemson/conductor-chaos/issues/129) | Art | — | — |
 | P1 | [#50 Spelers kunnen elkaar licht fysiek aanstoten](https://github.com/mlemson/conductor-chaos/issues/50) | Physics | — | — |
 | P1 | [#51 Speler kan na een val weer opstaan](https://github.com/mlemson/conductor-chaos/issues/51) | Gameplay | — | — |
 | P1 | [#52 Prefab voor één testkoffer met collider en massainstellingen](https://github.com/mlemson/conductor-chaos/issues/52) | Gameplay | — | — |
@@ -118,11 +119,9 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | :-- | :-- | :-- | :-- | :-- |
 | P0 | [#53 Spoorasset: recht segment en bocht als Unity-prefabs](https://github.com/mlemson/conductor-chaos/issues/53) | Train | @mlemson | — |
 
-### 👀 Klaar voor review (1)
+### 👀 Klaar voor review (0)
 
-| Fase | Taak | Onderdeel | Eigenaar | Pull request |
-| :-- | :-- | :-- | :-- | :-- |
-| P0 | [#129 Losse PNG-sprites voor menu, HUD en iconen importeren](https://github.com/mlemson/conductor-chaos/issues/129) | Art | — | [#130](https://github.com/mlemson/conductor-chaos/pull/130) |
+*Geen taken in deze kolom.*
 
 ### ⛔ Geblokkeerd (0)
 
