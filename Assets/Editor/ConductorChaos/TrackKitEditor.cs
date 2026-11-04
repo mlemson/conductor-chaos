@@ -4,7 +4,7 @@
 //    Bochten krijgen Left/Right in de naam na meten van hun echte richting in Unity.
 //    Gebeurt automatisch als de prefabs ontbreken; opnieuw via Conductor Chaos > Art > Track > Rebuild Track Prefabs.
 // 2) Track Builder (Conductor Chaos > Art > Track > Track Builder): selecteer een spoorstuk en klik een stuk aan;
-//    het nieuwe stuk wordt precies aan het eind vastgezet en geselecteerd, zodat je achter elkaar door kunt bouwen.
+//    het nieuwe stuk wordt precies aan het eind vastgezet en geselecteerd; met Achteruit bouwen aan het begin.
 //    Zonder selectie komt het eerste stuk midden in de Scene view op de grond.
 using System.Collections.Generic;
 using System.IO;
@@ -111,6 +111,7 @@ namespace ConductorChaos.EditorTools
     {
         List<GameObject> prefabs = new List<GameObject>();
         Vector2 scroll;
+        [SerializeField] bool buildBackwards;
 
         [MenuItem("Conductor Chaos/Art/Track/Track Builder")]
         static void Open() => GetWindow<TrackBuilderWindow>("Track Builder");
@@ -132,8 +133,11 @@ namespace ConductorChaos.EditorTools
         void OnGUI()
         {
             var sel = Selection.activeGameObject != null ? Selection.activeGameObject.GetComponentInParent<TrackPiece>() : null;
+            if (sel != null && !sel.gameObject.scene.IsValid()) sel = null;
+            buildBackwards = EditorGUILayout.ToggleLeft(new GUIContent("Achteruit bouwen",
+                "Plaats het volgende spoorstuk aan het begin van het geselecteerde stuk."), buildBackwards);
             EditorGUILayout.HelpBox(sel != null
-                ? $"Nieuwe stukken komen aan het eind van '{sel.name}'."
+                ? $"Nieuwe stukken komen aan het {(buildBackwards ? "begin" : "eind")} van '{sel.name}'."
                 : "Geen spoorstuk geselecteerd: het eerste stuk komt midden in de Scene view op de grond.", MessageType.Info);
             if (prefabs.Count == 0)
             {
@@ -153,30 +157,47 @@ namespace ConductorChaos.EditorTools
 
         void OnSelectionChange() => Repaint();
 
-        static void Place(GameObject prefab, TrackPiece after)
+        void Place(GameObject prefab, TrackPiece selected)
         {
+            if (buildBackwards && selected != null && selected.HasSockets &&
+                prefab.TryGetComponent(out TrackPiece template) && template.HasSockets &&
+                selected.gameObject.scene.GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<TrackPiece>(true))
+                    .Any(track => track.next == selected))
+            {
+                ShowNotification(new GUIContent("Aan het begin zit al een spoorstuk vast."));
+                return;
+            }
+
             var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
             Undo.RegisterCreatedObjectUndo(go, "Place Track Piece");
             var piece = go.GetComponent<TrackPiece>();
-            if (after != null && piece != null && piece.HasSockets && after.HasSockets)
+            if (selected != null && piece != null && piece.HasSockets && selected.HasSockets)
             {
-                go.transform.SetParent(after.transform.parent, false);
+                go.transform.SetParent(selected.transform.parent, false);
                 go.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
-                var localStart = go.transform.InverseTransformPoint(piece.StartPosition);
-                var localDir = go.transform.InverseTransformDirection(piece.StartDirection);
-                var rot = Quaternion.LookRotation(after.EndDirection, after.transform.up) *
-                          Quaternion.Inverse(Quaternion.LookRotation(localDir, Vector3.up));
-                go.transform.SetPositionAndRotation(after.EndPosition - rot * localStart, rot);
-                Undo.RecordObject(after, "Link Track Piece");
-                after.next = piece;
+                Vector3 targetDirection = buildBackwards ? selected.StartDirection : selected.EndDirection;
+                Vector3 socketDirection = buildBackwards ? piece.EndDirection : piece.StartDirection;
+                go.transform.rotation = Quaternion.LookRotation(targetDirection, selected.transform.up) *
+                                        Quaternion.Inverse(Quaternion.LookRotation(socketDirection, Vector3.up));
+                Vector3 target = buildBackwards ? selected.StartPosition : selected.EndPosition;
+                go.transform.position += target - (buildBackwards ? piece.EndPosition : piece.StartPosition);
+
+                TrackPiece previous = buildBackwards ? piece : selected;
+                Undo.RecordObject(previous, "Link Track Piece");
+                previous.next = buildBackwards ? selected : piece;
+                PrefabUtility.RecordPrefabInstancePropertyModifications(previous);
+                PrefabUtility.RecordPrefabInstancePropertyModifications(go.transform);
             }
-            else if (after != null)
+            else if (selected != null && selected.HasSockets)
             {
-                // prop (bord, slagboom): naast het eind van het geselecteerde stuk
-                go.transform.SetParent(after.transform.parent, false);
-                var side = Vector3.Cross(after.transform.up, after.EndDirection).normalized;
-                go.transform.SetPositionAndRotation(after.EndPosition + side * 2.6f - after.transform.up * 0.43f,
-                                                    Quaternion.LookRotation(after.EndDirection, Vector3.up));
+                // Prop (bord, slagboom): naast het uiteinde waarvandaan je bouwt.
+                go.transform.SetParent(selected.transform.parent, false);
+                Vector3 target = buildBackwards ? selected.StartPosition : selected.EndPosition;
+                Vector3 direction = buildBackwards ? -selected.StartDirection : selected.EndDirection;
+                Vector3 side = Vector3.Cross(selected.transform.up, direction).normalized;
+                go.transform.SetPositionAndRotation(target + side * 2.6f - selected.transform.up * 0.43f,
+                                                    Quaternion.LookRotation(direction, Vector3.up));
             }
             else
             {
@@ -190,7 +211,7 @@ namespace ConductorChaos.EditorTools
                 }
                 go.transform.position = pos;
             }
-            Selection.activeGameObject = piece != null ? go : (after != null ? after.gameObject : go);
+            Selection.activeGameObject = piece != null ? go : (selected != null ? selected.gameObject : go);
         }
     }
 }
