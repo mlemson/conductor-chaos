@@ -65,7 +65,7 @@ namespace ConductorChaos.UI
                     float dx = Mathf.Max(radius - (x + 0.5f), 0f, (x + 0.5f) - (size - radius));
                     float dy = Mathf.Max(radius - (y + 0.5f), 0f, (y + 0.5f) - (size - radius));
                     float distance = Mathf.Sqrt(dx * dx + dy * dy);
-                    pixels[y * size + x] = new Color(1f, 1f, 1f, 1f - Mathf.SmoothStep(radius - 1.5f, radius + 0.5f, distance));
+                    pixels[y * size + x] = new Color(1f, 1f, 1f, 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(radius - 1.5f, radius + 0.5f, distance)));
                 }
                 texture.SetPixels(pixels);
                 texture.Apply(false, true);
