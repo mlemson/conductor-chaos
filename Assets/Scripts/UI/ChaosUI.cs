@@ -144,7 +144,7 @@ namespace ConductorChaos.UI
 
         public static Button Action(Transform parent, string name, string caption, Vector2 min,
             Vector2 max, Color face, Color foreground, UnityEngine.Events.UnityAction onClick,
-            int size = 20, bool enabled = true)
+            int size = 20, bool enabled = true, string iconKey = null)
         {
             RectTransform rt = Panel(parent, name, min, max, face);
             Image img = rt.GetComponent<Image>();
@@ -160,7 +160,19 @@ namespace ConductorChaos.UI
             tint.colorMultiplier = 1f;
             button.colors = tint;
             if (onClick != null) button.onClick.AddListener(onClick);
-            Label(rt, "Caption", caption, size, foreground, TextAnchor.MiddleCenter, FontStyle.Bold);
+            Text label = Label(rt, "Caption", caption, size, foreground, TextAnchor.MiddleCenter, FontStyle.Bold);
+            if (!string.IsNullOrEmpty(iconKey))
+            {
+                // The image is not the button itself: keep the caption translatable
+                // and let the parent Button handle hover, keyboard and clicks.
+                ChaosUISpriteCatalog.Add(rt, "Sprite - " + iconKey, iconKey,
+                    new Vector2(0.055f, 0.19f), new Vector2(0.20f, 0.81f), foreground);
+                RectTransform captionRect = (RectTransform)label.transform;
+                captionRect.anchorMin = new Vector2(0.22f, 0f);
+                captionRect.anchorMax = new Vector2(0.98f, 1f);
+                captionRect.offsetMin = Vector2.zero;
+                captionRect.offsetMax = Vector2.zero;
+            }
             return button;
         }
 
