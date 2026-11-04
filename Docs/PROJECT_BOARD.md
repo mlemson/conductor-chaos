@@ -129,7 +129,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 🔗 Open pull requests zonder gekoppelde roadmap-taak
 
-- [#111 Art: gestileerd water v2 (diepte-kleur, schuimrand, golfstreepjes)](https://github.com/mlemson/conductor-chaos/pull/111) — verwijs in de PR-omschrijving naar `Refs #nummer` of `Closes #nummer`.
+Alle open PR's zijn gekoppeld of er zijn geen open PR's.
 
 ## 🤝 Samenwerken met mensen en agents
 
