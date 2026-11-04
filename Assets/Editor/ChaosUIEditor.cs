@@ -11,10 +11,50 @@ namespace ConductorChaos.Editor
     public static class ChaosUIEditor
     {
         private const string PreviewPath = "Assets/Scenes/ChaosMenuPreview.unity";
+        private const string CatalogPath = "Assets/Resources/ChaosUISpriteCatalog.asset";
+
+        // Uses the approved source PNGs. Never copies or re-slices them.
+        private static readonly string[] ApprovedIconKeys =
+        {
+            "accessibility", "audio", "back", "chat", "close", "coal",
+            "controls", "door", "invite", "key", "lantern", "options",
+            "play", "player-group", "player", "quit", "ready", "route",
+            "speed-gauge", "ticket", "train", "upgrades", "warning", "wrench"
+        };
+
+        [MenuItem("Tools/Conductor Chaos/UI/Refresh Approved Icons")]
+        public static void RefreshApprovedIcons()
+        {
+            var catalog = AssetDatabase.LoadAssetAtPath<ChaosUISpriteCatalog>(CatalogPath);
+            if (!catalog)
+            {
+                catalog = ScriptableObject.CreateInstance<ChaosUISpriteCatalog>();
+                AssetDatabase.CreateAsset(catalog, CatalogPath);
+            }
+
+            var entries = new ChaosUISpriteCatalog.Entry[ApprovedIconKeys.Length];
+            int available = 0;
+            for (int i = 0; i < ApprovedIconKeys.Length; i++)
+            {
+                string key = ApprovedIconKeys[i];
+                Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/Icons/" + key + ".png");
+                entries[i] = new ChaosUISpriteCatalog.Entry { key = key, sprite = sprite };
+                if (sprite) available++;
+                else Debug.LogWarning("Conductor Chaos UI: missing sprite " + key);
+            }
+
+            catalog.SetEntries(entries);
+            EditorUtility.SetDirty(catalog);
+            AssetDatabase.SaveAssets();
+            Debug.Log("Conductor Chaos UI: linked " + available + "/" + entries.Length +
+                      " approved sprites to " + CatalogPath);
+        }
 
         [MenuItem("Tools/Conductor Chaos/UI/Create or Open Menu Preview")]
         public static void OpenOrCreate()
         {
+            // Recover stale or missing YAML sprite references using actual imported assets.
+            if (!ChaosUISpriteCatalog.Find("play")) RefreshApprovedIcons();
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(PreviewPath))
             {
                 EditorSceneManager.OpenScene(PreviewPath);
