@@ -191,12 +191,24 @@ def flowers(img, count, rmin=3.0, rmax=4.5):
     return img
 
 
+# Terreingras ijken op het gras bovenop de klifmodellen (issue #118). Het terrein gebruikt URP Terrain Lit: het warme
+# zonlicht vermenigvuldigt de textuur en trekt het gras naar olijf. Gemeten in de playground (zelfde zon): een
+# terreintextuur van #93B84E wordt #A3B03B in beeld, de kliftop (StylizedRamp, toont de ramp zelf) is #AFC852.
+# Doel-textuur = kliftop / (beeld / textuur) = ~#9ED16C. Tweede meting (review @mlemson, 'net iets warmer'): terrein
+# #ADC15C naast kliftop #B2CC4C -> per kanaal bijgesteld naar ~#A3DD59. De winst brengt de ramp-mediaan (#A7B647) daarheen.
+GRASS_TERRAIN_GAIN = np.array([163 / 167, 221 / 182, 89 / 71])
+
+
+def terrain_grass(lo, hi, **kw):
+    return flat("grass", lo, hi, **kw) * GRASS_TERRAIN_GAIN
+
+
 # naam -> (maker, tegelgrootte in m voor de TerrainLayer); de tegelgroottes staan ook in StylizedTerrainTools.cs
 FLAT = {
-    "T_Flat_Grass": lambda: flat("grass", 0.80, 0.94),                       # zoals het gras op de kliffen
-    "T_Flat_GrassSmall": lambda: flat("grass", 0.76, 0.96, cells=256),      # kleinere vlakken, iets levendiger
-    "T_Flat_GrassShade": lambda: flat("grass", 0.50, 0.66),                  # donkerder gras (onder bomen, randen)
-    "T_Flat_GrassFlowers": lambda: flowers(flat("grass", 0.80, 0.94), 35),
+    "T_Flat_Grass": lambda: terrain_grass(0.80, 0.94),                       # zoals het gras op de kliffen
+    "T_Flat_GrassSmall": lambda: terrain_grass(0.76, 0.96, cells=256),      # kleinere vlakken, iets levendiger
+    "T_Flat_GrassShade": lambda: terrain_grass(0.50, 0.66),                  # donkerder gras (onder bomen, randen)
+    "T_Flat_GrassFlowers": lambda: flowers(terrain_grass(0.80, 0.94), 35),
     "T_Flat_Dirt": lambda: flat("cliff", 0.30, 0.48),                        # grond / spoorberm
     "T_Flat_Sand": lambda: flat("parchment", 0.10, 0.22, facet=0.025),                    # zandpad
     "T_Flat_Rock": lambda: flat("cliff", 0.55, 0.80, cells=49, facet=0.05),  # zoals de kliffen

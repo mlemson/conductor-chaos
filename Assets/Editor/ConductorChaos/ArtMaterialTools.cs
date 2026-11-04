@@ -1,6 +1,7 @@
 // Conductor Chaos — wisselen tussen de stylized ramp-shader en URP Lit voor alle art-materialen (issue #33).
 // Gebruik "Use URP Lit (fallback)" als ConductorChaos/StylizedRamp niet compileert (roze materialen).
 // De ramp-waarden blijven in de materialen bewaard, dus terugzetten kan altijd.
+// Materialen met een eigen shader (bv. M_Env_WaterSurface met ConductorChaos/StylizedWater) worden overgeslagen.
 using UnityEditor;
 using UnityEngine;
 
@@ -22,12 +23,16 @@ namespace ConductorChaos.EditorTools
         {
             var shader = Shader.Find(shaderName);
             if (shader == null) { Debug.LogError($"[ArtMaterials] Shader niet gevonden: {shaderName}"); return; }
+            var stylized = Shader.Find(Stylized);
+            var urpLit = Shader.Find(UrpLit);
             int n = 0;
             foreach (var guid in AssetDatabase.FindAssets("t:Material", new[] { MaterialRoot }))
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 var m = AssetDatabase.LoadAssetAtPath<Material>(path);
                 if (m == null || m.shader == shader) continue;
+                // alleen wisselen tussen StylizedRamp en URP Lit; eigen shaders (water, terrein) blijven ongemoeid
+                if (m.shader != stylized && m.shader != urpLit) continue;
                 var baseColor = m.HasProperty("_BaseColor") ? m.GetColor("_BaseColor") : Color.white;
                 int queue = m.renderQueue;
                 m.shader = shader;
