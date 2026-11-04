@@ -101,8 +101,10 @@ namespace ConductorChaos.Playground
             bool moving = grounded && input.sqrMagnitude > 0.01f;
             if (moving) stride += Time.fixedDeltaTime * Mathf.Max(2f, targetSpeed / 0.32f * Mathf.PI);
             float phase = Mathf.Sin(stride) * amount;
-            float swing = grounded ? phase * (sprinting ? 44f : 32f) * input.y : -10f;
-            float side = grounded ? phase * input.x * (sprinting ? 30f : 25f) : 0f;
+            float airbornePhase = sprinting && input.sqrMagnitude > 0.01f ? (leftStance ? -1f : 1f) : 0f;
+            float swing = grounded ? phase * (sprinting ? 44f : 32f) * input.y
+                : (airbornePhase != 0f ? airbornePhase * 30f * input.y : -10f);
+            float side = grounded ? phase * input.x * (sprinting ? 30f : 25f) : airbornePhase * input.x * 20f;
             left.Drive(swing, side);
             right.Drive(-swing, -side);
             RaycastHit leftHit = default, rightHit = default;
