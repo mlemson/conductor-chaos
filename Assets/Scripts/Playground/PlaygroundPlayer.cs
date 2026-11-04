@@ -236,9 +236,12 @@ namespace ConductorChaos.Playground
             bool grounded = IsGrounded();
             Quaternion aim = Quaternion.Euler(requestedPitch, requestedYaw, 0f);
             bool pulling = requestedMove.y > 0.1f;
-            left.Step(leftHeld, aim, hits, transform, reach, pulling);
-            right.Step(rightHeld, aim, hits, transform, reach, pulling);
+            bool firmLedgeGrip = hasLedge && pulling;
+            left.Step(leftHeld, aim, hits, transform, reach, pulling, firmLedgeGrip);
+            right.Step(rightHeld, aim, hits, transform, reach, pulling, firmLedgeGrip);
             bool climbing = ApplyClimbAssist(pulling && !jumpQueued && (leftHeld || rightHeld));
+            int hangingHands = StaticGripCenter(out Vector3 gripCenter);
+            bool hanging = !climbing && hangingHands > 0;
             Vector3 moveDirection = facing * new Vector3(requestedMove.x, 0f, requestedMove.y);
             if (Vector3.Dot(moveDirection.normalized, blockedRecoveryDirection) < 0.80f)
                 blockedRecoveryDirection = Vector3.zero;
@@ -247,19 +250,20 @@ namespace ConductorChaos.Playground
             float walkSpeed = Mathf.Min(sprinting ? sprintSpeed : speed, sprinting ? 3.8f : 1.5f);
             bool stepped = false;
             if (climbing) legs?.BraceForClimb(mantling);
-            bool supported = !climbing && legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting, out stepped);
+            bool supported = !climbing && legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting && !hanging, out stepped);
             Vector3 groundVelocity = supported ? legs.SupportVelocity : Vector3.zero;
             Vector3 target = groundVelocity + moveDirection * walkSpeed * uprightControl;
             // Keep some steering when the torso touches uneven ground but neither foot probe finds support.
             float movementAcceleration = grounded ? acceleration * (supported ? (sprinting ? 1.35f : 1f) : 0.45f)
                 : acceleration * (sprinting ? 0.45f : 0.2f);
             Vector3 change = Vector3.ClampMagnitude(new Vector3(target.x - current.x, 0f, target.z - current.z), movementAcceleration * Time.fixedDeltaTime);
-            if (climbing) change = Vector3.zero;
+            if (climbing || hanging) change = Vector3.zero;
             else body.AddForce(change, ForceMode.VelocityChange);
+            if (hanging) MoveWhileGripping(gripCenter, moveDirection, hangingHands, pulling && !jumpQueued);
 
             // A small push on alternating planted steps makes running a hop, not a repeated full jump.
             Vector3 relativeVelocity = current - groundVelocity;
-            if (sprinting && supported && grounded && !jumpQueued && !climbing && uprightControl > 0.8f &&
+            if (sprinting && supported && grounded && !jumpQueued && !climbing && !hanging && uprightControl > 0.8f &&
                 requestedMove.sqrMagnitude > 0.01f && new Vector2(relativeVelocity.x, relativeVelocity.z).sqrMagnitude > 0.0225f &&
                 (stepped || Time.time >= nextSprintHop + 0.12f) &&
                 Time.time >= nextSprintHop && Time.time - lastJump > 0.3f)
@@ -277,20 +281,27 @@ namespace ConductorChaos.Playground
             Quaternion targetBalance = climbing
                 ? Quaternion.LookRotation(ledgeInward) * Quaternion.Euler(mantling ? 78f : 12f, 0f, 0f)
                 : facing * Quaternion.Euler(smoothedLean.x, 0f, smoothedLean.z);
+            if (hanging)
+            {
+                float lean = hangingHands == 1 ? 30f : 16f;
+                targetBalance = facing * Quaternion.Euler(requestedMove.y * lean, 0f, -requestedMove.x * lean * 0.6f);
+            }
             Quaternion error = targetBalance * Quaternion.Inverse(body.rotation);
             error.ToAngleAxis(out float angle, out Vector3 axis);
             if (angle > 180f) angle -= 360f;
             if (float.IsFinite(axis.x) && axis.sqrMagnitude > 0.01f)
-                body.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * 100f) - body.angularVelocity * 18f, 140f), ForceMode.Acceleration);
+                body.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * (hanging ? 38f : 100f))
+                    - body.angularVelocity * (hanging ? 7f : 18f), hanging ? 65f : 140f), ForceMode.Acceleration);
 
             if (jumpQueued)
             {
                 jumpQueued = false;
-                if (Time.time - lastJump > 0.25f && grounded)
+                bool hasGrip = left.HasGrip || right.HasGrip;
+                if (Time.time - lastJump > 0.25f && (grounded || (hasGrip && legs != null && legs.HasFootContact())))
                 {
                     legs?.ReleaseSupport();
                     Vector3 velocity = body.linearVelocity;
-                    velocity.y = jumpSpeed;
+                    velocity.y = jumpSpeed * (hanging ? 0.8f : 1f);
                     body.linearVelocity = velocity;
                     lastJump = Time.time;
                 }
@@ -306,6 +317,38 @@ namespace ConductorChaos.Playground
                 }
                 nextPose = Time.time + 0.05f;
             }
+        }
+
+        private int StaticGripCenter(out Vector3 center)
+        {
+            bool leftGrip = left.TryStaticAnchor(out Vector3 leftAnchor);
+            bool rightGrip = right.TryStaticAnchor(out Vector3 rightAnchor);
+            center = leftGrip && rightGrip ? (leftAnchor + rightAnchor) * 0.5f : leftGrip ? leftAnchor : rightAnchor;
+            return (leftGrip ? 1 : 0) + (rightGrip ? 1 : 0);
+        }
+
+        private void MoveWhileGripping(Vector3 anchor, Vector3 move, int hands, bool pulling)
+        {
+            if (move.sqrMagnitude < 0.01f) return;
+            Vector3 toGrip = anchor - body.worldCenterOfMass;
+            Vector3 tether = toGrip.normalized;
+            Vector3 velocity = body.linearVelocity;
+            // Steer along the swing, leaving a little give for leaning away from the wall.
+            Vector3 tangent = Vector3.ProjectOnPlane(move, tether);
+            Vector3 push = tangent * (hands == 1 ? 8f : 5f) + move * 2f;
+            if (tangent.sqrMagnitude > 0.01f)
+                push -= Vector3.Project(velocity, tangent) * 3f;
+
+            // A plain grip can pull the torso to hand height; crossing a lip still needs a validated ledge.
+            float rise = toGrip.y + 0.10f;
+            if (pulling && rise > 0.02f && velocity.y < climbUpSpeed && Time.time - lastJump > 0.18f)
+            {
+                float targetUp = Mathf.Min(rise * 5f, climbUpSpeed * 0.75f);
+                float lift = Mathf.Max(0f, (targetUp - velocity.y) * 9f - Physics.gravity.y * 0.8f);
+                push.y = Mathf.Max(0f, push.y) + Mathf.Min(lift, climbAcceleration * (hands == 1 ? 0.64f : 0.82f));
+            }
+
+            body.AddForce(Vector3.ClampMagnitude(push, climbAcceleration), ForceMode.Acceleration);
         }
 
         private bool RecoverFromPinch(Vector3 move, bool grounded)
@@ -654,7 +697,7 @@ namespace ConductorChaos.Playground
                 shoulder.enableCollision = true;
             }
 
-            public void Step(bool held, Quaternion aim, RaycastHit[] buffer, Transform player, float reach, bool pulling)
+            public void Step(bool held, Quaternion aim, RaycastHit[] buffer, Transform player, float reach, bool pulling, bool firmLedgeGrip)
             {
                 if (!rigid) return;
                 if (!held) releasedAtCrest = false;
@@ -677,8 +720,10 @@ namespace ConductorChaos.Playground
                 Quaternion error = desired * Quaternion.Inverse(rigid.rotation);
                 error.ToAngleAxis(out float angle, out Vector3 axis);
                 if (angle > 180f) angle -= 360f;
+                bool looseGrip = grip && !grip.connectedBody && !firmLedgeGrip;
                 if (float.IsFinite(axis.x) && axis.sqrMagnitude > 0.01f)
-                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * (held ? 180f : 32f)) - rigid.angularVelocity * (held ? 14f : 5f), held ? 420f : 55f), ForceMode.Acceleration);
+                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * (looseGrip ? 85f : held ? 180f : 32f))
+                        - rigid.angularVelocity * (looseGrip ? 7f : held ? 14f : 5f), looseGrip ? 150f : held ? 420f : 55f), ForceMode.Acceleration);
 
                 if (!held || grip || releasedAtCrest || Time.time < nextAttempt) return;
                 nextAttempt = Time.time + 0.1f;

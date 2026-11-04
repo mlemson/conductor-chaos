@@ -152,6 +152,8 @@ namespace ConductorChaos.Playground
             if (right.Collider) right.Collider.enabled = enabled;
         }
 
+        public bool HasFootContact() => left.TouchesGround(contacts, torso.transform) || right.TouchesGround(contacts, torso.transform);
+
         public void BeginSprintHop()
         {
             leftForwardInAir = !leftForwardInAir;
@@ -272,6 +274,9 @@ namespace ConductorChaos.Playground
                 }
                 return found;
             }
+
+            public bool TouchesGround(RaycastHit[] buffer, Transform player)
+                => FindGround(buffer, player, out RaycastHit hit) && hit.point.y >= collider.bounds.min.y - 0.06f;
 
             public void SetSupport(bool planted, RaycastHit hit)
             {
