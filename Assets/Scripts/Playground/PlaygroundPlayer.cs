@@ -217,7 +217,7 @@ namespace ConductorChaos.Playground
             float uprightControl = Mathf.InverseLerp(0.15f, 0.75f, Vector3.Dot(body.rotation * Vector3.up, Vector3.up));
             Vector3 current = body.linearVelocity;
             bool grounded = IsGrounded();
-            float walkSpeed = Mathf.Min(sprinting ? sprintSpeed : speed, sprinting ? 2.2f : 1.5f);
+            float walkSpeed = Mathf.Min(sprinting ? sprintSpeed : speed, sprinting ? 3.2f : 1.5f);
             bool stepped = false;
             bool supported = legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting, out stepped);
             Vector3 groundVelocity = supported ? legs.SupportVelocity : Vector3.zero;
@@ -233,8 +233,8 @@ namespace ConductorChaos.Playground
                 Time.time >= nextSprintHop && Time.time - lastJump > 0.3f)
             {
                 legs.ReleaseSupport();
-                body.AddForce(Vector3.up * Mathf.Clamp(1.1f - relativeVelocity.y, 0f, 1.6f), ForceMode.VelocityChange);
-                nextSprintHop = Time.time + 0.18f;
+                body.AddForce(Vector3.up * Mathf.Clamp(1.55f - relativeVelocity.y, 0f, 2f), ForceMode.VelocityChange);
+                nextSprintHop = Time.time + 0.14f;
             }
 
             // A damped upright motor yields to impacts instead of freezing body rotation.
