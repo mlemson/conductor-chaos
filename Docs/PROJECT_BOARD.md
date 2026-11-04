@@ -6,7 +6,7 @@
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 59 | 1 | 0 | 0 | 1 |
+| 59 | 0 | 1 | 0 | 1 |
 
 ## 🗺️ Mijlpalen
 
@@ -108,15 +108,15 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P2 | [#90 Koppeling kan breken bij hoge impact](https://github.com/mlemson/conductor-chaos/issues/90) | Physics | — | — |
 | P2 | [#92 Optionele mijlpaalcheck: sessie met vier en later zes spelers](https://github.com/mlemson/conductor-chaos/issues/92) | QA | — | — |
 
-### 🔧 Bezig (1)
+### 🔧 Bezig (0)
+
+*Geen taken in deze kolom.*
+
+### 👀 Klaar voor review (1)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
-| P0 | [#53 Spoorasset: recht segment en bocht als Unity-prefabs](https://github.com/mlemson/conductor-chaos/issues/53) | Train | @mlemson | — |
-
-### 👀 Klaar voor review (0)
-
-*Geen taken in deze kolom.*
+| P0 | [#53 Spoorasset: recht segment en bocht als Unity-prefabs](https://github.com/mlemson/conductor-chaos/issues/53) | Train | @mlemson | [#113](https://github.com/mlemson/conductor-chaos/pull/113) |
 
 ### ⛔ Geblokkeerd (0)
 
