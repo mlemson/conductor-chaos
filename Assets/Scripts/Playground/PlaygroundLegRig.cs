@@ -1,4 +1,5 @@
 using System;
+using Unity.Netcode;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -15,10 +16,14 @@ namespace ConductorChaos.Playground
         private readonly Mesh mesh;
         private readonly Leg left;
         private readonly Leg right;
+        private readonly RaycastHit[] contacts = new RaycastHit[16];
         private float stride;
+        private bool leftStance = true;
+        private bool leftForwardInAir;
 
         public Quaternion LeftRotation => left.Rotation;
         public Quaternion RightRotation => right.Rotation;
+        public Vector3 SupportVelocity => left.HasSupport ? left.SupportVelocity : right.SupportVelocity;
 
         private PlaygroundLegRig(Transform model, Rigidbody torso, MeshRenderer original,
             SkinnedMeshRenderer skin, Mesh mesh, Leg left, Leg right)
@@ -87,18 +92,64 @@ namespace ConductorChaos.Playground
             return new PlaygroundLegRig(model, torso, renderer, skin, mesh, left, right);
         }
 
-        public void Step(Vector3 velocity, Vector2 input, bool grounded)
+        public bool Step(Vector3 velocity, Vector2 input, bool grounded, float targetSpeed, bool sprinting, out bool stepped)
         {
+            stepped = false;
             Vector3 localVelocity = torso.transform.InverseTransformDirection(velocity);
             float speed = new Vector2(localVelocity.x, localVelocity.z).magnitude;
-            float amount = Mathf.Clamp01(speed / 2.5f) * Mathf.Clamp01(input.magnitude);
-            if (grounded && amount > 0.05f) stride += Time.fixedDeltaTime * Mathf.Lerp(5f, 9f, amount);
+            // Start the step from input so stationary feet can get the body moving.
+            float amount = Mathf.Lerp(0.65f, 1f, Mathf.Clamp01(speed / 2.5f)) * Mathf.Clamp01(input.magnitude);
+            bool moving = grounded && input.sqrMagnitude > 0.01f;
+            if (moving) stride += Time.fixedDeltaTime * Mathf.Max(2f, targetSpeed / 0.32f * Mathf.PI);
             float phase = Mathf.Sin(stride) * amount;
-            float direction = input.y < -0.1f ? -1f : 1f;
-            float swing = grounded ? phase * 32f * direction : -10f;
-            float side = grounded ? phase * input.x * 10f : 0f;
+            float airbornePhase = sprinting && input.sqrMagnitude > 0.01f ? (leftForwardInAir ? -1f : 1f) : 0f;
+            float swing = grounded ? phase * (sprinting ? 52f : 32f) * input.y
+                : (airbornePhase != 0f ? airbornePhase * 48f * input.y : -10f);
+            float side = grounded ? phase * input.x * (sprinting ? 30f : 25f) : airbornePhase * input.x * 20f;
             left.Drive(swing, side);
             right.Drive(-swing, -side);
+            RaycastHit leftHit = default, rightHit = default;
+            bool leftContact = grounded && left.FindGround(contacts, torso.transform, out leftHit);
+            bool rightContact = grounded && right.FindGround(contacts, torso.transform, out rightHit);
+            if (!grounded)
+            {
+                ReleaseSupport();
+                return false;
+            }
+            if (!moving)
+            {
+                left.SetSupport(leftContact, leftHit);
+                right.SetSupport(rightContact, rightHit);
+            }
+            else
+            {
+                bool wantsLeft = Mathf.Sin(stride) >= 0f;
+                bool nextLeft = leftStance;
+                if ((wantsLeft && leftContact) || (!wantsLeft && rightContact))
+                    nextLeft = wantsLeft;
+                else if ((leftStance && !leftContact && rightContact) || (!leftStance && !rightContact && leftContact))
+                    nextLeft = !leftStance;
+                if (nextLeft != leftStance)
+                {
+                    stepped = true;
+                    leftStance = nextLeft;
+                }
+                left.SetSupport(leftStance && leftContact, leftHit);
+                right.SetSupport(!leftStance && rightContact, rightHit);
+            }
+            return left.HasSupport || right.HasSupport;
+        }
+
+        public void ReleaseSupport()
+        {
+            left.ReleaseSupport();
+            right.ReleaseSupport();
+        }
+
+        public void BeginSprintHop()
+        {
+            leftForwardInAir = !leftForwardInAir;
+            ReleaseSupport();
         }
 
         public void ShowRemote(Quaternion leftPose, Quaternion rightPose)
@@ -123,8 +174,13 @@ namespace ConductorChaos.Playground
             private readonly Rigidbody rigid;
             private readonly CapsuleCollider collider;
             private readonly ConfigurableJoint hip;
+            private SpringJoint support;
             public Quaternion Rotation => bone ? bone.localRotation : Quaternion.identity;
             public Collider Collider => collider;
+            public bool HasSupport => support;
+            public Vector3 SupportVelocity => support && support.connectedBody
+                ? support.connectedBody.GetPointVelocity(support.connectedBody.transform.TransformPoint(support.connectedAnchor))
+                : Vector3.zero;
 
             public Leg(Transform bone, Rigidbody torso, bool server)
             {
@@ -147,8 +203,8 @@ namespace ConductorChaos.Playground
                 hip.connectedAnchor = torso.transform.InverseTransformPoint(bone.position);
                 hip.xMotion = hip.yMotion = hip.zMotion = ConfigurableJointMotion.Locked;
                 hip.angularXMotion = hip.angularYMotion = hip.angularZMotion = ConfigurableJointMotion.Limited;
-                hip.lowAngularXLimit = new SoftJointLimit { limit = -40f };
-                hip.highAngularXLimit = new SoftJointLimit { limit = 40f };
+                hip.lowAngularXLimit = new SoftJointLimit { limit = -55f };
+                hip.highAngularXLimit = new SoftJointLimit { limit = 55f };
                 hip.angularYLimit = new SoftJointLimit { limit = 15f };
                 hip.angularZLimit = new SoftJointLimit { limit = 15f };
                 hip.enableCollision = false;
@@ -158,12 +214,70 @@ namespace ConductorChaos.Playground
             {
                 if (!rigid) return;
                 Quaternion desired = bone.parent.rotation * rest * Quaternion.Euler(angle, 0f, side);
+                if (support)
+                {
+                    Vector3 anchor = support.connectedBody
+                        ? support.connectedBody.transform.TransformPoint(support.connectedAnchor)
+                        : support.connectedAnchor;
+                    Vector3 desiredFoot = bone.parent.InverseTransformPoint(anchor) - bone.localPosition;
+                    Vector3 restingFoot = rest * support.anchor;
+                    if (desiredFoot.sqrMagnitude > 0.001f && restingFoot.sqrMagnitude > 0.001f)
+                        desired = bone.parent.rotation * Quaternion.FromToRotation(restingFoot, desiredFoot) * rest;
+                }
                 Quaternion error = desired * Quaternion.Inverse(rigid.rotation);
                 error.ToAngleAxis(out float difference, out Vector3 axis);
                 if (difference > 180f) difference -= 360f;
                 if (float.IsFinite(axis.x) && axis.sqrMagnitude > 0.01f)
-                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (difference * Mathf.Deg2Rad * 30f) -
-                        rigid.angularVelocity * 6f, 35f), ForceMode.Acceleration);
+                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (difference * Mathf.Deg2Rad * 95f) -
+                        rigid.angularVelocity * 12f, 100f), ForceMode.Acceleration);
+            }
+
+            public bool FindGround(RaycastHit[] buffer, Transform player, out RaycastHit nearest)
+            {
+                nearest = default;
+                if (!collider) return false;
+                Vector3 origin = collider.bounds.center + Vector3.up * 0.08f;
+                int count = Physics.SphereCastNonAlloc(origin, 0.05f, Vector3.down, buffer, 0.18f, ~0, QueryTriggerInteraction.Ignore);
+                float distance = float.PositiveInfinity;
+                bool found = false;
+                for (int i = 0; i < count; i++)
+                {
+                    RaycastHit hit = buffer[i];
+                    if (hit.collider.transform.IsChildOf(player) || hit.normal.y < 0.55f || hit.distance >= distance) continue;
+                    if (hit.rigidbody && !hit.rigidbody.isKinematic)
+                    {
+                        NetworkObject target = hit.rigidbody.GetComponentInParent<NetworkObject>();
+                        if (!target || !target.IsSpawned || !target.IsOwnedByServer) continue;
+                    }
+                    nearest = hit;
+                    distance = hit.distance;
+                    found = true;
+                }
+                return found;
+            }
+
+            public void SetSupport(bool planted, RaycastHit hit)
+            {
+                if (!planted) { ReleaseSupport(); return; }
+                if (support && support.connectedBody == hit.rigidbody) return;
+                ReleaseSupport();
+                support = bone.gameObject.AddComponent<SpringJoint>();
+                support.autoConfigureConnectedAnchor = false;
+                support.connectedBody = hit.rigidbody;
+                support.anchor = rigid.transform.InverseTransformPoint(hit.point);
+                support.connectedAnchor = hit.rigidbody ? hit.rigidbody.transform.InverseTransformPoint(hit.point) : hit.point;
+                // Allow the torso to travel over the planted foot without the spring acting as a brake.
+                support.spring = 180f;
+                support.damper = 8f;
+                support.maxDistance = 0.025f;
+                support.breakForce = 120f;
+            }
+
+            public void ReleaseSupport()
+            {
+                if (!support) return;
+                Object.Destroy(support);
+                support = null;
             }
 
             public void ShowRemote(Quaternion pose)
@@ -173,6 +287,7 @@ namespace ConductorChaos.Playground
 
             public void Dispose()
             {
+                ReleaseSupport();
                 if (hip) Object.Destroy(hip);
                 if (collider) Object.Destroy(collider);
                 if (rigid) Object.Destroy(rigid);

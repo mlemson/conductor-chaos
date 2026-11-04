@@ -11,9 +11,11 @@ namespace ConductorChaos.Playground
         [SerializeField] private Transform leftArm;
         [SerializeField] private Transform rightArm;
         [SerializeField] private float speed = 3.5f;
+        [SerializeField] private float sprintSpeed = 4.7f;
         [SerializeField] private float acceleration = 18f;
         [SerializeField] private float reach = 1.8f;
         [SerializeField] private float jumpSpeed = 5f;
+        [SerializeField] private float balanceLean = 7f;
 
         private readonly NetworkVariable<Quaternion> leftPose = new(Quaternion.identity);
         private readonly NetworkVariable<Quaternion> rightPose = new(Quaternion.identity);
@@ -30,10 +32,12 @@ namespace ConductorChaos.Playground
         private Vector2 requestedMove;
         private float requestedYaw;
         private float requestedPitch;
-        private bool leftHeld, rightHeld, jumpQueued;
+        private bool leftHeld, rightHeld, jumpQueued, sprinting, climbing;
         private bool lastLeft, lastRight;
         private float nextInput, nextPose, lastJump;
+        private float nextSprintHop;
         private float lastServerInput;
+        private Vector3 smoothedLean;
         private float yaw, pitch = 18f;
         private Camera playerCamera;
         private readonly RaycastHit[] hits = new RaycastHit[32];
@@ -66,7 +70,7 @@ namespace ConductorChaos.Playground
             if (IsServer)
             {
                 body.constraints = RigidbodyConstraints.None;
-                body.centerOfMass = new Vector3(0, 0.55f, 0);
+                body.centerOfMass = new Vector3(0, 0.35f, 0);
                 body.maxAngularVelocity = 12f;
             }
             left = new ArmPhysics(leftArm, body, IsServer);
@@ -105,7 +109,7 @@ namespace ConductorChaos.Playground
             Mouse mouse = Mouse.current;
             if (keyboard == null || mouse == null)
             {
-                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false);
+                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
                 lastLeft = lastRight = false;
                 return;
             }
@@ -125,7 +129,7 @@ namespace ConductorChaos.Playground
             {
                 Vector2 delta = mouse.delta.ReadValue();
                 yaw += delta.x * 0.12f;
-                pitch = Mathf.Clamp(pitch - delta.y * 0.12f, -60f, 65f);
+                pitch = Mathf.Clamp(pitch - delta.y * 0.12f, -80f, 65f);
             }
             Vector2 move = active ? new Vector2((keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f),
                                (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f)) : Vector2.zero;
@@ -134,7 +138,7 @@ namespace ConductorChaos.Playground
             if (active && keyboard.spaceKey.wasPressedThisFrame) JumpServerRpc();
             if (Time.unscaledTime >= nextInput || l != lastLeft || r != lastRight)
             {
-                SendInputServerRpc(Vector2.ClampMagnitude(move, 1f), yaw, pitch, l, r);
+                SendInputServerRpc(Vector2.ClampMagnitude(move, 1f), yaw, pitch, l, r, active && keyboard.leftShiftKey.isPressed, active && keyboard.spaceKey.isPressed);
                 nextInput = Time.unscaledTime + 0.05f;
                 lastLeft = l;
                 lastRight = r;
@@ -142,15 +146,17 @@ namespace ConductorChaos.Playground
         }
 
         [ServerRpc]
-        private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r)
+        private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r, bool sprint, bool climb)
         {
             if (!float.IsFinite(move.x) || !float.IsFinite(move.y) || !float.IsFinite(direction) || !float.IsFinite(lookPitch)) return;
             requestedMove = Vector2.ClampMagnitude(move, 1f);
             requestedYaw = Mathf.Repeat(direction, 360f);
-            requestedPitch = Mathf.Clamp(lookPitch, -60f, 65f);
+            requestedPitch = Mathf.Clamp(lookPitch, -80f, 65f);
             lastServerInput = Time.unscaledTime;
             leftHeld = l;
             rightHeld = r;
+            sprinting = sprint;
+            climbing = climb;
             if (!l) left?.Release();
             if (!r) right?.Release();
         }
@@ -159,7 +165,7 @@ namespace ConductorChaos.Playground
         {
             if (focused || !IsSpawned || !IsOwner) return;
             lastLeft = lastRight = false;
-            SendInputServerRpc(Vector2.zero, yaw, pitch, false, false);
+            SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
         }
 
         [ServerRpc]
@@ -177,11 +183,11 @@ namespace ConductorChaos.Playground
             float legAngle = 0f;
             for (int i = 0; i < 25; i++)
             {
-                SendInputServerRpc(Vector2.up, 0f, 0f, false, false);
+                SendInputServerRpc(Vector2.up, 0f, 0f, false, false, false, false);
                 yield return new WaitForSeconds(0.05f);
                 if (testLeg) legAngle = Mathf.Max(legAngle, Quaternion.Angle(initialLeg, testLeg.localRotation));
             }
-            SendInputServerRpc(Vector2.zero, 0f, 0f, false, false);
+            SendInputServerRpc(Vector2.zero, 0f, 0f, false, false, false, false);
             yield return new WaitForSeconds(0.3f);
             float moved = Vector3.Distance(start, transform.position);
             float baseY = transform.position.y;
@@ -203,29 +209,53 @@ namespace ConductorChaos.Playground
             {
                 requestedMove = Vector2.zero;
                 leftHeld = rightHeld = false;
+                sprinting = climbing = false;
                 left.Release();
                 right.Release();
             }
             Quaternion facing = Quaternion.Euler(0f, requestedYaw, 0f);
-            Vector3 target = facing * new Vector3(requestedMove.x, 0f, requestedMove.y) * speed;
+            float uprightControl = Mathf.InverseLerp(0.15f, 0.75f, Vector3.Dot(body.rotation * Vector3.up, Vector3.up));
             Vector3 current = body.linearVelocity;
             bool grounded = IsGrounded();
-            float movementAcceleration = grounded ? acceleration : acceleration * 0.35f;
+            float walkSpeed = Mathf.Min(sprinting ? sprintSpeed : speed, sprinting ? 3.8f : 1.5f);
+            bool stepped = false;
+            bool supported = legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting, out stepped);
+            Vector3 groundVelocity = supported ? legs.SupportVelocity : Vector3.zero;
+            Vector3 target = groundVelocity + facing * new Vector3(requestedMove.x, 0f, requestedMove.y) * walkSpeed * uprightControl;
+            float movementAcceleration = grounded ? (supported ? acceleration * (sprinting ? 1.35f : 1f) : 0f) : acceleration * (sprinting ? 0.45f : 0.2f);
             Vector3 change = Vector3.ClampMagnitude(new Vector3(target.x - current.x, 0f, target.z - current.z), movementAcceleration * Time.fixedDeltaTime);
             body.AddForce(change, ForceMode.VelocityChange);
 
+            // A small push on alternating planted steps makes running a hop, not a repeated full jump.
+            Vector3 relativeVelocity = current - groundVelocity;
+            if (sprinting && supported && grounded && !jumpQueued && !climbing && uprightControl > 0.8f &&
+                requestedMove.sqrMagnitude > 0.01f && new Vector2(relativeVelocity.x, relativeVelocity.z).sqrMagnitude > 0.0225f &&
+                (stepped || Time.time >= nextSprintHop + 0.12f) &&
+                Time.time >= nextSprintHop && Time.time - lastJump > 0.3f)
+            {
+                legs.BeginSprintHop();
+                body.AddForce(Vector3.up * Mathf.Clamp(2.05f - relativeVelocity.y, 0f, 2.45f), ForceMode.VelocityChange);
+                nextSprintHop = Time.time + 0.32f;
+            }
+
             // A damped upright motor yields to impacts instead of freezing body rotation.
-            Quaternion error = facing * Quaternion.Inverse(body.rotation);
+            Vector3 localChange = Quaternion.Inverse(facing) * (change / Mathf.Max(Time.fixedDeltaTime, 0.001f));
+            Vector3 desiredLean = new Vector3(-localChange.z, 0f, localChange.x);
+            desiredLean = Vector3.ClampMagnitude(desiredLean, acceleration) / acceleration * balanceLean;
+            smoothedLean = Vector3.Lerp(smoothedLean, desiredLean, 5f * Time.fixedDeltaTime);
+            Quaternion targetBalance = facing * Quaternion.Euler(smoothedLean.x, 0f, smoothedLean.z);
+            Quaternion error = targetBalance * Quaternion.Inverse(body.rotation);
             error.ToAngleAxis(out float angle, out Vector3 axis);
             if (angle > 180f) angle -= 360f;
             if (float.IsFinite(axis.x) && axis.sqrMagnitude > 0.01f)
-                body.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * 35f) - body.angularVelocity * 9f, 65f), ForceMode.Acceleration);
+                body.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * 100f) - body.angularVelocity * 18f, 140f), ForceMode.Acceleration);
 
             if (jumpQueued)
             {
                 jumpQueued = false;
                 if (Time.time - lastJump > 0.25f && grounded)
                 {
+                    legs?.ReleaseSupport();
                     Vector3 velocity = body.linearVelocity;
                     velocity.y = jumpSpeed;
                     body.linearVelocity = velocity;
@@ -235,7 +265,16 @@ namespace ConductorChaos.Playground
             Quaternion aim = Quaternion.Euler(requestedPitch, requestedYaw, 0f);
             left.Step(leftHeld, requestedPitch, aim, hits, transform, reach);
             right.Step(rightHeld, requestedPitch, aim, hits, transform, reach);
-            legs?.Step(body.linearVelocity, requestedMove, grounded);
+            if (climbing && !grounded && body.linearVelocity.y < 2.5f)
+            {
+                int supports = (left.CanPullUp ? 1 : 0) + (right.CanPullUp ? 1 : 0);
+                if (supports > 0)
+                {
+                    Vector3 force = Vector3.up * (body.mass * 18f / supports);
+                    left.PullUp(force);
+                    right.PullUp(force);
+                }
+            }
             if (Time.time >= nextPose)
             {
                 leftPose.Value = left.LocalRotation;
@@ -268,14 +307,15 @@ namespace ConductorChaos.Playground
                 legs?.ShowRemote(leftLegPose.Value, rightLegPose.Value);
             }
             if (!IsOwner || !playerCamera) return;
-            Quaternion orbit = Quaternion.Euler(pitch, yaw, 0f);
+            Quaternion look = Quaternion.Euler(pitch, yaw, 0f);
             Vector3 focus = transform.position + Vector3.up * 0.9f;
-            Vector3 direction = -(orbit * Vector3.forward);
+            Vector3 direction = -(look * Vector3.forward);
             float distance = 4f;
-            int count = Physics.SphereCastNonAlloc(focus, 0.16f, direction, hits, distance, ~0, QueryTriggerInteraction.Ignore);
+            const float radius = 0.16f;
+            int count = Physics.SphereCastNonAlloc(focus, radius, direction, hits, distance, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
-                if (!hits[i].collider.transform.IsChildOf(transform)) distance = Mathf.Min(distance, Mathf.Max(0.3f, hits[i].distance - 0.15f));
-            playerCamera.transform.SetPositionAndRotation(focus + direction * distance, orbit);
+                if (!hits[i].collider.transform.IsChildOf(transform)) distance = Mathf.Min(distance, Mathf.Max(0f, hits[i].distance - radius));
+            playerCamera.transform.SetPositionAndRotation(focus + direction * distance, look);
         }
 
         public override void OnNetworkDespawn()
@@ -295,7 +335,7 @@ namespace ConductorChaos.Playground
         private void OnGUI()
         {
             if (!IsSpawned || !IsOwner) return;
-            GUI.Label(new Rect(16, 16, 1000, 24), "WASD lopen | spatie springen | muis kijken | linker/rechter muisknop: hand grijpen | Esc cursor");
+            GUI.Label(new Rect(16, 16, 1500, 24), "WASD lopen | Shift rennen | spatie springen/omhoog trekken | muis kijken en armen richten | muisknoppen vasthouden: grijpen | Esc: cursor");
         }
 
         // Arm physics exists only on the server; observers receive the shoulder pose.
@@ -312,6 +352,7 @@ namespace ConductorChaos.Playground
 
             public Quaternion LocalRotation => arm ? arm.localRotation : Quaternion.identity;
             public Collider Collider => collider;
+            public bool CanPullUp => grip && (grip.connectedBody ? grip.connectedBody.transform.TransformPoint(grip.connectedAnchor) : grip.connectedAnchor).y > parent.worldCenterOfMass.y + 0.1f;
 
             public ArmPhysics(Transform transform, Rigidbody body, bool server)
             {
@@ -343,8 +384,8 @@ namespace ConductorChaos.Playground
                 shoulder.angularXMotion = shoulder.angularYMotion = shoulder.angularZMotion = ConfigurableJointMotion.Limited;
                 shoulder.lowAngularXLimit = new SoftJointLimit { limit = -170f };
                 shoulder.highAngularXLimit = new SoftJointLimit { limit = 170f };
-                shoulder.angularYLimit = new SoftJointLimit { limit = 70f };
-                shoulder.angularZLimit = new SoftJointLimit { limit = 70f };
+                shoulder.angularYLimit = new SoftJointLimit { limit = 85f };
+                shoulder.angularZLimit = new SoftJointLimit { limit = 85f };
                 shoulder.enableCollision = true;
             }
 
@@ -357,15 +398,15 @@ namespace ConductorChaos.Playground
                 Vector3 aimInParent = arm.parent.InverseTransformDirection(aim * Vector3.forward);
                 Vector3 restDirection = rest * Vector3.down;
                 aimInParent = (aimInParent + Vector3.right * Mathf.Sign(restDirection.x) * 0.55f).normalized;
-                Quaternion localTarget = held
-                    ? Quaternion.FromToRotation(restDirection, aimInParent) * rest
-                    : rest;
+                Quaternion aiming = Quaternion.FromToRotation(restDirection, aimInParent) * rest;
+                // Follow the look direction even when the hand is not gripping.
+                Quaternion localTarget = Quaternion.Slerp(rest, aiming, held ? 1f : 0.75f);
                 Quaternion desired = arm.parent.rotation * localTarget;
                 Quaternion error = desired * Quaternion.Inverse(rigid.rotation);
                 error.ToAngleAxis(out float angle, out Vector3 axis);
                 if (angle > 180f) angle -= 360f;
                 if (float.IsFinite(axis.x) && axis.sqrMagnitude > 0.01f)
-                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * 32f) - rigid.angularVelocity * 5f, 55f), ForceMode.Acceleration);
+                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * (held ? 180f : 32f)) - rigid.angularVelocity * (held ? 14f : 5f), held ? 420f : 55f), ForceMode.Acceleration);
 
                 if (!held) Release();
                 if (!held || grip || Time.time < nextAttempt) return;
@@ -395,11 +436,19 @@ namespace ConductorChaos.Playground
                 grip.connectedBody = chosen.rigidbody;
                 grip.connectedAnchor = chosen.rigidbody ? chosen.rigidbody.transform.InverseTransformPoint(chosen.point) : chosen.point;
                 grip.anchor = new Vector3(0, -0.205f, 0);
-                grip.spring = 180f;
-                grip.damper = 18f;
+                grip.spring = 320f;
+                grip.damper = 32f;
                 grip.minDistance = 0f;
                 grip.maxDistance = 0.03f;
-                grip.breakForce = 300f;
+                grip.breakForce = 550f;
+            }
+
+            public void PullUp(Vector3 force)
+            {
+                if (!CanPullUp) return;
+                parent.AddForce(force, ForceMode.Force);
+                if (grip.connectedBody)
+                    grip.connectedBody.AddForceAtPosition(-force, grip.connectedBody.transform.TransformPoint(grip.connectedAnchor), ForceMode.Force);
             }
 
             public void ShowRemote(Quaternion rotation)
