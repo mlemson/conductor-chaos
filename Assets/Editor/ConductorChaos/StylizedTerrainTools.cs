@@ -19,14 +19,14 @@ namespace ConductorChaos.EditorTools
         const string LayerDir = "Assets/Art/Terrain/Layers";
         const string DataDir = "Assets/Art/Terrain";
 
-        // textuur, laagnaam, tegelgrootte (m)
+        // textuur, laagnaam, tegelgrootte (m): effen vlakken, zodat het terrein op de low-poly props aansluit
         static readonly (string tex, string layer, float tile)[] Defs =
         {
-            ("T_Ground_Grass", "TL_Grass", 8f),
-            ("T_Ground_GrassFlowers", "TL_GrassFlowers", 8f),
-            ("T_Ground_Dirt", "TL_Dirt", 6f),
-            ("T_Ground_PathStones", "TL_PathStones", 3f),
-            ("T_Ground_Rock", "TL_Rock", 6f),
+            ("T_Flat_Grass", "TL_Grass", 10f),
+            ("T_Flat_GrassSmall", "TL_GrassFlowers", 10f),
+            ("T_Flat_Dirt", "TL_Dirt", 8f),
+            ("T_Flat_Stone", "TL_PathStones", 5f),
+            ("T_Flat_Rock", "TL_Rock", 8f),
         };
 
         // effen set (test): effen kleur met grote, net iets andere vlakken, zoals het gras/de rots op de kliffen

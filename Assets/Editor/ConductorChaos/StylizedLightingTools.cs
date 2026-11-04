@@ -1,5 +1,7 @@
 // Conductor Chaos — belichting zoals het conceptbeeld (issue #33).
 // Menu: Conductor Chaos > Art > Lighting > Apply Stylized Lighting (op de open scène).
+// Apply Neutral Lighting is het rustige alternatief: minder blauw omgevingslicht, geen split toning, nauwelijks bloom.
+// Apply Warm Stylized Lighting zit dichter bij de conceptart: warmere zon, blauwere lucht, wat verzadiging en meer nevel in de verte.
 //   - Zon: warm (parchment), zachte schaduwen die niet zwart worden.
 //   - Omgevingslicht in drie lagen: blauwe lucht van boven, lavendel bij de horizon, warm groen van onder,
 //     zodat schaduwen koel blauw-violet kleuren (warm licht, koele schaduw).
@@ -21,6 +23,8 @@ namespace ConductorChaos.EditorTools
     {
         const string Dir = "Assets/Art/Lighting";
         const string ProfilePath = Dir + "/VP_Stylized.asset";
+        const string NeutralProfilePath = Dir + "/VP_Neutral.asset";
+        const string WarmProfilePath = Dir + "/VP_WarmStylized.asset";
         const string SkyPath = Dir + "/M_Sky_Gradient.mat";
         const string SkyShader = "Assets/Art/Shaders/GradientSky.shader";
 
@@ -42,8 +46,29 @@ namespace ConductorChaos.EditorTools
         public static void Apply()
         {
             EnsureFolder(Dir);
-            var sky = EnsureSky();
-            var profile = EnsureProfile();
+            Apply(EnsureProfile(), Sun, 1.35f, 0.7f, AmbientSky, AmbientEquator, AmbientGround, Haze, 45f, 320f, SkyTop);
+        }
+
+        [MenuItem("Conductor Chaos/Art/Lighting/Apply Neutral Lighting")]
+        public static void ApplyNeutral()
+        {
+            EnsureFolder(Dir);
+            Apply(EnsureNeutralProfile(), Sun, 1.15f, 0.6f, Hex("#8187B4") /* mountain[3] */, Hex("#9C8978") /* parchment[0] */,
+                  AmbientGround, Haze, 70f, 450f, SkyTop);
+        }
+
+        [MenuItem("Conductor Chaos/Art/Lighting/Apply Warm Stylized Lighting")]
+        public static void ApplyWarm()
+        {
+            EnsureFolder(Dir);
+            Apply(EnsureWarmProfile(), Hex("#F2D8BB") /* parchment[2] */, 1.35f, 0.4f, Hex("#7D99D5") /* sky[1] */, Hex("#CAA791") /* parchment[1]: lichtere schaduwkant op het terrein */,
+                  AmbientGround, Hex("#C7D0F0") /* cloud_snow[1] */, 60f, 420f, Hex("#7D99D5") /* sky[1] */);
+        }
+
+        static void Apply(VolumeProfile profile, Color sunColor, float sunIntensity, float shadowStrength, Color ambientSky, Color ambientEquator,
+                          Color ambientGround, Color fogColor, float fogStart, float fogEnd, Color skyTop)
+        {
+            var sky = EnsureSky(skyTop);
 
             // zon
             Light sun = RenderSettings.sun;
@@ -60,10 +85,10 @@ namespace ConductorChaos.EditorTools
             }
             Undo.RecordObject(sun, "Stylized lighting");
             Undo.RecordObject(sun.transform, "Stylized lighting");
-            sun.color = Sun;
-            sun.intensity = 1.35f;
+            sun.color = sunColor;
+            sun.intensity = sunIntensity;
             sun.shadows = LightShadows.Soft;
-            sun.shadowStrength = 0.7f;                         // schaduw blijft gekleurd door het omgevingslicht
+            sun.shadowStrength = shadowStrength;                      // schaduw blijft gekleurd door het omgevingslicht
             var e = sun.transform.eulerAngles;
             if (e.x > 70f || e.x < 15f) sun.transform.rotation = Quaternion.Euler(42f, e.y, 0f);   // schuin licht laat de facetten zien
 
@@ -71,21 +96,21 @@ namespace ConductorChaos.EditorTools
             RenderSettings.sun = sun;
             RenderSettings.skybox = sky;
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = AmbientSky;
-            RenderSettings.ambientEquatorColor = AmbientEquator;
-            RenderSettings.ambientGroundColor = AmbientGround;
+            RenderSettings.ambientSkyColor = ambientSky;
+            RenderSettings.ambientEquatorColor = ambientEquator;
+            RenderSettings.ambientGroundColor = ambientGround;
             RenderSettings.ambientIntensity = 1f;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogColor = Haze;
-            RenderSettings.fogStartDistance = 45f;
-            RenderSettings.fogEndDistance = 320f;
+            RenderSettings.fogColor = fogColor;
+            RenderSettings.fogStartDistance = fogStart;
+            RenderSettings.fogEndDistance = fogEnd;
             DynamicGI.UpdateEnvironment();
 
             // nabewerking
             Volume volume = null;
             foreach (var v in Object.FindObjectsByType<Volume>(FindObjectsSortMode.None))
-                if (v.isGlobal && v.sharedProfile == profile) { volume = v; break; }
+                if (v.isGlobal && v.sharedProfile != null && AssetDatabase.GetAssetPath(v.sharedProfile).StartsWith(Dir)) { volume = v; break; }
             if (volume == null)
             {
                 var go = new GameObject("StylizedLighting (Volume)");
@@ -93,8 +118,9 @@ namespace ConductorChaos.EditorTools
                 volume = go.AddComponent<Volume>();
                 volume.isGlobal = true;
                 volume.priority = 1f;
-                volume.sharedProfile = profile;
             }
+            Undo.RecordObject(volume, "Stylized lighting");
+            volume.sharedProfile = profile;
             foreach (var cam in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
             {
                 var data = cam.GetUniversalAdditionalCameraData();
@@ -114,11 +140,10 @@ namespace ConductorChaos.EditorTools
 
             EditorSceneManager.MarkSceneDirty(sun.gameObject.scene);
             AssetDatabase.SaveAssets();
-            Debug.Log("[Lighting] Gestileerde belichting toegepast: warme zon, koele schaduwen, verlooplucht, nevel en nabewerking. " +
-                      "Speel ermee via het object 'StylizedLighting (Volume)' (Assets/Art/Lighting/VP_Stylized) en de Sun.", volume);
+            Debug.Log($"[Lighting] Belichting toegepast met {profile.name}. Speel ermee via het object 'StylizedLighting (Volume)' en de Sun.", volume);
         }
 
-        static Material EnsureSky()
+        static Material EnsureSky(Color top)
         {
             var mat = AssetDatabase.LoadAssetAtPath<Material>(SkyPath);
             var shader = AssetDatabase.LoadAssetAtPath<Shader>(SkyShader);
@@ -127,7 +152,7 @@ namespace ConductorChaos.EditorTools
                 mat = new Material(shader);
                 AssetDatabase.CreateAsset(mat, SkyPath);
             }
-            mat.SetColor("_Top", SkyTop);
+            mat.SetColor("_Top", top);
             mat.SetColor("_Horizon", SkyHorizon);
             mat.SetColor("_Bottom", SkyBottom);
             mat.SetColor("_SunColor", Sun);
@@ -137,48 +162,113 @@ namespace ConductorChaos.EditorTools
             return mat;
         }
 
-        static VolumeProfile EnsureProfile()
+        static VolumeProfile LoadProfile(string path)
         {
-            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(ProfilePath);
+            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(path);
             if (profile == null)
             {
                 profile = ScriptableObject.CreateInstance<VolumeProfile>();
-                AssetDatabase.CreateAsset(profile, ProfilePath);
+                AssetDatabase.CreateAsset(profile, path);
             }
-            T Get<T>() where T : VolumeComponent
-            {
-                if (!profile.TryGet<T>(out var c))
-                {
-                    c = profile.Add<T>(false);
-                    c.name = typeof(T).Name;
-                    AssetDatabase.AddObjectToAsset(c, profile);
-                }
-                return c;
-            }
+            return profile;
+        }
 
-            var tone = Get<Tonemapping>();
+        static T Get<T>(VolumeProfile profile) where T : VolumeComponent
+        {
+            if (!profile.TryGet<T>(out var c))
+            {
+                c = profile.Add<T>(false);
+                c.name = typeof(T).Name;
+                AssetDatabase.AddObjectToAsset(c, profile);
+            }
+            return c;
+        }
+
+        static VolumeProfile EnsureNeutralProfile()
+        {
+            var profile = LoadProfile(NeutralProfilePath);
+            Get<Tonemapping>(profile).mode.Override(TonemappingMode.Neutral);
+
+            var bloom = Get<Bloom>(profile);
+            bloom.threshold.Override(1.1f);
+            bloom.intensity.Override(0.08f);
+            bloom.scatter.Override(0.5f);
+            bloom.tint.Override(Sun);
+
+            var adjust = Get<ColorAdjustments>(profile);
+            adjust.postExposure.Override(0f);
+            adjust.contrast.Override(3f);
+            adjust.saturation.Override(0f);
+
+            Get<WhiteBalance>(profile).temperature.Override(2f);
+
+            var vignette = Get<Vignette>(profile);
+            vignette.intensity.Override(0.1f);
+            vignette.smoothness.Override(0.5f);
+            vignette.color.Override(Hex("#351B13"));               // ink[2]
+
+            EditorUtility.SetDirty(profile);
+            return profile;
+        }
+
+        static VolumeProfile EnsureWarmProfile()
+        {
+            var profile = LoadProfile(WarmProfilePath);
+            Get<Tonemapping>(profile).mode.Override(TonemappingMode.Neutral);
+
+            var bloom = Get<Bloom>(profile);
+            bloom.threshold.Override(1f);
+            bloom.intensity.Override(0.15f);
+            bloom.scatter.Override(0.6f);
+            bloom.tint.Override(Sun);
+
+            var adjust = Get<ColorAdjustments>(profile);
+            adjust.postExposure.Override(0f);
+            adjust.contrast.Override(10f);
+            adjust.saturation.Override(8f);
+
+            var split = Get<SplitToning>(profile);                 // tinten dicht bij middengrijs: lichtere tinten maken het beeld melkig
+            split.shadows.Override(Hex("#7B7582"));                // metal[1]: bijna grijs, blauw hierin maakt kliffen weer roze
+            split.highlights.Override(Hex("#9C8978"));             // parchment[0]
+
+            Get<WhiteBalance>(profile).temperature.Override(3f);
+
+            var vignette = Get<Vignette>(profile);
+            vignette.intensity.Override(0.14f);
+            vignette.smoothness.Override(0.5f);
+            vignette.color.Override(Hex("#351B13"));               // ink[2]
+
+            EditorUtility.SetDirty(profile);
+            return profile;
+        }
+
+        static VolumeProfile EnsureProfile()
+        {
+            var profile = LoadProfile(ProfilePath);
+
+            var tone = Get<Tonemapping>(profile);
             tone.mode.Override(TonemappingMode.Neutral);           // houdt de paletkleuren herkenbaar
 
-            var bloom = Get<Bloom>();
+            var bloom = Get<Bloom>(profile);
             bloom.threshold.Override(0.95f);
             bloom.intensity.Override(0.35f);
             bloom.scatter.Override(0.7f);
             bloom.tint.Override(Sun);
 
-            var adjust = Get<ColorAdjustments>();
+            var adjust = Get<ColorAdjustments>(profile);
             adjust.postExposure.Override(0.15f);
             adjust.contrast.Override(8f);
             adjust.saturation.Override(14f);
 
-            var split = Get<SplitToning>();                        // warm licht, koele blauw-violette schaduw
+            var split = Get<SplitToning>(profile);                        // warm licht, koele blauw-violette schaduw
             split.shadows.Override(ShadowTint);
             split.highlights.Override(HighlightTint);
             split.balance.Override(-15f);
 
-            var white = Get<WhiteBalance>();
+            var white = Get<WhiteBalance>(profile);
             white.temperature.Override(6f);
 
-            var vignette = Get<Vignette>();
+            var vignette = Get<Vignette>(profile);
             vignette.intensity.Override(0.18f);
             vignette.smoothness.Override(0.5f);
             vignette.color.Override(Hex("#351B13"));               // ink[2]

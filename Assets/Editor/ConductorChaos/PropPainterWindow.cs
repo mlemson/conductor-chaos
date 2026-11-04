@@ -92,6 +92,7 @@ namespace ConductorChaos.EditorTools
             {
                 if (GUILayout.Button("Pad (keien)")) LoadPreset("Path");
                 if (GUILayout.Button("Bloemen + gras")) LoadPreset("Plants");
+                if (GUILayout.Button("Stenen kliffen")) LoadPreset("StoneCliffs");
             }
 
             EditorGUILayout.Space();
@@ -205,6 +206,44 @@ namespace ConductorChaos.EditorTools
             }
         }
 
+        // ------------------------------------------------------------ stenen kliffen
+        const string StoneSuffix = "_Stone";
+
+        // zelfde klifmodellen, maar met grijze steen (cliff_stone in palette.json) in plaats van M_Env_Cliff; het mos blijft gelijk
+        internal static void EnsureStoneCliffs()
+        {
+            const string matDir = "Assets/Art/Materials/Environment";
+            var cliffDir = $"{EnvRoot}/Cliffs";
+            var stoneDir = $"{cliffDir}/Stone";
+            if (!AssetDatabase.IsValidFolder(stoneDir)) AssetDatabase.CreateFolder(cliffDir, "Stone");
+            var cliff = AssetDatabase.LoadAssetAtPath<Material>($"{matDir}/M_Env_Cliff.mat");
+            var stoneMat = AssetDatabase.LoadAssetAtPath<Material>($"{matDir}/M_Env_CliffStone.mat");
+            if (stoneMat == null)
+            {
+                stoneMat = new Material(cliff);
+                string[] ramp = { "#564F57", "#6E6670", "#8A7F8C", "#9B8E9D", "#AB9DAE" };
+                for (int i = 0; i < ramp.Length; i++)
+                {
+                    ColorUtility.TryParseHtmlString(ramp[i], out var c);
+                    stoneMat.SetColor($"_Ramp{i}", c);
+                    if (i == 2) stoneMat.SetColor("_BaseColor", c);
+                }
+                AssetDatabase.CreateAsset(stoneMat, $"{matDir}/M_Env_CliffStone.mat");
+            }
+            foreach (var guid in AssetDatabase.FindAssets("t:Model", new[] { cliffDir }))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                if (Path.GetDirectoryName(path).Replace('\\', '/') != cliffDir || path.Contains("Hill")) continue;
+                var target = $"{stoneDir}/{Path.GetFileNameWithoutExtension(path)}{StoneSuffix}.prefab";
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(target) != null) continue;
+                var instance = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(path));
+                foreach (var r in instance.GetComponentsInChildren<Renderer>())
+                    r.sharedMaterials = r.sharedMaterials.Select(m => m == cliff ? stoneMat : m).ToArray();
+                PrefabUtility.SaveAsPrefabAsset(instance, target);
+                DestroyImmediate(instance);
+            }
+        }
+
         // ------------------------------------------------------------ presets
         void LoadPreset(string preset)
         {
@@ -233,8 +272,11 @@ namespace ConductorChaos.EditorTools
                     Set(radius: 4, per: 3, dist: 1.0f, scale: new Vector2(0.6f, 1.5f), height: new Vector2(0.8f, 1.2f), yaw: 0, align: 0.6f, sink: 0.05f, colliders: true);
                     break;
                 case "Cliffs":
-                    Add("Cliffs");
-                    entries.RemoveAll(e => e.prefab.name.Contains("Hill"));
+                case "StoneCliffs":
+                    bool stone = preset == "StoneCliffs";
+                    if (stone) EnsureStoneCliffs();
+                    Add("Cliffs", stone ? StoneSuffix : null);
+                    entries.RemoveAll(e => e.prefab.name.Contains("Hill") || (!stone && e.prefab.name.Contains(StoneSuffix)));
                     foreach (var e in entries) e.weight = e.prefab.name.Contains("Big") ? 0.4f : e.prefab.name.Contains("Cluster") ? 0.8f : 1f;
                     Set(radius: 6, per: 1, dist: 3.0f, scale: new Vector2(0.9f, 1.15f), height: new Vector2(0.8f, 1.4f), yaw: 90, align: 0f, sink: 0.2f, colliders: true);
                     break;

@@ -41,6 +41,11 @@ MAT_DIR = "Assets/Art/Materials/Environment"
 MODEL_DIR = "Assets/Art/Models/Environment"
 EXP_DIR = os.path.join(ROOT, "ArtSource", "Exports", "Environment")
 
+# rustige middentinten uit het palet: olijfgroen gras, terracotta klif, lichtere grijsblauwe bergen
+GRASS = R["grass_fresh"]
+CLIFF = R["cliff_warm"]
+MOUNTAIN = [R["mountain"][2], R["mountain"][3], R["mountain"][4], "#969DC8", "#A5ACD3"]
+
 # gedeelde materialen (naam -> (basis, ramp, smoothness, shift, opts))
 MATERIALS = {
     "M_Env_PineLeaf": (R["pine"][2], R["pine"], 0.05, 0.16, {"cells": 0.6, "cellSize": 0.6, "rim": 0.30}),
@@ -48,9 +53,9 @@ MATERIALS = {
     "M_Env_Trunk": (R["interior_wood"][1], R["interior_wood"], 0.05, -0.05, {"cells": 0.5}),
     "M_Env_Bush": (R["grass"][1], R["grass"], 0.05, -0.18, {"cells": 0.6, "cellSize": 0.5}),
     "M_Env_Rock": (R["metal"][2], R["metal"], 0.05, 0.06, {"cells": 1.0, "cellSize": 0.6, "rim": 0.25}),
-    "M_Env_Cliff": (R["cliff"][2], R["cliff"], 0.05, 0.0, {"cells": 1.0, "cellSize": 0.8, "rim": 0.22}),
-    "M_Env_Grass": (R["grass"][2], R["grass"], 0.05, 0.02, {"cells": 0.8, "cellSize": 0.9}),
-    "M_Env_Mountain": (R["mountain"][2], R["mountain"], 0.05, 0.02, {"cells": 0.8, "cellSize": 6.0, "rim": 0.12, "edge": 0.6}),
+    "M_Env_Cliff": (CLIFF[2], CLIFF, 0.05, 0.0, {"cells": 0.9, "cellSize": 2.2, "rim": 0.1}),
+    "M_Env_Grass": (GRASS[2], GRASS, 0.05, 0.02, {"cells": 0.8, "cellSize": 0.9}),
+    "M_Env_Mountain": (MOUNTAIN[2], MOUNTAIN, 0.05, 0.02, {"cells": 0.8, "cellSize": 6.0, "rim": 0.12, "edge": 0.6}),
     "M_Env_Snow": (R["cloud_snow"][3], R["cloud_snow"], 0.05, 0.05, {"cells": 0.4, "cellSize": 5.0, "rim": 0.10}),
     "M_Env_Cloud": (R["cloud_snow"][3], R["cloud_snow"], 0.0, 0.12, {"cells": 0.0, "flat": 0.35, "rim": 0.25,
                                                                        "noShadow": True, "edge": 0.0}),

@@ -249,6 +249,36 @@
           "#F2B23A",
           "#FABF34"
         ]
+      },
+      "grass_fresh": {
+        "name": "Fris gras & mos (gekozen in Unity-kleurtest, 2026-11)",
+        "ramp": [
+          "#5B7230",
+          "#76933E",
+          "#93B84E",
+          "#A5CE57",
+          "#B6E461"
+        ]
+      },
+      "cliff_stone": {
+        "name": "Stenen klif (optie in de Prop Painter)",
+        "ramp": [
+          "#564F57",
+          "#6E6670",
+          "#8A7F8C",
+          "#9B8E9D",
+          "#AB9DAE"
+        ]
+      },
+      "cliff_warm": {
+        "name": "Klifrots warm, minder roze (gekozen in Unity, 2026-11)",
+        "ramp": [
+          "#6A4C40",
+          "#885642",
+          "#9A6146",
+          "#AC7A5C",
+          "#BC8C6C"
+        ]
       }
     },
     "Interieur & cargo": {

@@ -11,6 +11,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace ConductorChaos.EditorTools
 {
@@ -118,6 +119,26 @@ namespace ConductorChaos.EditorTools
         {
             var cam = Camera.main;
             if (cam == null) { Debug.LogError("[ArtShowcase] Geen Main Camera in de open scène."); return; }
+            CaptureFrom(cam, ScreenshotPath);
+        }
+
+        // voor/na-vergelijking van kleuren: altijd vanuit dezelfde camera, los van de Scene-view en de speler
+        [MenuItem("Conductor Chaos/Art/Capture Review Screenshot")]
+        static void CaptureReview()
+        {
+            var go = new GameObject("ReviewCamera") { hideFlags = HideFlags.HideAndDontSave };
+            var cam = go.AddComponent<Camera>();
+            cam.fieldOfView = 50f;
+            cam.farClipPlane = 2000f;
+            cam.GetUniversalAdditionalCameraData().renderPostProcessing = true;
+            go.transform.position = new Vector3(-48f, 24f, -44f);
+            go.transform.LookAt(new Vector3(8f, 0f, 22f));
+            CaptureFrom(cam, "Temp/ArtReview.png");
+            UnityEngine.Object.DestroyImmediate(go);
+        }
+
+        internal static void CaptureFrom(Camera cam, string relPath)
+        {
             const int w = 1920, h = 1080;
             var rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4 };
             // URP: Camera.Render() naar een RenderTexture tekent in de editor alleen de achtergrond;
@@ -142,7 +163,7 @@ namespace ConductorChaos.EditorTools
             tex.Apply();
             RenderTexture.active = old;
             cam.targetTexture = prev;
-            var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ScreenshotPath));
+            var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", relPath));
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             File.WriteAllBytes(path, tex.EncodeToPNG());
             UnityEngine.Object.DestroyImmediate(tex);
