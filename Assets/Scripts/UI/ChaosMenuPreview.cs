@@ -52,22 +52,17 @@ namespace ConductorChaos.UI
                 TextAnchor.MiddleCenter, FontStyle.Normal, V(0.05f, 0.665f), V(0.95f, 0.72f));
 
             ChaosUI.Action(left, "Play trial", "PLAY LOCAL TRIAL", V(0.08f, 0.53f), V(0.92f, 0.64f),
-                ChaosUI.Gold, ChaosUI.Ink, StartLocalTrial, 22);
+                ChaosUI.Gold, ChaosUI.Ink, StartLocalTrial, 22, iconKey: "play");
             ChaosUI.Action(left, "Lobby tab", "LOBBY PREVIEW", V(0.08f, 0.405f), V(0.92f, 0.515f),
-                ChaosUI.Paper, ChaosUI.Ink, ShowLobby, 21);
+                ChaosUI.Paper, ChaosUI.Ink, ShowLobby, 21, iconKey: "player-group");
             ChaosUI.Action(left, "Settings tab", "SETTINGS", V(0.08f, 0.28f), V(0.92f, 0.39f),
-                ChaosUI.Paper, ChaosUI.Ink, ShowSettings, 21);
+                ChaosUI.Paper, ChaosUI.Ink, ShowSettings, 21, iconKey: "options");
             ChaosUI.Action(left, "HUD preview tab", "HUD PREVIEW", V(0.08f, 0.155f), V(0.92f, 0.265f),
-                ChaosUI.Paper, ChaosUI.Ink, ShowHud, 21);
+                ChaosUI.Paper, ChaosUI.Ink, ShowHud, 21, iconKey: "controls");
             ChaosUI.Action(left, "Quit", "QUIT", V(0.08f, 0.035f), V(0.92f, 0.14f),
-                ChaosUI.TrainRed, ChaosUI.Paper, QuitGame, 20);
+                ChaosUI.TrainRed, ChaosUI.Paper, QuitGame, 20, iconKey: "quit");
 
-            // Flat pictograms: no emoji, stock 3D icons or glow.
-            ChaosUIIcon.Add(left, "Play icon", ChaosUIIcon.Symbol.Play, V(0.105f, 0.555f), V(0.175f, 0.615f), ChaosUI.Ink);
-            ChaosUIIcon.Add(left, "Lobby icon", ChaosUIIcon.Symbol.Person, V(0.105f, 0.43f), V(0.175f, 0.49f), ChaosUI.Ink);
-            ChaosUIIcon.Add(left, "Settings icon", ChaosUIIcon.Symbol.Settings, V(0.105f, 0.305f), V(0.175f, 0.365f), ChaosUI.Ink);
-            ChaosUIIcon.Add(left, "HUD icon", ChaosUIIcon.Symbol.Wrench, V(0.105f, 0.18f), V(0.175f, 0.24f), ChaosUI.Ink);
-
+            // Action() now places the approved artwork inside each button once.
             info = ChaosUI.Label(root, "Feedback", "Join/Relay komt later. Probeer de lokale physics-test.",
                 16, ChaosUI.Muted, TextAnchor.MiddleLeft, FontStyle.Normal, V(0.35f, 0.035f), V(0.97f, 0.105f));
             BuildLobby(root);
@@ -85,10 +80,10 @@ namespace ConductorChaos.UI
             ChaosUI.Label(lobby, "Lobby context", "0 connected  /  1–6 planned", 16, ChaosUI.GoldLight,
                 TextAnchor.MiddleRight, FontStyle.Normal, V(0.69f, 0.895f), V(0.97f, 0.96f));
 
-            Row(lobby, "Host", 0.75f, "LOCAL HOST", "Not started · play trial to host");
-            Row(lobby, "Friend 1", 0.645f, "PLAYER SLOT 2", "Empty · inviting friends not implemented");
-            Row(lobby, "Friend 2", 0.54f, "PLAYER SLOT 3", "Empty");
-            Row(lobby, "Friend 3", 0.435f, "PLAYER SLOT 4", "Empty");
+            Row(lobby, "Host", 0.75f, "LOCAL HOST", "Not started · play trial to host", "player");
+            Row(lobby, "Friend 1", 0.645f, "PLAYER SLOT 2", "Empty · inviting friends not implemented", "invite");
+            Row(lobby, "Friend 2", 0.54f, "PLAYER SLOT 3", "Empty", "player-group");
+            Row(lobby, "Friend 3", 0.435f, "PLAYER SLOT 4", "Empty", "player-group");
 
             RectTransform route = ChaosUI.Panel(lobby, "Route card", V(0.035f, 0.18f), V(0.965f, 0.415f),
                 ChaosUI.Dark, 2, ChaosUI.TrainRedDark);
@@ -99,16 +94,18 @@ namespace ConductorChaos.UI
             ChaosUI.Action(route, "Change route", "CHANGE", V(0.73f, 0.25f), V(0.96f, 0.73f),
                 ChaosUI.Paper, ChaosUI.Ink, NextRoute, 17);
             ChaosUI.Action(lobby, "Start real trial", "START LOCAL PHYSICS TEST", V(0.035f, 0.045f), V(0.965f, 0.15f),
-                ChaosUI.Gold, ChaosUI.Ink, StartLocalTrial, 21);
+                ChaosUI.Gold, ChaosUI.Ink, StartLocalTrial, 21, iconKey: "play");
         }
 
-        private static void Row(RectTransform parent, string name, float y, string title, string subtitle)
+        private static void Row(RectTransform parent, string name, float y, string title, string subtitle, string iconKey)
         {
             RectTransform row = ChaosUI.Panel(parent, name, V(0.035f, y), V(0.965f, y + 0.092f), ChaosUI.Dark);
+            ChaosUISpriteCatalog.Add(row, "Avatar icon", iconKey,
+                V(0.025f, 0.07f), V(0.145f, 0.93f), ChaosUI.Paper);
             ChaosUI.Label(row, "Title", title, 20, ChaosUI.Paper,
-                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.04f, 0.45f), V(0.68f, 0.98f));
+                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.16f, 0.45f), V(0.76f, 0.98f));
             ChaosUI.Label(row, "State", subtitle, 14, ChaosUI.Muted,
-                TextAnchor.MiddleLeft, FontStyle.Normal, V(0.04f, 0.04f), V(0.94f, 0.48f));
+                TextAnchor.MiddleLeft, FontStyle.Normal, V(0.16f, 0.04f), V(0.94f, 0.48f));
         }
 
         private void BuildSettings(RectTransform root)
