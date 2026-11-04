@@ -120,8 +120,11 @@ namespace ConductorChaos.Playground
                     cameraBodyRenderingOff = new bool[cameraBodyRenderers.Length];
                 }
                 yaw = transform.eulerAngles.y;
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+                if (!PlaygroundMenu.BlocksInput)
+                {
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible = false;
+                }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 if (!IsServer && System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-playground-autotest") >= 0)
                 {
@@ -140,16 +143,21 @@ namespace ConductorChaos.Playground
 #endif
             Keyboard keyboard = Keyboard.current;
             Mouse mouse = Mouse.current;
+            if (PlaygroundMenu.BlocksInput)
+            {
+                if (lastLeft || lastRight || Time.unscaledTime >= nextInput)
+                {
+                    SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false);
+                    nextInput = Time.unscaledTime + 0.05f;
+                    lastLeft = lastRight = false;
+                }
+                return;
+            }
             if (keyboard == null || mouse == null)
             {
                 if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false);
                 lastLeft = lastRight = false;
                 return;
-            }
-            if (keyboard.escapeKey.wasPressedThisFrame)
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
             }
             if (mouse.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
             {
@@ -704,7 +712,7 @@ namespace ConductorChaos.Playground
 
         private void OnGUI()
         {
-            if (!IsSpawned || !IsOwner) return;
+            if (!IsSpawned || !IsOwner || PlaygroundMenu.BlocksInput) return;
             GUI.Label(new Rect(16, 16, 1500, 24), "WASD lopen | Shift rennen | spatie springen | muisknop vasthouden: grijpen | W bij een rand: klimmen | Esc: cursor");
         }
 
