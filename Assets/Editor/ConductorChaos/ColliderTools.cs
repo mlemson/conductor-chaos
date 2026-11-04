@@ -5,9 +5,10 @@
 //   - er zit al een andere collider op hetzelfde object  -> de overbodige MeshCollider gaat weg;
 //   - de mesh is een Unity-primitief (Cube/Sphere/Capsule) -> vervangen door Box/Sphere/CapsuleCollider;
 //   - anders                                               -> Convex aan.
-// Statische objecten (zonder Rigidbody, of met een kinematische) blijven ongemoeid. Alles met Undo.
+// Siergras en bloemen verliezen hun mesh collider. Andere statische objecten blijven ongemoeid. Alles met Undo.
 // Daarnaast gebeurt dit automatisch vlak voordat je op Play drukt (uit te zetten via
 // Conductor Chaos > Tools > Auto-fix Mesh Colliders On Play), zodat de foutmelding niet meer terugkomt.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -49,14 +50,14 @@ namespace ConductorChaos.EditorTools
             var bad = FindProblemColliders();
             if (bad.Count == 0)
             {
-                if (ask) Debug.Log("[Colliders] Geen concave MeshColliders onder dynamische Rigidbodies gevonden.");
+                if (ask) Debug.Log("[Colliders] Geen ongewenste mesh colliders op gras, bloemen of dynamische rigidbodies gevonden.");
                 return;
             }
             var names = string.Join("\n", bad.Take(15).Select(c => "• " + Path(c.transform)));
             if (bad.Count > 15) names += $"\n… en nog {bad.Count - 15}";
             if (ask && !EditorUtility.DisplayDialog("Mesh colliders repareren",
-                    $"{bad.Count} concave MeshCollider(s) onder een dynamische Rigidbody:\n\n{names}\n\n" +
-                    "Overbodige worden verwijderd, primitieven worden Box/Sphere/Capsule, de rest wordt convex.",
+                    $"{bad.Count} mesh collider(s) om te repareren:\n\n{names}\n\n" +
+                    "Mesh colliders van gras en bloemen worden verwijderd. Onder dynamische rigidbodies worden overbodige colliders verwijderd, primitieven vervangen en overige colliders convex gemaakt.",
                     "Repareren", "Annuleren"))
                 return;
 
@@ -71,7 +72,12 @@ namespace ConductorChaos.EditorTools
                 var mesh = mc.sharedMesh;
                 string prim = mesh != null && IsBuiltin(mesh) ? mesh.name : null;
 
-                if (hasOther)
+                if (IsDecorativePlantCollider(mc))
+                {
+                    Undo.DestroyObjectImmediate(mc);
+                    removed++;
+                }
+                else if (hasOther)
                 {
                     Undo.DestroyObjectImmediate(mc);
                     removed++;
@@ -113,12 +119,53 @@ namespace ConductorChaos.EditorTools
                 foreach (var root in scene.GetRootGameObjects())
                     foreach (var mc in root.GetComponentsInChildren<MeshCollider>(true))
                     {
+                        if (IsDecorativePlantCollider(mc)) { list.Add(mc); continue; }
                         if (mc.convex) continue;
                         var rb = mc.GetComponentInParent<Rigidbody>(true);   // ook een Rigidbody hoger in de hiërarchie telt
                         if (rb != null && !rb.isKinematic) list.Add(mc);
                     }
             }
             return list;
+        }
+
+        internal static bool IsDecorativePlantMesh(Mesh mesh)
+        {
+            if (!mesh) return false;
+            string path = AssetDatabase.GetAssetPath(mesh);
+            if (!path.StartsWith("Assets/Art/Models/Environment/Plants/", StringComparison.OrdinalIgnoreCase)) return false;
+            string name = System.IO.Path.GetFileNameWithoutExtension(path);
+            return name.StartsWith("Grass_Tuft_", StringComparison.OrdinalIgnoreCase)
+                || name.StartsWith("Flower_", StringComparison.OrdinalIgnoreCase);
+        }
+
+        static bool IsDecorativePlantCollider(MeshCollider collider)
+            => IsDecorativePlantMesh(collider.sharedMesh)
+                || (collider.TryGetComponent(out MeshFilter filter) && IsDecorativePlantMesh(filter.sharedMesh));
+
+        internal static int RemoveDecorativePlantMeshColliders(GameObject root)
+        {
+            int removed = 0;
+            foreach (var collider in root.GetComponentsInChildren<MeshCollider>(true))
+            {
+                if (!IsDecorativePlantCollider(collider)) continue;
+                Undo.DestroyObjectImmediate(collider);
+                removed++;
+            }
+            if (removed > 0) EditorSceneManager.MarkSceneDirty(root.scene);
+            return removed;
+        }
+
+        internal static int RemoveDecorativePlantMeshCollidersInOpenScenes()
+        {
+            int removed = 0;
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                var scene = SceneManager.GetSceneAt(i);
+                if (!scene.isLoaded) continue;
+                foreach (var root in scene.GetRootGameObjects())
+                    removed += RemoveDecorativePlantMeshColliders(root);
+            }
+            return removed;
         }
 
         static bool IsBuiltin(Mesh mesh)

@@ -27,6 +27,7 @@ ModelImporter:
   animations:
     importAnimation: 0
   meshes:
+    addColliders: 0
     globalScale: 1
     useFileUnits: 1
     useFileScale: 1
