@@ -187,10 +187,37 @@ def track(path, rng, with_bed=True, sleeper_len=SLEEPER[2]):
 
 
 def collider_slab(path, half_w=1.9, y0=0.0, y1=RAIL_TOP, step=1.5):
-    """Simpele botsvorm: een plaat over de volle breedte tot railhoogte, met weinig driehoeken."""
+    """Simpele plaat (alleen nog voor de brugpoten en het stootblok)."""
     nx = max(1, int(math.ceil(path.length / step)))
     prof = [(-half_w, y0), (half_w, y0), (half_w, y1), (-half_w, y1)]
     return path.bend(mk.extrude_profile(prof, 0.0, path.length, nx=nx, rings=1, mat="M_Track_Collider"))
+
+
+def _col_extrude(path, prof, s0=0.0, s1=None, step=1.0):
+    s1 = path.length if s1 is None else s1
+    nx = max(1, int(math.ceil((s1 - s0) / step)))
+    return path.bend(mk.extrude_profile(prof, s0, s1, nx=nx, rings=1, mat="M_Track_Collider"))
+
+
+def collider_track(path, with_bed=True, deck_half=SLEEPER[2] / 2 - 0.05, deck_y0=SLEEPER_TOP - SLEEPER[1], rails=None,
+                   extra=()):
+    """Botsvorm die het model volgt (issue #133): de schuine bedding zoals het model, daarop een bielzenlaag
+    (afgeronde uiteinden) en de twee rails als eigen ribben. Zo sta je naast de rails op de bielzen of de
+    bedding, en niet meer op een onzichtbare plaat op railhoogte."""
+    parts = []
+    if with_bed:
+        wt, wb = 1.5, 2.15                                   # zelfde maten als bed()
+        prof = [(-wb, -0.06), (wb, -0.06), (wb - 0.10, 0.06), (wt + 0.05, BED_TOP - 0.02), (wt - 0.15, BED_TOP),
+                (-wt + 0.15, BED_TOP), (-wt - 0.05, BED_TOP - 0.02), (-wb + 0.10, 0.06)]
+        parts.append(_col_extrude(path, prof))
+    h, c = deck_half, 0.06
+    parts.append(_col_extrude(path, [(-h, deck_y0), (h, deck_y0), (h, SLEEPER_TOP - c), (h - c, SLEEPER_TOP),
+                                     (-h + c, SLEEPER_TOP), (-h, SLEEPER_TOP - c)]))
+    hw = RAIL_W * 0.5
+    for z, s0, s1 in (rails or ((-RAIL_Z, 0.0, None), (RAIL_Z, 0.0, None))):
+        parts.append(_col_extrude(path, [(z - hw, SLEEPER_TOP - 0.01), (z + hw, SLEEPER_TOP - 0.01), (z + hw, RAIL_TOP),
+                                         (z - hw, RAIL_TOP)], s0, s1))
+    return mk.merge(*parts, *extra)
 
 
 def sockets(path):
@@ -226,7 +253,7 @@ def buffer_stop(rng):
     for zb in (-0.62, 0.62):                                # ronde buffers op hoogte van de treinbuffers
         parts.append(mk.cylinder(0.20, 0.16, 10, 0.05, mat="M_Track_Plate", axis="x").transform(t=(x - 0.40, yb, zb)))
         parts.append(mk.cylinder(0.08, 0.14, 8, 0.02, mat="M_Track_Plate", axis="x").transform(t=(x - 0.28, yb, zb)))
-    col = mk.merge(collider_slab(path), rbox(x - 0.32, x + 1.6, 0.0, yb + 0.35, z0, z1, 0.0, "M_Track_Collider", div=1))
+    col = collider_track(path, extra=(rbox(x - 0.32, x + 1.6, 0.0, yb + 0.35, z0, z1, 0.0, "M_Track_Collider", div=1),))
     return path, mk.merge(*parts), col
 
 
@@ -262,7 +289,8 @@ def broken(rng):
         sp.sharp = True
         parts.append(sp.transform(R=mk.rot_y(rng.uniform(0, math.pi)), t=(rng.uniform(2.2, 4.0), BED_TOP + 0.03, rng.uniform(-2.0, -1.4))))
     parts.append(rbox(3.6, 3.9, BED_TOP, BED_TOP + 0.03, -1.75, -1.4, 0.01, "M_Track_Plate", div=1).transform(R=mk.rot_y(0.4)))
-    return path, mk.merge(*parts), collider_slab(path)
+    rails = ((RAIL_Z, 0.0, None), (-RAIL_Z, 0.0, gap0 - 0.55), (-RAIL_Z, gap1 + 0.6, None))
+    return path, mk.merge(*parts), collider_track(path, rails=rails)
 
 
 def trestle(rng, length=6.0, leg=10.0):
@@ -304,9 +332,10 @@ def trestle(rng, length=6.0, leg=10.0):
         b = mk.capsule_between((0.05, cap_top - 1.0, zs), (length - 0.05, cap_top - 1.0, zs), 0.07, 0.07, 5, 1, mat="M_Track_BeamDark")
         b.sharp = True
         parts.append(b)
-    col = mk.merge(collider_slab(path, half_w=2.0, y0=cap_top - 0.3),
-                   *[rbox(xc - 0.2, xc + 0.2, bottom, cap_top - 0.3, z - 0.2, z + 0.2, 0.0, "M_Track_Collider", div=1)
-                     for z in (-1.4, 1.4)])
+    legs = [rbox(xc - 0.2, xc + 0.2, bottom, cap_top - 0.3, z - 0.2, z + 0.2, 0.0, "M_Track_Collider", div=1) for z in (-1.4, 1.4)]
+    edges = [rbox(0.0, length, SLEEPER_TOP, SLEEPER_TOP + 0.14, zs - 0.10, zs + 0.10, 0.0, "M_Track_Collider", div=1)
+             for zs in (-1.78, 1.78)]
+    col = collider_track(path, with_bed=False, deck_half=1.9, deck_y0=cap_top - 0.3, extra=legs + edges)
     return path, mk.merge(*parts), col
 
 
@@ -368,11 +397,11 @@ def build_all():
     rng = np.random.default_rng([2026, 53])
     for L, tag in ((1.5, "1_5m"), (3.0, "3m"), (6.0, "6m"), (12.0, "12m")):
         p = Path(L)
-        A[f"Track_Straight_{tag}"] = (p, track(p, rng), collider_slab(p), sockets(p))
+        A[f"Track_Straight_{tag}"] = (p, track(p, rng), collider_track(p), sockets(p))
     for ang in (15, 30):
         for side, tag in ((1, "A"), (-1, "B")):
             p = Path(radius=20.0, angle_deg=ang, side=side)
-            A[f"Track_Curve_R20_{ang}_{tag}"] = (p, track(p, rng), collider_slab(p), sockets(p))
+            A[f"Track_Curve_R20_{ang}_{tag}"] = (p, track(p, rng), collider_track(p), sockets(p))
     p, m, c = buffer_stop(rng)
     A["Track_BufferStop"] = (p, m, c, sockets(p))
     p, m, c = broken(rng)
