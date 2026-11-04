@@ -32,3 +32,6 @@ sysinfo.txt
 ArtSource/Render/three
 ArtSource/Render/out/
 __pycache__/
+
+# Lokale testbuilds en werkbestanden (Build Local Trial Client): opnieuw te maken, niet in Git
+work/
