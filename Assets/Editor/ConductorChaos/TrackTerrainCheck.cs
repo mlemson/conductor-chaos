@@ -29,6 +29,18 @@ namespace ConductorChaos.EditorTools
                 float expected = data.GetInterpolatedHeight(piece.EndPosition.x / 20f, piece.EndPosition.z / 20f) + 0.43f;
                 if (Vector3.Distance(anchor, piece.StartPosition) > 0.001f || Mathf.Abs(piece.EndPosition.y - expected) > 0.02f)
                     throw new Exception("Track terrain fitting failed to preserve the connection or match the slope.");
+
+                anchor = piece.EndPosition;
+                TrackBuilderWindow.FitToTerrain(piece, true);
+                expected = data.GetInterpolatedHeight(piece.StartPosition.x / 20f, piece.StartPosition.z / 20f) + 0.43f;
+                if (Vector3.Distance(anchor, piece.EndPosition) > 0.001f || Mathf.Abs(piece.StartPosition.y - expected) > 0.02f)
+                    throw new Exception("Reverse track fitting failed to preserve the connection or match the slope.");
+
+                root.name = "Track_Ramp_Up_12m";
+                var rotation = root.transform.rotation;
+                TrackBuilderWindow.FitToTerrain(piece, false);
+                if (Quaternion.Angle(rotation, root.transform.rotation) > 0.001f)
+                    throw new Exception("An elevated ramp must not be fitted to the terrain.");
                 Debug.Log("Track terrain fitting check passed.");
             }
             finally
