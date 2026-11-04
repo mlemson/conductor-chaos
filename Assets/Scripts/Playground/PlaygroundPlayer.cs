@@ -35,6 +35,7 @@ namespace ConductorChaos.Playground
         private bool leftHeld, rightHeld, jumpQueued, sprinting, climbing;
         private bool lastLeft, lastRight;
         private float nextInput, nextPose, lastJump;
+        private float nextSprintHop;
         private float lastServerInput;
         private Vector3 smoothedLean;
         private float yaw, pitch = 18f;
@@ -217,12 +218,24 @@ namespace ConductorChaos.Playground
             Vector3 current = body.linearVelocity;
             bool grounded = IsGrounded();
             float walkSpeed = Mathf.Min(sprinting ? sprintSpeed : speed, sprinting ? 2.2f : 1.5f);
-            bool supported = legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed);
+            bool stepped = false;
+            bool supported = legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting, out stepped);
             Vector3 groundVelocity = supported ? legs.SupportVelocity : Vector3.zero;
             Vector3 target = groundVelocity + facing * new Vector3(requestedMove.x, 0f, requestedMove.y) * walkSpeed * uprightControl;
             float movementAcceleration = grounded ? (supported ? acceleration : 0f) : acceleration * 0.2f;
             Vector3 change = Vector3.ClampMagnitude(new Vector3(target.x - current.x, 0f, target.z - current.z), movementAcceleration * Time.fixedDeltaTime);
             body.AddForce(change, ForceMode.VelocityChange);
+
+            // A small push on alternating planted steps makes running a hop, not a repeated full jump.
+            Vector3 relativeVelocity = current - groundVelocity;
+            if (sprinting && stepped && supported && grounded && !jumpQueued && !climbing && uprightControl > 0.8f &&
+                new Vector2(relativeVelocity.x, relativeVelocity.z).sqrMagnitude > 0.25f &&
+                Time.time >= nextSprintHop && Time.time - lastJump > 0.3f)
+            {
+                legs.ReleaseSupport();
+                body.AddForce(Vector3.up * Mathf.Clamp(1.1f - relativeVelocity.y, 0f, 1.6f), ForceMode.VelocityChange);
+                nextSprintHop = Time.time + 0.18f;
+            }
 
             // A damped upright motor yields to impacts instead of freezing body rotation.
             Vector3 localChange = Quaternion.Inverse(facing) * (change / Mathf.Max(Time.fixedDeltaTime, 0.001f));

@@ -91,16 +91,17 @@ namespace ConductorChaos.Playground
             return new PlaygroundLegRig(model, torso, renderer, skin, mesh, left, right);
         }
 
-        public bool Step(Vector3 velocity, Vector2 input, bool grounded, float targetSpeed)
+        public bool Step(Vector3 velocity, Vector2 input, bool grounded, float targetSpeed, bool sprinting, out bool stepped)
         {
+            stepped = false;
             Vector3 localVelocity = torso.transform.InverseTransformDirection(velocity);
             float speed = new Vector2(localVelocity.x, localVelocity.z).magnitude;
             float amount = Mathf.Clamp01(speed / 2.5f) * Mathf.Clamp01(input.magnitude);
             bool moving = grounded && input.sqrMagnitude > 0.01f;
             if (moving) stride += Time.fixedDeltaTime * Mathf.Max(2f, targetSpeed / 0.32f * Mathf.PI);
             float phase = Mathf.Sin(stride) * amount;
-            float swing = grounded ? phase * 32f * input.y : -10f;
-            float side = grounded ? phase * input.x * 25f : 0f;
+            float swing = grounded ? phase * (sprinting ? 44f : 32f) * input.y : -10f;
+            float side = grounded ? phase * input.x * (sprinting ? 30f : 25f) : 0f;
             left.Drive(swing, side);
             right.Drive(-swing, -side);
             RaycastHit leftHit = default, rightHit = default;
@@ -119,7 +120,11 @@ namespace ConductorChaos.Playground
             else
             {
                 bool wantsLeft = Mathf.Sin(stride) >= 0f;
-                if ((wantsLeft && leftContact) || (!wantsLeft && rightContact)) leftStance = wantsLeft;
+                if ((wantsLeft && leftContact) || (!wantsLeft && rightContact))
+                {
+                    stepped = wantsLeft != leftStance;
+                    leftStance = wantsLeft;
+                }
                 left.SetSupport(leftStance && leftContact, leftHit);
                 right.SetSupport(!leftStance && rightContact, rightHit);
             }
