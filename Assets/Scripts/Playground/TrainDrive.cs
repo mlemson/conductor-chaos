@@ -20,10 +20,13 @@ namespace ConductorChaos.Playground
         private TrackPiece track;
         private float distance, speed;
         private Transform lever;
+        private Transform startButton;
+        private TextMesh buttonHint, leverHint;
+        private PlaygroundPlayer localPlayer;
+        private float nextPlayerLookup;
         private Quaternion leverRest;
         private float railCenterOffset;
         private readonly Dictionary<TrackPiece, TrackPiece> previous = new();
-        private bool panelVisible;
 
         public void Configure(TrackPiece first, float start) { firstTrack = first; startDistance = start; }
 
@@ -38,6 +41,7 @@ namespace ConductorChaos.Playground
                 if (t.name == "Wheels" && t.TryGetComponent<Renderer>(out var wheels))
                     railCenterOffset = transform.InverseTransformPoint(wheels.bounds.center).z;
             }
+            CreateCabControls();
             if (!IsServer) return;
             track = firstTrack;
             if (track) distance = Mathf.Clamp(startDistance, 0f, track.Length);
@@ -50,6 +54,31 @@ namespace ConductorChaos.Playground
         private void Update()
         {
             if (lever) lever.localRotation = leverRest * Quaternion.Euler(0, 0, -throttle.Value * 35f);
+            if (startButton) startButton.localScale = new Vector3(0.18f, powered.Value ? 0.11f : 0.18f, 0.18f);
+            if (!IsSpawned || !lever || !startButton) return;
+            if (localPlayer && (!localPlayer.IsSpawned || !localPlayer.IsOwner)) localPlayer = null;
+            if (!localPlayer && Time.unscaledTime >= nextPlayerLookup)
+            {
+                nextPlayerLookup = Time.unscaledTime + 1f;
+                foreach (var player in FindObjectsByType<PlaygroundPlayer>(FindObjectsSortMode.None))
+                    if (player.IsSpawned && player.IsOwner) { localPlayer = player; break; }
+            }
+            if (!localPlayer) { buttonHint.gameObject.SetActive(false); leverHint.gameObject.SetActive(false); return; }
+            Vector3 hand = localPlayer.transform.position + Vector3.up * 0.9f;
+            float buttonDistance = Vector3.Distance(hand, startButton.position);
+            float leverDistance = Vector3.Distance(hand, lever.position + transform.up * 0.35f);
+            bool canUse = Cursor.lockState == CursorLockMode.Locked && Application.isFocused;
+            bool useButton = canUse && buttonDistance <= 1.5f && buttonDistance <= leverDistance;
+            bool useLever = canUse && leverDistance <= 1.5f && leverDistance < buttonDistance;
+            buttonHint.gameObject.SetActive(useButton);
+            leverHint.gameObject.SetActive(useLever);
+            if (useButton) buttonHint.text = powered.Value ? "E  Uitzetten" : "E  Starten";
+            if (useLever) leverHint.text = throttle.Value > 0.5f ? "E  Hendel: vooruit" : throttle.Value < -0.5f ? "E  Hendel: achteruit" : "E  Hendel: stop";
+            Camera camera = Camera.main;
+            if (camera && useButton) buttonHint.transform.rotation = camera.transform.rotation;
+            if (camera && useLever) leverHint.transform.rotation = camera.transform.rotation;
+            if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame && (useButton || useLever))
+                UseCabControlServerRpc(useLever);
         }
 
         private void FixedUpdate()
@@ -83,7 +112,7 @@ namespace ConductorChaos.Playground
             track.Evaluate(distance / track.Length, out var railPosition, out var direction);
             if (direction.sqrMagnitude < 0.01f) return;
             var up = track.transform.up;
-            var rotation = Quaternion.LookRotation(direction, up) * Quaternion.Euler(0f, -90f, 0f);
+            var rotation = Quaternion.LookRotation(direction, up) * Quaternion.Euler(0f, 90f, 0f);
             Vector3 target = railPosition + up * TrackPiece.RailToTrainPivot - rotation * new Vector3(0f, 0f, railCenterOffset);
             Vector3 movement = target - body.position;
             if (movement.sqrMagnitude > 0.000001f)
@@ -107,44 +136,64 @@ namespace ConductorChaos.Playground
         }
 
         [ServerRpc(RequireOwnership = false)]
-        private void DriveServerRpc(bool on, float input, ServerRpcParams rpc = default)
+        private void UseCabControlServerRpc(bool useLever, ServerRpcParams rpc = default)
         {
-            if (!float.IsFinite(input)) return;
-            bool nearby = false;
+            if (!lever || !startButton) return;
+            Vector3 control = useLever ? lever.position + transform.up * 0.35f : startButton.position;
             foreach (var player in FindObjectsByType<PlaygroundPlayer>(FindObjectsSortMode.None))
                 if (player.IsSpawned && player.OwnerClientId == rpc.Receive.SenderClientId &&
-                    Vector3.Distance(player.transform.position, transform.position) <= 5f) { nearby = true; break; }
-            if (!nearby) return;
-            powered.Value = on;
-            throttle.Value = Mathf.Clamp(input, -1f, 1f);
+                    Vector3.Distance(player.transform.position + Vector3.up * 0.9f, control) <= 1.5f)
+                {
+                    if (useLever) throttle.Value = throttle.Value > 0.5f ? -1f : throttle.Value < -0.5f ? 0f : 1f;
+                    else powered.Value = !powered.Value;
+                    return;
+                }
         }
 
-        private void OnGUI()
+        private void CreateCabControls()
         {
-            panelVisible = false;
-            if (!IsSpawned || !NetworkManager) return;
-            foreach (var player in FindObjectsByType<PlaygroundPlayer>(FindObjectsSortMode.None))
-                if (player.IsSpawned && player.IsOwner && Vector3.Distance(player.transform.position, transform.position) <= 5f)
-                    { panelVisible = true; break; }
-            if (!panelVisible) return;
-            const float width = 300f;
-            GUILayout.BeginArea(new Rect(15, Screen.height - 125, width, 110), GUI.skin.box);
-            GUILayout.Label("Treinbediening — Esc voor muis");
-            if (GUILayout.Button(powered.Value ? "Trein uit" : "Trein starten")) DriveServerRpc(!powered.Value, throttle.Value);
-            GUILayout.Label("Achteruit                 Stop                 Vooruit");
-            float value = GUILayout.HorizontalSlider(throttle.Value, -1f, 1f);
-            if (Mathf.Abs(value - throttle.Value) > 0.02f) DriveServerRpc(powered.Value, value);
-            GUILayout.EndArea();
+            if (!lever) { Debug.LogError("TrainDrive: de cabinehendel Regulator ontbreekt.", this); return; }
+            var button = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            button.name = "Startknop";
+            startButton = button.transform;
+            startButton.SetParent(lever.parent, false);
+            startButton.position = lever.position + transform.up * 0.2f + transform.forward * 0.45f;
+            startButton.localScale = Vector3.one * 0.18f;
+            button.GetComponent<Collider>().isTrigger = true;
+            if (lever.TryGetComponent<Renderer>(out var leverRenderer))
+                button.GetComponent<Renderer>().sharedMaterial = leverRenderer.sharedMaterial;
+            foreach (var renderer in GetComponentsInChildren<Renderer>())
+            {
+                foreach (var material in renderer.sharedMaterials)
+                    if (material && material.name == "M_Loco_Red") { button.GetComponent<Renderer>().sharedMaterial = material; break; }
+                if (button.GetComponent<Renderer>().sharedMaterial && button.GetComponent<Renderer>().sharedMaterial.name == "M_Loco_Red") break;
+            }
+            buttonHint = MakeHint(lever.parent, startButton.localPosition + Vector3.up * 0.35f);
+            leverHint = MakeHint(lever.parent, lever.localPosition + Vector3.up * 0.65f);
         }
 
-        public static bool PointerOverPanel()
+        private static TextMesh MakeHint(Transform parent, Vector3 offset)
         {
-            if (Mouse.current == null) return false;
-            Vector2 p = Mouse.current.position.ReadValue();
-            var rect = new Rect(15, Screen.height - 125, 300, 110);
-            foreach (var train in FindObjectsByType<TrainDrive>(FindObjectsSortMode.None))
-                if (train.panelVisible && rect.Contains(new Vector2(p.x, Screen.height - p.y))) return true;
-            return false;
+            var hint = new GameObject("Bedieningshint").AddComponent<TextMesh>();
+            hint.transform.SetParent(parent, false);
+            hint.transform.localPosition = offset;
+            hint.anchor = TextAnchor.MiddleCenter;
+            hint.alignment = TextAlignment.Center;
+            hint.fontSize = 48;
+            hint.characterSize = 0.012f;
+            hint.color = new Color(0.96f, 0.86f, 0.75f);
+            hint.gameObject.SetActive(false);
+            return hint;
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            if (startButton) Destroy(startButton.gameObject);
+            if (buttonHint) Destroy(buttonHint.gameObject);
+            if (leverHint) Destroy(leverHint.gameObject);
+            if (lever) lever.localRotation = leverRest;
+            localPlayer = null;
+            previous.Clear();
         }
     }
 }
