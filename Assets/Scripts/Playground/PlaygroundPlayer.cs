@@ -260,7 +260,7 @@ namespace ConductorChaos.Playground
             Quaternion facing = Quaternion.Euler(0f, requestedYaw, 0f);
             float uprightControl = Mathf.InverseLerp(0.15f, 0.75f, Vector3.Dot(body.rotation * Vector3.up, Vector3.up));
             Vector3 current = body.linearVelocity;
-            bool grounded = IsGrounded();
+            bool grounded = IsGrounded(out RaycastHit groundHit);
             Quaternion aim = Quaternion.Euler(requestedPitch, requestedYaw, 0f);
             bool pulling = requestedMove.y > 0.1f;
             bool firmLedgeGrip = hasLedge && pulling;
@@ -278,7 +278,8 @@ namespace ConductorChaos.Playground
             bool stepped = false;
             if (climbing) legs?.BraceForClimb(mantling);
             bool supported = !climbing && legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting && !hanging, out stepped);
-            Vector3 groundVelocity = supported ? legs.SupportVelocity : Vector3.zero;
+            Vector3 groundVelocity = supported ? legs.SupportVelocity : grounded && groundHit.rigidbody && groundHit.rigidbody.isKinematic
+                ? groundHit.rigidbody.GetPointVelocity(groundHit.point) : Vector3.zero;
             Vector3 target = groundVelocity + moveDirection * walkSpeed * uprightControl;
             // Keep some steering when the torso touches uneven ground but neither foot probe finds support.
             float movementAcceleration = grounded ? acceleration * (supported ? (sprinting ? 1.35f : 1f) : 0.45f)
@@ -613,13 +614,15 @@ namespace ConductorChaos.Playground
             return nearest.collider != null;
         }
 
-        private bool IsGrounded()
+        private bool IsGrounded(out RaycastHit groundHit)
         {
+            groundHit = default;
             Vector3 origin = body.position + body.rotation * Vector3.up * 0.28f;
             int count = Physics.SphereCastNonAlloc(origin, 0.22f, Vector3.down, hits, 0.22f, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
-                if (!hits[i].collider.transform.IsChildOf(transform) && hits[i].normal.y > 0.55f) return true;
-            return false;
+                if (!hits[i].collider.transform.IsChildOf(transform) && hits[i].normal.y > 0.55f &&
+                    (!groundHit.collider || hits[i].distance < groundHit.distance)) groundHit = hits[i];
+            return groundHit.collider;
         }
 
         private void LateUpdate()
