@@ -49,6 +49,16 @@ namespace ConductorChaos.Playground
                 if (piece.next && !previous.ContainsKey(piece.next)) previous.Add(piece.next, piece);
             if (!track || !track.HasSockets || track.Length < 0.01f)
                 Debug.LogError("TrainDrive: configure a connected starting track.", this);
+            else
+            {
+                track.Evaluate(distance / track.Length, out var position, out var direction);
+                if (direction.sqrMagnitude > 0.01f)
+                {
+                    var rotation = Quaternion.LookRotation(direction, track.transform.up) * Quaternion.Euler(0f, 90f, 0f);
+                    body.position = position + track.transform.up * TrackPiece.RailToTrainPivot - rotation * new Vector3(0f, 0f, railCenterOffset);
+                    body.rotation = rotation;
+                }
+            }
         }
 
         private void Update()
