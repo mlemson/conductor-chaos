@@ -665,7 +665,8 @@ namespace ConductorChaos.Playground
                 Renderer renderer = cameraBodyRenderers[i];
                 if (!renderer) continue;
                 if (hidden) cameraBodyRenderingOff[i] = renderer.forceRenderingOff;
-                renderer.forceRenderingOff = hidden || cameraBodyRenderingOff[i];
+                bool isArm = (leftArm && renderer.transform.IsChildOf(leftArm)) || (rightArm && renderer.transform.IsChildOf(rightArm));
+                renderer.forceRenderingOff = (hidden && !isArm) || cameraBodyRenderingOff[i];
             }
         }
 
