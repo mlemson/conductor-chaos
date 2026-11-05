@@ -157,6 +157,22 @@ namespace ConductorChaos.Playground
             leverParent = lever.parent;
             leverPosition = lever.localPosition;
             leverScale = lever.localScale;
+            Vector3 pivotPosition = lever.position;
+            Vector3 buttonPosition = pivotPosition + transform.right * 0.2f + transform.up * 0.34f - transform.forward * 0.27f;
+            Quaternion buttonRotation = transform.rotation;
+            var door = leverParent.Find("FireboxDoor");
+            var stove = leverParent.GetComponent<Renderer>();
+            if (door && stove)
+            {
+                Vector3 axis = leverParent.right.normalized;
+                Vector3 outward = Vector3.Dot(door.position - stove.bounds.center, axis) < 0f ? -axis : axis;
+                Vector3 side = Vector3.ProjectOnPlane(lever.position - door.position, transform.up);
+                side = Vector3.ProjectOnPlane(side, outward).normalized;
+                if (side.sqrMagnitude < 0.01f) side = Vector3.Cross(transform.up, outward).normalized;
+                pivotPosition = door.position + outward * 0.035f + transform.up * 0.2f + side * 0.48f;
+                buttonPosition = door.position + outward * 0.04f + transform.up * 0.39f + side * 0.05f;
+                buttonRotation = Quaternion.FromToRotation(Vector3.up, outward);
+            }
             leverColliders = lever.GetComponentsInChildren<Collider>(true);
             leverColliderEnabled = new bool[leverColliders.Length];
             for (int i = 0; i < leverColliders.Length; i++)
@@ -167,9 +183,12 @@ namespace ConductorChaos.Playground
 
             leverPivot = new GameObject("Cabinehendel fysica").transform;
             leverPivot.SetParent(leverParent, false);
-            leverPivot.localPosition = leverPosition;
+            leverPivot.position = pivotPosition;
             leverPivot.localRotation = leverRest;
-            lever.SetParent(leverPivot, true);
+            lever.SetParent(leverPivot, false);
+            lever.localPosition = Vector3.zero;
+            lever.localRotation = Quaternion.identity;
+            lever.localScale = leverScale;
             var handle = leverPivot.gameObject.AddComponent<SphereCollider>();
             handle.center = new Vector3(-0.05f, 0.45f, 0f);
             handle.radius = 0.12f;
@@ -194,8 +213,8 @@ namespace ConductorChaos.Playground
             button.name = "Startknop";
             startButton = button.transform;
             startButton.SetParent(leverParent, false);
-            startButton.position = leverPivot.position + transform.right * 0.2f + transform.up * 0.34f - transform.forward * 0.27f;
-            startButton.rotation = transform.rotation;
+            startButton.position = buttonPosition;
+            startButton.rotation = buttonRotation;
             startButton.localScale = new Vector3(0.18f, 0.04f, 0.18f);
             if (lever.TryGetComponent<Renderer>(out var leverRenderer))
                 button.GetComponent<Renderer>().sharedMaterial = leverRenderer.sharedMaterial;
