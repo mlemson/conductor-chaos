@@ -112,7 +112,12 @@ namespace ConductorChaos.Track
                 var a = pathPoints[k].position;
                 var b = pathPoints[k + 1].position;
                 position = Vector3.Lerp(a, b, f - k);
-                direction = t <= 0f ? StartDirection : t >= 1f ? EndDirection : (b - a).normalized;
+                Vector3 segment = (b - a).normalized;
+                Vector3 from = k == 0 ? StartDirection : (b - pathPoints[k - 1].position).normalized;
+                Vector3 to = k == pathPoints.Length - 2 ? EndDirection : (pathPoints[k + 2].position - a).normalized;
+                if (from.sqrMagnitude < 0.0001f) from = segment;
+                if (to.sqrMagnitude < 0.0001f) to = segment;
+                direction = Vector3.Slerp(from, to, f - k).normalized;
                 return;
             }
             Arc(out var center, out var axis, out float angle, out _);
@@ -166,3 +171,4 @@ namespace ConductorChaos.Track
         }
     }
 }
+
