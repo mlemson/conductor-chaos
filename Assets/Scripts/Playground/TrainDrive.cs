@@ -40,6 +40,7 @@ namespace ConductorChaos.Playground
             body = GetComponent<Rigidbody>();
             body.isKinematic = true;
             body.useGravity = false;
+            body.interpolation = IsServer ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
             if (IsServer) { powered.Value = false; throttle.Value = 0f; buttonDown.Value = false; nextButtonPress = 0f; }
             foreach (var t in GetComponentsInChildren<Transform>(true))
             {
@@ -157,7 +158,7 @@ namespace ConductorChaos.Playground
             leverParent = lever.parent;
             leverPosition = lever.localPosition;
             leverScale = lever.localScale;
-            Vector3 pivotPosition = lever.position;
+            Vector3 pivotPosition = lever.position - transform.up * 0.1f;
             Vector3 buttonPosition = pivotPosition + transform.right * 0.2f + transform.up * 0.34f - transform.forward * 0.27f;
             Quaternion buttonRotation = transform.rotation;
             var door = leverParent.Find("FireboxDoor");
@@ -169,8 +170,8 @@ namespace ConductorChaos.Playground
                 Vector3 side = Vector3.ProjectOnPlane(lever.position - door.position, transform.up);
                 side = Vector3.ProjectOnPlane(side, outward).normalized;
                 if (side.sqrMagnitude < 0.01f) side = Vector3.Cross(transform.up, outward).normalized;
-                pivotPosition = door.position + outward * 0.035f + transform.up * 0.2f + side * 0.48f;
-                buttonPosition = door.position + outward * 0.04f + transform.up * 0.39f + side * 0.05f;
+                pivotPosition = door.position + outward * 0.035f + transform.up * 0.1f + side * 0.48f;
+                buttonPosition = door.position + outward * 0.04f + transform.up * 0.29f + side * 0.05f;
                 buttonRotation = Quaternion.FromToRotation(Vector3.up, outward);
             }
             leverColliders = lever.GetComponentsInChildren<Collider>(true);
