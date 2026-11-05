@@ -16,11 +16,60 @@ namespace ConductorChaos.Editor
         [MenuItem("Tools/Conductor Chaos/Configure Train On Selected Track")]
         public static void ConfigureTrain()
         {
-            var track = Selection.activeGameObject ? Selection.activeGameObject.GetComponentInParent<TrackPiece>() : null;
             var locomotive = GameObject.Find("Locomotive_Blockout");
-            if (!track || !track.HasSockets || !locomotive)
+            if (!locomotive)
             {
-                Debug.LogError("Select the first connected track piece in the scene; Locomotive_Blockout must also be present.");
+                const string model = "Assets/Art/Models/Train/Locomotive/Locomotive_Blockout.fbx";
+                var matches = Object.FindObjectsByType<Transform>(FindObjectsSortMode.None)
+                    .Where(t => AssetDatabase.GetAssetPath(PrefabUtility.GetCorrespondingObjectFromSource(t.gameObject)) == model)
+                    .Select(t => PrefabUtility.GetOutermostPrefabInstanceRoot(t.gameObject))
+                    .Where(root => root && root.scene.IsValid()).Distinct().ToArray();
+                if (matches.Length == 1) locomotive = matches[0];
+                else
+                {
+                    EditorUtility.DisplayDialog("Trein configureren", matches.Length == 0
+                        ? "Geen actieve locomotief gevonden in de open scène. Plaats eerst het locomotiefmodel."
+                        : "Er zijn meerdere locomotieven gevonden. Geef de gewenste locomotief de naam Locomotive_Blockout.", "OK");
+                    return;
+                }
+            }
+            var track = Selection.activeGameObject ? Selection.activeGameObject.GetComponentInParent<TrackPiece>() : null;
+            if (track && (track.gameObject.scene != locomotive.scene || !track.HasSockets)) track = null;
+            var selectedTrack = track;
+            float closest = float.PositiveInfinity;
+            float fraction = 0f;
+            float selectedDistance = float.PositiveInfinity;
+            float selectedFraction = 0f;
+            track = null;
+            foreach (var candidate in Object.FindObjectsByType<TrackPiece>(FindObjectsSortMode.None))
+            {
+                if (candidate.gameObject.scene != locomotive.scene || !candidate.HasSockets || candidate.Length < 0.01f || candidate.name.Contains("Broken")) continue;
+                for (int i = 0; i <= 32; i++)
+                {
+                    float t = i / 32f;
+                    candidate.Evaluate(t, out var p, out _);
+                    float d = (p - locomotive.transform.position).sqrMagnitude;
+                    if (candidate == selectedTrack && d < selectedDistance) { selectedDistance = d; selectedFraction = t; }
+                    if (d >= closest) continue;
+                    closest = d;
+                    fraction = t;
+                    track = candidate;
+                }
+            }
+            if (selectedTrack && selectedDistance <= 100f)
+            {
+                track = selectedTrack;
+                fraction = selectedFraction;
+                closest = selectedDistance;
+            }
+            if (!track || !float.IsFinite(closest))
+            {
+                EditorUtility.DisplayDialog("Trein configureren", "Geen bruikbaar spoorstuk gevonden. Plaats eerst een spoorstuk met aansluitpunten in de scène.", "OK");
+                return;
+            }
+            if (closest > 100f)
+            {
+                EditorUtility.DisplayDialog("Trein configureren", "Er ligt geen spoor binnen 10 meter van de locomotief. Zet de locomotief dichter bij het spoor en probeer opnieuw.", "OK");
                 return;
             }
             Undo.SetCurrentGroupName("Configure train");
@@ -32,12 +81,12 @@ namespace ConductorChaos.Editor
             if (!locomotive.GetComponent<NetworkTransform>()) Undo.AddComponent<NetworkTransform>(locomotive);
             var drive = locomotive.GetComponent<TrainDrive>() ? locomotive.GetComponent<TrainDrive>() : Undo.AddComponent<TrainDrive>(locomotive);
             Undo.RecordObject(drive, "Set train track");
-            drive.Configure(track);
+            drive.Configure(track, fraction * track.Length);
             float railCenter = 0f;
             var wheels = locomotive.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Wheels");
             if (wheels && wheels.TryGetComponent<Renderer>(out var wheelRenderer))
                 railCenter = locomotive.transform.InverseTransformPoint(wheelRenderer.bounds.center).z;
-            track.Evaluate(0f, out var position, out var direction);
+            track.Evaluate(fraction, out var position, out var direction);
             var rotation = Quaternion.LookRotation(direction, track.transform.up) * Quaternion.Euler(0, -90, 0);
             Undo.RecordObject(locomotive.transform, "Place locomotive on track");
             locomotive.transform.SetPositionAndRotation(position + track.transform.up * TrackPiece.RailToTrainPivot -
