@@ -22,6 +22,11 @@ namespace ConductorChaos.Playground
         private Transform lever;
         private Transform leverParent;
         private Transform leverPivot;
+        private Rigidbody leverBody;
+        private HingeJoint leverHinge;
+        private PlaygroundPlayer[] players = System.Array.Empty<PlaygroundPlayer>();
+        private float nextPlayerScan;
+        private bool leverHeld;
         private Vector3 leverPosition, leverScale;
         private Collider[] leverColliders;
         private bool[] leverColliderEnabled;
@@ -132,6 +137,25 @@ namespace ConductorChaos.Playground
         private void UpdateCabControls()
         {
             if (!leverPivot || !startButton) return;
+            if (Time.time >= nextPlayerScan)
+            {
+                players = FindObjectsByType<PlaygroundPlayer>(FindObjectsSortMode.None);
+                nextPlayerScan = Time.time + 0.25f;
+            }
+            bool held = false;
+            foreach (var player in players)
+                if (player && player.IsSpawned && player.IsHoldingBody(leverBody)) { held = true; break; }
+            if (leverHinge && held != leverHeld)
+            {
+                if (!held)
+                {
+                    var spring = leverHinge.spring;
+                    spring.targetPosition = leverHinge.angle;
+                    leverHinge.spring = spring;
+                }
+                leverHinge.useSpring = !held;
+                leverHeld = held;
+            }
             float angle = Mathf.DeltaAngle(0f, (Quaternion.Inverse(leverRest) * leverPivot.localRotation).eulerAngles.z);
             float input = Mathf.Clamp(-angle / 35f, -1f, 1f);
             if (Mathf.Abs(input) < 0.06f) input = 0f;
@@ -192,22 +216,24 @@ namespace ConductorChaos.Playground
             lever.localScale = leverScale;
             var handle = leverPivot.gameObject.AddComponent<SphereCollider>();
             handle.center = new Vector3(-0.05f, 0.45f, 0f);
-            handle.radius = 0.12f;
-            var leverBody = leverPivot.gameObject.AddComponent<Rigidbody>();
-            leverBody.mass = 0.4f;
+            handle.radius = 0.18f;
+            leverBody = leverPivot.gameObject.AddComponent<Rigidbody>();
+            leverBody.mass = 0.15f;
             leverBody.useGravity = false;
             leverBody.isKinematic = !IsServer;
-            leverBody.angularDamping = 3f;
+            leverBody.angularDamping = 0.75f;
             leverBody.interpolation = RigidbodyInterpolation.Interpolate;
             if (IsServer)
             {
-                var hinge = leverPivot.gameObject.AddComponent<HingeJoint>();
-                hinge.connectedBody = body;
-                hinge.autoConfigureConnectedAnchor = false;
-                hinge.connectedAnchor = body.transform.InverseTransformPoint(leverPivot.position);
-                hinge.axis = Vector3.forward;
-                hinge.useLimits = true;
-                hinge.limits = new JointLimits { min = -35f, max = 35f };
+                leverHinge = leverPivot.gameObject.AddComponent<HingeJoint>();
+                leverHinge.connectedBody = body;
+                leverHinge.autoConfigureConnectedAnchor = false;
+                leverHinge.connectedAnchor = body.transform.InverseTransformPoint(leverPivot.position);
+                leverHinge.axis = Vector3.forward;
+                leverHinge.useLimits = true;
+                leverHinge.limits = new JointLimits { min = -35f, max = 35f };
+                leverHinge.spring = new JointSpring { spring = 25f, damper = 5f, targetPosition = 0f };
+                leverHinge.useSpring = true;
             }
 
             var button = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -241,6 +267,9 @@ namespace ConductorChaos.Playground
                 for (int i = 0; i < leverColliders.Length; i++)
                     if (leverColliders[i]) leverColliders[i].enabled = leverColliderEnabled[i];
             if (leverPivot) Destroy(leverPivot.gameObject);
+            players = System.Array.Empty<PlaygroundPlayer>();
+            leverHeld = false;
+            nextPlayerScan = 0f;
             previous.Clear();
         }
     }
