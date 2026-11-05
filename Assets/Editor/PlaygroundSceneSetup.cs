@@ -87,7 +87,7 @@ namespace ConductorChaos.Editor
             if (wheels && wheels.TryGetComponent<Renderer>(out var wheelRenderer))
                 railCenter = locomotive.transform.InverseTransformPoint(wheelRenderer.bounds.center).z;
             track.Evaluate(fraction, out var position, out var direction);
-            var rotation = Quaternion.LookRotation(direction, track.transform.up) * Quaternion.Euler(0, -90, 0);
+            var rotation = Quaternion.LookRotation(direction, track.transform.up) * Quaternion.Euler(0, 90, 0);
             Undo.RecordObject(locomotive.transform, "Place locomotive on track");
             locomotive.transform.SetPositionAndRotation(position + track.transform.up * TrackPiece.RailToTrainPivot -
                                                         rotation * new Vector3(0, 0, railCenter), rotation);
