@@ -43,32 +43,16 @@ namespace ConductorChaos.UI
             canvas.sortingOrder = 20;
             RectTransform root = (RectTransform)canvas.transform;
 
-            RectTransform header = ChaosUI.Panel(root, "Trial status", V(0.022f, 0.815f), V(0.255f, 0.976f),
-                ChaosUI.Slate, 2, ChaosUI.Dark);
-            ChaosUISpriteCatalog.Add(header, "Train sprite", "train",
-                V(0.035f, 0.64f), V(0.19f, 0.95f), ChaosUI.GoldLight);
-            ChaosUI.Label(header, "Mode", "PHYSICS PLAYGROUND", 20, ChaosUI.GoldLight,
-                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.20f, 0.57f), V(0.945f, 0.95f));
-            ChaosUISpriteCatalog.Add(header, "Crew sprite", "player-group",
-                V(0.035f, 0.10f), V(0.16f, 0.50f), ChaosUI.Paper);
-            networkText = ChaosUI.Label(header, "Network state", "Starting network...", 17,
-                ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(0.17f, 0.27f), V(0.94f, 0.62f));
-            playerText = ChaosUI.Label(header, "Connected players", "Waiting for local trial", 15,
-                ChaosUI.Muted, TextAnchor.MiddleLeft, FontStyle.Normal, V(0.17f, 0.05f), V(0.94f, 0.33f));
+            RectTransform header = ChaosUI.Panel(root, "Trial status", V(.018f, .865f), V(.245f, .978f), ChaosUI.Slate, 2, ChaosUI.Dark);
+            ChaosUISpriteCatalog.Add(header, "Train", "train", V(.025f, .20f), V(.25f, .94f), ChaosUI.Paper);
+            ChaosUI.Label(header, "Mode", "TRAIN PLAYGROUND", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.26f, .56f), V(.98f, .96f));
+            networkText = ChaosUI.Label(header, "Network state", "", 17, ChaosUI.GoldLight, TextAnchor.MiddleLeft, FontStyle.Bold, V(.26f, .29f), V(.97f, .61f));
+            playerText = ChaosUI.Label(header, "Connected players", "", 15, ChaosUI.Muted, TextAnchor.MiddleLeft, FontStyle.Normal, V(.26f, .03f), V(.97f, .32f));
 
-            RectTransform controls = ChaosUI.Panel(root, "Controls", V(0.245f, 0.015f), V(0.755f, 0.095f),
-                ChaosUI.Slate, 2, ChaosUI.Dark);
-            ChaosUISpriteCatalog.Add(controls, "Controls sprite", "controls",
-                V(0.025f, 0.12f), V(0.105f, 0.88f), ChaosUI.Paper);
-            ChaosUI.Label(controls, "Controls label",
-                "WASD MOVE   MOUSE LOOK   LMB/RMB GRIP   SPACE JUMP   ESC CURSOR",
-                15, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold,
-                V(0.115f, 0.13f), V(0.975f, 0.87f));
-
-            RectTransform note = ChaosUI.Panel(root, "Unimplemented state reminder", V(0.74f, 0.915f),
-                V(0.98f, 0.973f), ChaosUI.Dark);
-            ChaosUI.Label(note, "Note", "UI TRIAL · NO TRAIN SYSTEMS YET", 13,
-                ChaosUI.Muted, TextAnchor.MiddleCenter, FontStyle.Bold);
+            RectTransform controls = ChaosUI.Panel(root, "Controls", V(.21f, .018f), V(.79f, .086f), ChaosUI.Slate, 2, ChaosUI.Dark);
+            ChaosUISpriteCatalog.Add(controls, "Controls", "controls", V(.02f, .12f), V(.10f, .88f), ChaosUI.Paper);
+            ChaosUI.Label(controls, "Controls label", "WASD  Lopen     Muis  Kijken     LMB / RMB  Grijpen     Spatie  Springen", 16,
+                ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.11f, .1f), V(.99f, .9f));
             Refresh();
         }
 
