@@ -24,6 +24,8 @@ namespace ConductorChaos.Playground
         private Vector3 originalCenterOfMass;
         private ArmPhysics left;
         private ArmPhysics right;
+        internal bool IsHoldingBody(Rigidbody candidate) =>
+            (left != null && left.IsHoldingBody(candidate)) || (right != null && right.IsHoldingBody(candidate));
         internal bool IsHandCollider(Collider candidate) =>
             (left != null && left.Collider == candidate) || (right != null && right.Collider == candidate);
         private PlaygroundLegRig legs;
@@ -301,10 +303,12 @@ namespace ConductorChaos.Playground
             private readonly CapsuleCollider collider;
             private readonly ConfigurableJoint shoulder;
             private SpringJoint grip;
+            private readonly Collider[] leverOverlaps = new Collider[12];
             private float nextAttempt;
 
             public Quaternion LocalRotation => arm ? arm.localRotation : Quaternion.identity;
             public Collider Collider => collider;
+            public bool IsHoldingBody(Rigidbody candidate) => grip && grip.connectedBody == candidate;
 
             public ArmPhysics(Transform transform, Rigidbody body, bool server)
             {
@@ -353,6 +357,7 @@ namespace ConductorChaos.Playground
                 if (!held || grip || Time.time < nextAttempt) return;
                 nextAttempt = Time.time + 0.1f;
                 Vector3 hand = arm.TransformPoint(new Vector3(0, -0.205f, 0));
+                if (TryGripNearbyLever(hand, reach)) return;
                 int count = Physics.SphereCastNonAlloc(hand, 0.13f, aim * Vector3.forward, buffer, 0.38f, ~0, QueryTriggerInteraction.Ignore);
                 float closest = float.PositiveInfinity;
                 RaycastHit chosen = default;
@@ -377,11 +382,39 @@ namespace ConductorChaos.Playground
                 grip.connectedBody = chosen.rigidbody;
                 grip.connectedAnchor = chosen.rigidbody ? chosen.rigidbody.transform.InverseTransformPoint(chosen.point) : chosen.point;
                 grip.anchor = new Vector3(0, -0.205f, 0);
-                grip.spring = 180f;
-                grip.damper = 18f;
+                var train = chosen.rigidbody ? chosen.rigidbody.GetComponentInParent<TrainDrive>() : null;
+                bool leverGrip = train && train.IsSpawned && train.IsOwnedByServer && train.IsLeverCollider(chosen.collider);
+                grip.spring = leverGrip ? 450f : 180f;
+                grip.damper = leverGrip ? 40f : 18f;
                 grip.minDistance = 0f;
                 grip.maxDistance = 0.03f;
-                grip.breakForce = 300f;
+                grip.breakForce = leverGrip ? 1000f : 300f;
+            }
+
+            private bool TryGripNearbyLever(Vector3 hand, float reach)
+            {
+                int count = Physics.OverlapSphereNonAlloc(hand, 0.09f, leverOverlaps, ~0, QueryTriggerInteraction.Ignore);
+                for (int i = 0; i < count; i++)
+                {
+                    Collider surface = leverOverlaps[i];
+                    Rigidbody target = surface.attachedRigidbody;
+                    var train = target ? target.GetComponentInParent<TrainDrive>() : null;
+                    if (!train || !train.IsSpawned || !train.IsOwnedByServer || !train.IsLeverCollider(surface)) continue;
+                    Vector3 point = surface.ClosestPoint(hand);
+                    if ((point - parent.position).sqrMagnitude > reach * reach) continue;
+                    grip = arm.gameObject.AddComponent<SpringJoint>();
+                    grip.autoConfigureConnectedAnchor = false;
+                    grip.connectedBody = target;
+                    grip.connectedAnchor = target.transform.InverseTransformPoint(point);
+                    grip.anchor = new Vector3(0, -0.205f, 0);
+                    grip.spring = 450f;
+                    grip.damper = 40f;
+                    grip.minDistance = 0f;
+                    grip.maxDistance = 0.03f;
+                    grip.breakForce = 1000f;
+                    return true;
+                }
+                return false;
             }
 
             public void ShowRemote(Quaternion rotation)
