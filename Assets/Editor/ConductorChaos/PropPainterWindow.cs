@@ -92,6 +92,7 @@ namespace ConductorChaos.EditorTools
             {
                 if (GUILayout.Button("Pad (keien)")) LoadPreset("Path");
                 if (GUILayout.Button("Bloemen + gras")) LoadPreset("Plants");
+                if (GUILayout.Button("Stenen kliffen")) LoadPreset("StoneCliffs");
             }
 
             EditorGUILayout.Space();
@@ -233,8 +234,9 @@ namespace ConductorChaos.EditorTools
                     Set(radius: 4, per: 3, dist: 1.0f, scale: new Vector2(0.6f, 1.5f), height: new Vector2(0.8f, 1.2f), yaw: 0, align: 0.6f, sink: 0.05f, colliders: true);
                     break;
                 case "Cliffs":
+                case "StoneCliffs":
                     Add("Cliffs");
-                    entries.RemoveAll(e => e.prefab.name.Contains("Hill"));
+                    entries.RemoveAll(e => e.prefab.name.Contains("Hill") || e.prefab.name.EndsWith("_Stone") != (preset == "StoneCliffs"));
                     foreach (var e in entries) e.weight = e.prefab.name.Contains("Big") ? 0.4f : e.prefab.name.Contains("Cluster") ? 0.8f : 1f;
                     Set(radius: 6, per: 1, dist: 3.0f, scale: new Vector2(0.9f, 1.15f), height: new Vector2(0.8f, 1.4f), yaw: 90, align: 0f, sink: 0.2f, colliders: true);
                     break;
@@ -523,3 +525,4 @@ namespace ConductorChaos.EditorTools
         }
     }
 }
+
