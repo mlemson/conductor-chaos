@@ -24,6 +24,8 @@ namespace ConductorChaos.Playground
         private Vector3 originalCenterOfMass;
         private ArmPhysics left;
         private ArmPhysics right;
+        internal bool IsHandCollider(Collider candidate) =>
+            (left != null && left.Collider == candidate) || (right != null && right.Collider == candidate);
         private PlaygroundLegRig legs;
         private Vector2 requestedMove;
         private float requestedYaw;
