@@ -49,12 +49,7 @@ namespace ConductorChaos.Playground
         private Renderer[] cameraBodyRenderers;
         private bool[] cameraBodyRenderingOff;
         private bool cameraHidesBody;
-        private int cameraOrbit;
-        private float preferredOrbitClearSince;
-        private static readonly Vector2[] AlternateCameraAngles =
-        {
-            new(0f, 25f), new(-35f, 25f), new(35f, 25f), new(0f, 60f), new(-70f, 45f), new(70f, 45f)
-        };
+        private float cameraDistance = 4f;
         private readonly RaycastHit[] hits = new RaycastHit[32];
         private readonly Collider[] ledgeObstacles = new Collider[16];
         private readonly Vector3[] nearbyWallNormals = new Vector3[16];
@@ -88,8 +83,7 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkSpawn()
         {
-            cameraOrbit = 0;
-            preferredOrbitClearSince = 0f;
+            cameraDistance = 4f;
             hasClearGround = clearingLimbs = false;
             blockedRecoveryDirection = Vector3.zero;
             stalledTime = nextClearanceProbe = nextRecoveryProbe = 0f;
@@ -640,79 +634,26 @@ namespace ConductorChaos.Playground
             foreach (Renderer renderer in cameraBodyRenderers)
                 if (renderer && renderer.enabled && renderer.gameObject.activeInHierarchy) modelBounds.Encapsulate(renderer.bounds);
 
-            Vector3 fallbackPosition = focus;
-            Quaternion fallbackLook = look;
-            float fallbackDistance = -1f;
-            if (cameraOrbit > 0)
-            {
-                Vector2 alternate = AlternateCameraAngles[cameraOrbit - 1];
-                Quaternion rotated = Quaternion.Euler(Mathf.Max(pitch, alternate.y), yaw + alternate.x, 0f);
-                if (TryCameraOrbit(focus, rotated, radius, modelBounds, ref fallbackPosition, ref fallbackLook, ref fallbackDistance))
-                {
-                    Vector3 selectedPosition = playerCamera.transform.position;
-                    Quaternion selectedRotation = playerCamera.transform.rotation;
-                    float preferredDistance = -1f;
-                    Vector3 unusedPosition = focus;
-                    Quaternion unusedLook = look;
-                    bool preferredClear = TryCameraOrbit(focus, look, radius, modelBounds, ref unusedPosition, ref unusedLook, ref preferredDistance)
-                                          && preferredDistance > 3.75f;
-                    if (preferredClear)
-                    {
-                        if (preferredOrbitClearSince <= 0f) preferredOrbitClearSince = Time.unscaledTime;
-                        if (Time.unscaledTime - preferredOrbitClearSince >= 0.5f) { cameraOrbit = 0; return; }
-                    }
-                    else preferredOrbitClearSince = 0f;
-                    playerCamera.transform.SetPositionAndRotation(selectedPosition, selectedRotation);
-                    return;
-                }
-                cameraOrbit = 0;
-                preferredOrbitClearSince = 0f;
-            }
-            if (TryCameraOrbit(focus, look, radius, modelBounds, ref fallbackPosition, ref fallbackLook, ref fallbackDistance)) return;
-            for (int i = 0; i < AlternateCameraAngles.Length; i++)
-            {
-                Vector2 alternate = AlternateCameraAngles[i];
-                Quaternion rotated = Quaternion.Euler(Mathf.Max(pitch, alternate.y), yaw + alternate.x, 0f);
-                if (TryCameraOrbit(focus, rotated, radius, modelBounds, ref fallbackPosition, ref fallbackLook, ref fallbackDistance))
-                {
-                    cameraOrbit = i + 1;
-                    return;
-                }
-            }
-
-            // A gap can be narrower than the camera and the model together.
-            SetCameraBodyHidden(true);
-            playerCamera.transform.SetPositionAndRotation(fallbackPosition, fallbackLook);
-        }
-
-        private bool TryCameraOrbit(Vector3 focus, Quaternion look, float radius, Bounds modelBounds,
-            ref Vector3 fallbackPosition, ref Quaternion fallbackLook, ref float fallbackDistance)
-        {
             Vector3 direction = -(look * Vector3.forward);
-            float distance = 4f;
-            int count = Physics.SphereCastNonAlloc(focus, radius, direction, hits, distance, ~0, QueryTriggerInteraction.Ignore);
+            float available = 4f;
+            int count = Physics.SphereCastNonAlloc(focus, radius, direction, hits, available, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
-                if (!hits[i].collider.transform.IsChildOf(transform)) distance = Mathf.Min(distance, Mathf.Max(0f, hits[i].distance - 0.025f));
-
-            Vector3 position = focus + direction * distance;
-            count = Physics.OverlapSphereNonAlloc(position, radius, ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
-            if (count == ledgeObstacles.Length) return false;
-            for (int i = 0; i < count; i++)
-                if (!ledgeObstacles[i].transform.IsChildOf(transform)) return false;
-
-            if (distance > fallbackDistance)
+                if (!hits[i].collider.transform.IsChildOf(transform)) available = Mathf.Min(available, Mathf.Max(0f, hits[i].distance - 0.025f));
+            cameraDistance = Mathf.Min(available, Mathf.MoveTowards(cameraDistance, available, 4f * Time.unscaledDeltaTime));
+            for (int attempt = 0; attempt < 6 && cameraDistance > 0f; attempt++)
             {
-                fallbackPosition = position;
-                fallbackLook = look;
-                fallbackDistance = distance;
+                Vector3 candidate = focus + direction * cameraDistance;
+                count = Physics.OverlapSphereNonAlloc(candidate, radius, ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
+                bool blocked = count == ledgeObstacles.Length;
+                for (int i = 0; i < count && !blocked; i++)
+                    blocked = !ledgeObstacles[i].transform.IsChildOf(transform);
+                if (!blocked) break;
+                cameraDistance = attempt == 5 ? 0f : Mathf.Max(0f, cameraDistance - 0.2f);
             }
             Vector3 axis = new(Mathf.Abs(direction.x), Mathf.Abs(direction.y), Mathf.Abs(direction.z));
             float modelEdge = Vector3.Dot(modelBounds.center - focus, direction) + Vector3.Dot(modelBounds.extents, axis);
-            if (distance < modelEdge + radius + 0.03f) return false;
-
-            SetCameraBodyHidden(false);
-            playerCamera.transform.SetPositionAndRotation(position, look);
-            return true;
+            SetCameraBodyHidden(cameraDistance < modelEdge + radius + (cameraHidesBody ? 0.15f : 0.03f));
+            playerCamera.transform.SetPositionAndRotation(focus + direction * cameraDistance, look);
         }
 
         private void SetCameraBodyHidden(bool hidden)
