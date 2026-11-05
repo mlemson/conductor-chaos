@@ -54,7 +54,7 @@ namespace ConductorChaos.Playground
         private void Update()
         {
             if (lever) lever.localRotation = leverRest * Quaternion.Euler(0, 0, -throttle.Value * 35f);
-            if (startButton) startButton.localScale = new Vector3(0.18f, powered.Value ? 0.11f : 0.18f, 0.18f);
+            if (startButton) startButton.localScale = new Vector3(0.18f, powered.Value ? 0.025f : 0.04f, 0.18f);
             if (!IsSpawned || !lever || !startButton) return;
             if (localPlayer && (!localPlayer.IsSpawned || !localPlayer.IsOwner)) localPlayer = null;
             if (!localPlayer && Time.unscaledTime >= nextPlayerLookup)
@@ -153,12 +153,13 @@ namespace ConductorChaos.Playground
         private void CreateCabControls()
         {
             if (!lever) { Debug.LogError("TrainDrive: de cabinehendel Regulator ontbreekt.", this); return; }
-            var button = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var button = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             button.name = "Startknop";
             startButton = button.transform;
             startButton.SetParent(lever.parent, false);
-            startButton.position = lever.position + transform.up * 0.2f + transform.forward * 0.45f;
-            startButton.localScale = Vector3.one * 0.18f;
+            startButton.position = lever.position + transform.right * 0.2f + transform.up * 0.34f - transform.forward * 0.27f;
+            startButton.rotation = transform.rotation;
+            startButton.localScale = new Vector3(0.18f, 0.04f, 0.18f);
             button.GetComponent<Collider>().isTrigger = true;
             if (lever.TryGetComponent<Renderer>(out var leverRenderer))
                 button.GetComponent<Renderer>().sharedMaterial = leverRenderer.sharedMaterial;
