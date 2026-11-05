@@ -3,7 +3,6 @@ using ConductorChaos.Track;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace ConductorChaos.Playground
 {
@@ -15,26 +14,33 @@ namespace ConductorChaos.Playground
         [SerializeField] private float maximumSpeed = 6f;
         [SerializeField] private float acceleration = 2f;
         private readonly NetworkVariable<bool> powered = new(false);
+        private readonly NetworkVariable<bool> buttonDown = new(false);
         private readonly NetworkVariable<float> throttle = new(0f);
         private Rigidbody body;
         private TrackPiece track;
         private float distance, speed;
         private Transform lever;
+        private Transform leverParent;
+        private Transform leverPivot;
+        private Vector3 leverPosition, leverScale;
+        private Collider[] leverColliders;
+        private bool[] leverColliderEnabled;
+        private readonly Collider[] buttonContacts = new Collider[16];
+        private float nextButtonPress;
         private Transform startButton;
-        private TextMesh buttonHint, leverHint;
-        private PlaygroundPlayer localPlayer;
-        private float nextPlayerLookup;
         private Quaternion leverRest;
         private float railCenterOffset;
         private readonly Dictionary<TrackPiece, TrackPiece> previous = new();
 
         public void Configure(TrackPiece first, float start) { firstTrack = first; startDistance = start; }
+        internal bool IsLeverCollider(Collider candidate) => leverPivot && candidate && candidate.transform == leverPivot;
 
         public override void OnNetworkSpawn()
         {
             body = GetComponent<Rigidbody>();
             body.isKinematic = true;
             body.useGravity = false;
+            if (IsServer) { powered.Value = false; throttle.Value = 0f; buttonDown.Value = false; nextButtonPress = 0f; }
             foreach (var t in GetComponentsInChildren<Transform>(true))
             {
                 if (t.name == "Regulator") { lever = t; leverRest = t.localRotation; }
@@ -63,37 +69,14 @@ namespace ConductorChaos.Playground
 
         private void Update()
         {
-            if (lever) lever.localRotation = leverRest * Quaternion.Euler(0, 0, -throttle.Value * 35f);
-            if (startButton) startButton.localScale = new Vector3(0.18f, powered.Value ? 0.025f : 0.04f, 0.18f);
-            if (!IsSpawned || !lever || !startButton) return;
-            if (localPlayer && (!localPlayer.IsSpawned || !localPlayer.IsOwner)) localPlayer = null;
-            if (!localPlayer && Time.unscaledTime >= nextPlayerLookup)
-            {
-                nextPlayerLookup = Time.unscaledTime + 1f;
-                foreach (var player in FindObjectsByType<PlaygroundPlayer>(FindObjectsSortMode.None))
-                    if (player.IsSpawned && player.IsOwner) { localPlayer = player; break; }
-            }
-            if (!localPlayer) { buttonHint.gameObject.SetActive(false); leverHint.gameObject.SetActive(false); return; }
-            Vector3 hand = localPlayer.transform.position + Vector3.up * 0.9f;
-            float buttonDistance = Vector3.Distance(hand, startButton.position);
-            float leverDistance = Vector3.Distance(hand, lever.position + transform.up * 0.35f);
-            bool canUse = Cursor.lockState == CursorLockMode.Locked && Application.isFocused;
-            bool useButton = canUse && buttonDistance <= 1.5f && buttonDistance <= leverDistance;
-            bool useLever = canUse && leverDistance <= 1.5f && leverDistance < buttonDistance;
-            buttonHint.gameObject.SetActive(useButton);
-            leverHint.gameObject.SetActive(useLever);
-            if (useButton) buttonHint.text = powered.Value ? "E  Uitzetten" : "E  Starten";
-            if (useLever) leverHint.text = throttle.Value > 0.5f ? "E  Hendel: vooruit" : throttle.Value < -0.5f ? "E  Hendel: achteruit" : "E  Hendel: stop";
-            Camera camera = Camera.main;
-            if (camera && useButton) buttonHint.transform.rotation = camera.transform.rotation;
-            if (camera && useLever) leverHint.transform.rotation = camera.transform.rotation;
-            if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame && (useButton || useLever))
-                UseCabControlServerRpc(useLever);
+            if (!IsServer && leverPivot) leverPivot.localRotation = leverRest * Quaternion.Euler(0, 0, -throttle.Value * 35f);
+            if (startButton) startButton.localScale = new Vector3(0.18f, buttonDown.Value ? 0.025f : 0.04f, 0.18f);
         }
 
         private void FixedUpdate()
         {
             if (!IsSpawned || !IsServer || !track || !track.HasSockets) return;
+            UpdateCabControls();
             speed = Mathf.MoveTowards(speed, powered.Value ? throttle.Value * maximumSpeed : 0f, acceleration * Time.fixedDeltaTime);
             var oldTrack = track;
             float oldDistance = distance;
@@ -145,32 +128,75 @@ namespace ConductorChaos.Playground
             body.MoveRotation(rotation);
         }
 
-        [ServerRpc(RequireOwnership = false)]
-        private void UseCabControlServerRpc(bool useLever, ServerRpcParams rpc = default)
+        private void UpdateCabControls()
         {
-            if (!lever || !startButton) return;
-            Vector3 control = useLever ? lever.position + transform.up * 0.35f : startButton.position;
-            foreach (var player in FindObjectsByType<PlaygroundPlayer>(FindObjectsSortMode.None))
-                if (player.IsSpawned && player.OwnerClientId == rpc.Receive.SenderClientId &&
-                    Vector3.Distance(player.transform.position + Vector3.up * 0.9f, control) <= 1.5f)
-                {
-                    if (useLever) throttle.Value = throttle.Value > 0.5f ? -1f : throttle.Value < -0.5f ? 0f : 1f;
-                    else powered.Value = !powered.Value;
-                    return;
-                }
+            if (!leverPivot || !startButton) return;
+            float angle = Mathf.DeltaAngle(0f, (Quaternion.Inverse(leverRest) * leverPivot.localRotation).eulerAngles.z);
+            float input = Mathf.Clamp(-angle / 35f, -1f, 1f);
+            if (Mathf.Abs(input) < 0.06f) input = 0f;
+            if (Mathf.Abs(input - throttle.Value) > 0.01f || (input == 0f && throttle.Value != 0f)) throttle.Value = input;
+
+            bool touching = false;
+            int count = Physics.OverlapSphereNonAlloc(startButton.position, 0.12f, buttonContacts, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+            {
+                var player = buttonContacts[i].GetComponentInParent<PlaygroundPlayer>();
+                if (player && player.IsSpawned && player.IsHandCollider(buttonContacts[i])) { touching = true; break; }
+            }
+            if (touching && !buttonDown.Value && Time.time >= nextButtonPress)
+            {
+                powered.Value = !powered.Value;
+                nextButtonPress = Time.time + 0.35f;
+            }
+            if (buttonDown.Value != touching) buttonDown.Value = touching;
         }
 
         private void CreateCabControls()
         {
             if (!lever) { Debug.LogError("TrainDrive: de cabinehendel Regulator ontbreekt.", this); return; }
+            leverParent = lever.parent;
+            leverPosition = lever.localPosition;
+            leverScale = lever.localScale;
+            leverColliders = lever.GetComponentsInChildren<Collider>(true);
+            leverColliderEnabled = new bool[leverColliders.Length];
+            for (int i = 0; i < leverColliders.Length; i++)
+            {
+                leverColliderEnabled[i] = leverColliders[i].enabled;
+                leverColliders[i].enabled = false;
+            }
+
+            leverPivot = new GameObject("Cabinehendel fysica").transform;
+            leverPivot.SetParent(leverParent, false);
+            leverPivot.localPosition = leverPosition;
+            leverPivot.localRotation = leverRest;
+            lever.SetParent(leverPivot, true);
+            var handle = leverPivot.gameObject.AddComponent<SphereCollider>();
+            handle.center = new Vector3(-0.05f, 0.45f, 0f);
+            handle.radius = 0.12f;
+            var leverBody = leverPivot.gameObject.AddComponent<Rigidbody>();
+            leverBody.mass = 0.4f;
+            leverBody.useGravity = false;
+            leverBody.isKinematic = !IsServer;
+            leverBody.angularDamping = 3f;
+            leverBody.interpolation = RigidbodyInterpolation.Interpolate;
+            if (IsServer)
+            {
+                var hinge = leverPivot.gameObject.AddComponent<HingeJoint>();
+                hinge.connectedBody = body;
+                hinge.autoConfigureConnectedAnchor = false;
+                hinge.connectedAnchor = body.transform.InverseTransformPoint(leverPivot.position);
+                hinge.axis = Vector3.forward;
+                hinge.useLimits = true;
+                hinge.limits = new JointLimits { min = -35f, max = 35f };
+            }
+
             var button = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             button.name = "Startknop";
             startButton = button.transform;
-            startButton.SetParent(lever.parent, false);
-            startButton.position = lever.position + transform.right * 0.2f + transform.up * 0.34f - transform.forward * 0.27f;
+            startButton.SetParent(leverParent, false);
+            startButton.position = leverPivot.position + transform.right * 0.2f + transform.up * 0.34f - transform.forward * 0.27f;
             startButton.rotation = transform.rotation;
             startButton.localScale = new Vector3(0.18f, 0.04f, 0.18f);
-            button.GetComponent<Collider>().isTrigger = true;
             if (lever.TryGetComponent<Renderer>(out var leverRenderer))
                 button.GetComponent<Renderer>().sharedMaterial = leverRenderer.sharedMaterial;
             foreach (var renderer in GetComponentsInChildren<Renderer>())
@@ -179,31 +205,22 @@ namespace ConductorChaos.Playground
                     if (material && material.name == "M_Loco_Red") { button.GetComponent<Renderer>().sharedMaterial = material; break; }
                 if (button.GetComponent<Renderer>().sharedMaterial && button.GetComponent<Renderer>().sharedMaterial.name == "M_Loco_Red") break;
             }
-            buttonHint = MakeHint(lever.parent, startButton.localPosition + Vector3.up * 0.35f);
-            leverHint = MakeHint(lever.parent, lever.localPosition + Vector3.up * 0.65f);
-        }
-
-        private static TextMesh MakeHint(Transform parent, Vector3 offset)
-        {
-            var hint = new GameObject("Bedieningshint").AddComponent<TextMesh>();
-            hint.transform.SetParent(parent, false);
-            hint.transform.localPosition = offset;
-            hint.anchor = TextAnchor.MiddleCenter;
-            hint.alignment = TextAlignment.Center;
-            hint.fontSize = 48;
-            hint.characterSize = 0.012f;
-            hint.color = new Color(0.96f, 0.86f, 0.75f);
-            hint.gameObject.SetActive(false);
-            return hint;
         }
 
         public override void OnNetworkDespawn()
         {
             if (startButton) Destroy(startButton.gameObject);
-            if (buttonHint) Destroy(buttonHint.gameObject);
-            if (leverHint) Destroy(leverHint.gameObject);
-            if (lever) lever.localRotation = leverRest;
-            localPlayer = null;
+            if (lever && leverParent)
+            {
+                lever.SetParent(leverParent, false);
+                lever.localPosition = leverPosition;
+                lever.localRotation = leverRest;
+                lever.localScale = leverScale;
+            }
+            if (leverColliders != null)
+                for (int i = 0; i < leverColliders.Length; i++)
+                    if (leverColliders[i]) leverColliders[i].enabled = leverColliderEnabled[i];
+            if (leverPivot) Destroy(leverPivot.gameObject);
             previous.Clear();
         }
     }
