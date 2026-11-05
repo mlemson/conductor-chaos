@@ -2,27 +2,27 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand. Brede epics tellen niet als uitvoertaak.
 
-**Voortgang: 3/70 afgerond (4%)**
+**Voortgang: 3/72 afgerond (4%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 63 | 4 | 0 | 0 | 3 |
+| 62 | 7 | 0 | 0 | 3 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
     P0["P0 · Technisch fundament + stijltest · 3/25 klaar"]
-    P1["P1 · Eerste speelbare co-opervaring · 0/41 klaar"]
-    P2["P2 · Bergavontuur en chaos · 0/4 klaar"]
+    P1["P1 · Eerste speelbare co-opervaring · 0/42 klaar"]
+    P2["P2 · Bergavontuur en chaos · 0/5 klaar"]
     P0 --> P1 --> P2
 ```
 
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
 | **P0** | 🟩⬜⬜⬜⬜⬜⬜⬜⬜⬜ 3/25 | Technisch fundament + stijltest |
-| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/41 | Eerste speelbare co-opervaring |
-| **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/4 | Bergavontuur en chaos |
+| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/42 | Eerste speelbare co-opervaring |
+| **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/5 | Bergavontuur en chaos |
 
 ## 🧩 Overkoepelende onderwerpen (geen uitvoertaken)
 
@@ -44,7 +44,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 📋 Taken per status
 
-### 📝 Te doen (63)
+### 📝 Te doen (62)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -71,7 +71,6 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P1 | [#50 Spelers kunnen elkaar licht fysiek aanstoten](https://github.com/mlemson/conductor-chaos/issues/50) | Physics | — | — |
 | P1 | [#51 Speler kan na een val weer opstaan](https://github.com/mlemson/conductor-chaos/issues/51) | Gameplay | — | — |
 | P1 | [#52 Prefab voor één testkoffer met collider en massainstellingen](https://github.com/mlemson/conductor-chaos/issues/52) | Gameplay | — | — |
-| P1 | [#58 Wagonkoppeling: twee delen visueel koppelen](https://github.com/mlemson/conductor-chaos/issues/58) | Train | — | — |
 | P1 | [#59 Station: één modulair perron met bank en bord](https://github.com/mlemson/conductor-chaos/issues/59) | World | — | — |
 | P1 | [#60 Eerste rit: vertrekstation naar eindhalte](https://github.com/mlemson/conductor-chaos/issues/60) | World | — | — |
 | P1 | [#63 Treindeur: openhouden en loslaten tijdens rijden](https://github.com/mlemson/conductor-chaos/issues/63) | Interactions | — | — |
@@ -112,14 +111,17 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P2 | [#90 Koppeling kan breken bij hoge impact](https://github.com/mlemson/conductor-chaos/issues/90) | Physics | — | — |
 | P2 | [#92 Optionele mijlpaalcheck: sessie met vier en later zes spelers](https://github.com/mlemson/conductor-chaos/issues/92) | QA | — | — |
 
-### 🔧 Bezig (4)
+### 🔧 Bezig (7)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
 | P0 | [#53 Spoorasset: recht segment en bocht als Unity-prefabs](https://github.com/mlemson/conductor-chaos/issues/53) | Train | @mlemson | — |
 | P0 | [#56 Rijdende wagon: speler blijft op vloer bij rijden/remmen](https://github.com/mlemson/conductor-chaos/issues/56) | Multiplayer | — | [#148](https://github.com/mlemson/conductor-chaos/pull/148), [#146](https://github.com/mlemson/conductor-chaos/pull/146) |
 | P1 | [#57 Cabinehendel: eenvoudige bediening van treinsnelheid](https://github.com/mlemson/conductor-chaos/issues/57) | Train | — | [#146](https://github.com/mlemson/conductor-chaos/pull/146) |
+| P1 | [#58 Wagonkoppeling: twee delen visueel koppelen](https://github.com/mlemson/conductor-chaos/issues/58) | Train | @mlemson | — |
 | P1 | [#115 Houd de third-personcamera buiten de conducteur](https://github.com/mlemson/conductor-chaos/issues/115) | Overig | — | [#147](https://github.com/mlemson/conductor-chaos/pull/147) |
+| P1 | [#151 Locomotiefcabine: vaste bediening en werkende snelheidsmeter](https://github.com/mlemson/conductor-chaos/issues/151) | Overig | @mlemson | — |
+| P2 | [#149 Herstel preset voor stenen kliffen op hersteltak](https://github.com/mlemson/conductor-chaos/issues/149) | Overig | @mlemson | [#150](https://github.com/mlemson/conductor-chaos/pull/150) |
 
 ### 👀 Klaar voor review (0)
 
