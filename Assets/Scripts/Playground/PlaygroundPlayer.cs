@@ -66,6 +66,9 @@ namespace ConductorChaos.Playground
         private bool[] cameraBodyRenderingOff;
         private bool cameraHidesBody;
         private float cameraDistance = 4f;
+        private float desiredCameraDistance = 4f;
+        private float smoothFocusY, smoothFocusVelocity;
+        private bool hasSmoothFocus;
         private Vector3 lastClearCameraPosition;
         private bool hasClearCameraPosition;
         private TrainDrive trainDrive;
@@ -197,6 +200,7 @@ namespace ConductorChaos.Playground
                 Vector2 delta = mouse.delta.ReadValue();
                 yaw += delta.x * 0.12f;
                 pitch = Mathf.Clamp(pitch - delta.y * 0.12f, -80f, 65f);
+                desiredCameraDistance = Mathf.Clamp(desiredCameraDistance - mouse.scroll.ReadValue().y * 0.002f, 1.5f, 6f);
             }
             Vector2 move = active ? new Vector2((keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f),
                                (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f)) : Vector2.zero;
@@ -636,12 +640,20 @@ namespace ConductorChaos.Playground
             }
             if (!IsOwner || !playerCamera) return;
             Vector3 focus = transform.position + Vector3.up * 0.9f;
+            if (PlayerPrefs.GetInt("ChaosUI.CameraBob", 1) == 0)
+            {
+                if (!hasSmoothFocus || Mathf.Abs(focus.y - smoothFocusY) > 2f) { smoothFocusY = focus.y; smoothFocusVelocity = 0f; }
+                smoothFocusY = Mathf.SmoothDamp(smoothFocusY, focus.y, ref smoothFocusVelocity, 0.2f, Mathf.Infinity, Time.unscaledDeltaTime);
+                focus.y = smoothFocusY;
+                hasSmoothFocus = true;
+            }
+            else hasSmoothFocus = false;
             Quaternion look = Quaternion.Euler(pitch, yaw, 0f);
             usingLookDownCamera = pitch >= (usingLookDownCamera ? 50f : 58f);
             if (!trainDrive) trainDrive = FindAnyObjectByType<TrainDrive>();
             if (trainDrive && trainDrive.TryGetCabin(transform.position, usingCabinCamera ? 0.04f : -0.06f, out var cabinFrame))
             {
-                Vector3 cabinFocus = transform.position + Vector3.up * 0.72f - Quaternion.Euler(0f, yaw, 0f) * Vector3.forward * 0.10f;
+                Vector3 cabinFocus = focus - Vector3.up * 0.18f - Quaternion.Euler(0f, yaw, 0f) * Vector3.forward * 0.10f;
                 Vector3 eye = trainDrive.ClampCabinEye(cabinFrame.InverseTransformPoint(cabinFocus));
                 cabinEye = usingCabinCamera
                     ? Vector3.Lerp(cabinEye, eye, 1f - Mathf.Exp(-22f * Time.unscaledDeltaTime)) : eye;
@@ -660,7 +672,7 @@ namespace ConductorChaos.Playground
                 if (renderer && renderer.enabled && renderer.gameObject.activeInHierarchy) modelBounds.Encapsulate(renderer.bounds);
 
             Vector3 direction = -(look * Vector3.forward);
-            float available = usingLookDownCamera ? 0f : Mathf.SmoothStep(4f, 0f, Mathf.InverseLerp(44f, 58f, pitch));
+            float available = usingLookDownCamera ? 0f : Mathf.SmoothStep(desiredCameraDistance, 0f, Mathf.InverseLerp(44f, 58f, pitch));
             int focusCount = Physics.OverlapSphereNonAlloc(focus, radius, cameraFocusObstacles, ~0, QueryTriggerInteraction.Ignore);
             int count = Physics.SphereCastNonAlloc(focus, radius, direction, hits, available, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
