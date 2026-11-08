@@ -38,6 +38,8 @@ namespace ConductorChaos.Playground
         private float lastServerInput;
         private float yaw, pitch = 18f;
         private Camera playerCamera;
+        private float originalCameraFieldOfView;
+        private float desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
         private readonly RaycastHit[] hits = new RaycastHit[32];
 #if DEVELOPMENT_BUILD
         private bool automatedInput;
@@ -79,6 +81,8 @@ namespace ConductorChaos.Playground
             if (IsOwner)
             {
                 playerCamera = Camera.main;
+                if (playerCamera) originalCameraFieldOfView = playerCamera.fieldOfView;
+                desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
                 yaw = transform.eulerAngles.y;
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
@@ -123,6 +127,7 @@ namespace ConductorChaos.Playground
                 Vector2 delta = mouse.delta.ReadValue();
                 yaw += delta.x * 0.12f;
                 pitch = Mathf.Clamp(pitch - delta.y * 0.12f, -60f, 65f);
+                desiredCameraDistance = PlaygroundControls.ZoomDistance(desiredCameraDistance, mouse.scroll.ReadValue().y);
             }
             Vector2 move = active ? new Vector2((keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f),
                                (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f)) : Vector2.zero;
@@ -230,7 +235,15 @@ namespace ConductorChaos.Playground
             Quaternion aim = Quaternion.Euler(requestedPitch, requestedYaw, 0f);
             left.Step(leftHeld, requestedPitch, aim, hits, transform, reach);
             right.Step(rightHeld, requestedPitch, aim, hits, transform, reach);
-            legs?.Step(body.linearVelocity, IsGrounded());
+            float handPush = 0f;
+            if (Time.time - lastJump > 0.18f)
+            {
+                float press = Mathf.InverseLerp(28f, 60f, requestedPitch);
+                float upSpeed = body.linearVelocity.y;
+                handPush = Mathf.Max(left.PushUp(press, upSpeed), right.PushUp(press, upSpeed));
+            }
+            if (handPush > 0f) body.AddForce(Vector3.up * handPush, ForceMode.Acceleration);
+            legs?.Step(body.linearVelocity, handPush <= 0f && IsGrounded());
             if (Time.time >= nextPose)
             {
                 leftPose.Value = left.LocalRotation;
@@ -266,10 +279,14 @@ namespace ConductorChaos.Playground
             Quaternion orbit = Quaternion.Euler(pitch, yaw, 0f);
             Vector3 focus = transform.position + Vector3.up * 0.9f;
             Vector3 direction = -(orbit * Vector3.forward);
-            float distance = 4f;
+            float distance = desiredCameraDistance;
             int count = Physics.SphereCastNonAlloc(focus, 0.16f, direction, hits, distance, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
                 if (!hits[i].collider.transform.IsChildOf(transform)) distance = Mathf.Min(distance, Mathf.Max(0.3f, hits[i].distance - 0.15f));
+            float targetFov = distance < 1.5f
+                ? PlaygroundControls.ZoomFieldOfView(originalCameraFieldOfView, desiredCameraDistance)
+                : originalCameraFieldOfView;
+            playerCamera.fieldOfView = Mathf.MoveTowards(playerCamera.fieldOfView, targetFov, 100f * Time.unscaledDeltaTime);
             playerCamera.transform.SetPositionAndRotation(focus + direction * distance, orbit);
         }
 
@@ -283,7 +300,12 @@ namespace ConductorChaos.Playground
                 body.constraints = originalConstraints;
                 body.centerOfMass = originalCenterOfMass;
             }
-            if (IsOwner) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
+            if (IsOwner)
+            {
+                if (playerCamera) playerCamera.fieldOfView = originalCameraFieldOfView;
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
         }
 
         private void OnGUI()
@@ -303,12 +325,15 @@ namespace ConductorChaos.Playground
             private readonly CapsuleCollider collider;
             private readonly ConfigurableJoint shoulder;
             private SpringJoint grip;
+            private Collider gripSurface;
             private readonly Collider[] leverOverlaps = new Collider[12];
             private float nextAttempt;
 
             public Quaternion LocalRotation => arm ? arm.localRotation : Quaternion.identity;
             public Collider Collider => collider;
             public bool IsHoldingBody(Rigidbody candidate) => grip && grip.connectedBody == candidate;
+            public float PushUp(float press, float upSpeed) =>
+                PlaygroundControls.HandPushAcceleration(grip, gripSurface, press, upSpeed);
 
             public ArmPhysics(Transform transform, Rigidbody body, bool server)
             {
@@ -346,6 +371,14 @@ namespace ConductorChaos.Playground
             {
                 if (!rigid) return;
                 Quaternion localTarget = rest * Quaternion.Euler(held ? -65f + pitch * 0.65f : 0f, 0, 0);
+                if (held && pitch > 28f && grip && gripSurface && (!grip.connectedBody || grip.connectedBody.isKinematic))
+                {
+                    var support = grip.connectedBody;
+                    Vector3 anchor = support ? support.transform.TransformPoint(grip.connectedAnchor) : grip.connectedAnchor;
+                    Vector3 towardGrip = arm.parent.InverseTransformDirection(anchor - rigid.position);
+                    if (towardGrip.sqrMagnitude > 0.001f)
+                        localTarget = Quaternion.FromToRotation(rest * Vector3.down, towardGrip.normalized) * rest;
+                }
                 Quaternion desired = arm.parent.rotation * localTarget;
                 Quaternion error = desired * Quaternion.Inverse(rigid.rotation);
                 error.ToAngleAxis(out float angle, out Vector3 axis);
@@ -384,6 +417,7 @@ namespace ConductorChaos.Playground
                 grip.anchor = new Vector3(0, -0.205f, 0);
                 var train = chosen.rigidbody ? chosen.rigidbody.GetComponentInParent<TrainDrive>() : null;
                 bool leverGrip = train && train.IsSpawned && train.IsOwnedByServer && train.IsLeverCollider(chosen.collider);
+                gripSurface = leverGrip ? null : chosen.collider;
                 grip.spring = leverGrip ? 450f : 180f;
                 grip.damper = leverGrip ? 40f : 18f;
                 grip.minDistance = 0f;
@@ -424,6 +458,7 @@ namespace ConductorChaos.Playground
 
             public void Release()
             {
+                gripSurface = null;
                 if (!grip) return;
                 Object.Destroy(grip);
                 grip = null;
