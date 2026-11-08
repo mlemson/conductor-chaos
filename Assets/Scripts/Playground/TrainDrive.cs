@@ -77,10 +77,23 @@ namespace ConductorChaos.Playground
         private readonly List<Vector3> coalHomes = new();
         private readonly List<Quaternion> coalHomeRotations = new();
         private readonly List<float> coalRespawnTimes = new();
+        // Losse kolen in de tenderbak: brokken die stil liggen 'slapen' (kinematisch, als kind van de wagen), zodat ze
+        // vast meerijden, niet trillen en geen netwerkverkeer kosten. Een schep, hand, speler of rollend brok in de buurt
+        // maakt ze wakker (gewone physics); tot rust gekomen in de bak gaan ze weer slapen.
+        private readonly List<bool> coalAsleep = new();
+        private readonly List<float> coalCalmTime = new();
+        private readonly List<float> coalRadius = new();
+        private readonly Dictionary<Rigidbody, int> coalIndex = new();
+        private readonly List<Bounds> coalDisturbers = new();
+        private readonly List<bool> coalDisturberIsCoal = new();
+        private readonly Collider[] binContacts = new Collider[384];
+        private Bounds coalBinLocal;
+        // Kolenposes zijn relatief aan het voertuig met de kolen (coalSource): stil liggende kolen veranderen dan niet.
         private NetworkList<CoalPose> coalPoses;
         private static readonly HashSet<Rigidbody> GrippableCoal = new();
         private static readonly Dictionary<Rigidbody, TrainDrive> ShovelOwners = new();
 
+        // Positie/rotatie relatief aan het voertuig waar de kolen bij horen (coalSource), niet in wereldruimte.
         private struct CoalPose : INetworkSerializable, System.IEquatable<CoalPose>
         {
             public Vector3 Position;
@@ -273,8 +286,12 @@ namespace ConductorChaos.Playground
                 var steam = new GameObject("Stoom en motorgeluid");
                 steam.transform.SetParent(smokeOrigin, false);
                 steamEffects = steam.AddComponent<TrainSteamEffects>();
-                steamEffects.Configure(coalBodies[0].GetComponent<MeshFilter>().sharedMesh,
-                    coalBodies[0].GetComponent<Renderer>().sharedMaterial);
+                var puff = coalBodies[0].GetComponent<MeshFilter>().sharedMesh;
+                Material puffMaterial = coalBodies[0].GetComponent<Renderer>().sharedMaterial;
+                foreach (var part in GetComponentsInChildren<Renderer>(true))
+                    if (part.name == "FireboxCoals") { puffMaterial = part.sharedMaterial; break; }
+                Vector3 puffSize = puff ? puff.bounds.size : Vector3.one * 0.137f;
+                steamEffects.Configure(puff, puffMaterial, 0.137f / Mathf.Max(0.01f, (puffSize.x + puffSize.y + puffSize.z) / 3f));
             }
             couplers.Clear();
             couplers.Add(body, GetCouplers(transform));
@@ -300,14 +317,6 @@ namespace ConductorChaos.Playground
                     {
                         shovelBody.position = body.position + body.rotation * shovelStartPosition;
                         shovelBody.rotation = body.rotation * shovelStartRotation;
-                    }
-                    for (int i = 0; i < coalBodies.Count; i++)
-                    {
-                        var coal = coalBodies[i];
-                        CoalHome(i, out var home, out var homeRotation);
-                        coal.position = home;
-                        coal.rotation = homeRotation;
-                        coalPoses[i] = new CoalPose { Position = coal.position, Rotation = coal.rotation, Visible = true };
                     }
                 }
             }
@@ -410,6 +419,9 @@ namespace ConductorChaos.Playground
             throttle.Value = 0f;
             leverOffset = 0f;
             speed = 0f;
+            if (canStoke)
+                for (int i = 0; i < coalBodies.Count; i++)
+                    if (coalBodies[i].gameObject.activeSelf) WakeCoal(i);
             body.mass = Mathf.Max(originalTrainMass, 8f);
             derailMaterial = new PhysicsMaterial("Derailment friction") { dynamicFriction = 0.02f, staticFriction = 0.02f, frictionCombine = PhysicsMaterialCombine.Minimum };
             Rigidbody tail = body;
@@ -954,22 +966,47 @@ namespace ConductorChaos.Playground
                 piece.name = chunk.name + " (fysiek)";
                 chunk.gameObject.SetActive(false);
                 foreach (var existing in piece.GetComponents<Collider>()) existing.enabled = false;
-                var shape = piece.AddComponent<SphereCollider>();
-                shape.radius = 0.065f;
+                // Botsvorm = de convexe vorm van het brok (zoals bij het vullen van de bak in settle_coal.py), zodat de
+                // brokken blijven liggen zoals ze liggen; zonder leesbare mesh een iets kleinere box.
+                var mesh = chunk.sharedMesh;
+                if (mesh && mesh.isReadable)
+                {
+                    var hull = piece.AddComponent<MeshCollider>();
+                    hull.sharedMesh = mesh;
+                    hull.convex = true;
+                }
+                else
+                {
+                    var box = piece.AddComponent<BoxCollider>();
+                    box.center = mesh ? mesh.bounds.center : Vector3.zero;
+                    box.size = mesh ? mesh.bounds.size * 0.85f : Vector3.one * 0.13f;
+                }
                 var coal = piece.AddComponent<Rigidbody>();
-                coal.mass = 0.18f;
-                coal.isKinematic = !IsServer;
+                coal.mass = 0.25f;
+                coal.isKinematic = true;
+                coal.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+                // slapend in de bak: hangt aan de wagen en rijdt exact mee (ook op clients, die de pose lokaal volgen)
+                piece.transform.SetParent(coalSource, true);
+                int index = coalBodies.Count;
                 if (IsServer)
                 {
-                    coal.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
                     GrippableCoal.Add(coal);
-                    coalPoses.Add(new CoalPose { Position = coal.position, Rotation = coal.rotation, Visible = true });
+                    coalPoses.Add(new CoalPose { Position = piece.transform.localPosition, Rotation = piece.transform.localRotation, Visible = true });
                 }
+                coalIndex[coal] = index;
                 coalBodies.Add(coal);
-                coalHomes.Add(coalSource.InverseTransformPoint(chunk.transform.position));
-                coalHomeRotations.Add(Quaternion.Inverse(coalSource.rotation) * chunk.transform.rotation);
+                coalAsleep.Add(true);
+                coalCalmTime.Add(0f);
+                Vector3 extents = mesh ? Vector3.Scale(mesh.bounds.extents, piece.transform.lossyScale) : Vector3.one * 0.065f;
+                coalRadius.Add(Mathf.Max(extents.x, Mathf.Max(extents.y, extents.z)));
+                coalHomes.Add(piece.transform.localPosition);
+                coalHomeRotations.Add(piece.transform.localRotation);
                 coalRespawnTimes.Add(0f);
             }
+            // gebied waarin kolen mogen slapen en waarin schep/handen/spelers ze wekken: de vulling + marge
+            coalBinLocal = new Bounds(coalHomes[0], Vector3.zero);
+            foreach (var home in coalHomes) coalBinLocal.Encapsulate(home);
+            coalBinLocal.Expand(new Vector3(0.5f, 0.8f, 0.5f));
 
             shovelRestPosition = shovel.localPosition;
             shovelRestRotation = shovel.localRotation;
@@ -995,13 +1032,13 @@ namespace ConductorChaos.Playground
             shovelGrip = shovel.gameObject.AddComponent<SphereCollider>();
             shovelGrip.radius = 0.066f;
             shovelBlade = shovelLoad.gameObject.AddComponent<BoxCollider>();
-            shovelBlade.center = new Vector3(0f, -0.03f, 0.01f);
-            shovelBlade.size = new Vector3(0.29f, 0.032f, 0.30f);
+            shovelBlade.center = new Vector3(0f, -0.03f, 0f);
+            shovelBlade.size = new Vector3(0.38f, 0.032f, 0.38f);
             for (int i = 0; i < shovelRims.Length; i++)
             {
                 var rim = shovelLoad.gameObject.AddComponent<BoxCollider>();
-                rim.center = i == 2 ? new Vector3(0f, -0.0055f, 0.149f) : new Vector3(i == 0 ? -0.1335f : 0.1335f, 0.0095f, 0.0025f);
-                rim.size = i == 2 ? new Vector3(0.29f, 0.049f, 0.022f) : new Vector3(0.023f, 0.079f, 0.275f);
+                rim.center = i == 2 ? new Vector3(0f, -0.0055f, 0.179f) : new Vector3(i == 0 ? -0.1775f : 0.1775f, 0.0095f, -0.0075f);
+                rim.size = i == 2 ? new Vector3(0.38f, 0.049f, 0.022f) : new Vector3(0.025f, 0.079f, 0.355f);
                 shovelRims[i] = rim;
             }
             var firelightObject = new GameObject("Vuurlicht");
@@ -1103,23 +1140,43 @@ namespace ConductorChaos.Playground
         {
             if (!canStoke) return;
             Vector3 mouth = Vector3.Lerp(fireboxFeedPoint.position, fireboxFlame.position, 0.42f);
+            CollectCoalDisturbers();
             for (int i = 0; i < coalBodies.Count; i++)
             {
                 var coal = coalBodies[i];
                 if (!coal.gameObject.activeSelf)
                 {
                     if (Time.time < coalRespawnTimes[i]) continue;
-                    CoalHome(i, out var home, out var homeRotation);
-                    int overlaps = Physics.OverlapSphereNonAlloc(home, 0.11f, buttonContacts, ~0, QueryTriggerInteraction.Ignore);
+                    CoalHome(i, out var home, out _);
+                    int overlaps = Physics.OverlapSphereNonAlloc(home, 0.05f, buttonContacts, ~0, QueryTriggerInteraction.Ignore);
                     bool occupied = false;
                     for (int j = 0; j < overlaps && !occupied; j++)
                         occupied = IsCoalBody(buttonContacts[j].attachedRigidbody);
                     if (occupied) continue;
-                    coal.position = home;
-                    coal.rotation = homeRotation;
+                    coal.isKinematic = true;
+                    coal.transform.SetParent(coalSource, false);
+                    coal.transform.localPosition = coalHomes[i];
+                    coal.transform.localRotation = coalHomeRotations[i];
+                    coalAsleep[i] = true;
+                    coalCalmTime[i] = 0f;
                     coal.gameObject.SetActive(true);
-                    coal.linearVelocity = coalSourceBody ? coalSourceBody.GetPointVelocity(home) : Vector3.zero;
-                    coal.angularVelocity = Vector3.zero;
+                }
+                Vector3 position = coal.transform.position;
+                bool nearHelper = false;
+                if (coalAsleep[i])
+                {
+                    if (NearCoalDisturber(position, coalRadius[i] + 0.06f, out _)) WakeCoal(i);
+                }
+                else
+                {
+                    nearHelper = NearCoalDisturber(position, coalRadius[i] + 0.12f, out bool onlyCoal) && !onlyCoal;
+                    Vector3 local = Quaternion.Inverse(SourceRotation()) * (coal.position - SourcePosition());
+                    Vector3 relative = coal.linearVelocity - SourceVelocity(coal.position);
+                    Vector3 spin = coal.angularVelocity - (coalSourceBody ? coalSourceBody.angularVelocity : Vector3.zero);
+                    bool calm = !nearHelper && coalBinLocal.Contains(local) &&
+                                relative.sqrMagnitude < 0.05f * 0.05f && spin.sqrMagnitude < 0.5f * 0.5f;
+                    coalCalmTime[i] = calm ? coalCalmTime[i] + Time.fixedDeltaTime : 0f;
+                    if (coalCalmTime[i] > 0.75f) SleepCoal(i);
                 }
                 bool inFire = doorAngle.Value >= 50f && fuel.Value < FuelCapacity - 0.05f &&
                               (coal.position - mouth).sqrMagnitude < 0.23f * 0.23f;
@@ -1127,15 +1184,87 @@ namespace ConductorChaos.Playground
                 if (inFire || coal.position.y < stock.y - 20f || (coal.position - stock).sqrMagnitude > 10000f)
                 {
                     if (inFire) fuel.Value = Mathf.Min(FuelCapacity, fuel.Value + 0.5f);
+                    WakeCoal(i);
                     coal.gameObject.SetActive(false);
                     coalRespawnTimes[i] = Time.time + 2.5f;
                 }
                 var previousPose = coalPoses[i];
-                var pose = new CoalPose { Position = coal.position, Rotation = coal.rotation, Visible = coal.gameObject.activeSelf };
+                var pose = new CoalPose { Visible = coal.gameObject.activeSelf };
+                if (coalAsleep[i])
+                {
+                    pose.Position = coal.transform.localPosition;
+                    pose.Rotation = coal.transform.localRotation;
+                }
+                else
+                {
+                    pose.Position = Quaternion.Inverse(SourceRotation()) * (coal.position - SourcePosition());
+                    pose.Rotation = Quaternion.Inverse(SourceRotation()) * coal.rotation;
+                }
                 if (pose.Visible != previousPose.Visible || (pose.Position - previousPose.Position).sqrMagnitude > 0.0001f ||
                     Quaternion.Angle(pose.Rotation, previousPose.Rotation) > 2f)
                     coalPoses[i] = pose;
             }
+        }
+
+        private Vector3 SourcePosition() => coalSourceBody ? coalSourceBody.position : coalSource.position;
+        private Quaternion SourceRotation() => coalSourceBody ? coalSourceBody.rotation : coalSource.rotation;
+        private Vector3 SourceVelocity(Vector3 point) => coalSourceBody ? coalSourceBody.GetPointVelocity(point) : Vector3.zero;
+
+        // Alles wat in of boven de bak beweegt en niet bij de wagen hoort: schep, handen, spelers en rollende brokken.
+        private void CollectCoalDisturbers()
+        {
+            coalDisturbers.Clear();
+            coalDisturberIsCoal.Clear();
+            Vector3 center = coalSource.TransformPoint(coalBinLocal.center);
+            Vector3 half = Vector3.Scale(coalBinLocal.extents, coalSource.lossyScale);
+            int count = Physics.OverlapBoxNonAlloc(center, half, binContacts, coalSource.rotation, ~0, QueryTriggerInteraction.Ignore);
+            for (int k = 0; k < count; k++)
+            {
+                var shape = binContacts[k];
+                var owner = shape.attachedRigidbody;
+                if (!owner || owner == coalSourceBody || shape.transform.IsChildOf(coalSource)) continue;   // wagen + slapende kolen
+                bool isCoal = coalIndex.TryGetValue(owner, out _);
+                if (isCoal && (owner.isKinematic ||
+                               (owner.linearVelocity - SourceVelocity(owner.position)).sqrMagnitude < 0.15f * 0.15f)) continue;
+                coalDisturbers.Add(shape.bounds);
+                coalDisturberIsCoal.Add(isCoal);
+            }
+        }
+
+        private bool NearCoalDisturber(Vector3 point, float reach, out bool onlyCoal)
+        {
+            onlyCoal = true;
+            bool near = false;
+            for (int k = 0; k < coalDisturbers.Count; k++)
+            {
+                if ((coalDisturbers[k].ClosestPoint(point) - point).sqrMagnitude >= reach * reach) continue;
+                near = true;
+                if (!coalDisturberIsCoal[k]) { onlyCoal = false; break; }
+            }
+            return near;
+        }
+
+        private void WakeCoal(int index)
+        {
+            if (!coalAsleep[index]) return;
+            var coal = coalBodies[index];
+            Vector3 position = coal.transform.position;
+            coal.transform.SetParent(null, true);
+            coal.isKinematic = false;
+            coal.linearVelocity = SourceVelocity(position);
+            coal.angularVelocity = Vector3.zero;
+            coal.WakeUp();
+            coalAsleep[index] = false;
+            coalCalmTime[index] = 0f;
+        }
+
+        private void SleepCoal(int index)
+        {
+            var coal = coalBodies[index];
+            coal.isKinematic = true;
+            coal.transform.SetParent(coalSource, true);
+            coalAsleep[index] = true;
+            coalCalmTime[index] = 0f;
         }
 
         private void PresentStoking()
@@ -1145,16 +1274,20 @@ namespace ConductorChaos.Playground
                 float follow = 1f - Mathf.Exp(-24f * Time.deltaTime);
                 shovel.SetPositionAndRotation(Vector3.Lerp(shovel.position, shovelPosition.Value, follow),
                     Quaternion.Slerp(shovel.rotation, shovelRotation.Value, follow));
+                // kolen hangen op clients altijd aan hun wagen; de pose is relatief, dus rijden ze zonder naijlen mee
                 for (int i = 0; i < coalBodies.Count && i < coalPoses.Count; i++)
                 {
-                    var coal = coalBodies[i];
+                    var coal = coalBodies[i].transform;
                     var pose = coalPoses[i];
                     if (!coal.gameObject.activeSelf && pose.Visible)
-                        coal.transform.SetPositionAndRotation(pose.Position, pose.Rotation);
+                    {
+                        coal.localPosition = pose.Position;
+                        coal.localRotation = pose.Rotation;
+                    }
                     coal.gameObject.SetActive(pose.Visible);
                     if (!pose.Visible) continue;
-                    coal.transform.SetPositionAndRotation(Vector3.Lerp(coal.position, pose.Position, follow),
-                        Quaternion.Slerp(coal.rotation, pose.Rotation, follow));
+                    coal.localPosition = Vector3.Lerp(coal.localPosition, pose.Position, follow);
+                    coal.localRotation = Quaternion.Slerp(coal.localRotation, pose.Rotation, follow);
                 }
             }
             float flameStrength = fuel.Value > 0f ? Mathf.Lerp(0.38f, 1f, Mathf.Clamp01(fuel.Value)) : 0f;
@@ -1272,6 +1405,12 @@ namespace ConductorChaos.Playground
                     if (coal) Destroy(coal.gameObject);
                 }
                 coalBodies.Clear();
+                coalAsleep.Clear();
+                coalCalmTime.Clear();
+                coalRadius.Clear();
+                coalIndex.Clear();
+                coalDisturbers.Clear();
+                coalDisturberIsCoal.Clear();
                 coalHomes.Clear();
                 coalHomeRotations.Clear();
                 coalRespawnTimes.Clear();

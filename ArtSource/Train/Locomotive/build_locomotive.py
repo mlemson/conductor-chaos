@@ -133,7 +133,8 @@ def build_headlight():
                     8, mat="M_Loco_Trim", closed=True, phase=math.pi / 8)
     ring = to_x(ring)
     ring.sharp = False
-    back = to_x(mk.lathe([(0.0, 0.02), (ri + 0.02, 0.02), (ri + 0.02, 0.06), (0.0, 0.06)], 8, mat="M_Loco_Trim",
+    # achterplaat net binnen de ketelneus (0,056 i.p.v. 0,06) en niet in het vlak van de lensachterkant (0,02)
+    back = to_x(mk.lathe([(0.0, 0.023), (ri + 0.02, 0.023), (ri + 0.02, 0.056), (0.0, 0.056)], 8, mat="M_Loco_Trim",
                          phase=math.pi / 8))
     lens = to_x(mk.lathe([(0.0, 0.17), (0.18, 0.155), (0.30, 0.11), (ri - 0.005, 0.05), (ri - 0.005, 0.02), (0.0, 0.02)],
                          8, mat="M_Loco_Lamp", phase=math.pi / 8))
@@ -171,8 +172,9 @@ def build_cab():
     side = mk.frame_ring(win[0] + 0.014, win[1] - 0.014, win[2] + 0.014, win[3] - 0.014,
                          0.06, -0.018, 0.04, 0.02, mat="M_Loco_Gold")
     parts += [side.transform(t=(0, 0, z_out)), side.transform(s=(1, 1, -1), t=(0, 0, z_in))]
-    rear = mk.frame_ring(ZC - REAR_DOOR, ZC + REAR_DOOR, CAB_FLOOR - 0.05, REAR_DOOR_TOP, 0.06, -0.012, 0.04, 0.02,
-                         mat="M_Loco_Gold", open_bottom=True)
+    # net als bij de zijramen: de lijst valt 14 mm over de dagkant, zodat hij er geen vlak mee deelt (geen z-fighting)
+    rear = mk.frame_ring(ZC - REAR_DOOR + 0.014, ZC + REAR_DOOR - 0.014, CAB_FLOOR - 0.05, REAR_DOOR_TOP - 0.014,
+                         0.06, -0.012, 0.04, 0.02, mat="M_Loco_Gold", open_bottom=True)
     parts.append(rear.transform(R=mk.rot_y(-math.pi / 2), t=(x0, 0, 0)))
     # geschilderde panelen ('vierkantjes', concept): dun, bijna vlak op de cabinewanden, doffer rood
     for zf, sgn in ((z_out, 1), (z_in, -1)):
@@ -217,8 +219,9 @@ def build_frame():
         z = ZC + dz
         parts += [mk.capsule_between((cab_rear + 0.022, top_rail + 0.06, z), (post, top_rail, z),
                                      0.028, 0.028, 10, 2, mat="M_Loco_Interact"),
+                  # iets dunnere staander: anders vallen de bolkoppen in de hoek precies samen (z-fighting)
                   mk.capsule_between((post, top_rail, z), (post, CAB_FLOOR - 0.03, z),
-                                     0.028, 0.028, 10, 2, mat="M_Loco_Interact")]
+                                     0.0275, 0.0275, 10, 2, mat="M_Loco_Interact")]
     for sgn, xe in ((1, x1), (-1, x0)):
         bx0, bx1 = (xe - 0.02, xe + 0.15) if sgn > 0 else (xe - 0.15, xe + 0.02)
         parts.append(rbox(bx0, bx1, -0.04, 0.38, ZC - beam_half, ZC + beam_half, 0.07, "M_Loco_Red", div=2))
@@ -235,8 +238,8 @@ def build_frame():
             za, zb = (zf - 0.06, zf + d) if sgn > 0 else (zf - d, zf + 0.06)
             parts.append(rbox(-1.95, -1.33, y0s, y1s, za, zb, 0.025, "M_Loco_Frame"))
         for xs in (-1.93, -1.41):
-            za, zb = (zf - 0.06, zf + 0.13) if sgn > 0 else (zf - 0.13, zf + 0.06)
-            parts.append(rbox(xs, xs + 0.06, -0.30, 0.10, za, zb, 0.02, "M_Loco_Frame"))
+            za, zb = (zf - 0.056, zf + 0.13) if sgn > 0 else (zf - 0.13, zf + 0.056)
+            parts.append(rbox(xs, xs + 0.06, -0.294, 0.10, za, zb, 0.02, "M_Loco_Frame"))   # niet in het vlak van de treden
     return mk.merge(*parts)
 
 
@@ -530,17 +533,19 @@ def build_locomotive():
     sc.add(mk.Part("StartButton", button, (fx0 - 0.05, CAB_FLOOR + BUTTON_UV[1], ZC + BUTTON_UV[0]), "Firebox"))
     latch = mk.cylinder(0.047, 0.12, 12, 0.018, mat="M_Loco_Interact", axis="x")
     sc.add(mk.Part("FireboxLatch", latch, (-0.074, 0, 0.686), "FireboxDoor"))
+    # schep: blad 0,38 x 0,38 m zodat de losse kolenbrokken uit de tenderbak (tot ~0,30 m) erop passen.
+    # De botsvormen van blad en randen staan in TrainDrive.PrepareStoking en moeten hiermee overeenkomen.
     shovel = mk.merge(
-        mk.capsule_between((0, 0, 0), (0, 0, 0.51), 0.024, 0.019, 10, 2, mat="M_Loco_Gold"),
+        mk.capsule_between((0, 0, 0), (0, 0, 0.50), 0.024, 0.019, 10, 2, mat="M_Loco_Gold"),
         rbox(-0.07, 0.07, -0.027, 0.027, -0.029, 0.029, 0.018, "M_Loco_Interact"),
-        rbox(-0.044, 0.044, -0.035, 0.032, 0.43, 0.51, 0.014, "M_Loco_Gold"),
-        rbox(-0.145, 0.145, -0.040, -0.008, 0.47, 0.77, 0.012, "M_Loco_Frame"),
-        *(rbox(a, b, -0.024, 0.055, 0.475, 0.75, 0.009, "M_Loco_Trim")
-          for a, b in ((-0.145, -0.122), (0.122, 0.145))),
-        rbox(-0.145, 0.145, -0.024, 0.025, 0.748, 0.77, 0.009, "M_Loco_Trim"))
-    sc.add(mk.Part("CoalShovel", shovel, (CAB[0] + 0.98, CAB_FLOOR + 0.74, ZC - 0.91), "Locomotive",
+        rbox(-0.050, 0.050, -0.035, 0.032, 0.42, 0.50, 0.014, "M_Loco_Gold"),
+        rbox(-0.19, 0.19, -0.040, -0.008, 0.46, 0.84, 0.012, "M_Loco_Frame"),
+        *(rbox(a, b, -0.024, 0.055, 0.465, 0.82, 0.009, "M_Loco_Trim")
+          for a, b in ((-0.19, -0.165), (0.165, 0.19))),
+        rbox(-0.19, 0.19, -0.024, 0.025, 0.818, 0.84, 0.009, "M_Loco_Trim"))
+    sc.add(mk.Part("CoalShovel", shovel, (CAB[0] + 0.98, CAB_FLOOR + 0.84, ZC - 0.91), "Locomotive",
                    rotation=mk.rot_x(math.radians(83))))
-    sc.add(mk.Part("ShovelLoad", None, (0, 0.006, 0.61), "CoalShovel"))
+    sc.add(mk.Part("ShovelLoad", None, (0, 0.006, 0.65), "CoalShovel"))
     # de schepkolen (CoalChunk*, CoalScoopPoint) liggen sinds cabine v3 op de kolenwagen ('CoalStock')
     sc.add(mk.Part("FireboxFeedPoint", None, (fx0 - 0.06, CAB_FLOOR + 0.33, ZC + DOOR_MID_U), "Firebox"))
     coals = mk.merge(*(mk.ellipsoid(0.07, 0.047, 0.085, 7, 4, mat="M_Loco_Coal").transform(

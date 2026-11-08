@@ -11,9 +11,11 @@ De bak is één doorlopend stuk (stapvormig zijprofiel, geëxtrudeerd).
 
 Assen: rijrichting +X (voorkant = kant van de loc), perronkant op z = 0, spoorstaaf op y = -0.62.
 Lokale oorsprong: midden van de wagen in X. In de scène staat de tender direct achter de loc.
-Gameplay-anker: 'Coal' (kolenberg) = bron voor het stoken in de cabine. Sinds cabine v3 van de loc liggen de losse
-schepkolen hier: 'CoalStock' met CoalChunk0..5 op de opstap vóór de bunker (borsthoogte vanaf het voordek, vlak achter
-de cabinedeur) en 'CoalScoopPoint'. TrainDrive maakt er host-autoritatieve fysieke brokken van die terugkomen.
+Kolenbak (8 nov 2026): de bunker is een echte open bak (vloer 0,26 m onder de gouden rand) vol losse kolenbrokken
+('CoalStock' › CoalChunk0..N, plus 'CoalScoopPoint'). Er is geen vaste kolenberg meer. De rustposities komen uit
+coal_pile.json (gemaakt met settle_coal.py: de brokken zijn in een physics-simulatie in de bak gevallen), zodat ze
+zonder overlap liggen. TrainDrive maakt er host-autoritatieve fysieke brokken van: stil liggende brokken rijden vast
+mee, een schep, hand of speler in de bak maakt ze los; opgestookte brokken komen na een tijdje terug in de bak.
 
 Uitvoer:
   Assets/Art/Models/Train/Tender/Tender_Blockout.fbx   Unity
@@ -53,6 +55,9 @@ XF = L / 2 - 0.62           # voordek: XF .. L/2
 XR = -L / 2 + 0.50          # achterdek: -L/2 .. XR
 BUNK = (XR + 0.30, XF - 0.30)   # kolenbunker (volle hoogte)
 WHEEL_Z = W / 2 + 0.13
+BIN_T = 0.09                # wanddikte kolenbak (valt precies onder de binnenrand van de gouden kraag)
+BIN_FLOOR = BODY_TOP - 0.26 # vloer van de open kolenbak
+COAL_PILE = os.path.join(HERE, "coal_pile.json")
 
 
 def rbox(x0, x1, y0, y1, z0, z1, r, mat, grid=None, div=2):
@@ -63,21 +68,41 @@ def rbox(x0, x1, y0, y1, z0, z1, r, mat, grid=None, div=2):
     return m.transform(t=((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2))
 
 
+def bin_interior():
+    """Binnenkant van de open kolenbak: x0, x1, vloer-y, z0, z1 (tender-ruimte)."""
+    b0, b1 = BUNK
+    return b0 + BIN_T, b1 - BIN_T, BIN_FLOOR, ZC - BODY_W / 2 + BIN_T, ZC + BODY_W / 2 - BIN_T
+
+
+def coal_chunk_mesh(a, h, b):
+    """Eén los kolenbrok: gefacetteerde, iets hoekige ellipsoïde (zelfde vorm als de brokken van de oude berg)."""
+    m = mk.ellipsoid(a, h, b, 7, 4, mat="M_Tender_Coal", n=2.3)
+    m.sharp = True
+    return m
+
+
 def build_body():
-    """Bak uit één stuk: stapvormig zijprofiel (achterdek, opstap, bunker, opstap, voordek) geëxtrudeerd."""
+    """Bak uit één stuk: stapvormig zijprofiel (achterdek, opstap, voordek) geëxtrudeerd, met daarop de open
+    kolenbak (holle bak uit één stuk: dikke wanden, vloer 0,26 m onder de rand, binnenkant zwart van het kolengruis)."""
     z0, z1 = ZC - BODY_W / 2, ZC + BODY_W / 2
     b0, b1 = BUNK
-    prof = [(-L / 2, BASE), (L / 2, BASE), (L / 2, DECK), (XF, DECK), (XF, STEP), (b1, STEP), (b1, BODY_TOP),
-            (b0, BODY_TOP), (b0, STEP), (XR, STEP), (XR, DECK), (-L / 2, DECK)]
+    prof = [(-L / 2, BASE), (L / 2, BASE), (L / 2, DECK), (XF, DECK), (XF, STEP), (XR, STEP), (XR, DECK), (-L / 2, DECK)]
     parts = [mk.prism(mk.chamfer_poly(prof, 0.05), z0, z1, 0.06, mat="M_Tender_Red")]
+    ix0, ix1, _, iz0, iz1 = bin_interior()
+    r = 0.06
+    parts.append(mk.hollow_box((b0, b1, STEP - 0.08, BODY_TOP, z0, z1), (ix0, ix1, BIN_FLOOR, BODY_TOP, iz0, iz1),
+                               [(1, 1, b0 + r, b1 - r, z0 + r, z1 - r, ix0, ix1, iz0, iz1)],
+                               radius=r, step=0.25, div=2, mat="M_Tender_Red", inner_mat="M_Tender_Coal"))
     # gouden bovenrand rond de bunker (één stuk, plat liggend kader)
-    rim = mk.frame_ring(b0 + 0.09, b1 - 0.09, -(z1 - 0.09), -(z0 + 0.09), 0.12, BODY_TOP - 0.04, BODY_TOP + 0.08, 0.03,
-                        mat="M_Tender_Gold")
+    # de kraag steekt 6 mm over de binnenwand van de bak, zodat ze geen vlak delen (geen z-fighting)
+    rim = mk.frame_ring(b0 + BIN_T + 0.006, b1 - BIN_T - 0.006, -(z1 - BIN_T - 0.006), -(z0 + BIN_T + 0.006), 0.126,
+                        BODY_TOP - 0.04, BODY_TOP + 0.08, 0.03, mat="M_Tender_Gold")
     parts.append(rim.transform(R=mk.rot_x(-math.pi / 2)))
     # gouden hoekstrips (eindigen onzichtbaar in de rand) en gouden onderrand
-    for xs in (b0 - 0.03, b1 - 0.09):
-        for zs in (z0 - 0.03, z1 - 0.09):
-            parts.append(rbox(xs, xs + 0.12, STEP - 0.02, BODY_TOP + 0.02, zs, zs + 0.12, 0.035, "M_Tender_Gold"))
+    # 3 mm buiten de kraag, zodat de buitenvlakken niet samenvallen
+    for xs in (b0 - 0.033, b1 - 0.09):
+        for zs in (z0 - 0.033, z1 - 0.09):
+            parts.append(rbox(xs, xs + 0.123, STEP - 0.02, BODY_TOP + 0.02, zs, zs + 0.123, 0.035, "M_Tender_Gold"))
     for (za, zb) in ((z0 - 0.025, z0 + 0.05), (z1 - 0.05, z1 + 0.025)):
         parts.append(rbox(-L / 2 + 0.04, L / 2 - 0.04, BASE - 0.03, BASE + 0.08, za, zb, 0.03, "M_Tender_Gold"))
     # geschilderde panelen met klinknagels: twee per bunkerzijde
@@ -92,39 +117,18 @@ def build_body():
     return mk.merge(*parts)
 
 
-def build_coal():
-    """Kolenberg (beloopbaar): lage koepel als vulling + onregelmatige gefacetteerde brokken erop."""
-    b0, b1 = BUNK
-    cx = (b0 + b1) / 2
-    a, b, h = (b1 - b0) / 2 - 0.10, BODY_W / 2 - 0.12, 0.44
-    base = mk.ellipsoid(a, h, b, 16, 8, mat="M_Tender_Coal").transform(t=(cx, BODY_TOP - 0.05, ZC))
-    base.V[:, 1] = np.maximum(base.V[:, 1], BODY_TOP - 0.06)
-    rng = np.random.default_rng(7)
-    lumps = []
-    for _ in range(64):
-        while True:
-            x, z = rng.uniform(-1, 1), rng.uniform(-1, 1)
-            if x * x + z * z < 0.92:
-                break
-        y = BODY_TOP - 0.05 + h * math.sqrt(max(0.0, 1 - x * x - z * z)) * 0.92
-        s = rng.uniform(0.12, 0.22)
-        lump = mk.ellipsoid(s * rng.uniform(0.9, 1.3), s * rng.uniform(0.6, 0.9), s * rng.uniform(0.8, 1.2), 7, 4,
-                            mat="M_Tender_Coal", n=2.3)
-        lumps.append(lump.transform(R=mk.rot_y(rng.uniform(0, math.pi)) @ mk.rot_z(rng.uniform(-0.5, 0.5)),
-                                    t=(cx + x * a * 0.95, y, ZC + z * b * 0.95)))
-    return mk.merge(base, *lumps)
-
-
 def add_coal_stock(sc):
-    """Losse schepkolen op de opstap vóór de bunker (zes brokken op een rij, midden op het vlakke deel van de
-    0,30 m diepe opstap zodat ze niet over de afgeschuinde rand rollen) + schepanker."""
+    """Losse kolenbrokken in de open bak (rustposities uit coal_pile.json) + schepanker midden boven de bak."""
+    pile = json.load(open(COAL_PILE, encoding="utf-8"))["chunks"]
     sc.add(mk.Part("CoalStock", None, (0, 0, 0), "Body"))
-    x = (BUNK[1] + XF) / 2
-    for k, dz in enumerate((-0.55, -0.33, -0.11, 0.11, 0.33, 0.55)):
-        chunk = mk.ellipsoid(0.069, 0.064, 0.073, 7, 4, mat="M_Tender_CoalChunk")
-        chunk.sharp = True
-        sc.add(mk.Part(f"CoalChunk{k}", chunk, (x, STEP + 0.074, ZC + dz), "CoalStock"))
-    sc.add(mk.Part("CoalScoopPoint", None, ((BUNK[1] + XF) / 2, STEP + 0.10, ZC), "CoalStock"))
+    for k, c in enumerate(pile):
+        qx, qy, qz, qw = c["quat"]
+        R = np.array([[1 - 2 * (qy * qy + qz * qz), 2 * (qx * qy - qz * qw), 2 * (qx * qz + qy * qw)],
+                      [2 * (qx * qy + qz * qw), 1 - 2 * (qx * qx + qz * qz), 2 * (qy * qz - qx * qw)],
+                      [2 * (qx * qz - qy * qw), 2 * (qy * qz + qx * qw), 1 - 2 * (qx * qx + qy * qy)]])
+        sc.add(mk.Part(f"CoalChunk{k}", coal_chunk_mesh(*c["size"]), tuple(c["pos"]), "CoalStock", rotation=R))
+    x0, x1, y0, z0, z1 = bin_interior()
+    sc.add(mk.Part("CoalScoopPoint", None, ((x0 + x1) / 2, y0 + 0.20, ZC), "CoalStock"))
 
 
 def build_frame():
@@ -181,7 +185,8 @@ def build_rails():
         for dz in (-(BODY_W / 2 - 0.07), BODY_W / 2 - 0.07):
             z = ZC + dz
             parts += [mk.capsule_between((xa, 1.38, z), (xb, 1.38, z), 0.03, 0.03, 10, 2, mat="M_Tender_Interact"),
-                      mk.capsule_between((xb, 1.38, z), (xb, DECK - 0.01, z), 0.03, 0.03, 10, 2, mat="M_Tender_Interact")]
+                      # iets dunnere staander: anders vallen de bolkoppen in de hoek precies samen
+                      mk.capsule_between((xb, 1.38, z), (xb, DECK - 0.01, z), 0.029, 0.029, 10, 2, mat="M_Tender_Interact")]
     return mk.merge(*parts)
 
 
@@ -208,15 +213,12 @@ def build_tender():
     sc.material("M_Tender_Wheel", R_["ui_bg"][2], R_["ui_bg"], 0.30, opts={"paint": 0.8, "edge": 1.4})
     sc.material("M_Tender_Interact", R_["accent_yellow"][2], R_["accent_yellow"], 0.30, opts={"paint": 0.6})
     sc.material("M_Tender_Coal", R_["ui_bg"][3], R_["ui_bg"], 0.35, ramp_shift=0.08, opts={"paint": 0.9, "edge": 1.8})
-    # losse schepkolen: zelfde tint als de oude kolen in de loc (ook gebruikt voor de rookwolkjes)
-    sc.material("M_Tender_CoalChunk", R_["ui_bg"][1], R_["ui_bg"], 0.30, ramp_shift=-0.1, opts={"paint": 1.0, "edge": 1.6})
     tail_ramp = [R_["title_red"][1], R_["title_red"][2], R_["vest"][1], R_["vest"][3], R_["helmet"][2]]
     sc.material("M_Tender_TailLamp", R_["vest"][2], tail_ramp, 0.5, emissive=R_["vest"][3],
                 opts={"emissive": 1.0, "rim": 0.0, "paint": 0.2})
     sc.add(mk.Part("Tender", None))
     sc.add(mk.Part("Frame", build_frame(), (0, 0, 0), "Tender"))
     sc.add(mk.Part("Body", build_body(), (0, 0, 0), "Tender"))
-    sc.add(mk.Part("Coal", build_coal(), (0, 0, 0), "Body"))
     sc.add(mk.Part("Wheels", build_wheels(), (0, 0, 0), "Tender"))
     sc.add(mk.Part("Ladder", build_ladder(), (0, 0, 0), "Body"))
     sc.add(mk.Part("TailLights", build_taillights(), (0, 0, 0), "Body"))
@@ -225,7 +227,7 @@ def build_tender():
     add_couplers(sc, "Tender", RAIL_Y, ZC, -L / 2 - 0.20, L / 2 + 0.075, "M_Tender_Trim", "M_Tender_Interact")
     for p in sc.parts:
         p.gradient = 0.30
-        if p.name in ("Frame", "Body", "Coal", "Ladder", "TailLights", "DeckRails"):
+        if p.name in ("Frame", "Body", "Ladder", "TailLights", "DeckRails") or p.name.startswith("CoalChunk"):
             p.ao_group = "body"
     sc.get("Wheels").gradient = 0.12
     sc.facet_all()

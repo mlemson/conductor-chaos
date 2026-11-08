@@ -62,9 +62,14 @@ def box(x0, x1, y0, y1, z0, z1, r, mat, div=1, sharp=True):
     return m
 
 
+LIP = 0.014                # kaders vallen zoveel over de dagkant, zodat ze er geen vlak mee delen (geen z-fighting)
+
+
 def frame(x0, x1, y0, y1, w, z0, z1, r, mat, open_bottom=False):
-    """Dik, afgeschuind kader rond een opening, uit één stuk (verstekhoeken; geen losse latten)."""
-    return mk.frame_ring(x0, x1, y0, y1, w, z0, z1, min(r, w * 0.4), mat=mat, open_bottom=open_bottom)
+    """Dik, afgeschuind kader rond een opening, uit één stuk (verstekhoeken; geen losse latten).
+    De binnenrand valt LIP over de dagkant (bij open_bottom niet aan de onderkant)."""
+    return mk.frame_ring(x0 + LIP, x1 - LIP, y0 if open_bottom else y0 + LIP, y1 - LIP, w, z0, z1, min(r, w * 0.4),
+                         mat=mat, open_bottom=open_bottom)
 
 
 def mirror_far(m):
@@ -116,9 +121,12 @@ def build_body():
 
 
 def bench(x, facing, z0, z1):
-    """Bank (zitting + rugleuning) uit één stuk; 'facing' = +1/-1 kijkrichting langs X."""
-    prof = [(-0.12, Y0 + FLOOR), (0.46, Y0 + FLOOR), (0.46, 0.50), (0.04, 0.50), (0.0, 1.04), (-0.12, 1.04)]
-    m = mk.prism(mk.chamfer_poly(prof, 0.035), z0, z1, 0.03, mat="M_Train_Seat")
+    """Bank (zitting + rugleuning) uit één stuk; 'facing' = +1/-1 kijkrichting langs X.
+    Banken die naar -X kijken zijn 2 mm hoger en 4 mm korter: waar twee banken elkaar raken vallen geen vlakken samen."""
+    dy = 0.002 if facing < 0 else 0.0
+    prof = [(-0.12, Y0 + FLOOR + dy), (0.46, Y0 + FLOOR + dy), (0.46, 0.50 + dy), (0.04, 0.50 + dy), (0.0, 1.04 + dy),
+            (-0.12, 1.04 + dy)]
+    m = mk.prism(mk.chamfer_poly(prof, 0.035), z0 + 2 * dy, z1 - 2 * dy, 0.03, mat="M_Train_Seat")
     if facing < 0:
         m = m.transform(s=(-1, 1, 1))
     return m.transform(t=(x, 0, 0))
@@ -219,7 +227,7 @@ def build_wagon():
     rails = []
     for gx in (DOOR[0] - 0.17, DOOR[1] + 0.17):
         rails += [mk.capsule_between((gx, 0.40, -0.01), (gx, 0.40, 0.11), 0.026, 0.026, 8, 1, mat="M_Train_Interact"),
-                  mk.capsule_between((gx, 0.40, 0.11), (gx, 1.60, 0.11), 0.026, 0.026, 8, 1, mat="M_Train_Interact"),
+                  mk.capsule_between((gx, 0.40, 0.11), (gx, 1.60, 0.11), 0.0255, 0.0255, 8, 1, mat="M_Train_Interact"),
                   mk.capsule_between((gx, 1.60, 0.11), (gx, 1.60, -0.01), 0.026, 0.026, 8, 1, mat="M_Train_Interact")]
     sc.add(mk.Part("GrabRails", mk.merge(*rails), (0, 0, 0), "RegionalWagon"))
     lock = mk.merge(box(-0.09, 0.09, -0.12, 0.12, -0.01, 0.045, 0.03, "M_Train_Interact"),
@@ -251,7 +259,7 @@ def build_wagon():
         for dz in (-0.58, 0.58):
             xo = ex + sgn * 0.28
             ends += [mk.capsule_between((ex - sgn * 0.02, 1.08, ZC + dz), (xo, 1.08, ZC + dz), 0.026, 0.026, 8, 1, mat="M_Train_Interact"),
-                     mk.capsule_between((xo, 1.08, ZC + dz), (xo, SILL_Y + 0.02, ZC + dz), 0.026, 0.026, 8, 1, mat="M_Train_Interact")]
+                     mk.capsule_between((xo, 1.08, ZC + dz), (xo, SILL_Y + 0.02, ZC + dz), 0.0255, 0.0255, 8, 1, mat="M_Train_Interact")]
         for dz in (-0.80, 0.80):
             ends.append(octagon_lamp(0.15, 0.12).transform(R=None if sgn > 0 else mk.rot_y(math.pi), t=(ex + sgn * 0.05, 0.80, ZC + dz)))
             buf = mk.cylinder(0.07, 0.30, 8, 0.015, mat="M_Train_Trim")

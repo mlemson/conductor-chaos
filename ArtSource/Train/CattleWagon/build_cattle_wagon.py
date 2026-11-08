@@ -175,7 +175,8 @@ def build_ends():
         for dz in (-0.58, 0.58):
             xo = ex + sgn * 0.28
             parts += [mk.capsule_between((ex - sgn * 0.02, 1.08, ZC + dz), (xo, 1.08, ZC + dz), 0.026, 0.026, 8, 1, mat="M_Cattle_Interact"),
-                      mk.capsule_between((xo, 1.08, ZC + dz), (xo, SILL_Y + 0.02, ZC + dz), 0.026, 0.026, 8, 1, mat="M_Cattle_Interact")]
+                      # iets dunnere staander: anders vallen de bolkoppen in de hoek precies samen (z-fighting)
+                      mk.capsule_between((xo, 1.08, ZC + dz), (xo, SILL_Y + 0.02, ZC + dz), 0.0255, 0.0255, 8, 1, mat="M_Cattle_Interact")]
         for dz in (-0.80, 0.80):
             buf = mk.cylinder(0.07, 0.30, 8, 0.015, mat="M_Cattle_Trim")
             plate = mk.cylinder(0.16, 0.06, 8, 0.02, mat="M_Cattle_Trim")
