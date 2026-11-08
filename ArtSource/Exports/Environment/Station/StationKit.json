@@ -3,10 +3,10 @@
     "Station_Building": {
       "fbx": "Assets/Art/Models/Environment/Station/Station_Building.fbx",
       "category": "Building",
-      "tris": 44566,
+      "tris": 41794,
       "min": [
         -6.692,
-        0.0,
+        -0.0,
         -6.03
       ],
       "max": [
@@ -366,16 +366,16 @@
     "Platform_Straight_3m": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Straight_3m.fbx",
       "category": "Platform",
-      "tris": 2360,
+      "tris": 672,
       "min": [
         0.0,
         -0.0,
-        1.653
+        1.65
       ],
       "max": [
         3.0,
-        1.08,
-        5.147
+        1.062,
+        5.15
       ],
       "nodes": [
         "Platform_Straight_3m",
@@ -390,16 +390,16 @@
     "Platform_Straight_6m": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Straight_6m.fbx",
       "category": "Platform",
-      "tris": 4700,
+      "tris": 1260,
       "min": [
         0.0,
         -0.0,
-        1.653
+        1.65
       ],
       "max": [
         6.0,
-        1.08,
-        5.147
+        1.062,
+        5.15
       ],
       "nodes": [
         "Platform_Straight_6m",
@@ -414,16 +414,16 @@
     "Platform_EndCap_End": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_EndCap_End.fbx",
       "category": "Platform",
-      "tris": 3598,
+      "tris": 1320,
       "min": [
         0.0,
         -0.0,
-        1.653
+        1.65
       ],
       "max": [
-        2.343,
-        1.08,
-        5.147
+        2.345,
+        1.062,
+        5.15
       ],
       "nodes": [
         "Platform_EndCap_End",
@@ -438,16 +438,16 @@
     "Platform_EndCap_Start": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_EndCap_Start.fbx",
       "category": "Platform",
-      "tris": 3598,
+      "tris": 1320,
       "min": [
-        0.002,
         -0.0,
-        1.653
+        -0.0,
+        1.65
       ],
       "max": [
         2.345,
-        1.08,
-        5.147
+        1.062,
+        5.15
       ],
       "nodes": [
         "Platform_EndCap_Start",
@@ -462,15 +462,15 @@
     "Platform_Corner_End": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Corner_End.fbx",
       "category": "Platform",
-      "tris": 3956,
+      "tris": 1180,
       "min": [
         0.0,
         -0.0,
-        1.653
+        1.65
       ],
       "max": [
-        3.497,
-        1.08,
+        3.5,
+        1.062,
         5.15
       ],
       "nodes": [
@@ -486,15 +486,15 @@
     "Platform_Corner_Start": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Corner_Start.fbx",
       "category": "Platform",
-      "tris": 3956,
+      "tris": 1180,
       "min": [
-        0.003,
+        0.0,
         -0.0,
-        1.653
+        1.65
       ],
       "max": [
         3.5,
-        1.08,
+        1.062,
         5.15
       ],
       "nodes": [
@@ -510,7 +510,7 @@
     "Platform_Ramp_End": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Ramp_End.fbx",
       "category": "Platform",
-      "tris": 1576,
+      "tris": 1224,
       "min": [
         0.0,
         0.0,
@@ -518,7 +518,7 @@
       ],
       "max": [
         5.0,
-        1.062,
+        1.05,
         5.15
       ],
       "nodes": [
@@ -534,7 +534,7 @@
     "Platform_Ramp_Start": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Ramp_Start.fbx",
       "category": "Platform",
-      "tris": 1576,
+      "tris": 1224,
       "min": [
         0.0,
         0.0,
@@ -542,7 +542,7 @@
       ],
       "max": [
         5.0,
-        1.062,
+        1.05,
         5.15
       ],
       "nodes": [

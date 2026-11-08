@@ -5,8 +5,8 @@ loopt langs +X vanaf x = 0, het perron ligt aan de +Z-kant. Zet een module dus m
 draaiing neer als het spoorstuk ernaast. Andere kant van het spoor: 180 graden draaien.
   * bovenkant perron y = 1,05 (= bodem wagonbak), voorrand z = 1,65 (loc steekt tot 1,58 uit)
   * diepte 3,5 m (achterrand z = 5,15)
-  * opbouw: donkere kern, stenen blokken langs de zichtbare zijden, randtegels (band van 0,45 m),
-    gele geleidelijn met noppen langs de spoorkant, tegelvloer in een raster van 0,75 m
+  * opbouw: donkere kern, één doorlopende stenen zijwand per zichtbare zijde, randtegels (band van 0,45 m),
+    effen gele geleidelijn langs de spoorkant, tegelvloer in een recht raster van 0,75 m zonder voegen
   * 'joint'-zijden (aansluitingen op het volgende module) hebben geen rand en geen blokken
 """
 import math
@@ -21,10 +21,11 @@ DEPTH = 3.5
 B = E + DEPTH
 TILE = 0.75
 COPING = 0.45
-TACT = (0.52, 0.80)
+TACT = (0.45, 0.75)          # geleidelijn sluit direct aan op de randtegels
+INSET = TACT[1]              # tegelvloer begint overal op dezelfde afstand van de rand
 TILE_T = 0.10
 COPE_T = 0.14
-GAP = 0.024
+GAP = 0.0                    # tegels sluiten aan: alleen de afgeschuinde randen tekenen de voegen
 
 
 # ------------------------------------------------------------------ geometrie in het grondvlak
@@ -194,38 +195,30 @@ def build_module(outline, kinds, rng, front_kinds=("front",), tactile=True, extr
     # kern
     core = inset_region(outline, kinds, {"joint": 0.0, "edge": 0.10, "front": 0.10})
     parts.append(plan_slab(core, 0.0, TOP - TILE_T + 0.004, 0.02, "M_Stn_StoneDark"))
-    # stenen blokken langs zichtbare zijden (twee lagen, verspringend)
+    # zijwand: één doorlopend stenen vlak per zichtbare zijde (geen losse blokken of voegen, zoals de kliffen),
+    # tot net in de randtegels zodat er geen naad of gat overblijft
     for run in runs(outline, kinds, ("front", "edge")):
-        for row, (y0, y1) in enumerate(((0.0, 0.46), (0.46, TOP - COPE_T))):
-            for k, poly in enumerate(_band(outline, run, 0.0, 0.20, 0.72, phase=0.36 * row, kinds=kinds)):
-                if _poly_ok(poly):
-                    mat = "M_Stn_Stone" if rng.random() > 0.3 else "M_Stn_StoneDark"
-                    parts.append(plan_slab(_shrink(poly, 0.012), y0 + 0.008, y1 - 0.008, 0.035, mat))
-    # randtegels
-    for run in runs(outline, kinds, ("front", "edge")):
-        for poly in _band(outline, run, 0.0, COPING, 0.80, kinds=kinds):
+        for poly in _band(outline, run, 0.0, 0.20, 1000.0, kinds=kinds):
             if _poly_ok(poly):
-                parts.append(plan_slab(_shrink(poly, GAP), TOP - COPE_T, TOP, 0.03, "M_Stn_PavingLight"))
-    # gele geleidelijn met noppen
+                parts.append(plan_slab(poly, 0.0, TOP - COPE_T + 0.03, 0.02, "M_Stn_Stone"))
+    # randtegels: aan de spoorkant 0,45 m (daarachter de geleidelijn), elders één brede rand tot de tegelvloer
+    for want, width in ((("front",), COPING if tactile else INSET), (("edge",), INSET)):
+        for run in runs(outline, kinds, want):
+            for poly in _band(outline, run, 0.0, width, TILE, kinds=kinds):
+                if _poly_ok(poly):
+                    parts.append(plan_slab(poly, TOP - COPE_T, TOP, 0.018, "M_Stn_PavingLight"))
+    # gele geleidelijn: rustige effen strook (zonder noppen), in lange stukken
     if tactile:
         for run in runs(outline, kinds, front_kinds):
-            for poly in _band(outline, run, TACT[0], TACT[1], 0.90, kinds=kinds):
+            for poly in _band(outline, run, TACT[0], TACT[1], 3.0, kinds=kinds):
                 if _poly_ok(poly):
-                    parts.append(plan_slab(_shrink(poly, 0.006), TOP - TILE_T, TOP + 0.012, 0.012, "M_Stn_Yellow"))
-            for d in (TACT[0] + 0.07, (TACT[0] + TACT[1]) / 2, TACT[1] - 0.07):
-                line = _offset_run(outline, run, d, kinds)
-                A = np.array(line, float)
-                s = np.r_[0, np.cumsum(np.linalg.norm(np.diff(A, axis=0), axis=1))]
-                for t in np.arange(0.06 + (0.05 if d == (TACT[0] + TACT[1]) / 2 else 0.0), s[-1] - 0.04, 0.10):
-                    p = np.array([np.interp(t, s, A[:, 0]), np.interp(t, s, A[:, 1])])
-                    parts.append(rbox(p[0] - 0.022, p[0] + 0.022, TOP + 0.010, TOP + 0.030, p[1] - 0.022, p[1] + 0.022,
-                                      0.0, "M_Stn_YellowDark"))
+                    parts.append(plan_slab(poly, TOP - TILE_T, TOP + 0.012, 0.012, "M_Stn_Yellow"))
     # tegelvloer in een raster, geknipt op het binnengebied
-    inner = inset_region(outline, kinds, {"joint": 0.0, "edge": COPING, "front": (TACT[1] + 0.02) if tactile else COPING})
+    inner = inset_region(outline, kinds, {"joint": 0.0, "edge": INSET, "front": INSET})
     xs = [p[0] for p in inner]
     zs = [p[1] for p in inner]
-    for i, x0 in enumerate(np.arange(math.floor(min(xs) / TILE) * TILE, max(xs), TILE)):
-        for j, z0 in enumerate(np.arange(math.floor(min(zs) / TILE) * TILE - (TILE / 2) * (i % 2), max(zs), TILE)):
+    for i, x0 in enumerate(np.arange(math.floor(min(xs) / TILE + 1e-6) * TILE, max(xs) - 1e-6, TILE)):
+        for j, z0 in enumerate(np.arange(min(zs), max(zs) - 1e-6, TILE)):
             sq = [(x0, z0), (x0 + TILE, z0), (x0 + TILE, z0 + TILE), (x0, z0 + TILE)]
             poly = sq
             for k in range(len(inner)):
@@ -235,8 +228,7 @@ def build_module(outline, kinds, rng, front_kinds=("front",), tactile=True, extr
                 if not poly:
                     break
             if poly and _poly_ok(poly):
-                mat = ("M_Stn_Paving", "M_Stn_Paving", "M_Stn_PavingDark", "M_Stn_PavingLight")[int(rng.integers(0, 4))]
-                parts.append(plan_slab(_shrink(poly, GAP), TOP - TILE_T, TOP, 0.025, mat))
+                parts.append(plan_slab(poly, TOP - TILE_T, TOP, 0.018, "M_Stn_Paving"))
     col = plan_slab(outline, 0.0, TOP, 0.0, "M_Stn_Collider")
     if extra_cols:
         col = mk.merge(col, *extra_cols)
@@ -294,39 +286,25 @@ def ramp(rng, L=5.0):
     def ytop(x):
         return TOP * (1.0 - x / L)
     # zijwanden (spoorkant + achterkant) als wigvormige stenen platen, in blokken
-    for (z0, z1) in ((E, E + 0.22), (B - 0.22, B)):
-        for x0 in np.arange(0.0, L, 0.9):
-            x1 = min(L, x0 + 0.9)
-            prof = [(x0 + 0.01, 0.0), (x1 - 0.01, 0.0), (x1 - 0.01, max(ytop(x1) - COPE_T, 0.0)),
-                    (x0 + 0.01, max(ytop(x0) - COPE_T, 0.0))]
-            if prof[3][1] - prof[0][1] < 0.03:
-                continue
-            if prof[2][1] < 0.02:
-                prof = [prof[0], (x1 - 0.01, 0.0), prof[3]]
-                prof = [(x0 + 0.01, 0.0), (x1 - 0.01, 0.0), (x0 + 0.01, max(ytop(x0) - COPE_T, 0.0))]
-            parts.append(slab(prof, (), z0, z1, 0.02, "M_Stn_Stone" if rng.random() > 0.3 else "M_Stn_StoneDark"))
+    for (z0, z1) in ((E, E + 0.22), (B - 0.22, B)):                # wigvormige zijwanden uit één stuk
+        prof = [(0.0, 0.0), (L - 0.4, 0.0), (0.0, TOP - COPE_T + 0.03)]
+        parts.append(slab(prof, (), z0, z1, 0.02, "M_Stn_Stone"))
     core = [(0.0, 0.0), (L, 0.0), (0.0, TOP - TILE_T)]
     parts.append(slab(core, (), E + 0.15, B - 0.15, 0.0, "M_Stn_StoneDark"))
     # randstenen en tegels als schuine platen (parallellogram-profiel per stuk)
-    bands = [((E - 0.02, E + COPING), "M_Stn_PavingLight", COPE_T), ((B - COPING, B + 0.02), "M_Stn_PavingLight", COPE_T)]
-    zz = np.arange(E + COPING, B - COPING - 1e-6, TILE)
+    bands = [((E, E + COPING), "M_Stn_PavingLight", COPE_T), ((B - INSET, B), "M_Stn_PavingLight", COPE_T),
+             ((E + COPING, E + INSET), "M_Stn_Yellow", TILE_T)]
+    zz = np.arange(E + INSET, B - INSET - 1e-6, TILE)
     for k, z0 in enumerate(zz):
-        z1 = min(z0 + TILE, B - COPING)
-        mat = ("M_Stn_Paving", "M_Stn_PavingDark", "M_Stn_PavingLight", "M_Stn_Paving")[k % 4]
-        bands.append(((z0, z1), mat, TILE_T))
+        z1 = min(z0 + TILE, B - INSET)
+        bands.append(((z0, z1), "M_Stn_Paving", TILE_T))
     for (z0, z1), mat, th in bands:
-        for i, x0 in enumerate(np.arange(0.0, L, 0.8)):
-            x1 = min(L, x0 + 0.8)
+        for i, x0 in enumerate(np.arange(0.0, L - 1e-6, TILE)):
+            x1 = min(L, x0 + TILE)
             ya0, ya1 = ytop(x0), ytop(x1)
             prof = [(x0 + GAP, max(ya0 - th, 0.0)), (x1 - GAP, max(ya1 - th, 0.0)), (x1 - GAP, max(ya1, 0.02)),
                     (x0 + GAP, ya0)]
             parts.append(slab(prof, (), z0 + GAP, z1 - GAP, 0.02, mat))
-    # gele lijn langs de spoorkant
-    for x0 in np.arange(0.0, L, 1.0):
-        x1 = min(L, x0 + 1.0)
-        prof = [(x0 + 0.005, ytop(x0) - 0.06), (x1 - 0.005, max(ytop(x1) - 0.06, 0.0)), (x1 - 0.005, ytop(x1) + 0.012),
-                (x0 + 0.005, ytop(x0) + 0.012)]
-        parts.append(slab(prof, (), E + TACT[0], E + TACT[0] + 0.14, 0.01, "M_Stn_Yellow"))
     col = slab([(0.0, 0.0), (L, 0.0), (L, 0.02), (0.0, TOP)], (), E, B, 0.0, "M_Stn_Collider")
     return mk.merge(*parts), col
 
