@@ -250,6 +250,41 @@ namespace ConductorChaos.Playground
             if (!sessionHost || sessionHost.Phase == PlaygroundHost.SessionPhase.Playing) jumpQueued = true;
         }
 
+        internal void RequestUnstuck()
+        {
+            if (IsSpawned && IsOwner) UnstuckServerRpc();
+        }
+
+        [ServerRpc]
+        private void UnstuckServerRpc()
+        {
+            if (sessionHost && sessionHost.Phase != PlaygroundHost.SessionPhase.Playing) return;
+            if (!trainDrive) trainDrive = FindAnyObjectByType<TrainDrive>();
+            if (!trainDrive || !bodyCapsule || !trainDrive.TryFindRecoveryPoint(out Vector3 floor, out Vector3 velocity)) return;
+            float radius = bodyCapsule.radius;
+            Vector3 lower = floor + Vector3.up * (radius + 0.08f);
+            Vector3 upper = lower + Vector3.up * Mathf.Max(0f, bodyCapsule.height - 2f * radius);
+            int count = Physics.OverlapCapsuleNonAlloc(lower, upper, radius, ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
+            if (count == ledgeObstacles.Length) return;
+            for (int i = 0; i < count; i++)
+                if (!ledgeObstacles[i].transform.IsChildOf(transform)) return;
+            left.Release(); right.Release(); legs?.ReleaseSupport();
+            Quaternion rotation = Quaternion.Euler(0f, requestedYaw, 0f);
+            Vector3 destination = lower - rotation * (bodyCapsule.center - Vector3.up * (bodyCapsule.height * 0.5f - radius));
+            Quaternion turn = rotation * Quaternion.Inverse(body.rotation);
+            Rigidbody[] parts = GetComponentsInChildren<Rigidbody>();
+            Vector3[] positions = new Vector3[parts.Length];
+            Quaternion[] rotations = new Quaternion[parts.Length];
+            for (int i = 0; i < parts.Length; i++) { positions[i] = destination + turn * (parts[i].position - body.position); rotations[i] = turn * parts[i].rotation; }
+            GetComponent<NetworkTransform>().Teleport(destination, rotation, transform.localScale);
+            for (int i = 0; i < parts.Length; i++)
+            {
+                parts[i].position = positions[i];
+                parts[i].rotation = rotations[i];
+                if (!parts[i].isKinematic) { parts[i].linearVelocity = velocity; parts[i].angularVelocity = Vector3.zero; }
+            }
+        }
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private System.Collections.IEnumerator RemoteSmokeTest()
         {

@@ -125,10 +125,11 @@ namespace ConductorChaos.Playground
 
             pausePanel = ChaosUI.Panel(root, "Pause", V(.36f, .19f), V(.64f, .81f), ChaosUI.Slate, 2, ChaosUI.Muted);
             ChaosUI.Label(pausePanel, "Heading", "GEPAUZEERD", 32, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.05f, .8f), V(.95f, .95f));
-            resumeButton = ChaosUI.Action(pausePanel, "Resume", "Verder spelen", V(.08f, .59f), V(.92f, .73f), ChaosUI.Gold, ChaosUI.Ink, () => SetScreen(Screen.Game), 22, iconKey: "play");
-            ChaosUI.Action(pausePanel, "Settings", "INSTELLINGEN", V(.08f, .42f), V(.92f, .56f), ChaosUI.Paper, ChaosUI.Ink, ShowSettings, 20, iconKey: "options");
-            ChaosUI.Action(pausePanel, "Main", "HOOFDMENU", V(.08f, .25f), V(.92f, .39f), ChaosUI.Paper, ChaosUI.Ink, () => SetScreen(Screen.Main), 20, iconKey: "back");
-            ChaosUI.Label(pausePanel, "Notice", "De wereld blijft actief terwijl dit menu open is.", 15, ChaosUI.Muted, TextAnchor.MiddleCenter, FontStyle.Normal, V(.05f, .05f), V(.95f, .2f));
+            resumeButton = ChaosUI.Action(pausePanel, "Resume", "Verder spelen", V(.08f, .62f), V(.92f, .74f), ChaosUI.Gold, ChaosUI.Ink, () => SetScreen(Screen.Game), 22, iconKey: "play");
+            ChaosUI.Action(pausePanel, "Unstuck", "Terug op de trein", V(.08f, .47f), V(.92f, .59f), ChaosUI.Paper, ChaosUI.Ink, Unstuck, 20);
+            ChaosUI.Action(pausePanel, "Settings", "INSTELLINGEN", V(.08f, .32f), V(.92f, .44f), ChaosUI.Paper, ChaosUI.Ink, ShowSettings, 20, iconKey: "options");
+            ChaosUI.Action(pausePanel, "Main", "HOOFDMENU", V(.08f, .17f), V(.92f, .29f), ChaosUI.Paper, ChaosUI.Ink, () => SetScreen(Screen.Main), 20, iconKey: "back");
+            ChaosUI.Label(pausePanel, "Notice", "De wereld blijft actief terwijl dit menu open is.", 15, ChaosUI.Muted, TextAnchor.MiddleCenter, FontStyle.Normal, V(.05f, .02f), V(.95f, .13f));
         }
 
         private Button MenuAction(string name, string caption, float bottom, float top, Color color,
@@ -204,6 +205,11 @@ namespace ConductorChaos.Playground
         private void SetVolume(float value) { AudioListener.volume = value; PlayerPrefs.SetFloat("ChaosUI.Volume", value); if (volumeText) volumeText.text = Mathf.RoundToInt(value * 100) + "%"; }
         private void ToggleMute() { muted = !muted; AudioListener.pause = muted; PlayerPrefs.SetInt("ChaosUI.Muted", muted ? 1 : 0); if (muteText) muteText.text = muted ? "Uit" : "Aan"; }
         private void ToggleCameraBob() { bool enabled = PlayerPrefs.GetInt("ChaosUI.CameraBob", 1) == 0; PlayerPrefs.SetInt("ChaosUI.CameraBob", enabled ? 1 : 0); if (cameraBobText) cameraBobText.text = enabled ? "Aan" : "Uit"; }
+        private void Unstuck()
+        {
+            foreach (var player in FindObjectsByType<PlaygroundPlayer>())
+                if (player.IsOwner && player.IsSpawned) { player.RequestUnstuck(); SetScreen(Screen.Game); break; }
+        }
         private void Update()
         {
             UpdateLobby();

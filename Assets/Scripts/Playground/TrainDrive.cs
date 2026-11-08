@@ -153,6 +153,22 @@ namespace ConductorChaos.Playground
             return new Vector3(Mathf.Clamp(eye.x, min.x, max.x), Mathf.Clamp(eye.y, min.y, max.y),
                 Mathf.Clamp(eye.z, min.z, max.z));
         }
+        internal bool TryFindRecoveryPoint(out Vector3 point, out Vector3 velocity)
+        {
+            point = velocity = Vector3.zero;
+            if (!IsSpawned || !cabin || !cabin.sharedMesh || !body) return false;
+            Vector3 center = cabin.transform.TransformPoint(cabin.sharedMesh.bounds.center);
+            float nearest = float.PositiveInfinity;
+            foreach (RaycastHit hit in Physics.RaycastAll(center + Vector3.up * 10f, Vector3.down, 20f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.rigidbody != body || hit.normal.y < 0.7f || hit.distance >= nearest) continue;
+                nearest = hit.distance;
+                point = hit.point;
+            }
+            if (float.IsPositiveInfinity(nearest)) return false;
+            velocity = body.GetPointVelocity(point);
+            return true;
+        }
         private Transform shovelHand;
         private bool shovelHeld;
         private Vector3 previousShovelHand, shovelReleaseVelocity;
