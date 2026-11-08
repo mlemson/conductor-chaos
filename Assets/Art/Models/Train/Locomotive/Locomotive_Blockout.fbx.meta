@@ -74,6 +74,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Loco_Dial
     second: {fileID: 2100000, guid: 73771d8c7e7ea8b522eb31e933a72f76, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Loco_Warm
+    second: {fileID: 2100000, guid: 8733ac7d52d2a32d41c8953a941e489e, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -81,6 +86,7 @@ ModelImporter:
     materialLocation: 1
   animations:
     importAnimation: 0
+    isReadable: 1
   meshes:
     globalScale: 1
     useFileUnits: 1

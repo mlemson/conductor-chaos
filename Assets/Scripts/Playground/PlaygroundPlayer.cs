@@ -2,6 +2,7 @@ using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using ConductorChaos.Track;
 
 namespace ConductorChaos.Playground
 {
@@ -24,15 +25,29 @@ namespace ConductorChaos.Playground
 
         private readonly NetworkVariable<Quaternion> leftPose = new(Quaternion.identity);
         private readonly NetworkVariable<Quaternion> rightPose = new(Quaternion.identity);
+        private readonly NetworkVariable<Vector2> armStretch = new(Vector2.one);
         private readonly NetworkVariable<Quaternion> leftLegPose = new(Quaternion.identity);
         private readonly NetworkVariable<Quaternion> rightLegPose = new(Quaternion.identity);
         private Rigidbody body;
+        private PlaygroundHost sessionHost;
         private RigidbodyConstraints originalConstraints;
         private Vector3 originalCenterOfMass;
         private CapsuleCollider bodyCapsule;
         private float originalBodyRadius;
         private ArmPhysics left;
         private ArmPhysics right;
+        internal bool IsHandCollider(Collider candidate) =>
+            (left != null && left.Collider == candidate) || (right != null && right.Collider == candidate);
+        internal bool TryGetControlHand(Rigidbody candidate, out Transform hand, out Vector3 position, bool useAim = false)
+        {
+            var holding = leftHeld && left != null && left.IsHoldingBody(candidate) ? left
+                : rightHeld && right != null && right.IsHoldingBody(candidate) ? right : null;
+            hand = holding != null ? holding.Transform : null;
+            position = holding != null ? (useAim ? holding.AimedHandPosition : holding.HandPosition) : Vector3.zero;
+            return holding != null;
+        }
+        internal bool HasCabControlInput => Time.unscaledTime <= lastLeverInputAt;
+        internal Vector3 CabAimForward => Quaternion.Euler(requestedPitch, requestedYaw, 0f) * Vector3.forward;
         private PlaygroundLegRig legs;
         private Vector2 requestedMove;
         private float requestedYaw;
@@ -42,6 +57,7 @@ namespace ConductorChaos.Playground
         private float nextInput, nextPose, lastJump;
         private float nextSprintHop;
         private float lastServerInput;
+        private float lastLeverInputAt;
         private Vector3 smoothedLean;
         private float yaw, pitch = 18f;
         private Camera playerCamera;
@@ -49,21 +65,22 @@ namespace ConductorChaos.Playground
         private Renderer[] cameraBodyRenderers;
         private bool[] cameraBodyRenderingOff;
         private bool cameraHidesBody;
-        private static readonly Vector2[] AlternateCameraAngles =
-        {
-            new(0f, 25f), new(-35f, 25f), new(35f, 25f), new(0f, 60f), new(-70f, 45f), new(70f, 45f)
-        };
+        private float cameraDistance = 4f;
+        private Vector3 lastClearCameraPosition;
+        private bool hasClearCameraPosition;
+        private TrainDrive trainDrive;
+        private bool usingCabinCamera;
+        private bool usingLookDownCamera;
+        private Vector3 wagonPushDirection;
+        private Vector3 cabinEye;
         private readonly RaycastHit[] hits = new RaycastHit[32];
-        private readonly Collider[] ledgeObstacles = new Collider[16];
-        private readonly Vector3[] nearbyWallNormals = new Vector3[16];
+        private readonly Collider[] ledgeObstacles = new Collider[64];
+        private readonly Collider[] cameraFocusObstacles = new Collider[16];
         private Vector3 ledgeLip, ledgeInward;
         private float nextLedgeProbe;
         private bool hasLedge, mantling;
-        private Vector3 clearGroundPosition;
-        private Vector3 blockedRecoveryDirection;
-        private Quaternion clearGroundRotation;
-        private bool hasClearGround, clearingLimbs;
-        private float stalledTime, nextClearanceProbe, nextRecoveryProbe, restoreLimbsAt;
+        private bool clearingLimbs;
+        private float stalledTime, nextRecoveryProbe, nextTrackStep, restoreLimbsAt;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private bool automatedInput;
 #endif
@@ -86,9 +103,14 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkSpawn()
         {
-            hasClearGround = clearingLimbs = false;
-            blockedRecoveryDirection = Vector3.zero;
-            stalledTime = nextClearanceProbe = nextRecoveryProbe = 0f;
+            sessionHost = NetworkManager.GetComponent<PlaygroundHost>();
+            cameraDistance = 4f;
+            hasClearCameraPosition = false;
+            usingCabinCamera = false;
+            usingLookDownCamera = false;
+            wagonPushDirection = Vector3.zero;
+            clearingLimbs = false;
+            stalledTime = nextRecoveryProbe = nextTrackStep = 0f;
             body.isKinematic = !IsServer;
             // Leave clearance for the short arms at the shoulders while keeping
             // a solid torso core for collisions and hand interaction.
@@ -103,11 +125,13 @@ namespace ConductorChaos.Playground
             right = new ArmPhysics(rightArm, body, IsServer);
             legs = PlaygroundLegRig.Create(visual, body, IsServer);
             lastServerInput = Time.unscaledTime;
+            lastLeverInputAt = -1f;
             if (left.Collider && right.Collider) Physics.IgnoreCollision(left.Collider, right.Collider);
             if (IsServer)
             {
                 leftPose.Value = left.LocalRotation;
                 rightPose.Value = right.LocalRotation;
+                armStretch.Value = Vector2.one;
             }
             if (IsOwner)
             {
@@ -161,6 +185,8 @@ namespace ConductorChaos.Playground
             }
             if (mouse.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
             {
+                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false);
+                lastLeft = lastRight = false;
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
                 return;
@@ -189,7 +215,12 @@ namespace ConductorChaos.Playground
         [ServerRpc]
         private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r, bool sprint)
         {
+            if (!l) { leftHeld = false; left?.Release(); }
+            if (!r) { rightHeld = false; right?.Release(); }
+            if (sessionHost && sessionHost.Phase != PlaygroundHost.SessionPhase.Playing) return;
             if (!float.IsFinite(move.x) || !float.IsFinite(move.y) || !float.IsFinite(direction) || !float.IsFinite(lookPitch)) return;
+            if ((l || r) && (move.sqrMagnitude > 0.01f || Mathf.Abs(Mathf.DeltaAngle(requestedYaw, direction)) > 0.02f || Mathf.Abs(requestedPitch - lookPitch) > 0.02f))
+                lastLeverInputAt = Time.unscaledTime + 0.12f;
             requestedMove = Vector2.ClampMagnitude(move, 1f);
             requestedYaw = Mathf.Repeat(direction, 360f);
             requestedPitch = Mathf.Clamp(lookPitch, -80f, 65f);
@@ -197,8 +228,6 @@ namespace ConductorChaos.Playground
             leftHeld = l;
             rightHeld = r;
             sprinting = sprint;
-            if (!l) left?.Release();
-            if (!r) right?.Release();
         }
 
         private void OnApplicationFocus(bool focused)
@@ -209,7 +238,10 @@ namespace ConductorChaos.Playground
         }
 
         [ServerRpc]
-        private void JumpServerRpc() => jumpQueued = true;
+        private void JumpServerRpc()
+        {
+            if (!sessionHost || sessionHost.Phase == PlaygroundHost.SessionPhase.Playing) jumpQueued = true;
+        }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private System.Collections.IEnumerator RemoteSmokeTest()
@@ -256,25 +288,31 @@ namespace ConductorChaos.Playground
             Quaternion facing = Quaternion.Euler(0f, requestedYaw, 0f);
             float uprightControl = Mathf.InverseLerp(0.15f, 0.75f, Vector3.Dot(body.rotation * Vector3.up, Vector3.up));
             Vector3 current = body.linearVelocity;
-            bool grounded = IsGrounded();
+            bool grounded = IsGrounded(out RaycastHit groundHit);
             Quaternion aim = Quaternion.Euler(requestedPitch, requestedYaw, 0f);
             bool pulling = requestedMove.y > 0.1f;
             bool firmLedgeGrip = hasLedge && pulling;
-            left.Step(leftHeld, aim, hits, transform, reach, pulling, firmLedgeGrip);
-            right.Step(rightHeld, aim, hits, transform, reach, pulling, firmLedgeGrip);
+            Vector3 moveDirection = facing * new Vector3(requestedMove.x, 0f, requestedMove.y);
+            bool stretchArms = (leftHeld || rightHeld) && !left.HoldingShovel && !right.HoldingShovel;
+            if (!trainDrive) trainDrive = FindAnyObjectByType<TrainDrive>();
+            bool cabinView = trainDrive && trainDrive.TryGetCabin(transform.position, -0.06f, out _);
+            left.Step(leftHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView);
+            right.Step(rightHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView);
             bool climbing = ApplyClimbAssist(pulling && !jumpQueued && (leftHeld || rightHeld));
             int hangingHands = StaticGripCenter(out Vector3 gripCenter);
             bool hanging = !climbing && hangingHands > 0;
-            Vector3 moveDirection = facing * new Vector3(requestedMove.x, 0f, requestedMove.y);
-            if (Vector3.Dot(moveDirection.normalized, blockedRecoveryDirection) < 0.80f)
-                blockedRecoveryDirection = Vector3.zero;
-            if (blockedRecoveryDirection != Vector3.zero) moveDirection = Vector3.zero;
-            if (RecoverFromPinch(moveDirection, grounded)) return;
+            wagonPushDirection = grounded && !hanging && !climbing && !jumpQueued ? moveDirection * uprightControl : Vector3.zero;
+            Vector3 recoveryGroundVelocity = grounded && groundHit.rigidbody && groundHit.rigidbody.isKinematic
+                ? groundHit.rigidbody.GetPointVelocity(groundHit.point) : Vector3.zero;
+            RecoverFromPinch(moveDirection, recoveryGroundVelocity);
+            if ((grounded || stalledTime >= 0.25f) && !jumpQueued && !left.HasGrip && !right.HasGrip)
+                StepOverTrack(moveDirection);
             float walkSpeed = Mathf.Min(sprinting ? sprintSpeed : speed, sprinting ? 3.8f : 1.5f);
             bool stepped = false;
             if (climbing) legs?.BraceForClimb(mantling);
             bool supported = !climbing && legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting && !hanging, out stepped);
-            Vector3 groundVelocity = supported ? legs.SupportVelocity : Vector3.zero;
+            Vector3 groundVelocity = supported ? legs.SupportVelocity : grounded && groundHit.rigidbody && groundHit.rigidbody.isKinematic
+                ? groundHit.rigidbody.GetPointVelocity(groundHit.point) : Vector3.zero;
             Vector3 target = groundVelocity + moveDirection * walkSpeed * uprightControl;
             // Keep some steering when the torso touches uneven ground but neither foot probe finds support.
             float movementAcceleration = grounded ? acceleration * (supported ? (sprinting ? 1.35f : 1f) : 0.45f)
@@ -333,6 +371,7 @@ namespace ConductorChaos.Playground
             {
                 leftPose.Value = left.LocalRotation;
                 rightPose.Value = right.LocalRotation;
+                armStretch.Value = new Vector2(left.Stretch, right.Stretch);
                 if (legs != null)
                 {
                     leftLegPose.Value = legs.LeftRotation;
@@ -374,102 +413,78 @@ namespace ConductorChaos.Playground
             body.AddForce(Vector3.ClampMagnitude(push, climbAcceleration), ForceMode.Acceleration);
         }
 
-        private bool RecoverFromPinch(Vector3 move, bool grounded)
+        private void RecoverFromPinch(Vector3 move, Vector3 groundVelocity)
         {
-            if (!bodyCapsule || left.HasGrip || right.HasGrip)
-            {
-                stalledTime = 0f;
-                SetLimbClearance(false);
-                return false;
-            }
-
             if (clearingLimbs && Time.time >= restoreLimbsAt) SetLimbClearance(false);
-            if (!clearingLimbs && stalledTime < 0.10f && grounded && Time.time >= nextClearanceProbe &&
-                Vector3.Dot(body.rotation * Vector3.up, Vector3.up) > 0.94f && Mathf.Abs(body.linearVelocity.y) < 0.6f)
-            {
-                nextClearanceProbe = Time.time + 0.12f;
-                Quaternion upright = Quaternion.Euler(0f, body.rotation.eulerAngles.y, 0f);
-                if (IsClearGround(body.position, upright))
-                {
-                    clearGroundPosition = body.position;
-                    clearGroundRotation = upright;
-                    hasClearGround = true;
-                }
-            }
-
-            Vector3 direction = move.normalized;
-            if (move.sqrMagnitude < 0.04f || jumpQueued || Mathf.Abs(body.linearVelocity.y) > 1f ||
-                Vector3.Dot(body.linearVelocity, direction) >= 0.18f)
+            Vector3 velocity = body.linearVelocity - groundVelocity;
+            if (!bodyCapsule || left.HasGrip || right.HasGrip || move.sqrMagnitude < 0.04f ||
+                jumpQueued || Mathf.Abs(velocity.y) > 1f || Vector3.Dot(velocity, move.normalized) >= 0.18f)
             {
                 stalledTime = 0f;
-                return false;
+                if (left.HasGrip || right.HasGrip) SetLimbClearance(false);
+                return;
             }
+
             stalledTime += Time.fixedDeltaTime;
-            if (stalledTime < 0.25f || Time.time < nextRecoveryProbe) return false;
+            if (stalledTime < 0.25f || Time.time < nextRecoveryProbe || clearingLimbs) return;
             nextRecoveryProbe = Time.time + 0.12f;
 
-            Vector3 origin = body.worldCenterOfMass;
-            bool canBackOut = false, pinched = false;
-            int wallCount = 0;
-            for (int i = 0; i < nearbyWallNormals.Length; i++)
-            {
-                Vector3 ray = Quaternion.AngleAxis((i % 8) * 45f, Vector3.up) * direction;
-                Vector3 sample = i < 8 ? origin : origin - Vector3.up * 0.20f;
-                if (!LedgeRay(sample, ray, bodyCapsule.radius + 0.21f, out RaycastHit wall) ||
-                    wall.rigidbody || Mathf.Abs(wall.normal.y) > 0.60f) continue;
-                Vector3 normal = Vector3.ProjectOnPlane(wall.normal, Vector3.up).normalized;
-                for (int j = 0; j < wallCount; j++)
-                    if (Vector3.Dot(nearbyWallNormals[j], normal) < -0.40f) pinched = true;
-                nearbyWallNormals[wallCount++] = normal;
-                canBackOut |= Vector3.Dot(direction, normal) >= -0.10f;
-            }
-            if (!pinched && stalledTime >= 0.85f) pinched = TorsoInsideStaticWall();
-            if (!pinched && !canBackOut) return false;
+            Vector3 direction = move.normalized;
+            int count = Physics.OverlapSphereNonAlloc(body.position, bodyCapsule.radius + 0.30f,
+                ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
+            bool nearTrack = false;
+            for (int i = 0; i < count && !nearTrack; i++)
+                nearTrack = ledgeObstacles[i].GetComponentInParent<TrackPiece>();
 
-            // Give loose limbs time to slip free while the torso continues to collide normally.
+            // Limb contact can yield when backing away from a wall or straddling the track.
+            bool backingAway = LedgeRay(body.worldCenterOfMass, -direction, bodyCapsule.radius + 0.18f, out var wall) &&
+                Mathf.Abs(wall.normal.y) < 0.60f && Vector3.Dot(direction, wall.normal) > 0.3f;
+            if (!nearTrack && !backingAway) return;
             SetLimbClearance(true);
-            restoreLimbsAt = Time.time + 0.28f;
-            Vector3 fromClearGround = body.position - clearGroundPosition;
-            if (!pinched || stalledTime < 0.85f || !hasClearGround || fromClearGround.sqrMagnitude < 0.20f * 0.20f ||
-                fromClearGround.sqrMagnitude > 1.5f * 1.5f ||
-                Mathf.Abs(fromClearGround.y) > 0.55f || !IsClearGround(clearGroundPosition, clearGroundRotation)) return false;
-
-            ReturnToClearGround();
-            blockedRecoveryDirection = direction;
-            stalledTime = 0f;
-            return true;
+            restoreLimbsAt = Time.time + 0.22f;
+            nextRecoveryProbe = Time.time + 0.42f;
         }
 
-        private bool IsClearGround(Vector3 position, Quaternion rotation)
+        private void StepOverTrack(Vector3 move)
         {
-            if (!LedgeRay(position + Vector3.up * 0.24f, Vector3.down, 0.41f, out RaycastHit floor) ||
-                floor.rigidbody || floor.normal.y < 0.72f) return false;
-            float radius = bodyCapsule.radius + 0.20f;
-            float halfSegment = Mathf.Max(0f, bodyCapsule.height * 0.5f - radius);
-            Vector3 center = position + rotation * bodyCapsule.center + Vector3.up * 0.045f;
-            int count = Physics.OverlapCapsuleNonAlloc(center - Vector3.up * halfSegment,
-                center + Vector3.up * halfSegment, radius, ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
-            if (count == ledgeObstacles.Length) return false;
-            for (int i = 0; i < count; i++)
-                if (!ledgeObstacles[i].transform.IsChildOf(transform)) return false;
-            return true;
-        }
+            if (!bodyCapsule || move.sqrMagnitude < 0.04f || Mathf.Abs(body.linearVelocity.y) > 0.35f || Time.time < nextTrackStep) return;
+            Vector3 forward = move.normalized;
+            Vector3 foot = body.position;
+            float reach = bodyCapsule.radius + 0.22f;
+            Vector3 stepProbe = foot;
+            if (LedgeRay(foot + Vector3.up * 0.08f, forward, reach, out var edge) &&
+                edge.collider.GetComponentInParent<TrackPiece>() && edge.normal.y <= 0.55f)
+                stepProbe = new Vector3(edge.point.x, foot.y, edge.point.z) + forward * 0.055f;
+            else if (stalledTime < 0.25f) return;
 
-        private bool TorsoInsideStaticWall()
-        {
-            float radius = bodyCapsule.radius;
-            Vector3 center = body.position + body.rotation * bodyCapsule.center;
-            Vector3 axis = body.rotation * Vector3.up * Mathf.Max(0f, bodyCapsule.height * 0.5f - radius);
-            int count = Physics.OverlapCapsuleNonAlloc(center - axis, center + axis, radius, ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
+            Vector3 aboveEdge = stepProbe + Vector3.up * 0.27f;
+            if (!LedgeRay(aboveEdge, Vector3.down, 0.30f, out var top) ||
+                !top.collider.GetComponentInParent<TrackPiece>() || top.normal.y < 0.65f) return;
+            float rise = top.point.y - foot.y;
+            if (rise < 0.045f || rise > 0.24f) return;
+
+            float radius = bodyCapsule.radius - 0.015f;
+            Vector3 axis = Vector3.up * Mathf.Max(0f, bodyCapsule.height * 0.5f - bodyCapsule.radius);
+            Vector3 center = foot + body.rotation * bodyCapsule.center;
+            float lift = rise + 0.045f;
+            int count = Physics.CapsuleCastNonAlloc(center - axis, center + axis, radius,
+                Vector3.up, hits, lift, ~0, QueryTriggerInteraction.Ignore);
+            if (count == hits.Length) return;
             for (int i = 0; i < count; i++)
-            {
-                Collider obstacle = ledgeObstacles[i];
-                if (obstacle.attachedRigidbody || obstacle.transform.IsChildOf(transform)) continue;
-                if (Physics.ComputePenetration(bodyCapsule, body.position, body.rotation, obstacle,
-                        obstacle.transform.position, obstacle.transform.rotation, out Vector3 normal, out float depth) &&
-                    depth > 0.08f && Mathf.Abs(normal.y) < 0.60f) return true;
-            }
-            return false;
+                if (!hits[i].collider.transform.IsChildOf(transform)) return;
+
+            center += Vector3.up * lift + forward * 0.14f;
+            count = Physics.OverlapCapsuleNonAlloc(center - axis, center + axis, radius,
+                ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
+            if (count == ledgeObstacles.Length) return;
+            for (int i = 0; i < count; i++)
+                if (!ledgeObstacles[i].transform.IsChildOf(transform)) return;
+
+            SetLimbClearance(true);
+            restoreLimbsAt = Time.time + 0.20f;
+            nextTrackStep = Time.time + 0.24f;
+            float liftSpeed = Mathf.Sqrt(2f * Mathf.Abs(Physics.gravity.y) * (lift + 0.025f));
+            body.AddForce(Vector3.up * Mathf.Max(0f, liftSpeed - body.linearVelocity.y), ForceMode.VelocityChange);
         }
 
         private void SetLimbClearance(bool clearing)
@@ -480,31 +495,6 @@ namespace ConductorChaos.Playground
             if (right.Collider) right.Collider.enabled = !clearing;
             legs?.SetContactEnabled(!clearing);
             if (clearing) legs?.ReleaseSupport();
-        }
-
-        private void ReturnToClearGround()
-        {
-            Rigidbody[] parts = GetComponentsInChildren<Rigidbody>();
-            Vector3[] positions = new Vector3[parts.Length];
-            Quaternion[] rotations = new Quaternion[parts.Length];
-            Quaternion turn = clearGroundRotation * Quaternion.Inverse(body.rotation);
-            for (int i = 0; i < parts.Length; i++)
-            {
-                positions[i] = clearGroundPosition + turn * (parts[i].position - body.position);
-                rotations[i] = turn * parts[i].rotation;
-            }
-
-            if (TryGetComponent(out NetworkTransform networkTransform))
-                networkTransform.Teleport(clearGroundPosition, clearGroundRotation, transform.localScale);
-            for (int i = 0; i < parts.Length; i++)
-            {
-                parts[i].position = positions[i];
-                parts[i].rotation = rotations[i];
-                parts[i].linearVelocity = Vector3.zero;
-                parts[i].angularVelocity = Vector3.zero;
-            }
-            legs?.ReleaseSupport();
-            smoothedLean = Vector3.zero;
         }
 
         private bool ApplyClimbAssist(bool pulling)
@@ -609,13 +599,28 @@ namespace ConductorChaos.Playground
             return nearest.collider != null;
         }
 
-        private bool IsGrounded()
+        private bool IsGrounded(out RaycastHit groundHit)
         {
+            groundHit = default;
             Vector3 origin = body.position + body.rotation * Vector3.up * 0.28f;
             int count = Physics.SphereCastNonAlloc(origin, 0.22f, Vector3.down, hits, 0.22f, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
-                if (!hits[i].collider.transform.IsChildOf(transform) && hits[i].normal.y > 0.55f) return true;
-            return false;
+                if (!hits[i].collider.transform.IsChildOf(transform) && hits[i].normal.y > 0.55f &&
+                    (!groundHit.collider || hits[i].distance < groundHit.distance)) groundHit = hits[i];
+            return groundHit.collider;
+        }
+
+        private void OnCollisionStay(Collision collision)
+        {
+            if (!IsSpawned || !IsServer || wagonPushDirection.sqrMagnitude < 0.01f ||
+                !collision.rigidbody || !collision.rigidbody.isKinematic) return;
+            for (int i = 0; i < collision.contactCount; i++)
+            {
+                if (Vector3.Dot(wagonPushDirection, -collision.GetContact(i).normal) < 0.2f) continue;
+                if (!trainDrive) trainDrive = FindAnyObjectByType<TrainDrive>();
+                if (trainDrive) trainDrive.QueueWagonPush(collision.rigidbody, this, wagonPushDirection);
+                break;
+            }
         }
 
         private void LateUpdate()
@@ -623,61 +628,116 @@ namespace ConductorChaos.Playground
             if (!IsSpawned) return;
             if (!IsServer)
             {
-                left.ShowRemote(leftPose.Value);
-                right.ShowRemote(rightPose.Value);
+                left.ShowRemote(leftPose.Value, armStretch.Value.x);
+                right.ShowRemote(rightPose.Value, armStretch.Value.y);
                 legs?.ShowRemote(leftLegPose.Value, rightLegPose.Value);
             }
             if (!IsOwner || !playerCamera) return;
             Vector3 focus = transform.position + Vector3.up * 0.9f;
             Quaternion look = Quaternion.Euler(pitch, yaw, 0f);
+            usingLookDownCamera = pitch >= (usingLookDownCamera ? 50f : 58f);
+            if (!trainDrive) trainDrive = FindAnyObjectByType<TrainDrive>();
+            if (trainDrive && trainDrive.TryGetCabin(transform.position, usingCabinCamera ? 0.04f : -0.06f, out var cabinFrame))
+            {
+                Vector3 cabinFocus = transform.position + Vector3.up * 0.72f - Quaternion.Euler(0f, yaw, 0f) * Vector3.forward * 0.10f;
+                Vector3 eye = trainDrive.ClampCabinEye(cabinFrame.InverseTransformPoint(cabinFocus));
+                cabinEye = usingCabinCamera
+                    ? Vector3.Lerp(cabinEye, eye, 1f - Mathf.Exp(-22f * Time.unscaledDeltaTime)) : eye;
+                usingCabinCamera = true;
+                cameraDistance = 0f;
+                hasClearCameraPosition = false;
+                SetCameraBodyHidden(true);
+                playerCamera.transform.SetPositionAndRotation(cabinFrame.TransformPoint(cabinEye), look);
+                return;
+            }
+            usingCabinCamera = false;
             float nearHeight = Mathf.Tan(playerCamera.fieldOfView * 0.5f * Mathf.Deg2Rad) * playerCamera.nearClipPlane;
             float radius = Mathf.Max(0.16f, new Vector3(nearHeight * playerCamera.aspect, nearHeight, playerCamera.nearClipPlane).magnitude);
             Bounds modelBounds = new(focus, Vector3.one * 0.45f);
             foreach (Renderer renderer in cameraBodyRenderers)
                 if (renderer && renderer.enabled && renderer.gameObject.activeInHierarchy) modelBounds.Encapsulate(renderer.bounds);
 
-            Vector3 fallbackPosition = focus;
-            Quaternion fallbackLook = look;
-            float fallbackDistance = -1f;
-            if (TryCameraOrbit(focus, look, radius, modelBounds, ref fallbackPosition, ref fallbackLook, ref fallbackDistance)) return;
-            foreach (Vector2 alternate in AlternateCameraAngles)
+            Vector3 direction = -(look * Vector3.forward);
+            float available = usingLookDownCamera ? 0f : Mathf.SmoothStep(4f, 0f, Mathf.InverseLerp(44f, 58f, pitch));
+            int focusCount = Physics.OverlapSphereNonAlloc(focus, radius, cameraFocusObstacles, ~0, QueryTriggerInteraction.Ignore);
+            int count = Physics.SphereCastNonAlloc(focus, radius, direction, hits, available, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
             {
-                Quaternion rotated = Quaternion.Euler(Mathf.Max(pitch, alternate.y), yaw + alternate.x, 0f);
-                if (TryCameraOrbit(focus, rotated, radius, modelBounds, ref fallbackPosition, ref fallbackLook, ref fallbackDistance)) return;
+                var obstacle = hits[i].collider;
+                if (obstacle.transform.IsChildOf(transform)) continue;
+                bool containsFocus = false;
+                for (int j = 0; j < focusCount; j++)
+                    if (cameraFocusObstacles[j] == obstacle && (obstacle.ClosestPoint(focus) - focus).sqrMagnitude < 0.000001f)
+                    { containsFocus = true; break; }
+                if (!containsFocus) available = Mathf.Min(available, Mathf.Max(0f, hits[i].distance - 0.025f));
             }
-
-            // A gap can be narrower than the camera and the model together.
-            SetCameraBodyHidden(true);
-            playerCamera.transform.SetPositionAndRotation(fallbackPosition, fallbackLook);
+            cameraDistance = Mathf.Min(available, Mathf.MoveTowards(cameraDistance, available, 4f * Time.unscaledDeltaTime));
+            Vector3 cameraPosition = focus + direction * cameraDistance;
+            bool clear = CameraPositionClear(cameraPosition, radius);
+            if (!clear)
+            {
+                for (float distance = available; distance >= 0f; distance -= 0.1f)
+                {
+                    Vector3 candidate = focus + direction * distance;
+                    if (!CameraPositionClear(candidate, radius)) continue;
+                    cameraPosition = candidate;
+                    cameraDistance = distance;
+                    clear = true;
+                    break;
+                }
+            }
+            if (!clear && hasClearCameraPosition && (lastClearCameraPosition - focus).sqrMagnitude <= 16f && CameraPositionClear(lastClearCameraPosition, radius) && CameraPathClear(focus, lastClearCameraPosition, radius, focusCount))
+            {
+                cameraPosition = lastClearCameraPosition;
+                clear = true;
+            }
+            if (!clear)
+            {
+                for (int i = 0; i < 8 && !clear; i++)
+                    for (float distance = 0.5f; distance <= 4f; distance += 0.5f)
+                    {
+                        Vector3 alternate = Quaternion.AngleAxis((i / 2 + 1) * (i % 2 == 0 ? 45f : -45f), Vector3.up) * direction;
+                        Vector3 candidate = focus + alternate * distance;
+                        if (!CameraPositionClear(candidate, radius) || !CameraPathClear(focus, candidate, radius, focusCount)) continue;
+                        cameraPosition = candidate;
+                        clear = true;
+                        break;
+                    }
+            }
+            if (clear) { lastClearCameraPosition = cameraPosition; hasClearCameraPosition = true; }
+            Vector3 offset = cameraPosition - focus;
+            Vector3 viewDirection = offset.sqrMagnitude > 0.0001f ? offset.normalized : direction;
+            Vector3 axis = new(Mathf.Abs(viewDirection.x), Mathf.Abs(viewDirection.y), Mathf.Abs(viewDirection.z));
+            float modelEdge = Vector3.Dot(modelBounds.center - focus, viewDirection) + Vector3.Dot(modelBounds.extents, axis);
+            SetCameraBodyHidden(usingLookDownCamera || offset.magnitude < modelEdge + radius + (cameraHidesBody ? 0.15f : 0.03f));
+            playerCamera.transform.SetPositionAndRotation(cameraPosition, look);
         }
 
-        private bool TryCameraOrbit(Vector3 focus, Quaternion look, float radius, Bounds modelBounds,
-            ref Vector3 fallbackPosition, ref Quaternion fallbackLook, ref float fallbackDistance)
+        private bool CameraPositionClear(Vector3 position, float radius)
         {
-            Vector3 direction = -(look * Vector3.forward);
-            float distance = 4f;
-            int count = Physics.SphereCastNonAlloc(focus, radius, direction, hits, distance, ~0, QueryTriggerInteraction.Ignore);
-            for (int i = 0; i < count; i++)
-                if (!hits[i].collider.transform.IsChildOf(transform)) distance = Mathf.Min(distance, Mathf.Max(0f, hits[i].distance - 0.025f));
-
-            Vector3 position = focus + direction * distance;
-            count = Physics.OverlapSphereNonAlloc(position, radius, ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
+            int count = Physics.OverlapSphereNonAlloc(position, radius, ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
             if (count == ledgeObstacles.Length) return false;
             for (int i = 0; i < count; i++)
                 if (!ledgeObstacles[i].transform.IsChildOf(transform)) return false;
+            return true;
+        }
 
-            if (distance > fallbackDistance)
+        private bool CameraPathClear(Vector3 focus, Vector3 position, float radius, int focusCount)
+        {
+            Vector3 offset = position - focus;
+            if (offset.sqrMagnitude < 0.0001f) return true;
+            int count = Physics.SphereCastNonAlloc(focus, radius, offset.normalized, hits, offset.magnitude, ~0, QueryTriggerInteraction.Ignore);
+            if (count == hits.Length) return false;
+            for (int i = 0; i < count; i++)
             {
-                fallbackPosition = position;
-                fallbackLook = look;
-                fallbackDistance = distance;
+                var obstacle = hits[i].collider;
+                if (obstacle.transform.IsChildOf(transform)) continue;
+                bool containsFocus = false;
+                for (int j = 0; j < focusCount; j++)
+                    if (cameraFocusObstacles[j] == obstacle && (obstacle.ClosestPoint(focus) - focus).sqrMagnitude < 0.000001f)
+                    { containsFocus = true; break; }
+                if (!containsFocus) return false;
             }
-            Vector3 axis = new(Mathf.Abs(direction.x), Mathf.Abs(direction.y), Mathf.Abs(direction.z));
-            float modelEdge = Vector3.Dot(modelBounds.center - focus, direction) + Vector3.Dot(modelBounds.extents, axis);
-            if (distance < modelEdge + radius + 0.03f) return false;
-
-            SetCameraBodyHidden(false);
-            playerCamera.transform.SetPositionAndRotation(position, look);
             return true;
         }
 
@@ -690,7 +750,8 @@ namespace ConductorChaos.Playground
                 Renderer renderer = cameraBodyRenderers[i];
                 if (!renderer) continue;
                 if (hidden) cameraBodyRenderingOff[i] = renderer.forceRenderingOff;
-                renderer.forceRenderingOff = hidden || cameraBodyRenderingOff[i];
+                bool isArm = (leftArm && renderer.transform.IsChildOf(leftArm)) || (rightArm && renderer.transform.IsChildOf(rightArm));
+                renderer.forceRenderingOff = (hidden && !isArm) || cameraBodyRenderingOff[i];
             }
         }
 
@@ -714,6 +775,8 @@ namespace ConductorChaos.Playground
         private sealed class ArmPhysics
         {
             private static readonly Vector3 HandOffset = new(0f, -0.205f, 0f);
+            private const float GripStretch = 1.55f;
+            private const float StretchSpeed = 3f;
             private const float GripAssistRadius = 0.28f;
             private static readonly Vector3[] GripAssistRays =
             {
@@ -723,15 +786,25 @@ namespace ConductorChaos.Playground
             private readonly Rigidbody parent;
             private readonly Rigidbody rigid;
             private readonly Quaternion rest;
+            private readonly Vector3 restScale;
             private readonly CapsuleCollider collider;
             private readonly ConfigurableJoint shoulder;
             private SpringJoint grip;
             private Collider gripSurface;
+            private TrainDrive cabGripTrain;
+            private readonly Collider[] leverOverlaps = new Collider[32];
             private float nextAttempt;
+            private float handYield;
             private bool releasedAtCrest;
 
             public Quaternion LocalRotation => arm ? arm.localRotation : Quaternion.identity;
             public Collider Collider => collider;
+            public Transform Transform => arm;
+            public Vector3 HandPosition => arm ? arm.TransformPoint(HandOffset) : Vector3.zero;
+            public Vector3 AimedHandPosition { get; private set; }
+            public float Stretch { get; private set; } = 1f;
+            public bool IsHoldingBody(Rigidbody candidate) => grip && grip.connectedBody == candidate;
+            public bool HoldingShovel => cabGripTrain && cabGripTrain.IsShovelGrip(gripSurface);
             public bool HasGrip => grip;
             public bool TryStaticAnchor(out Vector3 anchor)
             {
@@ -747,6 +820,7 @@ namespace ConductorChaos.Playground
                 parent = body;
                 if (!arm) { Debug.LogError("Playground: missing conductor arm."); return; }
                 rest = arm.localRotation;
+                restScale = arm.localScale;
                 rigid = arm.gameObject.AddComponent<Rigidbody>();
                 rigid.mass = 0.35f;
                 rigid.isKinematic = !server;
@@ -776,55 +850,137 @@ namespace ConductorChaos.Playground
                 shoulder.enableCollision = true;
             }
 
-            public void Step(bool held, Quaternion aim, RaycastHit[] buffer, Transform player, float reach, bool pulling, bool firmLedgeGrip)
+            public void Step(bool held, bool stretch, Quaternion aim, RaycastHit[] buffer, Transform player, float reach, bool pulling, bool firmLedgeGrip, Vector3 move, bool cabinView)
             {
                 if (!rigid) return;
                 if (!held) releasedAtCrest = false;
-                if (!held || (grip && (!gripSurface || !gripSurface.enabled || !gripSurface.gameObject.activeInHierarchy))) Release();
+                if (!held || (grip && (!gripSurface || !gripSurface.enabled || !gripSurface.gameObject.activeInHierarchy)) ||
+                    (!grip && gripSurface)) Release();
+                bool holdingShovel = HoldingShovel;
+                float upwardReach = Mathf.InverseLerp(cabinView ? -0.18f : 0.25f, cabinView ? 0.65f : 0.9f, (aim * Vector3.forward).y);
+                float cabinReach = cabinView ? Mathf.Sqrt(upwardReach) : upwardReach;
+                float targetStretch = holdingShovel ? 0.75f : stretch ? GripStretch : 1f;
+                if (!grip) targetStretch = Mathf.Max(targetStretch, Mathf.Lerp(1f, cabinView ? 2.6f : 1.9f, cabinReach));
+                StretchToward(targetStretch, Time.fixedDeltaTime);
                 // The model's arms are angled outward at rest. Rotate the actual
                 // shoulder-to-hand direction toward the camera aim, rather than
                 // rotating around the arm's already-tilted local X axis.
-                Vector3 aimInParent = arm.parent.InverseTransformDirection(aim * Vector3.forward);
+                Vector3 lookDirection = aim * Vector3.forward;
+                float upwardAim = Mathf.Clamp01(lookDirection.y);
+                Vector3 raisedAim = Vector3.Slerp(lookDirection, Vector3.up, 0.35f * upwardAim);
+                if (!held) raisedAim = (raisedAim + Vector3.up * 0.20f).normalized;
+                Vector3 aimInParent = arm.parent.InverseTransformDirection(raisedAim);
                 Vector3 restDirection = rest * Vector3.down;
-                aimInParent = (aimInParent + Vector3.right * Mathf.Sign(restDirection.x) * 0.55f).normalized;
+                float outwardAim = Mathf.Lerp(0.55f, cabinView ? -0.25f : 0.30f, cabinView ? cabinReach : upwardAim);
+                aimInParent = (aimInParent + Vector3.right * Mathf.Sign(restDirection.x) * outwardAim).normalized;
                 if (grip && !grip.connectedBody)
                 {
                     Vector3 towardAnchor = arm.parent.InverseTransformDirection(grip.connectedAnchor - rigid.position);
                     if (towardAnchor.sqrMagnitude > 0.001f) aimInParent = towardAnchor.normalized;
                 }
                 Quaternion aiming = Quaternion.FromToRotation(restDirection, aimInParent) * rest;
-                // Follow the look direction even when the hand is not gripping.
-                Quaternion localTarget = Quaternion.Slerp(rest, aiming, held ? 1f : 0.75f);
+                AimedHandPosition = arm.position + arm.parent.TransformVector(aiming * Vector3.Scale(arm.localScale, HandOffset));
+                // Keep both arms aimed even when their grip buttons are released.
+                Quaternion localTarget = holdingShovel ? Quaternion.FromToRotation(restDirection, Vector3.Slerp(Vector3.down, aimInParent, 0.35f)) * rest
+                    : Quaternion.Slerp(rest, aiming, held ? 1f : Mathf.Lerp(0.75f, 0.95f, upwardAim));
+                bool blocked = false;
+                if (!held && collider && collider.enabled && move.sqrMagnitude > 0.01f)
+                {
+                    Vector3 handPoint = arm.TransformPoint(HandOffset);
+                    int count = Physics.OverlapSphereNonAlloc(handPoint + move.normalized * 0.04f, 0.075f,
+                        leverOverlaps, ~0, QueryTriggerInteraction.Ignore);
+                    for (int i = 0; i < count; i++)
+                    {
+                        Collider obstacle = leverOverlaps[i];
+                        if (obstacle.transform.IsChildOf(player)) continue;
+                        Vector3 nearest = obstacle is MeshCollider mesh && !mesh.convex
+                            ? obstacle.bounds.ClosestPoint(handPoint) : obstacle.ClosestPoint(handPoint);
+                        if (Mathf.Abs(nearest.y - handPoint.y) > 0.075f) continue;
+                        blocked = true;
+                        break;
+                    }
+                }
+                handYield = Mathf.MoveTowards(handYield, blocked ? 1f : 0f, Time.fixedDeltaTime * (blocked ? 9f : 4f));
+                if (!held) localTarget = Quaternion.Slerp(localTarget, rest, handYield);
                 Quaternion desired = arm.parent.rotation * localTarget;
                 Quaternion error = desired * Quaternion.Inverse(rigid.rotation);
                 error.ToAngleAxis(out float angle, out Vector3 axis);
                 if (angle > 180f) angle -= 360f;
                 bool looseGrip = grip && !grip.connectedBody && !firmLedgeGrip;
                 if (float.IsFinite(axis.x) && axis.sqrMagnitude > 0.01f)
-                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * (looseGrip ? 85f : held ? 180f : 32f))
-                        - rigid.angularVelocity * (looseGrip ? 7f : held ? 14f : 5f), looseGrip ? 150f : held ? 420f : 55f), ForceMode.Acceleration);
+                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * (looseGrip ? 85f : held ? 180f : Mathf.Lerp(32f, 8f, handYield)))
+                        - rigid.angularVelocity * (looseGrip ? 7f : held ? 14f : 5f), looseGrip ? 150f : held ? 420f : Mathf.Lerp(55f, 20f, handYield)), ForceMode.Acceleration);
 
                 if (!held || grip || releasedAtCrest || Time.time < nextAttempt) return;
                 nextAttempt = Time.time + 0.04f;
                 Vector3 hand = arm.TransformPoint(HandOffset);
                 Vector3 direction = aim * Vector3.forward;
+                if (TryGripNearbyCabControl(hand, direction, buffer, player, reach)) return;
                 if (!TryGripCast(hand, direction, 0.13f, 0.38f, buffer, player, reach, false, out RaycastHit chosen) &&
                     !TryGripAssist(hand, aim, buffer, player, reach, out chosen) &&
                     (!pulling || !TryGripCast(hand, Vector3.ProjectOnPlane(direction, Vector3.up).normalized,
                         0.09f, 0.18f, buffer, player, reach, true, out chosen))) return;
 
-                gripSurface = chosen.collider;
+                var train = TrainDrive.FindControlOwner(chosen.rigidbody);
+                bool cabGrip = train && train.IsSpawned && train.IsOwnedByServer && train.IsCabControlCollider(chosen.collider);
+                AttachGrip(chosen.collider, chosen.rigidbody, chosen.point, IsClimbSurface(chosen), cabGrip);
+            }
+
+            private bool AttachGrip(Collider surface, Rigidbody target, Vector3 point, bool climbingGrip, bool cabGrip)
+            {
+                if (cabGrip)
+                {
+                    var train = TrainDrive.FindControlOwner(target);
+                    if (!train.TryClaimCabControl(surface, arm)) return false;
+                    cabGripTrain = train;
+                    if (train.IsShovelGrip(surface)) point = target.position;
+                    else if (surface is SphereCollider handle) point = handle.transform.TransformPoint(handle.center);
+                    if (collider) Physics.IgnoreCollision(collider, surface, true);
+                }
+                gripSurface = surface;
                 grip = arm.gameObject.AddComponent<SpringJoint>();
                 grip.autoConfigureConnectedAnchor = false;
-                grip.connectedBody = chosen.rigidbody;
-                grip.connectedAnchor = chosen.rigidbody ? chosen.rigidbody.transform.InverseTransformPoint(chosen.point) : chosen.point;
+                grip.connectedBody = target;
+                grip.connectedAnchor = target ? target.transform.InverseTransformPoint(point) : point;
                 grip.anchor = HandOffset;
-                bool climbingGrip = IsClimbSurface(chosen);
-                grip.spring = climbingGrip ? 380f : 320f;
-                grip.damper = climbingGrip ? 36f : 32f;
+                grip.spring = cabGrip ? 450f : climbingGrip ? 380f : 320f;
+                grip.damper = cabGrip ? 40f : climbingGrip ? 36f : 32f;
                 grip.minDistance = 0f;
                 grip.maxDistance = 0.03f;
-                grip.breakForce = climbingGrip ? 725f : 550f;
+                grip.breakForce = cabGrip ? 1000f : climbingGrip ? 725f : 550f;
+                return true;
+            }
+
+            private bool TryGripNearbyCabControl(Vector3 hand, Vector3 aim, RaycastHit[] buffer, Transform player, float reach)
+            {
+                int count = Physics.OverlapSphereNonAlloc(hand, 0.35f, leverOverlaps, ~0, QueryTriggerInteraction.Ignore);
+                Collider closest = null;
+                Vector3 closestPoint = default;
+                float closestDistance = float.PositiveInfinity;
+                for (int i = 0; i < count; i++)
+                {
+                    Collider surface = leverOverlaps[i];
+                    Rigidbody target = surface.attachedRigidbody;
+                    var train = TrainDrive.FindControlOwner(target);
+                    bool cabControl = train && train.IsSpawned && train.IsOwnedByServer && train.IsCabControlCollider(surface);
+                    if (!cabControl && !TrainDrive.IsCoalBody(target)) continue;
+                    Vector3 point = surface is SphereCollider handle ? handle.transform.TransformPoint(handle.center) : surface.ClosestPoint(hand);
+                    if ((point - parent.position).sqrMagnitude > reach * reach) continue;
+                    Vector3 offset = point - hand;
+                    if ((!train || !train.IsShovelGrip(surface)) && offset.sqrMagnitude > 0.20f * 0.20f) continue;
+                    if (Vector3.Dot(offset, aim) < -0.08f || offset.sqrMagnitude >= closestDistance) continue;
+                    bool blocked = false;
+                    int obstacles = Physics.RaycastNonAlloc(hand, offset.normalized, buffer, Mathf.Max(0f, offset.magnitude - 0.025f),
+                        ~0, QueryTriggerInteraction.Ignore);
+                    for (int j = 0; j < obstacles && !blocked; j++)
+                        blocked = buffer[j].rigidbody != target && !buffer[j].collider.transform.IsChildOf(player);
+                    if (blocked) continue;
+                    closest = surface;
+                    closestPoint = point;
+                    closestDistance = offset.sqrMagnitude;
+                }
+                return closest && AttachGrip(closest, closest.attachedRigidbody, closestPoint, false,
+                    !TrainDrive.IsCoalBody(closest.attachedRigidbody));
             }
 
             private bool TryGripCast(Vector3 hand, Vector3 direction, float radius, float distance,
@@ -842,7 +998,7 @@ namespace ConductorChaos.Playground
                     if (hit.rigidbody)
                     {
                         NetworkObject target = hit.rigidbody.GetComponentInParent<NetworkObject>();
-                        if (!target || !target.IsSpawned || !target.IsOwnedByServer) continue;
+                        if ((!target || !target.IsSpawned || !target.IsOwnedByServer) && !TrainDrive.IsCoalBody(hit.rigidbody)) continue;
                     }
                     closest = hit.distance;
                     chosen = hit;
@@ -873,7 +1029,10 @@ namespace ConductorChaos.Playground
                         surface = hit;
                     }
 
-                    if (!surface.collider || !IsClimbSurface(surface)) continue;
+                    if (!surface.collider) continue;
+                    var train = TrainDrive.FindControlOwner(surface.rigidbody);
+                    bool cabControl = train && train.IsSpawned && train.IsOwnedByServer && train.IsCabControlCollider(surface.collider);
+                    if (!IsClimbSurface(surface) && !cabControl) continue;
                     Vector3 offset = surface.point - hand;
                     float distance = offset.sqrMagnitude;
                     if (distance >= closest || Vector3.Dot(offset, forward) < -0.06f ||
@@ -893,14 +1052,34 @@ namespace ConductorChaos.Playground
                 releasedAtCrest = true;
             }
 
-            public void ShowRemote(Quaternion rotation)
+            public void ShowRemote(Quaternion rotation, float stretch)
             {
-                if (arm) arm.localRotation = Quaternion.Slerp(arm.localRotation, rotation, 15f * Time.deltaTime);
+                if (!arm) return;
+                arm.localRotation = Quaternion.Slerp(arm.localRotation, rotation, 15f * Time.deltaTime);
+                StretchToward(stretch, Time.deltaTime);
+            }
+
+            private void StretchToward(float target, float deltaTime)
+            {
+                if (Stretch == target) return;
+                Stretch = Mathf.MoveTowards(Stretch, target, StretchSpeed * deltaTime);
+                arm.localScale = new Vector3(restScale.x, restScale.y * Stretch, restScale.z);
             }
 
             public void Release()
             {
-                if (grip) Object.Destroy(grip);
+                if (cabGripTrain)
+                {
+                    cabGripTrain.ReleaseCabControl(gripSurface, arm);
+                    if (collider && gripSurface) Physics.IgnoreCollision(collider, gripSurface, false);
+                    cabGripTrain = null;
+                }
+                if (grip)
+                {
+                    grip.spring = 0f;
+                    grip.damper = 0f;
+                    Object.Destroy(grip);
+                }
                 grip = null;
                 gripSurface = null;
                 nextAttempt = 0f;
@@ -912,7 +1091,11 @@ namespace ConductorChaos.Playground
                 if (shoulder) Object.Destroy(shoulder);
                 if (collider) Object.Destroy(collider);
                 if (rigid) Object.Destroy(rigid);
-                if (arm) arm.localRotation = rest;
+                if (arm)
+                {
+                    arm.localRotation = rest;
+                    arm.localScale = restScale;
+                }
             }
         }
     }

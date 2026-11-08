@@ -183,6 +183,8 @@ namespace ConductorChaos.EditorTools
                 Vector3 target = buildBackwards ? selected.StartPosition : selected.EndPosition;
                 go.transform.position += target - (buildBackwards ? piece.EndPosition : piece.StartPosition);
 
+                FitToTerrain(piece, buildBackwards);
+
                 TrackPiece previous = buildBackwards ? piece : selected;
                 Undo.RecordObject(previous, "Link Track Piece");
                 previous.next = buildBackwards ? selected : piece;
@@ -210,8 +212,44 @@ namespace ConductorChaos.EditorTools
                         pos = hit.point;
                 }
                 go.transform.position = pos;
+                if (piece != null && piece.HasSockets && FollowsTerrain(piece))
+                {
+                    var terrain = PropGroundSnap.TerrainAt(piece.StartPosition);
+                    if (terrain != null)
+                    {
+                        Vector3 start = piece.StartPosition;
+                        float ground = terrain.SampleHeight(start) + terrain.transform.position.y;
+                        go.transform.position += Vector3.up * (ground + 0.43f - start.y);
+                        FitToTerrain(piece, false);
+                    }
+                }
             }
             Selection.activeGameObject = piece != null ? go : (selected != null ? selected.gameObject : go);
         }
+
+        internal static void FitToTerrain(TrackPiece piece, bool backwards)
+        {
+            if (!FollowsTerrain(piece)) return;
+            // shortcut: rigid pieces only fit their endpoints; use deformable track for uneven ground between them.
+            for (int i = 0; i < 4; i++)
+            {
+                Vector3 anchor = backwards ? piece.EndPosition : piece.StartPosition;
+                Vector3 far = backwards ? piece.StartPosition : piece.EndPosition;
+                var terrain = PropGroundSnap.TerrainAt(far);
+                if (terrain == null) return;
+                float ground = terrain.SampleHeight(far) + terrain.transform.position.y;
+                Vector3 chord = far - anchor;
+                Vector3 horizontal = Vector3.ProjectOnPlane(chord, Vector3.up);
+                if (horizontal.sqrMagnitude < 0.001f) return;
+                float desiredHeight = ground + 0.43f - anchor.y;
+                float currentAngle = Mathf.Atan2(chord.y, horizontal.magnitude);
+                float targetAngle = Mathf.Asin(Mathf.Clamp(desiredHeight / chord.magnitude, -0.5f, 0.5f));
+                Vector3 axis = Vector3.Cross(horizontal.normalized, Vector3.up);
+                piece.transform.RotateAround(anchor, axis, (targetAngle - currentAngle) * Mathf.Rad2Deg);
+            }
+        }
+
+        static bool FollowsTerrain(TrackPiece piece) =>
+            !piece.name.Contains("Bridge") && !piece.name.Contains("Ramp") && !piece.name.Contains("Hill");
     }
 }

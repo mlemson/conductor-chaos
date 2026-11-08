@@ -1,9 +1,9 @@
 {
   "model": "CattleWagon_Blockout",
   "stats": {
-    "parts": 10,
-    "tris": 26714,
-    "verts": 19265,
+    "parts": 12,
+    "tris": 27938,
+    "verts": 19889,
     "materials": 10
   },
   "materials": {

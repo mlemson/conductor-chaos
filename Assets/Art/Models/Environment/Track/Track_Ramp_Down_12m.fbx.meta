@@ -1,0 +1,70 @@
+fileFormatVersion: 2
+guid: 21ded6d88259713fbe463bde663440f6
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_Beam
+    second: {fileID: 2100000, guid: f4e4d8864760fdf2d2c89679a36064e4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_BeamDark
+    second: {fileID: 2100000, guid: 9b987b222d1023c84031d17a0836e275, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_Collider
+    second: {fileID: 2100000, guid: 491b7749eecf737630e32d7db4476d43, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_Plate
+    second: {fileID: 2100000, guid: 83eb53dc4ff971da2dc9ae56037701e2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_Rail
+    second: {fileID: 2100000, guid: db698469a27422945b37930af9ee2551, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_Sleeper
+    second: {fileID: 2100000, guid: c90a2f0738b29d43fcff17dea0a01bbd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_SleeperLight
+    second: {fileID: 2100000, guid: 49fb2d30a77085c6bb559ae8ccb01a16, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_SleeperOld
+    second: {fileID: 2100000, guid: a0ed28a1c33e2b2f40781f3eb2a7742c, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

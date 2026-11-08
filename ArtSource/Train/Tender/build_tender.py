@@ -5,13 +5,15 @@ gouden hoekstrips, geschilderde panelen ('vierkantjes') met gouden klinknagels, 
 kolen, donker onderstel met twee assen (rode naven), gouden ladder voorin, twee gloeiende
 sluitlampen achterop en bufferbalk/koppeling.
 
-Beloopbaar (issue #24): voordek op cabinevloerhoogte (0,74 m) met een loopplaat naar de cabine-achterdeur,
+Beloopbaar (issue #24): voordek op cabinevloerhoogte (0,74 m),
 een opstap naar de kolenberg, en een achterdek met reling om naar de volgende wagon te springen.
 De bak is één doorlopend stuk (stapvormig zijprofiel, geëxtrudeerd).
 
 Assen: rijrichting +X (voorkant = kant van de loc), perronkant op z = 0, spoorstaaf op y = -0.62.
 Lokale oorsprong: midden van de wagen in X. In de scène staat de tender direct achter de loc.
-Gameplay-anker: 'Coal' (kolenberg) = bron voor het stoken in de cabine (later gedeeld, host-autoritatief).
+Gameplay-anker: 'Coal' (kolenberg) = bron voor het stoken in de cabine. Sinds cabine v3 van de loc liggen de losse
+schepkolen hier: 'CoalStock' met CoalChunk0..5 op de opstap vóór de bunker (borsthoogte vanaf het voordek, vlak achter
+de cabinedeur) en 'CoalScoopPoint'. TrainDrive maakt er host-autoritatieve fysieke brokken van die terugkomen.
 
 Uitvoer:
   Assets/Art/Models/Train/Tender/Tender_Blockout.fbx   Unity
@@ -28,6 +30,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "ArtSource", "Tools"))
 import meshkit as mk  # noqa: E402
+from train_couplers import add_couplers
 import unity_assets  # noqa: E402
 
 PALETTE = json.load(open(os.path.join(ROOT, "Docs", "References", "palette.json"), encoding="utf-8"))
@@ -112,6 +115,18 @@ def build_coal():
     return mk.merge(base, *lumps)
 
 
+def add_coal_stock(sc):
+    """Losse schepkolen op de opstap vóór de bunker (zes brokken op een rij, midden op het vlakke deel van de
+    0,30 m diepe opstap zodat ze niet over de afgeschuinde rand rollen) + schepanker."""
+    sc.add(mk.Part("CoalStock", None, (0, 0, 0), "Body"))
+    x = (BUNK[1] + XF) / 2
+    for k, dz in enumerate((-0.55, -0.33, -0.11, 0.11, 0.33, 0.55)):
+        chunk = mk.ellipsoid(0.069, 0.064, 0.073, 7, 4, mat="M_Tender_CoalChunk")
+        chunk.sharp = True
+        sc.add(mk.Part(f"CoalChunk{k}", chunk, (x, STEP + 0.074, ZC + dz), "CoalStock"))
+    sc.add(mk.Part("CoalScoopPoint", None, ((BUNK[1] + XF) / 2, STEP + 0.10, ZC), "CoalStock"))
+
+
 def build_frame():
     x0, x1 = -L / 2, L / 2
     parts = [rbox(x0 - 0.10, x1 + 0.10, FRAME_Y[0], FRAME_Y[1] - 0.04, ZC - W / 2, ZC + W / 2, 0.12, "M_Tender_Frame", div=3),
@@ -123,8 +138,6 @@ def build_frame():
     for dz in (-0.62, 0.62):
         parts.append(mk.cylinder(0.06, 0.14, 12, 0.02, mat="M_Tender_Frame").transform(t=(xb - 0.20, 0.17, ZC + dz)))
         parts.append(rbox(xb - 0.38, xb - 0.24, 0.06, 0.28, ZC + dz - 0.11, ZC + dz + 0.11, 0.06, "M_Tender_Trim", div=3))
-    parts.append(rbox(xb - 0.48, xb - 0.10, 0.10, 0.24, ZC - 0.09, ZC + 0.09, 0.05, "M_Tender_Frame"))
-    parts.append(rbox(x1 + 0.08, x1 + 0.34, 0.10, 0.24, ZC - 0.09, ZC + 0.09, 0.05, "M_Tender_Frame"))
     return mk.merge(*parts)
 
 
@@ -183,13 +196,6 @@ def build_taillights():
     return mk.merge(*parts)
 
 
-def build_fallplate():
-    """Loopplaat (scharnier aan de voorkant van het voordek) die over de koppeling naar de cabinevloer reikt."""
-    plate = rbox(0.0, 0.62, -0.035, 0.012, ZC - 0.46, ZC + 0.46, 0.012, "M_Tender_Frame", div=1)
-    stripe = rbox(0.48, 0.60, 0.006, 0.016, ZC - 0.44, ZC + 0.44, 0.004, "M_Tender_Interact", div=1)
-    return mk.merge(plate, stripe)
-
-
 def build_tender():
     sc = mk.Scene("Tender_Blockout")
     R_ = RAMPS
@@ -202,6 +208,8 @@ def build_tender():
     sc.material("M_Tender_Wheel", R_["ui_bg"][2], R_["ui_bg"], 0.30, opts={"paint": 0.8, "edge": 1.4})
     sc.material("M_Tender_Interact", R_["accent_yellow"][2], R_["accent_yellow"], 0.30, opts={"paint": 0.6})
     sc.material("M_Tender_Coal", R_["ui_bg"][3], R_["ui_bg"], 0.35, ramp_shift=0.08, opts={"paint": 0.9, "edge": 1.8})
+    # losse schepkolen: zelfde tint als de oude kolen in de loc (ook gebruikt voor de rookwolkjes)
+    sc.material("M_Tender_CoalChunk", R_["ui_bg"][1], R_["ui_bg"], 0.30, ramp_shift=-0.1, opts={"paint": 1.0, "edge": 1.6})
     tail_ramp = [R_["title_red"][1], R_["title_red"][2], R_["vest"][1], R_["vest"][3], R_["helmet"][2]]
     sc.material("M_Tender_TailLamp", R_["vest"][2], tail_ramp, 0.5, emissive=R_["vest"][3],
                 opts={"emissive": 1.0, "rim": 0.0, "paint": 0.2})
@@ -213,10 +221,11 @@ def build_tender():
     sc.add(mk.Part("Ladder", build_ladder(), (0, 0, 0), "Body"))
     sc.add(mk.Part("TailLights", build_taillights(), (0, 0, 0), "Body"))
     sc.add(mk.Part("DeckRails", build_rails(), (0, 0, 0), "Body"))
-    sc.add(mk.Part("FallPlate", build_fallplate(), (L / 2, DECK + 0.003, 0), "Tender"))   # anker: loopplaat naar de loc
+    add_coal_stock(sc)
+    add_couplers(sc, "Tender", RAIL_Y, ZC, -L / 2 - 0.20, L / 2 + 0.075, "M_Tender_Trim", "M_Tender_Interact")
     for p in sc.parts:
         p.gradient = 0.30
-        if p.name in ("Frame", "Body", "Coal", "Ladder", "TailLights", "DeckRails", "FallPlate"):
+        if p.name in ("Frame", "Body", "Coal", "Ladder", "TailLights", "DeckRails"):
             p.ao_group = "body"
     sc.get("Wheels").gradient = 0.12
     sc.facet_all()
