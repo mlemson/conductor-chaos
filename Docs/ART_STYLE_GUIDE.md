@@ -180,6 +180,11 @@ Omgevingen bestaan uit simpele grote vormen met weinig micro-detail.
 - simpele architectuur
 - rustig kleurgebruik
 
+Uitgewerkt in het stationnetje en de perronkit (issue #182, [ontwerpblad](Art/Station_DesignSheet.png), [kit](Art/Station_PlatformKit.png), [bij de trein](Art/Station_InScene.png)):
+- **Gebouw:** topgevel naar het spoor, crème pleisterwerk met oranjebruin vakwerk en korbelen, marine dak van dikke pannen in rijen, stenen plint, boogloket + boogdeur, klok en STATION-bord, gele nokbol. Groter dan op het conceptblad zodat je naar binnen kunt (wanden 2,4× de personagehoogte), maar met één hal en een luifel blijft het knus.
+- **Perron:** grijs-mauve tegels in een raster van 0,75 m, lichte randtegels, gele geleidelijn met noppen, stenen blokken langs de zijkant; bovenkant 1,05 m (= bodem wagonbak), rand 1,65 m uit het hart van het spoor.
+- **Props:** marine metaal (bank-poten, palen, borden), geel als accent, oranjebruin hout; tekst en pictogrammen in crème met afgeronde streken (geen fontbestand).
+
 ### Spoor / landschap
 - duidelijke spoorlijn
 - grote leesbare bruggen

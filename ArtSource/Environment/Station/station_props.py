@@ -1,0 +1,455 @@
+"""Props voor het stationnetje en de perronkit (issue #182), naar Docs/References/Environment/*.png.
+
+Elke functie geeft (mesh, collider) terug, in lokale coördinaten: pivot midden-onder op de grond, Y omhoog,
+voorkant naar +Z, 1 unit = 1 m. Props met bewegende delen geven extra knopen terug (bv. de slagboom).
+De personages zijn 1,2-1,3 m hoog; zitting, hoogtes en doorgangen zijn daarop afgestemd.
+"""
+import math
+
+import numpy as np
+
+from station_common import (DEG, arch_loop, ball, capsule, circle_loop, clock, col_box, cyl, disc, lantern, mk,
+                            rbox, rounded_rect_loop, slab, text_mesh, train_icon, tube)
+
+
+# ------------------------------------------------------------------ zitten & opslag
+def bench(length=1.8):
+    """Parkbank: drie dikke zittinglatten, twee rugleuninglatten, marine gietijzeren zijframes."""
+    L = length
+    parts = []
+    for k, z in enumerate((-0.17, 0.0, 0.17)):
+        parts.append(rbox(-L / 2, L / 2, 0.40, 0.48, z - 0.075, z + 0.075, 0.035, "M_Stn_Timber"))
+    for y in (0.62, 0.80):
+        b = rbox(-L / 2, L / 2, y - 0.07, y + 0.07, -0.04, 0.03, 0.03, "M_Stn_Timber")
+        parts.append(b.transform(R=mk.rot_x(-12 * DEG), t=(0, 0, -0.24 + 0.12 * (y - 0.55))))
+    for x in (-L / 2 + 0.22, L / 2 - 0.22):
+        leg = mk.merge(
+            rbox(x - 0.05, x + 0.05, 0.0, 0.40, 0.14, 0.24, 0.025, "M_Stn_Navy"),
+            rbox(x - 0.05, x + 0.05, 0.0, 0.40, -0.28, -0.18, 0.025, "M_Stn_Navy"),
+            rbox(x - 0.05, x + 0.05, 0.35, 0.42, -0.28, 0.24, 0.025, "M_Stn_Navy"),
+            rbox(x - 0.06, x + 0.06, 0.0, 0.05, 0.10, 0.28, 0.02, "M_Stn_Navy"),
+            rbox(x - 0.06, x + 0.06, 0.0, 0.05, -0.32, -0.14, 0.02, "M_Stn_Navy"),
+            capsule((x, 0.40, -0.25), (x, 0.90, -0.36), 0.045, mat="M_Stn_Navy", seg=8, rings=1))
+        parts.append(leg)
+    col = mk.merge(col_box(-L / 2, L / 2, 0.0, 0.48, -0.30, 0.26), col_box(-L / 2, L / 2, 0.48, 0.92, -0.40, -0.22))
+    return mk.merge(*parts), col
+
+
+def barrel(h=0.86, r=0.34, staves=12):
+    """Houten ton met drie marine banden en een deksel."""
+    prof = [(0.0, 0.0), (0.80, 0.0), (0.92, 0.10), (1.0, 0.30), (1.02, 0.50), (1.0, 0.70), (0.92, 0.90),
+            (0.80, 1.0), (0.0, 1.0)]
+    body = mk.lathe([(a * r, b * h) for a, b in prof], staves, mat="M_Stn_Timber", phase=0.5)
+    parts = [body, mk.lathe([(0.0, h - 0.005), (r * 0.74, h - 0.005), (r * 0.74, h + 0.02), (0.0, h + 0.02)], staves,
+                            mat="M_Stn_TimberDark", phase=0.5)]
+    for t, rr in ((0.12, 0.93), (0.50, 1.03), (0.88, 0.93)):
+        parts.append(mk.torus(r * rr + 0.012, 0.025, staves, 4, mat="M_Stn_Navy", ry=0.045).transform(t=(0, t * h, 0)))
+    for k in range(staves):                                     # lichte voegjes tussen de duigen
+        a = 2 * math.pi * (k + 0.5) / staves + math.pi / staves
+        parts.append(rbox(-0.006, 0.006, 0.14 * h, 0.86 * h, -0.004, 0.004, 0.0, "M_Stn_TimberDark")
+                     .transform(t=(0, 0, r * 1.02)).transform(R=mk.rot_y(a)))
+    col = cyl(r * 1.02, h + 0.02, 10, 0.0, "M_Stn_Collider").transform(t=(0, (h + 0.02) / 2, 0))
+    return mk.merge(*parts), col
+
+
+def crate(s=0.7, seed=0):
+    """Krat: frame van planken met een X-schoor op elke zijde (lichte houtkleur)."""
+    parts = [rbox(-s / 2 + 0.03, s / 2 - 0.03, 0.03, s - 0.03, -s / 2 + 0.03, s / 2 - 0.03, 0.02, "M_Stn_WoodLight")]
+    t, e = 0.07, s / 2
+    for (ax, ay) in ((1, 1), (1, -1), (-1, 1), (-1, -1)):              # staande ribben
+        parts.append(rbox(ax * e - t, ax * e, 0, s, ay * e - t, ay * e, 0.015, "M_Stn_Timber")
+                     .transform(t=(t / 2 * ax * 0 + (t if ax < 0 else 0), 0, (t if ay < 0 else 0))))
+    for y in (0.0, s - t):                                              # liggende ribben
+        parts.append(rbox(-e, e, y, y + t, -e, -e + t, 0.015, "M_Stn_Timber"))
+        parts.append(rbox(-e, e, y, y + t, e - t, e, 0.015, "M_Stn_Timber"))
+        parts.append(rbox(-e, -e + t, y, y + t, -e, e, 0.015, "M_Stn_Timber"))
+        parts.append(rbox(e - t, e, y, y + t, -e, e, 0.015, "M_Stn_Timber"))
+    diag = math.hypot(s - 2 * t, s - 2 * t)
+    for face in range(4):
+        b = rbox(-diag / 2, diag / 2, -0.035, 0.035, -0.02, 0.02, 0.012, "M_Stn_Timber").transform(R=mk.rot_z(math.pi / 4))
+        parts.append(b.transform(t=(0, s / 2, e - 0.005)).transform(R=mk.rot_y(face * math.pi / 2)))
+    col = col_box(-e, e, 0, s, -e, e)
+    return mk.merge(*parts), col
+
+
+def crate_stack():
+    a, ca = crate(0.72)
+    b, cb = crate(0.72)
+    c, cc = crate(0.62)
+    parts = [a.transform(t=(-0.38, 0, 0.02)), b.transform(R=mk.rot_y(0.08), t=(0.38, 0, -0.03)),
+             c.transform(R=mk.rot_y(-0.12), t=(-0.05, 0.72, 0.0))]
+    col = mk.merge(ca.transform(t=(-0.38, 0, 0.02)), cb.transform(R=mk.rot_y(0.08), t=(0.38, 0, -0.03)),
+                   cc.transform(R=mk.rot_y(-0.12), t=(-0.05, 0.72, 0.0)))
+    return mk.merge(*parts), col
+
+
+def daisy(rng, h):
+    parts = [capsule((0, 0, 0), (rng.uniform(-0.02, 0.02), h, rng.uniform(-0.02, 0.02)), 0.010, mat="M_Stn_Leaf",
+                     seg=5, rings=1)]
+    top = np.array(parts[0].V[np.argmax(parts[0].V[:, 1])])
+    R = mk.rot_x(rng.uniform(-0.5, -0.2)) @ mk.rot_y(rng.uniform(0, math.pi))
+    for k in range(6):
+        a = 2 * math.pi * k / 6
+        parts.append(mk.ellipsoid(0.034, 0.010, 0.018, 8, 4, mat="M_Stn_Cream")
+                     .transform(t=(0.034 * math.cos(a), 0, 0.034 * math.sin(a))).transform(R=mk.rot_y(-a) @ mk.rot_y(a))
+                     .transform(R=R, t=top))
+    parts.append(ball(0.020, "M_Stn_Yellow", 10, 6, sy=0.7).transform(R=R, t=top + np.array([0, 0.010, 0])))
+    return mk.merge(*parts)
+
+
+def bush_mass(rng, w, d, h, n=6, mat="M_Stn_Leaf"):
+    parts = []
+    for k in range(n):
+        x = (k + 0.5) / n * w - w / 2 + rng.uniform(-0.04, 0.04)
+        r = rng.uniform(0.18, 0.24) * min(1.0, h / 0.35)
+        parts.append(mk.ellipsoid(r, r * 0.85, r, 10, 6, mat=mat)
+                     .transform(t=(x, r * 0.55 + rng.uniform(0, 0.05), rng.uniform(-d * 0.2, d * 0.2))))
+    return mk.merge(*parts)
+
+
+def planter(length=1.2, seed=3):
+    """Houten plantenbak met bolle struikjes en madeliefjes (concept: links bij het bord, rechts bij het station)."""
+    rng = np.random.default_rng(seed)
+    L, D, H = length, 0.42, 0.36
+    parts = [rbox(-L / 2, L / 2, 0.0, H, -D / 2, D / 2, 0.04, "M_Stn_Timber"),
+             rbox(-L / 2 - 0.03, L / 2 + 0.03, H - 0.06, H + 0.01, -D / 2 - 0.03, D / 2 + 0.03, 0.025, "M_Stn_TimberDark"),
+             rbox(-L / 2 + 0.05, L / 2 - 0.05, H - 0.05, H - 0.01, -D / 2 + 0.05, D / 2 - 0.05, 0.0, "M_Stn_Soil")]
+    for x in np.linspace(-L / 2 + 0.25, L / 2 - 0.25, max(2, int(L / 0.5))):          # verticale planken
+        parts.append(rbox(x - 0.006, x + 0.006, 0.05, H - 0.07, D / 2 - 0.002, D / 2 + 0.006, 0.0, "M_Stn_TimberDark"))
+    parts.append(bush_mass(rng, L - 0.15, D - 0.1, 0.35, max(3, int(L / 0.22))).transform(t=(0, H - 0.08, 0)))
+    for k in range(max(2, int(L / 0.4))):
+        x = (k + 0.5) / max(2, int(L / 0.4)) * (L - 0.2) - (L - 0.2) / 2
+        parts.append(daisy(rng, rng.uniform(0.28, 0.40)).transform(t=(x, H - 0.05, rng.uniform(0.0, 0.10))))
+    col = col_box(-L / 2 - 0.03, L / 2 + 0.03, 0, H + 0.2, -D / 2 - 0.03, D / 2 + 0.03)
+    return mk.merge(*parts), col
+
+
+def trash_bin():
+    """Prullenbak: houten duigen met marine banden, bolle marine deksel met inwerpopening, crème pictogram."""
+    r, h = 0.27, 0.78
+    body = mk.lathe([(0.0, 0.0), (r * 0.86, 0.0), (r * 0.95, 0.06), (r, 0.40), (r * 1.0, h), (0.0, h)], 12,
+                    mat="M_Stn_Timber", phase=0.5)
+    parts = [body]
+    for y in (0.10, h - 0.10):
+        parts.append(mk.torus(r + 0.01, 0.028, 12, 4, mat="M_Stn_Navy", ry=0.05).transform(t=(0, y, 0)))
+    lid = mk.lathe([(0.0, h), (r + 0.04, h), (r + 0.05, h + 0.04), (r * 0.8, h + 0.14), (r * 0.3, h + 0.19),
+                    (0.0, h + 0.20)], 12, mat="M_Stn_Navy", phase=0.5)
+    parts.append(lid)
+    parts.append(rbox(-0.12, 0.12, h + 0.02, h + 0.09, r * 0.78, r + 0.06, 0.02, "M_Stn_Dark"))   # inwerpopening
+    icon = [rbox(-0.065, 0.065, 0.0, 0.025, 0, 0.02, 0.008, "M_Stn_Cream").transform(t=(0, 0.17, 0)),
+            rbox(-0.022, 0.022, 0.025, 0.045, 0, 0.02, 0.006, "M_Stn_Cream").transform(t=(0, 0.17, 0))]
+    can = slab([(-0.055, 0.0), (0.055, 0.0), (0.065, 0.15), (-0.065, 0.15)],
+               [rounded_rect_loop(-0.035, -0.012, 0.025, 0.125, 0.008, 1), rounded_rect_loop(0.012, 0.035, 0.025, 0.125, 0.008, 1)],
+               0.0, 0.02, 0.004, "M_Stn_Cream")
+    icon.append(can)
+    ic = mk.merge(*icon).transform(t=(0, 0.26, 0))
+    parts.append(ic.transform(R=mk.rot_x(-0.02), t=(0, 0, r - 0.006)))
+    col = cyl(r + 0.04, h + 0.20, 10, 0.0, "M_Stn_Collider").transform(t=(0, (h + 0.20) / 2, 0))
+    return mk.merge(*parts), col
+
+
+# ------------------------------------------------------------------ verlichting & borden
+def lamp_post(height=2.75):
+    """Lantaarnpaal: grijze stenen voet, marine paal met kraag, gloeiende lantaarn bovenop."""
+    H = height
+    parts = [rbox(-0.18, 0.18, 0.0, 0.16, -0.18, 0.18, 0.04, "M_Stn_Stone"),
+             mk.lathe([(0.0, 0.14), (0.12, 0.14), (0.12, 0.22), (0.08, 0.30), (0.06, 0.34), (0.0, 0.34)], 12, mat="M_Stn_Navy"),
+             capsule((0, 0.30, 0), (0, H - 0.10, 0), 0.055, 0.045, seg=10, rings=1, mat="M_Stn_Navy"),
+             mk.lathe([(0.0, H - 0.24), (0.07, H - 0.24), (0.10, H - 0.16), (0.12, H - 0.10), (0.0, H - 0.08)], 12,
+                      mat="M_Stn_Navy"),
+             mk.torus(0.065, 0.022, 12, 5, mat="M_Stn_Navy").transform(t=(0, 1.0, 0)),
+             lantern(1.15).transform(t=(0, H - 0.12, 0))]
+    col = mk.merge(col_box(-0.18, 0.18, 0, 0.34, -0.18, 0.18), col_box(-0.07, 0.07, 0, H + 0.5, -0.07, 0.07))
+    return mk.merge(*parts), col, (0.0, H + 0.12, 0.0)
+
+
+def wall_lantern():
+    """Wandlantaarn met gebogen arm; pivot = muurplaat (muur in het XY-vlak, lantaarn naar +Z)."""
+    parts = [rbox(-0.07, 0.07, -0.16, 0.16, 0.0, 0.035, 0.015, "M_Stn_Navy"),
+             tube([(0, 0.06, 0.03), (0, 0.10, 0.16), (0, 0.06, 0.30)], 0.022, "M_Stn_Navy", smooth=True, n=10, seg=8),
+             capsule((0, -0.10, 0.03), (0, 0.0, 0.26), 0.018, mat="M_Stn_Navy", seg=6, rings=1),
+             lantern(0.95).transform(t=(0, -0.02, 0.30))]
+    return mk.merge(*parts), None
+
+
+def hanging_sign(w=0.62, h=0.48, rod=0.32):
+    """Hangbord met treinpictogram; pivot = ophangpunt (bovenkant van de stangetjes), bord hangt naar -Y."""
+    parts = [slab(rounded_rect_loop(-w / 2, w / 2, -h / 2, h / 2, 0.06, 3), [], -0.03, 0.03, 0.012, "M_Stn_Navy")]
+    parts.append(slab(rounded_rect_loop(-w / 2 + 0.04, w / 2 - 0.04, -h / 2 + 0.04, h / 2 - 0.04, 0.04, 3),
+                      [rounded_rect_loop(-w / 2 + 0.065, w / 2 - 0.065, -h / 2 + 0.065, h / 2 - 0.065, 0.03, 3)],
+                      0.025, 0.04, 0.005, "M_Stn_NavyLight"))
+    for side in (1, -1):
+        parts.append(train_icon(w * 0.62, 0.02, "M_Stn_Cream").transform(R=mk.rot_y(0 if side > 0 else math.pi),
+                                                                          t=(0, -0.01, side * 0.028)))
+    sign = mk.merge(*parts).transform(t=(0, -rod - h / 2, 0))
+    rods = [capsule((x, 0.0, 0), (x, -rod - 0.04, 0), 0.014, mat="M_Stn_Dark", seg=6, rings=1) for x in (-w * 0.3, w * 0.3)]
+    rings = [mk.torus(0.03, 0.009, 10, 4, mat="M_Stn_Dark").transform(R=mk.rot_x(math.pi / 2), t=(x, -rod - 0.03, 0))
+             for x in (-w * 0.3, w * 0.3)]
+    return mk.merge(sign, *rods, *rings), None
+
+
+def station_board(text="STATION", width=2.4, height=0.62, depth=0.10):
+    """Marine bord met gele rand, crème treinpictogram en tekst (voorkant +Z), gecentreerd in de oorsprong."""
+    w, h = width, height
+    parts = [slab(rounded_rect_loop(-w / 2, w / 2, -h / 2, h / 2, h * 0.48, 6), [], -depth / 2, depth / 2, 0.025, "M_Stn_Yellow"),
+             slab(rounded_rect_loop(-w / 2 + 0.07, w / 2 - 0.07, -h / 2 + 0.07, h / 2 - 0.07, h * 0.38, 6), [],
+                  -depth / 2 - 0.01, depth / 2 + 0.012, 0.02, "M_Stn_Navy")]
+    th = h * 0.40
+    txt, tw = text_mesh(text, th, 0.035, "M_Stn_Cream")
+    icon_w = th * 1.30
+    gap = th * 0.45
+    total = icon_w + gap + tw
+    room = w - 2 * (h * 0.30 + 0.09)                       # vrij tussen de klinknagels
+    if total > room:                                        # te lang: tekst en pictogram schalen mee
+        k = room / total
+        th *= k
+        txt, tw = text_mesh(text, th, 0.035, "M_Stn_Cream")
+        icon_w, gap = icon_w * k, gap * k
+        total = icon_w + gap + tw
+    x0 = -total / 2
+    parts.append(train_icon(icon_w, 0.03, "M_Stn_Cream").transform(t=(x0 + icon_w / 2, 0.0, depth / 2 + 0.006)))
+    parts.append(txt.transform(t=(x0 + icon_w + gap + tw / 2, 0.0, depth / 2 + 0.006)))
+    for x in (-w / 2 + h * 0.30, w / 2 - h * 0.30):                         # gele 'klinknagels' links en rechts
+        parts.append(ball(0.032, "M_Stn_Yellow", 10, 6, sy=0.7).transform(t=(x, 0.0, depth / 2 + 0.012)))
+    return mk.merge(*parts)
+
+
+def station_sign():
+    """Vrijstaand stationsbord: twee marine palen met gele bollen op stenen voeten, bord ertussen."""
+    W = 2.6
+    parts = [station_board(width=W - 0.30, height=0.66).transform(t=(0, 1.48, 0))]
+    for x in (-W / 2, W / 2):
+        parts += [rbox(x - 0.17, x + 0.17, 0.0, 0.30, -0.17, 0.17, 0.05, "M_Stn_Stone"),
+                  rbox(x - 0.07, x + 0.07, 0.25, 1.95, -0.07, 0.07, 0.03, "M_Stn_Navy"),
+                  mk.lathe([(0.0, 1.92), (0.10, 1.93), (0.10, 1.98), (0.0, 1.99)], 12, mat="M_Stn_Navy").transform(t=(x, 0, 0)),
+                  ball(0.13, "M_Stn_Yellow").transform(t=(x, 2.10, 0))]
+        parts.append(rbox(min(x, x - 0.15 * np.sign(x)), max(x, x - 0.15 * np.sign(x)), 1.40, 1.56, -0.04, 0.04, 0.02,
+                          "M_Stn_Navy"))
+    col = mk.merge(col_box(-W / 2 - 0.17, W / 2 + 0.17, 0.0, 0.30, -0.17, 0.17),
+                   col_box(-W / 2 - 0.07, W / 2 + 0.07, 0.25, 2.2, -0.10, 0.10))
+    return mk.merge(*parts), col
+
+
+def timetable():
+    """Dienstregelingbord: marine kast op twee poten, crème vertrekstaat, klokje bovenop."""
+    W, H, y0 = 1.25, 1.00, 0.90
+    parts = []
+    for x in (-W / 2 + 0.18, W / 2 - 0.18):
+        parts += [rbox(x - 0.06, x + 0.06, 0.0, y0 + 0.1, -0.06, 0.06, 0.025, "M_Stn_Navy"),
+                  rbox(x - 0.10, x + 0.10, 0.0, 0.06, -0.12, 0.12, 0.02, "M_Stn_Navy")]
+    frame = slab(rounded_rect_loop(-W / 2, W / 2, y0, y0 + H, 0.10, 3), [], -0.09, 0.07, 0.03, "M_Stn_Navy")
+    board = slab(rounded_rect_loop(-W / 2 + 0.09, W / 2 - 0.09, y0 + 0.09, y0 + H - 0.09, 0.05, 2), [], 0.06, 0.085, 0.008,
+                 "M_Stn_Cream")
+    parts += [frame, board]
+    for k in range(4):
+        y = y0 + H - 0.24 - k * 0.18
+        parts.append(rbox(-W / 2 + 0.16, -W / 2 + 0.29, y - 0.05, y + 0.05, 0.08, 0.10, 0.015, "M_Stn_Yellow"))
+        parts.append(rbox(-W / 2 + 0.36, W / 2 - 0.18 - 0.12 * (k % 2), y - 0.03, y + 0.03, 0.08, 0.098, 0.012, "M_Stn_Navy"))
+    # klokhuis op het bord
+    parts.append(slab(circle_loop(0, 0, 0.21, 24), [], -0.08, 0.06, 0.03, "M_Stn_Navy").transform(t=(0, y0 + H + 0.10, 0)))
+    parts.append(clock(0.16, 0.05).transform(t=(0, y0 + H + 0.10, 0.05)))
+    parts.append(slab([(-0.26, 0.0), (0.26, 0.0), (0.12, 0.12), (-0.12, 0.12)], [], -0.075, 0.055, 0.02, "M_Stn_Navy")
+                 .transform(t=(0, y0 + H - 0.03, 0)))
+    col = mk.merge(col_box(-W / 2, W / 2, y0, y0 + H + 0.32, -0.10, 0.09), col_box(-W / 2 + 0.1, W / 2 - 0.1, 0, y0, -0.12, 0.12))
+    return mk.merge(*parts), col
+
+
+def ticket_icon(w, depth, mat):
+    """Kaartje: afgeronde rechthoek met halfronde inkepingen opzij en een perforatielijn."""
+    h = w * 0.55
+    loop = []
+    for (cx, cy, a0, a1) in ((w / 2 - 0.1 * w, -h / 2 + 0.1 * w, -90, 0), (w / 2 - 0.1 * w, h / 2 - 0.1 * w, 0, 90),
+                             (-w / 2 + 0.1 * w, h / 2 - 0.1 * w, 90, 180), (-w / 2 + 0.1 * w, -h / 2 + 0.1 * w, 180, 270)):
+        for k in range(4):
+            a = math.radians(a0 + (a1 - a0) * k / 3)
+            loop.append((cx + 0.1 * w * math.cos(a), cy + 0.1 * w * math.sin(a)))
+        if a0 == 0:                                           # rechter inkeping
+            pass
+    m = slab(loop, [], 0.0, depth, 0.004, mat)
+    dots = [disc(w * 0.022, depth, depth + 0.006, "M_Stn_Navy" if mat != "M_Stn_Navy" else "M_Stn_Cream", 8, 0.0)
+            .transform(t=(w * 0.18, -h / 2 + h * (k + 0.5) / 5, 0)) for k in range(5)]
+    star = rbox(-w * 0.22, w * 0.04, -h * 0.12, h * 0.12, depth, depth + 0.006, 0.006,
+                "M_Stn_Navy" if mat != "M_Stn_Navy" else "M_Stn_Cream")
+    return mk.merge(m, *dots, star)
+
+
+def ticket_machine():
+    """Kaartautomaat: marine kast, gele kop met kaartje, lichtblauw scherm, gele knoppen, uitgiftebak."""
+    W, D, H = 0.66, 0.50, 1.50
+    parts = [rbox(-W / 2 - 0.03, W / 2 + 0.03, 0.0, 0.10, -D / 2 - 0.03, D / 2 + 0.03, 0.03, "M_Stn_Dark"),
+             rbox(-W / 2, W / 2, 0.08, H - 0.20, -D / 2, D / 2, 0.06, "M_Stn_Navy"),
+             rbox(-W / 2 - 0.02, W / 2 + 0.02, H - 0.24, H, -D / 2 - 0.02, D / 2 + 0.05, 0.06, "M_Stn_Yellow")]
+    parts.append(ticket_icon(0.26, 0.02, "M_Stn_Cream").transform(t=(0, H - 0.12, D / 2 + 0.045)))
+    scr = slab(rounded_rect_loop(-0.21, 0.21, 0.86, 1.14, 0.04, 2), [], 0.0, 0.02, 0.006, "M_Stn_NavyLight")
+    parts.append(scr.transform(t=(0, 0, D / 2 - 0.004)))
+    glass = slab(rounded_rect_loop(-0.18, 0.18, 0.89, 1.11, 0.03, 2), [], 0.0, 0.015, 0.004, "M_Stn_Window")
+    parts.append(glass.transform(t=(0, 0, D / 2 + 0.012)))
+    for k, x in enumerate((-0.15, -0.05, 0.05, 0.15)):
+        parts.append(rbox(x - 0.035, x + 0.035, 0.70, 0.76, D / 2 - 0.01, D / 2 + 0.04, 0.015, "M_Stn_Yellow"))
+    parts.append(rbox(-0.17, 0.17, 0.30, 0.48, D / 2 - 0.02, D / 2 + 0.05, 0.03, "M_Stn_Dark"))
+    parts.append(rbox(-0.13, 0.13, 0.38, 0.40, D / 2 + 0.04, D / 2 + 0.055, 0.005, "M_Stn_Yellow"))
+    parts.append(rbox(0.16, 0.24, 0.62, 0.66, D / 2 - 0.01, D / 2 + 0.03, 0.01, "M_Stn_Dark"))           # muntgleuf
+    col = col_box(-W / 2 - 0.03, W / 2 + 0.03, 0.0, H, -D / 2 - 0.03, D / 2 + 0.05)
+    return mk.merge(*parts), col
+
+
+def suitcase(w, h, d, mat, strap="M_Stn_Yellow", handle=True):
+    parts = [rbox(-w / 2, w / 2, 0.0, h, -d / 2, d / 2, min(0.05, h / 4), mat)]
+    for x in (-w * 0.28, w * 0.28):
+        parts.append(rbox(x - 0.025, x + 0.025, -0.006, h + 0.006, -d / 2 - 0.008, d / 2 + 0.008, 0.012, strap))
+    for x in (-w / 2 + 0.03, w / 2 - 0.03):
+        for z in (-d / 2 + 0.03, d / 2 - 0.03):
+            parts.append(ball(0.028, "M_Stn_Yellow", 8, 5).transform(t=(x, h - 0.03, z)))
+    if handle:
+        parts.append(tube([(-0.08, h, 0), (-0.06, h + 0.07, 0), (0.06, h + 0.07, 0), (0.08, h, 0)], 0.016,
+                          "M_Stn_Dark", smooth=True, n=10, seg=6))
+    return mk.merge(*parts)
+
+
+def luggage_cart():
+    """Bagagekar: geel buisframe met duwbeugel, houten laadvloer, vier wielen, bruine koffer + marine koffertje."""
+    L, W = 1.10, 0.66
+    y_deck = 0.28
+    parts = [rbox(-L / 2, L / 2, y_deck - 0.05, y_deck, -W / 2, W / 2, 0.02, "M_Stn_WoodLight"),
+             rbox(-L / 2 - 0.02, L / 2 + 0.02, y_deck - 0.10, y_deck - 0.04, -W / 2 - 0.02, W / 2 + 0.02, 0.02, "M_Stn_Yellow")]
+    for x in (-L / 2 + 0.16, L / 2 - 0.16):
+        for z in (-W / 2 + 0.04, W / 2 - 0.04):
+            wheel = mk.merge(cyl(0.11, 0.06, 14, 0.015, "M_Stn_Dark", axis="z"),
+                             cyl(0.045, 0.075, 10, 0.01, "M_Stn_Yellow", axis="z"))
+            parts.append(wheel.transform(t=(x, 0.11, z + np.sign(z) * 0.04)))
+            parts.append(rbox(x - 0.02, x + 0.02, 0.11, y_deck - 0.08, z - 0.02, z + 0.02, 0.01, "M_Stn_Yellow"))
+    for z in (-W / 2 + 0.03, W / 2 - 0.03):                          # duwbeugel
+        parts.append(tube([(L / 2 - 0.03, y_deck - 0.06, z), (L / 2 + 0.02, 0.70, z), (L / 2 + 0.02, 1.02, z)], 0.028,
+                          "M_Stn_Yellow", smooth=True, n=14, seg=8))
+    parts.append(tube([(L / 2 + 0.02, 1.02, -W / 2 + 0.03), (L / 2 + 0.02, 1.02, W / 2 - 0.03)], 0.032, "M_Stn_Yellow", seg=8))
+    parts.append(tube([(L / 2 + 0.02, 0.62, -W / 2 + 0.03), (L / 2 + 0.02, 0.62, W / 2 - 0.03)], 0.022, "M_Stn_Yellow", seg=8))
+    parts.append(suitcase(0.78, 0.34, 0.52, "M_Stn_Timber").transform(t=(-0.10, y_deck, 0.0)))
+    parts.append(suitcase(0.52, 0.24, 0.36, "M_Stn_Navy", strap="M_Stn_TimberDark").transform(R=mk.rot_y(0.12), t=(-0.12, y_deck + 0.34, 0.02)))
+    col = mk.merge(col_box(-L / 2 - 0.02, L / 2 + 0.06, 0.0, y_deck + 0.64, -W / 2 - 0.08, W / 2 + 0.08),
+                   col_box(L / 2 - 0.03, L / 2 + 0.06, 0.0, 1.06, -W / 2, W / 2))
+    return mk.merge(*parts), col
+
+
+def level_crossing(arm=3.2):
+    """Overweg: paal met Andreaskruis, twee rode knipperlichten, gele aandrijfkast en rood-witte slagboom.
+    Geeft (mesh, collider, boom_mesh, boom_pivot): de boom draait om +Z bij boom_pivot (open = 80 graden)."""
+    parts = [rbox(-0.22, 0.22, 0.0, 0.10, -0.22, 0.22, 0.03, "M_Stn_Stone"),
+             rbox(-0.07, 0.07, 0.08, 2.75, -0.07, 0.07, 0.03, "M_Stn_Dark")]
+    for ang in (35, -35):                                            # Andreaskruis
+        L, w = 1.05, 0.15
+        board = [rbox(-L / 2, L / 2, -w / 2, w / 2, 0.08, 0.13, 0.03, "M_Stn_White")]
+        for k in (-2, 0, 2):
+            x0 = k * L / 6 - L / 12
+            board.append(rbox(x0, x0 + L / 6, -w / 2 - 0.006, w / 2 + 0.006, 0.075, 0.135, 0.02, "M_Stn_Red"))
+        parts.append(mk.merge(*board).transform(R=mk.rot_z(math.radians(ang)), t=(0, 2.55, 0)))
+    parts.append(rbox(-0.55, 0.55, 1.73, 1.83, -0.05, 0.05, 0.02, "M_Stn_Dark"))           # lichtbalk
+    for x in (-0.33, 0.33):
+        parts.append(disc(0.21, -0.06, 0.06, "M_Stn_Dark", 24, 0.03).transform(t=(x, 1.78, 0.06)))
+        parts.append(disc(0.135, 0.0, 0.05, "M_Stn_SignalRed", 20, 0.02).transform(t=(x, 1.78, 0.11)))
+        hood = slab(arch_loop(-0.19, 0.19, -0.02, 0.0, 10), [arch_loop(-0.15, 0.15, -0.03, 0.0, 10)], 0.0, 0.16, 0.01,
+                    "M_Stn_Dark")
+        parts.append(hood.transform(t=(x, 1.81, 0.10)))
+    # aandrijfkast
+    parts.append(rbox(-0.24, 0.24, 0.08, 0.90, -0.20, 0.22, 0.06, "M_Stn_Yellow").transform(t=(0.36, 0, 0)))
+    parts.append(rbox(-0.18, 0.18, 0.86, 0.94, -0.16, 0.18, 0.03, "M_Stn_YellowDark").transform(t=(0.36, 0, 0)))
+    parts.append(cyl(0.09, 0.08, 14, 0.02, "M_Stn_Dark", axis="z").transform(t=(0.36, 0.70, 0.25)))
+    # slagboom (aparte knoop): rood-wit, contragewicht aan de korte kant
+    segs = 6
+    boom = [cyl(0.05, 0.12, 12, 0.01, "M_Stn_Dark", axis="z")]
+    for k in range(segs):
+        x0 = 0.15 + k * (arm - 0.15) / segs
+        x1 = 0.15 + (k + 1) * (arm - 0.15) / segs
+        boom.append(rbox(x0 + 0.004, x1 - 0.004, -0.065, 0.065, -0.04, 0.04, 0.03, "M_Stn_Red" if k % 2 == 0 else "M_Stn_White"))
+    boom.append(rbox(-0.45, 0.0, -0.09, 0.09, -0.05, 0.05, 0.04, "M_Stn_Dark"))
+    boom.append(ball(0.06, "M_Stn_Red", 10, 6).transform(t=(arm + 0.02, 0, 0)))
+    boom_mesh = mk.merge(*boom)
+    col = mk.merge(col_box(-0.22, 0.22, 0.0, 2.95, -0.22, 0.22), col_box(0.12, 0.60, 0.08, 0.94, -0.20, 0.22))
+    boom_col = col_box(-0.45, arm + 0.08, -0.09, 0.09, -0.06, 0.06)
+    return mk.merge(*parts), col, boom_mesh, boom_col, (0.36, 0.70, 0.30)
+
+
+def fence(length=2.0):
+    """Houten hek: twee palen met puntige kop, twee liggers; sluit naadloos aan op een volgend stuk (+X)."""
+    L = length
+    parts = []
+    for x in (0.0, L):
+        parts.append(rbox(x - 0.075, x + 0.075, 0.0, 1.00, -0.075, 0.075, 0.03, "M_Stn_Timber"))
+        parts.append(mk.lathe([(0.0, 0.99), (0.105, 0.99), (0.0, 1.10)], 4, mat="M_Stn_TimberDark", phase=0.5)
+                     .transform(t=(x, 0, 0)))
+    for y in (0.40, 0.75):
+        parts.append(rbox(0.0, L, y - 0.07, y + 0.07, 0.05, 0.12, 0.03, "M_Stn_Timber"))
+    col = col_box(-0.08, L + 0.08, 0.0, 1.1, -0.08, 0.13)
+    return mk.merge(*parts), col
+
+
+def shelter(W=3.4, D=2.2):
+    """Wachthuisje: vier houten palen op stenen voeten, korbelen, marine zadeldak met nokbalk, hangbord en lantaarn."""
+    H = 2.30
+    parts = []
+    xs, zs = (-W / 2 + 0.15, W / 2 - 0.15), (-D / 2 + 0.15, D / 2 - 0.15)
+    for x in xs:
+        for z in zs:
+            parts.append(rbox(x - 0.20, x + 0.20, 0.0, 0.22, z - 0.20, z + 0.20, 0.05, "M_Stn_Stone"))
+            parts.append(rbox(x - 0.12, x + 0.12, 0.18, H, z - 0.12, z + 0.12, 0.04, "M_Stn_Timber"))
+    for z in zs:                                                      # langsbalken + korbelen
+        parts.append(rbox(-W / 2 - 0.05, W / 2 + 0.05, H - 0.02, H + 0.22, z - 0.12, z + 0.12, 0.04, "M_Stn_Timber"))
+        for x, sx in ((xs[0], 1), (xs[1], -1)):
+            parts.append(capsule((x + sx * 0.06, H - 0.55, z), (x + sx * 0.55, H, z), 0.065, mat="M_Stn_Timber", seg=6, rings=1))
+    for x in xs:
+        parts.append(rbox(x - 0.12, x + 0.12, H - 0.02, H + 0.22, -D / 2 - 0.05, D / 2 + 0.05, 0.04, "M_Stn_TimberDark"))
+    roof, rcol = gable_roof(W + 0.7, D + 0.9, H + 0.22, 1.0, ridge_axis="x")
+    parts.append(roof)
+    sign, _ = hanging_sign(0.62, 0.48, 0.30)
+    parts.append(sign.transform(t=(0.0, H - 0.02, zs[1])))
+    col = mk.merge(*[col_box(x - 0.2, x + 0.2, 0, H, z - 0.2, z + 0.2) for x in xs for z in zs], rcol)
+    return mk.merge(*parts), col
+
+
+def gable_roof(L, D, y0, rise, ridge_axis="x", tiles=True, thick=0.16, rows=None):
+    """Zadeldak met dikke dakpannen in rijen (concept), nokbalk en windveren; nok langs `ridge_axis`.
+    L = lengte langs de nok, D = totale breedte, y0 = onderkant dakrand, rise = hoogte tot de nok."""
+    half = D / 2
+    pitch = math.atan2(rise, half)
+    slope_len = math.hypot(half, rise)
+    parts = []
+    n_rows = rows or max(3, int(round(slope_len / 0.45)))
+    row = slope_len / n_rows
+    for side in (1, -1):
+        # dakbeschot (doorlopende plaat) onder de pannen
+        deck = rbox(-L / 2, L / 2, -thick, 0.0, -slope_len, 0.0, 0.03, "M_Stn_TimberDark")
+        deck = deck.transform(R=mk.rot_x(-pitch))
+        parts.append(_orient_slope(deck, side, pitch, half, y0, rise))
+        if tiles:
+            n_t = max(2, int(round(L / 0.62)))
+            tw = L / n_t
+            for r in range(n_rows):
+                s0 = -slope_len + r * row                           # van de goot naar de nok
+                off = (tw / 2) * (r % 2)
+                xs = np.arange(-L / 2 - off, L / 2 + 1e-6, tw)
+                for x in xs:
+                    xa, xb = max(x, -L / 2), min(x + tw, L / 2)
+                    if xb - xa < 0.12:
+                        continue
+                    top = s0 + row + 0.10
+                    t = rbox(xa + 0.012, xb - 0.012, 0.0, 0.10, s0 - 0.02 - top, 0.0, 0.045, "M_Stn_Roof", div=1)
+                    t = t.transform(R=mk.rot_x(0.09), t=(0, 0.004, top))      # onderrand iets opgetild: geschubd
+                    parts.append(_orient_slope(t.transform(R=mk.rot_x(-pitch)), side, pitch, half, y0, rise))
+    # nokbalk
+    parts.append(cyl(0.13, L + 0.06, 16, 0.03, "M_Stn_RoofDark", axis="x").transform(t=(0, y0 + rise + 0.07, 0)))
+    m = mk.merge(*parts)
+    col_parts = []
+    for side in (1, -1):
+        c = col_box(-L / 2, L / 2, -thick, 0.14, -slope_len, 0.0).transform(R=mk.rot_x(-pitch))
+        col_parts.append(_orient_slope(c, side, pitch, half, y0, rise))
+    col = mk.merge(*col_parts)
+    if ridge_axis == "z":
+        m = m.transform(R=mk.rot_y(math.pi / 2))
+        col = col.transform(R=mk.rot_y(math.pi / 2))
+    return m, col
+
+
+def _orient_slope(mesh, side, pitch, half, y0, rise):
+    """Een dakvlak gebouwd met de nok in de oorsprong en 'naar beneden' langs -Z (na rot_x(-pitch))
+    naar zijn plek: nok op (y0 + rise, z = 0), goot op z = side * half."""
+    m = mesh if side < 0 else mesh.transform(s=(1, 1, -1))
+    return m.transform(t=(0, y0 + rise, 0))

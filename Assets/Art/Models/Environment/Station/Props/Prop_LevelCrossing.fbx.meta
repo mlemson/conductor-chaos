@@ -1,0 +1,70 @@
+fileFormatVersion: 2
+guid: c3116d7bf8f50dec5d348cf6b6ec23c2
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Collider
+    second: {fileID: 2100000, guid: a7fc0ff57b6e8961de45c5adb6ed0b72, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Dark
+    second: {fileID: 2100000, guid: f4f8c14a2d071b7df81729e35f8c15fb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Red
+    second: {fileID: 2100000, guid: 12ae9c277a35109f8af7856b5fc966a5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_SignalRed
+    second: {fileID: 2100000, guid: f991bf8f9c6cd2781bed306303cf9a2c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Stone
+    second: {fileID: 2100000, guid: fceff3130a940483dc18c62f76426cb4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_White
+    second: {fileID: 2100000, guid: c599566307344ab6e10f4ae6448201e2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Yellow
+    second: {fileID: 2100000, guid: a6e0339c23b66e2d77f37e89e2641770, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_YellowDark
+    second: {fileID: 2100000, guid: dcf51a9f0e2cc178c0b4c49987abc383, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -33,6 +33,7 @@ def main():
     run(PY, os.path.join(HERE, "Train", "Tender", "build_tender.py"))
     run(PY, os.path.join(HERE, "Train", "CattleWagon", "build_cattle_wagon.py"))
     run(PY, os.path.join(HERE, "Environment", "build_environment_kit.py"))
+    run(PY, os.path.join(HERE, "Environment", "Station", "build_station_kit.py"))
     run(PY, os.path.join(HERE, "Textures", "build_ground_textures.py"))
     if "--models" in sys.argv:
         return
@@ -48,14 +49,16 @@ def main():
     out = os.path.join(HERE, "Render", "out")
     run(PY, os.path.join(HERE, "Render", "env_scenes.py"))
     run(PY, os.path.join(HERE, "Render", "character_scenes.py"))
+    run(PY, os.path.join(HERE, "Render", "station_scenes.py"))
     for scenes in ("conductor_sheet.json", "art_check.json", "loco_sheet.json", "cattle_sheet.json", "env_sheet.json",
                    "ElderlyPassenger_sheet.json", "Tourist_sheet.json", "RailMechanic_sheet.json",
-                   "characters_in_scene.json"):
+                   "characters_in_scene.json", "station_sheet.json"):
         run("node", os.path.join(HERE, "Render", "render.cjs"), os.path.join(HERE, "Render", "scenes", scenes), out, base)
     srv.shutdown()
     run(PY, os.path.join(HERE, "Render", "export_unity_layout.py"))
     run(PY, os.path.join(HERE, "Render", "make_sheets.py"))
     run(PY, os.path.join(HERE, "Render", "character_sheets.py"), cwd=os.path.join(HERE, "Render"))
+    run(PY, os.path.join(HERE, "Render", "station_sheets.py"), cwd=os.path.join(HERE, "Render"))
 
 
 if __name__ == "__main__":

@@ -5,9 +5,10 @@ De gekozen conceptafbeelding is de **primaire referentie** voor characters, kleu
 | Bestand | Wat |
 |---|---|
 | [conductor-chaos-concept.png](conductor-chaos-concept.png) | De originele conceptafbeelding (1536×1024). Altijd eerst bekijken. |
-| [STYLE_PALETTE.svg](STYLE_PALETTE.svg) | Stijlkaart v2: kernprincipes, licht/schaduw per materiaal, 44 kleurramps met bronuitsnede, vormentaal personages, URP-vertaling. |
+| [STYLE_PALETTE.svg](STYLE_PALETTE.svg) | Stijlkaart v2: kernprincipes, licht/schaduw per materiaal, 48 kleurramps met bronuitsnede, vormentaal personages, URP-vertaling. |
 | [palette.json](palette.json) | Dezelfde ramps machine-leesbaar, voor scripts, materialen en agents. |
 | [UI/README.md](UI/README.md) | Geselecteerde **UI-designs (beeld 1 en 3)**, exacte PNG-bestandsnamen en uploadstatus. Leidende referentie voor menu, knoppen, lobby en HUD-onderdelen. |
+| [Environment/](Environment/) | Conceptbladen `station-concept.png` (stationnetje) en `platform-kit-concept.png` (perronkit). Kleuren gemeten met [tools/measure_station_ramps.py](tools/measure_station_ramps.py) → palette-groep *Station & perron*. Uitwerking: `Docs/Art/Station_*.png`. |
 | [Characters/](Characters/) | Conceptbladen van de personagevarianten: `elderly-passenger-concept.png`, `tourist-concept.png`, `rail-mechanic-concept.png`, plus `conductor-ingame.png` (huidige conducteur in Unity). Kleuren daaruit gemeten met [tools/measure_character_ramps.py](tools/measure_character_ramps.py) → palette-groep *Reizigers & crew*. Uitwerking: `Docs/Art/*_DesignSheet.png`. |
 | [water-reference.png](water-reference.png) | Doel-look voor meren/rivieren (issue #110): helder turquoise ondiep, diep azuur, wit schuimrandje langs de oever, lichte golfstreepjes. Kleuren hieruit gemeten staan in `ArtSource/Tools/unity_assets.py` (`WATER_DEFAULTS`). |
 | [tools/build_style_card.py](tools/build_style_card.py) | Genereert SVG en JSON uit één bron. Pas ramps alleen hier aan. |
