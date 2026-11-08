@@ -96,7 +96,7 @@ namespace ConductorChaos.Playground
         private readonly WagonDoorPanel[] wagonDoors = new WagonDoorPanel[2];
         private const float WagonDoorTravel = 0.56f;
         private const float WagonDoorLeadIn = 0.08f;
-        private const float WagonDoorInset = 0.16f;
+        private const float WagonDoorInset = 0.05f;
 
         private sealed class WagonDoorPanel
         {
@@ -108,6 +108,7 @@ namespace ConductorChaos.Playground
             public bool[] OriginalEnabled;
             public Vector3 RestPosition;
             public float PreviousHandX;
+            public bool OpensNegative;
         }
 
         // Positie/rotatie relatief aan het voertuig waar de kolen bij horen (coalSource), niet in wereldruimte.
@@ -955,16 +956,23 @@ namespace ConductorChaos.Playground
                     Debug.LogWarning("TrainDrive: wagon door panels are missing meshes or already have rigidbodies.", wagon);
                     return;
                 }
-                wagonDoors[0] = CreateWagonDoor(left, leftMesh.sharedMesh.bounds, true);
-                wagonDoors[1] = CreateWagonDoor(right, rightMesh.sharedMesh.bounds, false);
+                float leftSide = left.localPosition.x - left.parent.InverseTransformPoint(right.position).x;
+                float rightSide = right.localPosition.x - right.parent.InverseTransformPoint(left.position).x;
+                if (Mathf.Abs(leftSide) < 0.01f || Mathf.Abs(rightSide) < 0.01f || Mathf.Sign(leftSide) == Mathf.Sign(rightSide))
+                {
+                    Debug.LogWarning("TrainDrive: wagon door panels do not have distinct sides.", wagon);
+                    return;
+                }
+                wagonDoors[0] = CreateWagonDoor(left, leftMesh.sharedMesh.bounds, leftSide < 0f);
+                wagonDoors[1] = CreateWagonDoor(right, rightMesh.sharedMesh.bounds, rightSide < 0f);
                 ApplyWagonDoors();
                 return;
             }
         }
 
-        private WagonDoorPanel CreateWagonDoor(Transform leaf, Bounds bounds, bool left)
+        private WagonDoorPanel CreateWagonDoor(Transform leaf, Bounds bounds, bool opensNegative)
         {
-            var panel = new WagonDoorPanel { Leaf = leaf, RestPosition = leaf.localPosition };
+            var panel = new WagonDoorPanel { Leaf = leaf, RestPosition = leaf.localPosition, OpensNegative = opensNegative };
             panel.OriginalColliders = leaf.GetComponents<Collider>();
             panel.OriginalEnabled = new bool[panel.OriginalColliders.Length];
             for (int i = 0; i < panel.OriginalColliders.Length; i++)
@@ -979,7 +987,7 @@ namespace ConductorChaos.Playground
             panel.Panel.center = bounds.center;
             panel.Panel.size = new Vector3(bounds.size.x, bounds.size.y, Mathf.Max(0.09f, bounds.size.z));
             panel.Handle = leaf.gameObject.AddComponent<SphereCollider>();
-            panel.Handle.center = new Vector3(Mathf.Lerp(bounds.min.x, bounds.max.x, left ? 0.82f : 0.18f),
+            panel.Handle.center = new Vector3(Mathf.Lerp(bounds.min.x, bounds.max.x, opensNegative ? 0.82f : 0.18f),
                 Mathf.Lerp(bounds.min.y, bounds.max.y, 0.45f), bounds.max.z + 0.03f);
             panel.Handle.radius = 0.09f;
             ControlOwners[panel.Body] = this;
@@ -1001,8 +1009,8 @@ namespace ConductorChaos.Playground
                     if (panel.Hand == hand)
                     {
                         float delta = handX - panel.PreviousHandX;
-                        if (i == 0) offsets.x = MoveWagonDoor(offsets.x, delta, true);
-                        else offsets.y = MoveWagonDoor(offsets.y, delta, false);
+                        if (i == 0) offsets.x = MoveWagonDoor(offsets.x, delta, panel.OpensNegative);
+                        else offsets.y = MoveWagonDoor(offsets.y, delta, panel.OpensNegative);
                     }
                     panel.PreviousHandX = handX;
                     holdingHand = hand;
@@ -1014,8 +1022,8 @@ namespace ConductorChaos.Playground
             ApplyWagonDoors();
         }
 
-        private static float MoveWagonDoor(float offset, float delta, bool left) =>
-            Mathf.Clamp(offset + Mathf.Clamp(delta, -0.06f, 0.06f), left ? -WagonDoorTravel : 0f, left ? 0f : WagonDoorTravel);
+        private static float MoveWagonDoor(float offset, float delta, bool opensNegative) =>
+            Mathf.Clamp(offset + Mathf.Clamp(delta, -0.06f, 0.06f), opensNegative ? -WagonDoorTravel : 0f, opensNegative ? 0f : WagonDoorTravel);
 
         private static Vector3 WagonDoorDisplacement(float offset)
         {
