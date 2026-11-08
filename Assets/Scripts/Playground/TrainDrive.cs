@@ -79,14 +79,13 @@ namespace ConductorChaos.Playground
         private readonly List<Quaternion> coalHomeRotations = new();
         private readonly List<float> coalRespawnTimes = new();
         // Losse kolen in de tenderbak: brokken die stil liggen 'slapen' (kinematisch, als kind van de wagen), zodat ze
-        // vast meerijden, niet trillen en geen netwerkverkeer kosten. Een schep, hand, speler of rollend brok in de buurt
+        // vast meerijden, niet trillen en geen netwerkverkeer kosten. Een schep, hand of speler in de buurt
         // maakt ze wakker (gewone physics); tot rust gekomen in de bak gaan ze weer slapen.
         private readonly List<bool> coalAsleep = new();
         private readonly List<float> coalCalmTime = new();
         private readonly List<float> coalRadius = new();
         private readonly Dictionary<Rigidbody, int> coalIndex = new();
         private readonly List<Bounds> coalDisturbers = new();
-        private readonly List<bool> coalDisturberIsCoal = new();
         private readonly Collider[] binContacts = new Collider[384];
         private Bounds coalBinLocal;
         // Kolenposes zijn relatief aan het voertuig met de kolen (coalSource): stil liggende kolen veranderen dan niet.
@@ -1114,6 +1113,7 @@ namespace ConductorChaos.Playground
                 }
                 var coal = piece.AddComponent<Rigidbody>();
                 coal.mass = 0.25f;
+                coal.maxDepenetrationVelocity = 0.5f;
                 coal.isKinematic = true;
                 coal.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
                 // slapend in de bak: hangt aan de wagen en rijdt exact mee (ook op clients, die de pose lokaal volgen)
@@ -1296,11 +1296,11 @@ namespace ConductorChaos.Playground
                 bool nearHelper = false;
                 if (coalAsleep[i])
                 {
-                    if (NearCoalDisturber(position, coalRadius[i] + 0.06f, out _)) WakeCoal(i);
+                    if (NearCoalDisturber(position, coalRadius[i] + 0.06f)) WakeCoal(i);
                 }
                 else
                 {
-                    nearHelper = NearCoalDisturber(position, coalRadius[i] + 0.12f, out bool onlyCoal) && !onlyCoal;
+                    nearHelper = NearCoalDisturber(position, coalRadius[i] + 0.12f);
                     Vector3 local = Quaternion.Inverse(SourceRotation()) * (coal.position - SourcePosition());
                     Vector3 relative = coal.linearVelocity - SourceVelocity(coal.position);
                     Vector3 spin = coal.angularVelocity - (coalSourceBody ? coalSourceBody.angularVelocity : Vector3.zero);
@@ -1341,11 +1341,10 @@ namespace ConductorChaos.Playground
         private Quaternion SourceRotation() => coalSourceBody ? coalSourceBody.rotation : coalSource.rotation;
         private Vector3 SourceVelocity(Vector3 point) => coalSourceBody ? coalSourceBody.GetPointVelocity(point) : Vector3.zero;
 
-        // Alles wat in of boven de bak beweegt en niet bij de wagen hoort: schep, handen, spelers en rollende brokken.
+        // Kolen wekken elkaar niet: anders verspreidt een kleine botsing zich door de hele stapel.
         private void CollectCoalDisturbers()
         {
             coalDisturbers.Clear();
-            coalDisturberIsCoal.Clear();
             Vector3 center = coalSource.TransformPoint(coalBinLocal.center);
             Vector3 half = Vector3.Scale(coalBinLocal.extents, coalSource.lossyScale);
             int count = Physics.OverlapBoxNonAlloc(center, half, binContacts, coalSource.rotation, ~0, QueryTriggerInteraction.Ignore);
@@ -1353,26 +1352,19 @@ namespace ConductorChaos.Playground
             {
                 var shape = binContacts[k];
                 var owner = shape.attachedRigidbody;
-                if (!owner || owner == coalSourceBody || shape.transform.IsChildOf(coalSource)) continue;   // wagen + slapende kolen
-                bool isCoal = coalIndex.TryGetValue(owner, out _);
-                if (isCoal && (owner.isKinematic ||
-                               (owner.linearVelocity - SourceVelocity(owner.position)).sqrMagnitude < 0.15f * 0.15f)) continue;
+                if (!owner || owner == coalSourceBody || shape.transform.IsChildOf(coalSource) || coalIndex.ContainsKey(owner)) continue;
                 coalDisturbers.Add(shape.bounds);
-                coalDisturberIsCoal.Add(isCoal);
             }
         }
 
-        private bool NearCoalDisturber(Vector3 point, float reach, out bool onlyCoal)
+        private bool NearCoalDisturber(Vector3 point, float reach)
         {
-            onlyCoal = true;
-            bool near = false;
             for (int k = 0; k < coalDisturbers.Count; k++)
             {
                 if ((coalDisturbers[k].ClosestPoint(point) - point).sqrMagnitude >= reach * reach) continue;
-                near = true;
-                if (!coalDisturberIsCoal[k]) { onlyCoal = false; break; }
+                return true;
             }
-            return near;
+            return false;
         }
 
         private void WakeCoal(int index)
@@ -1553,7 +1545,6 @@ namespace ConductorChaos.Playground
                 coalRadius.Clear();
                 coalIndex.Clear();
                 coalDisturbers.Clear();
-                coalDisturberIsCoal.Clear();
                 coalHomes.Clear();
                 coalHomeRotations.Clear();
                 coalRespawnTimes.Clear();
