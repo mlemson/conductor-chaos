@@ -356,9 +356,11 @@ def lean_to(rng):
     for z in post_z:
         parts.append(rbox(LPOST_X - 0.20, LPOST_X + 0.20, FL, FL + 0.16, z - 0.20, z + 0.20, 0.04, "M_Stn_Stone"))
         parts.append(rbox(LPOST_X - 0.13, LPOST_X + 0.13, FL + 0.12, beam_bot + 0.02, z - 0.13, z + 0.13, 0.04, "M_Stn_Timber"))
-        cols.append(col_box(LPOST_X - 0.2, LPOST_X + 0.2, FL, beam_bot, z - 0.2, z + 0.2))
+        cols.append(col_box(LPOST_X - 0.20, LPOST_X + 0.20, FL, FL + 0.16, z - 0.20, z + 0.20))
+        cols.append(col_box(LPOST_X - 0.13, LPOST_X + 0.13, FL + 0.12, beam_bot + 0.02, z - 0.13, z + 0.13))
     # buitenbalk langs z en dwarsbalken naar de muur (voor, midden, achter), met korbelen
     parts.append(rbox(LPOST_X - 0.14, LPOST_X + 0.14, beam_bot, beam_top, -D - 0.25, 0.25, 0.04, "M_Stn_Timber"))
+    cols.append(col_box(LPOST_X - 0.14, LPOST_X + 0.14, beam_bot, beam_top, -D - 0.25, 0.25))
     for z in post_z:
         y_wall = top_at(x_in) - ROOF_THICK / math.cos(L_PITCH)
         prof = [(LPOST_X - 0.08, beam_bot), (x_in + 0.02, y_wall - 0.26), (x_in + 0.02, y_wall), (LPOST_X - 0.08, beam_top)]
