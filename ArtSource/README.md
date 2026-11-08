@@ -12,9 +12,9 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 |---|---|
 | `Characters/Conductor/build_conductor.py` | Conducteur-basismodel, parametrisch opgebouwd uit maten van het concept |
 | `Train/RegionalWagon/build_regional_wagon.py` | Regionale wagon in facetstijl (deur, slot, grepen, ramen, draaistellen, koplampen) + art-check-decor |
-| `Train/Locomotive/build_locomotive.py` | Locomotief v2.1 (ronde ketelneus, rookkastring met lamp, gewelfd dak, sierlijsten, drijfstang) — issue #22 |
+| `Train/Locomotive/build_locomotive.py` | Locomotief v2.1 (ronde ketelneus, rookkastring met lamp, gewelfd dak, sierlijsten, drijfstang) — issue #22. Cabine v3: brede lessenaar met startknop, vuurdeur, hittemeter (`HeatNeedle`), verticale trekhendel in een sleuf met pijlenbordje, plafondlamp (`CabLamp`); geen kachelpijp en kolenbak meer |
 | `Train/CattleWagon/build_cattle_wagon.py` | Veewagen: rode kooi uit één stuk om een lattenwand met echte kieren, schuifdeuren, gewelfd dak, interieur (stro, hooibalen), doorloopbaar — issue #25 |
-| `Train/Tender/build_tender.py` | Kolenwagen direct achter de loc (rode bak, gouden rand, panelen met klinknagels, kolenberg, ladder, sluitlampen) — issue #22 |
+| `Train/Tender/build_tender.py` | Kolenwagen direct achter de loc (rode bak, gouden rand, panelen met klinknagels, kolenberg, ladder, sluitlampen) — issue #22. `CoalStock` met de losse schepkolen (`CoalChunk0..5`) en `CoalScoopPoint` op de opstap vóór de bunker |
 | `Environment/build_environment_kit.py` | Modulaire natuurkit (issue #30): bomen, struik, rotsen, klifmodules + klifclusters (v2), grasheuvel, stilstaande watervallen, verre bergen, wolken; elk asset een eigen FBX + GLB, gedeelde materialen |
 | `Environment/build_track_kit.py` | Spoorkit (issue #53): rechte stukken, bochten R20 15°/30° links/rechts, stootblok, kapot stuk, houten schraagbrug, waarschuwingsbord en slagboom. Sockets voor aansluiten; prefabs + Track Builder in Unity (`Conductor Chaos > Art > Track`) |
 | `Textures/build_ground_textures.py` | Tegelbare grondtextures voor het Unity-terrein (gras, bloemetjes, grond, stenen pad, rots), issue #38 |
@@ -68,7 +68,7 @@ Pas vormen of maten aan in de `build_*.py`-scripts, niet in de FBX. Kleuren kome
 - Hiërarchie conducteur: `Conductor › Body › (Neckline, Collar, Buttons, Eye_L/R › Pupil_L/R, Mouth_Neutral|Surprised|Happy, Cap, Arm_L/R › Hand_L/R › Prop_Key)`, plus lege `Leg_L/R`-ankers.
   Standaard verborgen: `Mouth_Surprised`, `Mouth_Happy`, `Prop_Key`.
 - **Uit één stuk:** gebruik `meshkit.frame_ring` (kader met verstekhoeken), `meshkit.hollow_box` (holle bak met dagkanten) en `meshkit.prism` (stapvormig profiel). Laat geen balken stomp tegen elkaar eindigen; een lijst die op een andere lijst aansluit, eindigt daarin.
-- Doorloopbaar (issue #24): de cabine-achterdeur, de kolenwagen (`FallPlate`, dekken, `Coal`) en de kopse doorgangen van de wagon zijn de ankers voor latere colliders.
+- Doorloopbaar (issues #24 en #155): het opstapje achter de cabinedeur zit in de `Frame`-mesh. De kolenwagen heeft een vast voordek op cabinevloerhoogte. De dekken, `Coal` en de kopse doorgangen van de wagon blijven afzonderlijk toegankelijk.
 - **Prop Painter (Unity, issue #35):** *Conductor Chaos > Art > Prop Painter* schildert natuur-assets met een kwast over de map.
   - Presets: Bomen, Rotsen, Kliffen, Water, Achtergrond en Bos + rotsen. Het palet heeft gewichten en je kunt modellen erin slepen.
   - Instellingen: straal, aantal per stip, minimale afstand, willekeurige schaal en hoogte, draaistap (kliffen 90°), volg ondergrond, inzakken en raster.

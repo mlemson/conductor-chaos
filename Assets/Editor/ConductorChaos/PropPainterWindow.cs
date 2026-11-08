@@ -525,4 +525,3 @@ namespace ConductorChaos.EditorTools
         }
     }
 }
-

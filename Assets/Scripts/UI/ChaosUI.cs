@@ -65,7 +65,7 @@ namespace ConductorChaos.UI
                     float dx = Mathf.Max(radius - (x + 0.5f), 0f, (x + 0.5f) - (size - radius));
                     float dy = Mathf.Max(radius - (y + 0.5f), 0f, (y + 0.5f) - (size - radius));
                     float distance = Mathf.Sqrt(dx * dx + dy * dy);
-                    pixels[y * size + x] = new Color(1f, 1f, 1f, 1f - Mathf.SmoothStep(radius - 1.5f, radius + 0.5f, distance));
+                    pixels[y * size + x] = new Color(1f, 1f, 1f, 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(radius - 1.5f, radius + 0.5f, distance)));
                 }
                 texture.SetPixels(pixels);
                 texture.Apply(false, true);
@@ -149,24 +149,52 @@ namespace ConductorChaos.UI
             RectTransform rt = Panel(parent, name, min, max, face);
             Image img = rt.GetComponent<Image>();
             img.raycastTarget = true;
+            var edge = rt.gameObject.AddComponent<Shadow>();
+            edge.effectColor = face == Gold ? Hex("#AD5B24") : face == TrainRed ? TrainRedDark : Hex("#8E6356");
+            edge.effectDistance = new Vector2(0f, -5f);
             Button button = rt.gameObject.AddComponent<Button>();
+            button.targetGraphic = img;
             button.interactable = enabled;
             button.transition = Selectable.Transition.ColorTint;
             var tint = button.colors;
             tint.normalColor = Color.white;
             tint.highlightedColor = new Color(1f, 0.96f, 0.89f, 1f);
+            tint.selectedColor = tint.highlightedColor;
             tint.pressedColor = new Color(0.84f, 0.79f, 0.72f, 1f);
             tint.disabledColor = new Color(0.61f, 0.58f, 0.62f, 0.7f);
             tint.colorMultiplier = 1f;
             button.colors = tint;
+            if (enabled)
+            {
+                var focus = rt.gameObject.AddComponent<Outline>();
+                focus.effectColor = GoldLight;
+                focus.effectDistance = new Vector2(2f, 2f);
+                focus.enabled = false;
+                var events = rt.gameObject.AddComponent<EventTrigger>();
+                var select = new EventTrigger.Entry { eventID = EventTriggerType.Select };
+                select.callback.AddListener(_ => focus.enabled = true);
+                var deselect = new EventTrigger.Entry { eventID = EventTriggerType.Deselect };
+                deselect.callback.AddListener(_ => focus.enabled = false);
+                events.triggers.Add(select);
+                events.triggers.Add(deselect);
+            }
             if (onClick != null) button.onClick.AddListener(onClick);
             Text label = Label(rt, "Caption", caption, size, foreground, TextAnchor.MiddleCenter, FontStyle.Bold);
+            label.resizeTextForBestFit = true;
+            label.resizeTextMinSize = Mathf.Min(size, 13);
+            label.resizeTextMaxSize = size;
             if (!string.IsNullOrEmpty(iconKey))
             {
                 // The image is not the button itself: keep the caption translatable
                 // and let the parent Button handle hover, keyboard and clicks.
-                ChaosUISpriteCatalog.Add(rt, "Sprite - " + iconKey, iconKey,
-                    new Vector2(0.055f, 0.19f), new Vector2(0.20f, 0.81f), foreground);
+                Graphic icon = ChaosUISpriteCatalog.Add(rt, "Sprite - " + iconKey, iconKey,
+                    new Vector2(0.04f, 0.11f), new Vector2(0.21f, 0.89f), foreground);
+                if (!enabled)
+                {
+                    Color iconColor = icon.color;
+                    iconColor.a *= 0.6f;
+                    icon.color = iconColor;
+                }
                 RectTransform captionRect = (RectTransform)label.transform;
                 captionRect.anchorMin = new Vector2(0.22f, 0f);
                 captionRect.anchorMax = new Vector2(0.98f, 1f);

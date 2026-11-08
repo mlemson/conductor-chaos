@@ -26,6 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "ArtSource", "Tools"))
 import meshkit as mk  # noqa: E402
+from train_couplers import add_couplers
 import unity_assets  # noqa: E402
 
 PALETTE = json.load(open(os.path.join(ROOT, "Docs", "References", "palette.json"), encoding="utf-8"))
@@ -232,9 +233,9 @@ def build_wagon():
     for bx in (-BOGIE_X, BOGIE_X):
         under.append(box(bx - 0.95, bx + 0.95, -0.40, -0.16, ZC - W / 2 + 0.14, ZC + W / 2 - 0.14, 0.06, "M_Train_Trim"))
         for ax in (bx - 0.62, bx + 0.62):
-            for zs in (ZC + W / 2 - 0.20, ZC - W / 2 + 0.20):
+            for zs in (ZC + 1.29, ZC - 1.29):
                 under.append(build_wheel(ax, zs))
-        for zs in (ZC + W / 2 - 0.08, ZC - W / 2 + 0.08):
+        for zs in (ZC + W / 2 + 0.12, ZC - W / 2 - 0.12):
             under.append(box(bx - 0.22, bx + 0.22, -0.36, -0.10, zs - 0.06, zs + 0.06, 0.02, "M_Train_RedLow"))
     sc.add(mk.Part("Underframe", mk.merge(*under), (0, 0, 0), "RegionalWagon"))
 
@@ -258,8 +259,8 @@ def build_wagon():
             buf.sharp = plate.sharp = True
             ends.append(buf.transform(t=(ex + sgn * 0.15, 0.17, ZC + dz)))
             ends.append(plate.transform(t=(ex + sgn * 0.30, 0.17, ZC + dz)))
-        ends.append(box(min(ex, ex + sgn * 0.36), max(ex, ex + sgn * 0.36), -0.18, -0.02, ZC - 0.12, ZC + 0.12, 0.04, "M_Train_Trim"))
     sc.add(mk.Part("Ends", mk.merge(*ends), (0, 0, 0), "RegionalWagon"))
+    add_couplers(sc, "RegionalWagon", RAIL_Y, ZC, XC - L / 2 - 0.12, XC + L / 2 + 0.12, "M_Train_Trim", "M_Train_Interact")
     for p in sc.parts:
         p.gradient = 0.25
     sc.facet_all()
