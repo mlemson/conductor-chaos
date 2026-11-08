@@ -52,7 +52,7 @@ namespace ConductorChaos.Playground
         private Vector2 requestedMove;
         private float requestedYaw;
         private float requestedPitch;
-        private bool leftHeld, rightHeld, jumpQueued, sprinting;
+        private bool leftHeld, rightHeld, jumpQueued, sprinting, crouching;
         private bool lastLeft, lastRight;
         private float nextInput, nextPose, lastJump;
         private float nextSprintHop;
@@ -171,7 +171,7 @@ namespace ConductorChaos.Playground
             {
                 if (lastLeft || lastRight || Time.unscaledTime >= nextInput)
                 {
-                    SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false);
+                    SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
                     nextInput = Time.unscaledTime + 0.05f;
                     lastLeft = lastRight = false;
                 }
@@ -179,13 +179,13 @@ namespace ConductorChaos.Playground
             }
             if (keyboard == null || mouse == null)
             {
-                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false);
+                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
                 lastLeft = lastRight = false;
                 return;
             }
             if (mouse.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
             {
-                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false);
+                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
                 lastLeft = lastRight = false;
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
@@ -205,7 +205,8 @@ namespace ConductorChaos.Playground
             if (active && keyboard.spaceKey.wasPressedThisFrame) JumpServerRpc();
             if (Time.unscaledTime >= nextInput || l != lastLeft || r != lastRight)
             {
-                SendInputServerRpc(Vector2.ClampMagnitude(move, 1f), yaw, pitch, l, r, active && keyboard.leftShiftKey.isPressed);
+                SendInputServerRpc(Vector2.ClampMagnitude(move, 1f), yaw, pitch, l, r, active && keyboard.leftShiftKey.isPressed,
+                    active && (keyboard.leftCtrlKey.isPressed || keyboard.cKey.isPressed));
                 nextInput = Time.unscaledTime + 0.05f;
                 lastLeft = l;
                 lastRight = r;
@@ -213,7 +214,7 @@ namespace ConductorChaos.Playground
         }
 
         [ServerRpc]
-        private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r, bool sprint)
+        private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r, bool sprint, bool crouch)
         {
             if (!l) { leftHeld = false; left?.Release(); }
             if (!r) { rightHeld = false; right?.Release(); }
@@ -227,14 +228,15 @@ namespace ConductorChaos.Playground
             lastServerInput = Time.unscaledTime;
             leftHeld = l;
             rightHeld = r;
-            sprinting = sprint;
+            crouching = crouch;
+            sprinting = sprint && !crouch;
         }
 
         private void OnApplicationFocus(bool focused)
         {
             if (focused || !IsSpawned || !IsOwner) return;
             lastLeft = lastRight = false;
-            SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false);
+            SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
         }
 
         [ServerRpc]
@@ -255,11 +257,11 @@ namespace ConductorChaos.Playground
             float legAngle = 0f;
             for (int i = 0; i < 25; i++)
             {
-                SendInputServerRpc(Vector2.up, 0f, 0f, false, false, false);
+                SendInputServerRpc(Vector2.up, 0f, 0f, false, false, false, false);
                 yield return new WaitForSeconds(0.05f);
                 if (testLeg) legAngle = Mathf.Max(legAngle, Quaternion.Angle(initialLeg, testLeg.localRotation));
             }
-            SendInputServerRpc(Vector2.zero, 0f, 0f, false, false, false);
+            SendInputServerRpc(Vector2.zero, 0f, 0f, false, false, false, false);
             yield return new WaitForSeconds(0.3f);
             float moved = Vector3.Distance(start, transform.position);
             float baseY = transform.position.y;
@@ -281,7 +283,7 @@ namespace ConductorChaos.Playground
             {
                 requestedMove = Vector2.zero;
                 leftHeld = rightHeld = false;
-                sprinting = false;
+                sprinting = crouching = false;
                 left.Release();
                 right.Release();
             }
@@ -341,7 +343,7 @@ namespace ConductorChaos.Playground
             smoothedLean = Vector3.Lerp(smoothedLean, desiredLean, 5f * Time.fixedDeltaTime);
             Quaternion targetBalance = climbing
                 ? Quaternion.LookRotation(ledgeInward) * Quaternion.Euler(mantling ? 78f : 12f, 0f, 0f)
-                : facing * Quaternion.Euler(smoothedLean.x, 0f, smoothedLean.z);
+                : facing * Quaternion.Euler(smoothedLean.x + (crouching ? 50f : 0f), 0f, smoothedLean.z);
             if (hanging)
             {
                 float lean = hangingHands == 1 ? 30f : 16f;
