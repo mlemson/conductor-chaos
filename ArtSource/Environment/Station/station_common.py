@@ -334,8 +334,8 @@ def smooth_path(points, n=40):
     return np.stack([np.interp(t, d, P[:, k]) for k in range(3)], 1)
 
 
-def tube(points, radius, mat, n=None, seg=10, smooth=False, closed=False, caps=True):
-    """Ronde buis langs een pad (parallel transport), met bolle eindkappen."""
+def tube(points, radius, mat, n=None, seg=10, smooth=False, closed=False, caps=True, phase=0.0):
+    """Ronde buis langs een pad (parallel transport), met bolle eindkappen. phase draait de doorsnede."""
     P = np.asarray(points, float)
     if smooth:
         P = smooth_path(P, n or max(12, 6 * len(P)))
@@ -354,7 +354,7 @@ def tube(points, radius, mat, n=None, seg=10, smooth=False, closed=False, caps=T
         B.append(b / np.linalg.norm(b))
     B = np.array(B)
     U = np.cross(T, B)
-    sec = [(math.cos(2 * math.pi * k / seg), math.sin(2 * math.pi * k / seg)) for k in range(seg)]
+    sec = [(math.cos(2 * math.pi * k / seg + phase), math.sin(2 * math.pi * k / seg + phase)) for k in range(seg)]
     n_, k_ = len(P), seg
     V = [P[i] + (B[i] * u + U[i] * v) * radius for i in range(n_) for (u, v) in sec]
     F = []
@@ -418,9 +418,9 @@ def text_mesh(text, height, depth, mat, stroke=0.25, spacing=0.30):
             P = [(x + px, py, 0.0) for (px, py) in pts]
             if len(P) <= 4 and not closed:          # rechte streken: losse capsules met ronde koppen
                 for a, b in zip(P[:-1], P[1:]):
-                    parts.append(tube([a, b], r, mat, seg=10))
+                    parts.append(tube([a, b], r, mat, seg=10, phase=math.pi / 10))
             else:
-                parts.append(tube(P, r, mat, seg=10, closed=closed))
+                parts.append(tube(P, r, mat, seg=10, closed=closed, phase=math.pi / 10))
         x += w + spacing
     width = x - spacing
     m = mk.merge(*parts)
@@ -443,9 +443,10 @@ def train_icon(size, depth, mat, wheel_mat=None, c=None):
     body = [(x * s, y * s) for x, y in body]
     win = [(x * s, y * s) for x, y in win]
     parts = [slab(rounded_corners(body, 0.025 * s), [win], 0.0, depth, c, mat)]
+    pw = max(0.006, 0.3 * depth)                    # wielen steken iets uit, anders vallen ze samen met de romp
     for (wx, wr) in ((0.17, 0.13), (0.50, 0.12), (0.80, 0.12)):
         parts.append(slab(circle_loop(wx * s, 0.13 * s, wr * s, 16), [circle_loop(wx * s, 0.13 * s, wr * s * 0.35, 10)],
-                          0.0, depth, c, wheel_mat or mat))
+                          -pw, depth + pw, c, wheel_mat or mat))
     m = mk.merge(*parts)
     return m.transform(t=(-0.48 * s, -0.46 * s, 0.0))
 

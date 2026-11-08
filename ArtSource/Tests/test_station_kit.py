@@ -6,6 +6,9 @@
 * perronmodules: bovenkant 1,05, voorrand 1,65, begin op x = 0 en einde op x = lengte (sluiten aan)
 * gebouw: vloer op perronhoogte, deur en loket ruim genoeg voor de personages, vrije hoogte onder de luifel
 * elk asset met een botsvorm Col_*, kleuren alleen uit palette.json, budget per asset
+* geen dubbele vlakken (z-fighting): niet binnen een asset, niet tussen de assets in de voorbeeldopstelling,
+  en aan elkaar geklikte hekken/perronstukken vallen niet samen (ArtSource/Tools/zfight.py)
+* spullen onder de luifel staan los van elkaar, van de palen en van de plint
 """
 import json
 import os
@@ -19,6 +22,9 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "ArtSource", "Environment", "Station"))
 import station_building as B  # noqa: E402
 import station_common as C  # noqa: E402
+sys.path.insert(0, os.path.join(ROOT, "ArtSource", "Tools"))
+sys.path.insert(0, os.path.join(ROOT, "ArtSource", "Render"))
+import zfight as Z  # noqa: E402
 
 EXP = os.path.join(ROOT, "ArtSource", "Exports")
 KIT = json.load(open(os.path.join(EXP, "Environment", "Station", "StationKit.json"), encoding="utf-8"))
@@ -138,8 +144,64 @@ def test_assets():
     print(f"PASS assets: {len(KIT['assets'])} modellen, {len(KIT['materials'])} materialen uit palette.json")
 
 
+def test_no_double_faces():
+    """Elk asset op zich: geen twee zichtbare vlakken die (bijna) samenvallen en overlappen."""
+    station = os.path.join(EXP, "Environment", "Station")
+    bad = []
+    for name in KIT["assets"]:
+        res = Z.find(Z.glb_triangles(os.path.join(station, name + ".glb")))
+        if res:
+            la, lb, ar, dz, c, n = res[0]
+            bad.append(f"{name}: {len(res)}x, bv. {la} <> {lb} {ar * 1e4:.0f} cm² rond {np.round(c, 2).tolist()}")
+    assert not bad, "dubbele vlakken:\n  " + "\n  ".join(bad)
+    print(f"PASS dubbele vlakken: {len(KIT['assets'])} assets schoon (afstand < {Z.GAP * 1000:.0f} mm, "
+          f"overlap > {Z.MIN_AREA * 1e4:.0f} cm²)")
+
+
+def test_layout_no_double_faces():
+    """De voorbeeldopstelling (perron, gebouw, props) en aan elkaar geklikte stukken: niets valt samen."""
+    import station_scenes as S
+    groups = []
+    items = [it for it in S.station_scene()[0]["params"]["items"] if it["url"].startswith(S.S)]
+    # extra: elk perronstuk en het hek tegen een kopie van zichzelf geklikt
+    for name, a in KIT["assets"].items():
+        if name.startswith("Platform_Straight") or name == "Prop_Fence_2m":
+            L = float(name.rsplit("_", 1)[1].rstrip("m"))          # Straight_3m / Straight_6m / Fence_2m
+            items += [{"url": S.S + name + ".glb", "pos": [100.0, 0, 50.0 + 10 * len(items)]},
+                      {"url": S.S + name + ".glb", "pos": [100.0 + L, 0, 50.0 + 10 * len(items)]}]
+    for k, it in enumerate(items):
+        path = os.path.normpath(os.path.join(ROOT, "ArtSource", "Render", it["url"]))
+        for _, T in Z.glb_triangles(path):
+            groups.append((f"{k}:{os.path.basename(path)[:-4]}", Z.place(T, it.get("pos", [0, 0, 0]), it.get("rotY", 0))))
+    res = Z.find(groups, same_group=False, ground=0.0)
+    assert not res, "dubbele vlakken tussen assets: " + "; ".join(f"{a} <> {b} {ar * 1e4:.0f} cm²" for a, b, ar, *_ in res[:5])
+    print(f"PASS opstelling: {len(items)} geplaatste stukken zonder samenvallende vlakken")
+
+
+def test_leanto_furniture_free():
+    """Bank, tonnen en kratten onder de luifel: geen overlap met elkaar, de palen of de plint van het gebouw."""
+    boxes = []
+    for name, (m, c), R, t in B._furniture():
+        V = c.transform(R=R, t=t).V
+        boxes.append((name, V.min(0), V.max(0)))
+    for z in (-0.30, -B.D / 2, -B.D + 0.30):
+        boxes.append((f"paal z={z:.2f}", np.array([B.LPOST_X - 0.2, 0, z - 0.2]), np.array([B.LPOST_X + 0.2, 9, z + 0.2])))
+    boxes.append(("plint", np.array([-B.HW - 0.16, 0, -B.D - 0.2]), np.array([B.HW, 9, 0.2])))
+    for i in range(len(boxes)):
+        for j in range(i + 1, len(boxes)):
+            (na, a0, a1), (nb, b0, b1) = boxes[i], boxes[j]
+            if na.startswith(("paal", "plint")) and nb.startswith(("paal", "plint")):
+                continue
+            gap = np.max(np.maximum(b0 - a1, a0 - b1))
+            assert gap > 0.02, f"{na} en {nb} staan in elkaar (speling {gap * 100:.1f} cm)"
+    print(f"PASS luifel: {len(B._furniture())} spullen staan vrij")
+
+
 if __name__ == "__main__":
     test_train_clearance()
     test_platform_modules()
     test_building_walkable()
     test_assets()
+    test_no_double_faces()
+    test_layout_no_double_faces()
+    test_leanto_furniture_free()

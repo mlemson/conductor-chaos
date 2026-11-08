@@ -248,6 +248,20 @@ Een prop moet al herkenbaar zijn als silhouette, nog vóór textuur of detail.
 - koele rimlight langs de randen (zie Lighting)
 - geen heavy realism
 
+## Geen dubbele vlakken (z-fighting)
+Twee zichtbare vlakken die (bijna) in hetzelfde vlak liggen en elkaar overlappen gaan in Unity flikkeren of strepen
+(besluit @mlemson: "voortaan altijd fixen"). Daarom bij elk model:
+- **leg delen naast elkaar, niet in elkaar met gelijke buitenkant.** Hoekblokken lopen aan één kant door en stoppen aan
+  de andere kant ertegen; lagen (wand, kern, vulling, tegels) raken elkaar alleen met boven- en onderkant.
+- **iets dat erop ligt (dorpel, strip, lat, wiel op een icoon) steekt minstens 1 cm uit**, of het vlak eronder wordt
+  weggesneden. Kruisende latten (raamroedes, Andreaskruis) krijgen een verschillende dikte of liggen voor elkaar.
+- **aan elkaar klikbare stukken** (perron, hek) vallen bij het aanklikken niet samen: het eindstuk zit binnen het
+  beginstuk van het volgende stuk, of de stukken stoppen precies op de naad.
+- **controle:** `python ArtSource/Tools/zfight.py <glb>` (en voor de stationkit `ArtSource/Tests/test_station_kit.py`,
+  die ook de voorbeeldopstelling en aan elkaar geklikte stukken controleert). Meldt alles dat dichter dan 5 mm bij
+  elkaar ligt en meer dan 4 cm² overlapt; vlakken die in een ander blok zitten of tegen een ander vlak liggen tellen
+  niet mee.
+
 ## Vermijd
 - hoge metallic
 - scherpe reflecties

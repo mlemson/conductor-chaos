@@ -32,6 +32,7 @@
 
 - De gekozen conceptrichting is vastgelegd in [gamevisie](Docs/GAME_VISION.md) en [visuele referenties](Docs/References/README.md). De originele [conceptafbeelding](Docs/References/conductor-chaos-concept.png) staat in Git en is leidend voor kwaliteit en stijl. Gebruik de gemeten kleurramps uit de [stijlkaart](Docs/References/STYLE_PALETTE.svg) / [palette.json](Docs/References/palette.json); verzin geen losse tinten.
 - Leid nieuwe assets af van boonvormige cartoonkarakters, zachte ronde low-poly volumes (warm licht, koele blauw-violette schaduw) en simpele regionale reizigerstreinen. De kleine locomotief op het conceptbord is sfeer, geen blauwdruk; UI/menus hebben geen posterlay-out nodig.
+- **Geen dubbele vlakken (z-fighting)** in nieuwe of gewijzigde modellen: controleer met `python ArtSource/Tools/zfight.py <glb>` en volg de regel in de [art style guide](Docs/ART_STYLE_GUIDE.md) (sectie G).
 - Eerst een tweespeler technische proef en één kleine art-test; geen ongevraagde hele treinlijn, levelgenerator of inhoudelijke uitbreidingen.
 
 ## UI-richtlijn (verplicht voor UI-agents)

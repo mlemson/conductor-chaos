@@ -13,7 +13,7 @@ import math
 
 import numpy as np
 
-from station_common import (PLATFORM_EDGE, PLATFORM_TOP, _area, col_box, mk, rbox, slab)
+from station_common import (PLATFORM_EDGE, PLATFORM_TOP, _area, clean_loop, col_box, mk, rbox, slab)
 
 E = PLATFORM_EDGE
 TOP = PLATFORM_TOP
@@ -26,12 +26,21 @@ INSET = TACT[1]              # tegelvloer begint overal op dezelfde afstand van 
 TILE_T = 0.10
 COPE_T = 0.14
 GAP = 0.0                    # tegels sluiten aan: alleen de afgeschuinde randen tekenen de voegen
+WALL_IN = 0.03               # zijwand ligt 3 cm terug: de randtegels steken er als een dorpel overheen
+WALL_T = 0.20                # dikte van de zijwand; daarachter begint de kern
 
 
 # ------------------------------------------------------------------ geometrie in het grondvlak
 def plan_slab(poly_xz, y0, y1, c=0.02, mat="M_Stn_Paving"):
-    """Polygoon in het grondvlak (x, z) verticaal geëxtrudeerd van y0 tot y1."""
-    m = slab([(x, -z) for (x, z) in poly_xz], (), y0, y1, c, mat)
+    """Polygoon in het grondvlak (x, z) verticaal geëxtrudeerd van y0 tot y1. Dubbele en rechte tussenpunten
+    (uit het knippen) gaan eruit, anders kan de triangulatie over zichzelf vouwen (dubbele vlakken)."""
+    P = clean_loop([(x, -z) for (x, z) in poly_xz], 0.004)
+    keep = []
+    for i in range(len(P)):
+        a, b, c_ = np.array(P[i - 1]), np.array(P[i]), np.array(P[(i + 1) % len(P)])
+        if abs((b[0] - a[0]) * (c_[1] - a[1]) - (b[1] - a[1]) * (c_[0] - a[0])) > 1e-7:
+            keep.append(P[i])
+    m = slab(keep, (), y0, y1, c, mat)
     return m.transform(R=mk.rot_x(-math.pi / 2))
 
 
@@ -126,15 +135,19 @@ def _offset_run(outline, run, d, kinds=None):
             if kinds is None or kinds[(vi - 1) % n] == "joint":
                 along = -e_in
                 out.append(p + along * d / max(np.dot(along, n_run), 0.2))
-            else:
-                out.append(p + n_run * d)
+            else:                                    # andere soort rand ernaast: verstek, zodat de banden sluiten
+                m = _inward(e_in) + n_run
+                m /= np.linalg.norm(m)
+                out.append(p + m * d / max(np.dot(m, n_run), 0.3))
         elif k == len(run) - 1 and not closed_loop:
             n_run = _inward(e_in)
             if kinds is None or kinds[vi % n] == "joint":
                 along = e_out
                 out.append(p + along * d / max(np.dot(along, n_run), 0.2))
             else:
-                out.append(p + n_run * d)
+                m = _inward(e_out) + n_run
+                m /= np.linalg.norm(m)
+                out.append(p + m * d / max(np.dot(m, n_run), 0.3))
         else:
             n1, n2 = _inward(e_in), _inward(e_out)
             m = n1 + n2
@@ -192,17 +205,23 @@ def build_module(outline, kinds, rng, front_kinds=("front",), tactile=True, extr
     'joint' (aansluiting, open)."""
     outline = _orient(outline)
     parts = []
-    # kern
-    core = inset_region(outline, kinds, {"joint": 0.0, "edge": 0.10, "front": 0.10})
-    parts.append(plan_slab(core, 0.0, TOP - TILE_T + 0.004, 0.02, "M_Stn_StoneDark"))
+    # Opbouw in lagen die elkaar raken maar nergens overlappen (anders vallen vlakken samen: z-fighting, zichtbaar
+    # aan open uiteinden). Zijwand en kern tot onder de randtegels, daarboven een vulling onder geleidelijn en tegels.
+    cope_w = COPING if tactile else INSET
     # zijwand: één doorlopend stenen vlak per zichtbare zijde (geen losse blokken of voegen, zoals de kliffen),
-    # tot net in de randtegels zodat er geen naad of gat overblijft
+    # 3 cm terug onder de randtegels, die er als een dorpel overheen steken
     for run in runs(outline, kinds, ("front", "edge")):
-        for poly in _band(outline, run, 0.0, 0.20, 1000.0, kinds=kinds):
+        for poly in _band(outline, run, WALL_IN, WALL_T, 1000.0, kinds=kinds):
             if _poly_ok(poly):
-                parts.append(plan_slab(poly, 0.0, TOP - COPE_T + 0.03, 0.02, "M_Stn_Stone"))
+                parts.append(plan_slab(poly, 0.0, TOP - COPE_T, 0.02, "M_Stn_Stone"))
+    # kern achter de zijwand, tot dezelfde hoogte
+    core = inset_region(outline, kinds, {"joint": 0.0, "edge": WALL_T, "front": WALL_T})
+    parts.append(plan_slab(core, 0.0, TOP - COPE_T, 0.0, "M_Stn_StoneDark"))
+    # vulling onder geleidelijn en tegelvloer, tussen de randtegels
+    fill = inset_region(outline, kinds, {"joint": 0.0, "edge": INSET, "front": cope_w})
+    parts.append(plan_slab(fill, TOP - COPE_T, TOP - TILE_T, 0.0, "M_Stn_StoneDark"))
     # randtegels: aan de spoorkant 0,45 m (daarachter de geleidelijn), elders één brede rand tot de tegelvloer
-    for want, width in ((("front",), COPING if tactile else INSET), (("edge",), INSET)):
+    for want, width in ((("front",), cope_w), (("edge",), INSET)):
         for run in runs(outline, kinds, want):
             for poly in _band(outline, run, 0.0, width, TILE, kinds=kinds):
                 if _poly_ok(poly):
@@ -285,12 +304,16 @@ def ramp(rng, L=5.0):
 
     def ytop(x):
         return TOP * (1.0 - x / L)
-    # zijwanden (spoorkant + achterkant) als wigvormige stenen platen, in blokken
-    for (z0, z1) in ((E, E + 0.22), (B - 0.22, B)):                # wigvormige zijwanden uit één stuk
-        prof = [(0.0, 0.0), (L - 0.4, 0.0), (0.0, TOP - COPE_T + 0.03)]
-        parts.append(slab(prof, (), z0, z1, 0.02, "M_Stn_Stone"))
-    core = [(0.0, 0.0), (L, 0.0), (0.0, TOP - TILE_T)]
-    parts.append(slab(core, (), E + 0.15, B - 0.15, 0.0, "M_Stn_StoneDark"))
+    # lagen zoals bij build_module, zonder overlap: zijwanden (3 cm terug) en kern tot onder de randstenen,
+    # daarboven een vulling tot onder de tegels; alles als wig onder de schuine bovenkant
+    x_c = L * (1.0 - COPE_T / TOP)                                 # hier raakt de onderkant van de randsteen de grond
+    x_t = L * (1.0 - TILE_T / TOP)
+    wedge = [(0.0, 0.0), (x_c, 0.0), (0.0, TOP - COPE_T)]
+    for (z0, z1) in ((E + WALL_IN, E + WALL_T), (B - WALL_T, B - WALL_IN)):    # wigvormige zijwanden uit één stuk
+        parts.append(slab(wedge, (), z0, z1, 0.02, "M_Stn_Stone"))
+    parts.append(slab(wedge, (), E + WALL_T, B - WALL_T, 0.0, "M_Stn_StoneDark"))
+    parts.append(slab([(0.0, TOP - COPE_T), (x_c, 0.0), (x_t, 0.0), (0.0, TOP - TILE_T)], (), E + COPING, B - INSET, 0.0,
+                      "M_Stn_StoneDark"))
     # randstenen en tegels als schuine platen (parallellogram-profiel per stuk)
     bands = [((E, E + COPING), "M_Stn_PavingLight", COPE_T), ((B - INSET, B), "M_Stn_PavingLight", COPE_T),
              ((E + COPING, E + INSET), "M_Stn_Yellow", TILE_T)]
@@ -304,7 +327,8 @@ def ramp(rng, L=5.0):
             ya0, ya1 = ytop(x0), ytop(x1)
             prof = [(x0 + GAP, max(ya0 - th, 0.0)), (x1 - GAP, max(ya1 - th, 0.0)), (x1 - GAP, max(ya1, 0.02)),
                     (x0 + GAP, ya0)]
-            parts.append(slab(prof, (), z0 + GAP, z1 - GAP, 0.02, mat))
+            thin = min(prof[3][1] - prof[0][1], prof[2][1] - prof[1][1])     # bij de teen wordt het stuk dun
+            parts.append(slab(prof, (), z0 + GAP, z1 - GAP, min(0.02, 0.3 * thin), mat))
     col = slab([(0.0, 0.0), (L, 0.0), (L, 0.02), (0.0, TOP)], (), E, B, 0.0, "M_Stn_Collider")
     return mk.merge(*parts), col
 
@@ -323,12 +347,12 @@ def stairs(rng, steps=6):
         parts.append(rbox(x0, x1, 0.0, ytop - 0.15, E + 0.30, B - 0.30, 0.0, "M_Stn_StoneDark"))
     # trapwangen: getrapt profiel met een schuine afdeklijst
     for (z0, z1) in ((E, E + 0.24), (B - 0.24, B)):
-        prof = [(0.0, 0.0), (L, 0.0), (L, 0.18), (0.0, TOP)]
+        prof = [(0.0, 0.0), (L, 0.0), (L, 0.16), (0.0, TOP - 0.02)]
         parts.append(slab(prof, (), z0, z1, 0.03, "M_Stn_Stone"))
-        cap = [(0.0, TOP - 0.02), (L, 0.16), (L, 0.28), (0.0, TOP + 0.10)]
+        cap = [(0.0, TOP - 0.02), (L, 0.16), (L, 0.28), (0.0, TOP + 0.10)]          # ligt op de trapwang
         parts.append(slab(cap, (), z0 - 0.02, z1 + 0.02, 0.03, "M_Stn_PavingLight"))
     # bovenste rand: gele neus op de perronrand
-    parts.append(rbox(-0.06, 0.06, TOP - 0.004, TOP + 0.012, E + 0.30, B - 0.30, 0.008, "M_Stn_Yellow"))
+    parts.append(rbox(0.0, 0.10, TOP - 0.004, TOP + 0.012, E + 0.30, B - 0.30, 0.008, "M_Stn_Yellow"))  # niet over de naad
     col = mk.merge(slab([(0.0, 0.0), (L, 0.0), (L, 0.02), (0.0, TOP)], (), E + 0.24, B - 0.24, 0.0, "M_Stn_Collider"),
                    slab([(0.0, 0.0), (L, 0.0), (L, 0.28), (0.0, TOP + 0.10)], (), E - 0.02, E + 0.24, 0.0, "M_Stn_Collider"),
                    slab([(0.0, 0.0), (L, 0.0), (L, 0.28), (0.0, TOP + 0.10)], (), B - 0.24, B + 0.02, 0.0, "M_Stn_Collider"))

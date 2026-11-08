@@ -71,7 +71,7 @@ def station_scene():
             item("Platform_Straight_3m", (6.0, 0, 0)), item("Platform_EndCap_End", (9.0, 0, 0))]
     y = 1.05
     its += [item("Station_Building", (-1.2, 0, 5.30), 180)]
-    its += [item("Prop_LampPost", (-8.2, y, 4.6)), item("Prop_LampPost", (6.6, y, 4.6)),
+    its += [item("Prop_LampPost", (-7.5, y, 4.6)), item("Prop_LampPost", (6.6, y, 4.6)),
             item("Prop_Bench", (4.6, y, 4.55), 180), item("Prop_TrashBin", (3.3, y, 4.75)),
             item("Prop_Timetable", (8.4, y, 4.65), 180), item("Prop_TicketMachine", (-6.6, y, 4.75), 180),
             item("Prop_LuggageCart", (-4.9, y, 3.6), 70), item("Prop_StationSign", (-9.3, y, 4.75), 180),

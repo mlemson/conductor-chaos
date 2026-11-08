@@ -50,6 +50,15 @@ ROOF_TOP_RIDGE = ROOF_Y0 + ROOF_RISE
 # luifel
 LX = -HW - 3.0                    # buitenkant luifelvloer
 LPOST_X = LX + 0.28
+
+
+def _furniture():
+    """Losse spullen onder de luifel: (naam, (mesh, collider), rotatie, plek). Ook gebruikt door de test."""
+    x_in = -HW
+    return [("bench", props.bench(1.7), mk.rot_y(-math.pi / 2), (x_in - 0.62, FL, -1.75)),
+            ("barrel", props.barrel(), mk.rot_y(0.4), (x_in - 0.60, FL, -0.45)),
+            ("barrel_small", props.barrel(0.70, 0.29), mk.rot_y(1.1), (LX + 0.95, FL, -D + 0.62)),
+            ("crates", props.crate_stack(), mk.rot_y(0.5 * math.pi + 0.15), (LX + 1.05, FL, -D + 1.75))]
 L_PITCH = 14 * DEG
 L_TOP_AT_GUTTER = 3.36            # bovenkant luifeldak waar het onder de hoofddakgoot doorloopt (x = -3.85)
 
@@ -128,8 +137,10 @@ def plinth(rng):
     parts = [rbox(-HW + 0.05, HW - 0.05, 0.0, FL - 0.06, -D + 0.05, -0.05, 0.0, "M_Stn_StoneDark")]
     rows = ((0.0, FL - 0.02), (FL - 0.02, PLINTH))     # onderlaag + band boven de vloer (onderbroken bij deuren)
 
-    def run(p0, p1, normal, row_i, y0, y1, skip=()):
-        """skip: [(as, lo, hi)] -> boven de vloer geen blokken in dat bereik (deuren); de rij wordt daar afgeknipt."""
+    def run(p0, p1, normal, row_i, y0, y1, skip=(), ext=0.10):
+        """skip: [(as, lo, hi)] -> boven de vloer geen blokken in dat bereik (deuren); de rij wordt daar afgeknipt.
+        ext: verlenging voorbij de hoekpunten. Voor- en achterkant lopen door over de hoek (+0,10), de zijkanten
+        stoppen tegen hun binnenkant (-0,12), zodat de hoekblokken elkaar niet overlappen (geen dubbele vlakken)."""
         p0, p1 = np.array(p0, float), np.array(p1, float)
         L = np.linalg.norm(p1 - p0)
         e = (p1 - p0) / L
@@ -146,17 +157,19 @@ def plinth(rng):
             mid = (a + b) / 2
             if any(ta <= mid <= tb for ta, tb in holes):
                 continue
-            q = [p0 + e * (a - (0.10 if a == 0 else 0)), p0 + e * (b + (0.10 if b == L else 0))]
+            q = [p0 + e * (a - (ext if a == 0 else 0)), p0 + e * (b + (ext if b == L else 0))]
             n = np.array(normal, float)
             poly = [tuple(q[0] - n * 0.12), tuple(q[1] - n * 0.12), tuple(q[1] + n * 0.10), tuple(q[0] + n * 0.10)]
             parts.append(plan_slab(poly, y0, y1, 0.025, "M_Stn_Stone"))
     for i, (y0, y1) in enumerate(rows):
         run((-HW - 0.06, 0.06), (HW + 0.06, 0.06), (0, 1), i, y0, y1, skip=[(0, DOOR[0], DOOR[1])])
         run((HW + 0.06, -D - 0.06), (-HW - 0.06, -D - 0.06), (0, -1), i, y0, y1)
-        run((HW + 0.06, 0.06), (HW + 0.06, -D - 0.06), (1, 0), i, y0, y1)
-        run((-HW - 0.06, -D - 0.06), (-HW - 0.06, 0.06), (-1, 0), i, y0, y1, skip=[(1, -SIDE_DOOR[1], -SIDE_DOOR[0])])
-    # drempel voor de voordeur
-    parts.append(rbox(DOOR[0] - 0.12, DOOR[1] + 0.12, FL - 0.22, FL + 0.015, -T - 0.04, 0.16, 0.03, "M_Stn_PavingLight"))
+        run((HW + 0.06, 0.06), (HW + 0.06, -D - 0.06), (1, 0), i, y0, y1, ext=-0.12)
+        run((-HW - 0.06, -D - 0.06), (-HW - 0.06, 0.06), (-1, 0), i, y0, y1, skip=[(1, -SIDE_DOOR[1], -SIDE_DOOR[0])],
+            ext=-0.12)
+    # drempel voor de voordeur: ligt op de onderste laag, vult de onderbreking in de plint precies en steekt 4 cm
+    # voor de plint uit (geen voorvlak in hetzelfde vlak als de plint)
+    parts.append(rbox(DOOR[0] - 0.14, DOOR[1] + 0.14, FL - 0.02, FL + 0.015, -T - 0.04, 0.20, 0.015, "M_Stn_PavingLight"))
     return mk.merge(*parts)
 
 
@@ -189,7 +202,7 @@ def window_unit(x0, x1, y0, y1, depth0, depth1):
                  "M_Stn_Window")
     xm, ym = (x0 + x1) / 2, (y0 + y1) / 2 + 0.06
     bars = [rbox(xm - 0.035, xm + 0.035, y0 + 0.04, y1 - 0.04, zc - 0.03, zc + 0.03, 0.012, "M_Stn_Navy"),
-            rbox(x0 + 0.04, x1 - 0.04, ym - 0.035, ym + 0.035, zc - 0.03, zc + 0.03, 0.012, "M_Stn_Navy")]
+            rbox(x0 + 0.04, x1 - 0.04, ym - 0.035, ym + 0.035, zc - 0.022, zc + 0.022, 0.010, "M_Stn_Navy")]  # dunner: kruist
     sill = rbox(x0 - 0.18, x1 + 0.18, y0 - 0.20, y0 - 0.08, depth1 - 0.02, depth1 + 0.16, 0.03, "M_Stn_TimberDark")
     return mk.merge(frame, glass, *bars, sill)
 
@@ -233,7 +246,7 @@ def door_leaf():
     parts.append(slab(arch_loop(-w + 0.25, -0.25, 1.00, spring + 0.02, 10), [], zc - 0.012, zc + 0.012, 0.004, "M_Stn_Window"))
     xm = -w / 2
     parts.append(rbox(xm - 0.03, xm + 0.03, 1.02, spring + 0.02 + (w / 2 - 0.27), -0.028, 0.028, 0.01, "M_Stn_Navy"))
-    parts.append(rbox(-w + 0.27, -0.27, spring - 0.02, spring + 0.04, -0.028, 0.028, 0.01, "M_Stn_Navy"))
+    parts.append(rbox(-w + 0.27, -0.27, spring - 0.02, spring + 0.04, -0.021, 0.021, 0.008, "M_Stn_Navy"))
     for sgn in (1, -1):
         parts.append(slab(rounded_rect_loop(-w + 0.17, -0.17, 0.22, 0.86, 0.05, 2), [], 0.0, 0.016, 0.006, "M_Stn_NavyLight")
                      .transform(s=(1, 1, sgn), t=(0, 0, sgn * 0.034)))
@@ -257,10 +270,10 @@ def main_roof():
                  .transform(t=(0.0, ROOF_TOP_RIDGE + 0.12, z - 0.10)))
     parts.append(ball(0.26, "M_Stn_Yellow", 20, 12).transform(t=(0.0, ROOF_TOP_RIDGE + 0.58, z - 0.10)))
     # schoorsteen op het rechterdakvlak
-    cx, cz = 1.75, -3.95
+    cx, cz = 1.75, -3.92
     y_roof = ROOF_TOP_RIDGE - cx * math.tan(PITCH)
     parts.append(rbox(cx - 0.34, cx + 0.34, y_roof - 1.2, y_roof + 1.35, cz - 0.34, cz + 0.34, 0.06, "M_Stn_Stone"))
-    for k, y in enumerate(np.arange(y_roof - 0.2, y_roof + 1.3, 0.34)):
+    for k, y in enumerate(np.arange(y_roof - 0.2, y_roof + 1.3 - 0.32, 0.34)):       # niet tot in de kap
         for side in range(4):
             off = 0.12 if (k + side) % 2 else -0.12
             b = rbox(-0.17 + off, 0.17 + off, y + 0.015, y + 0.32, 0.34, 0.37, 0.02, "M_Stn_StoneDark")
@@ -288,7 +301,9 @@ def mono_roof(x_hi, x_lo, y_hi, pitch, z0, z1, rows=6):
             if xb - xa < 0.12:
                 continue
             top = s0 + row + 0.10
-            t = rbox(xa + 0.012, xb - 0.012, 0.0, 0.10, s0 - 0.02 - top, 0.0, 0.045, "M_Stn_Roof")
+            e_ins = 0.02 * (r % 2)                               # overlappende rijen: kopse kanten verspringen
+            xa_, xb_ = xa + (e_ins if xa <= -L / 2 + 1e-6 else 0), xb - (e_ins if xb >= L / 2 - 1e-6 else 0)
+            t = rbox(xa_ + 0.012, xb_ - 0.012, 0.0, 0.10, s0 - 0.02 - top, 0.0, 0.045, "M_Stn_Roof")
             parts.append(t.transform(R=mk.rot_x(0.09), t=(0, 0.004, top)))
     m = mk.merge(*parts).transform(R=mk.rot_x(-pitch))
     m = m.transform(R=mk.rot_y(math.pi / 2), t=(x_hi, y_hi, (z0 + z1) / 2))
@@ -303,17 +318,21 @@ def lean_to(rng):
     x_in = -HW
     # vloer: kern, stenen blokken, randtegels, tegels
     parts.append(rbox(LX + 0.10, x_in, 0.0, FL - 0.10, -D + 0.10, -0.10, 0.0, "M_Stn_StoneDark"))
-    edges = [((LX, 0.0), (LX, -D), (-1, 0)), ((x_in, 0.0), (LX, 0.0), (0, 1)), ((LX, -D), (x_in, -D), (0, -1))]
-    for (p0, p1, n) in edges:
+    # randen: voor- en achterkant lopen over de buitenhoek door, de buitenzijde stopt ertegen (hoeken overlappen
+    # niet, dus geen dubbele vlakken); aan de muurkant eindigen ze in de plint van het gebouw
+    edges = [((LX, 0.0), (LX, -D), (-1, 0), (-0.16, -0.16), (-0.36, -0.36)),
+             ((x_in, 0.0), (LX, 0.0), (0, 1), (0.0, 0.06), (0.0, 0.08)),
+             ((LX, -D), (x_in, -D), (0, -1), (0.06, 0.0), (0.08, 0.0))]
+    for (p0, p1, n, ext_s, ext_t) in edges:
         p0, p1, n = np.array(p0, float), np.array(p1, float), np.array(n, float)
         L = np.linalg.norm(p1 - p0)
         e = (p1 - p0) / L
-        q0, q1 = p0 - e * 0.06, p1 + e * 0.06                  # één doorlopend vlak, hoeken sluiten
+        q0, q1 = p0 - e * ext_s[0], p1 + e * ext_s[1]          # één doorlopend vlak
         poly = [tuple(q0 - n * 0.16), tuple(q1 - n * 0.16), tuple(q1 + n * 0.06), tuple(q0 + n * 0.06)]
         parts.append(plan_slab(poly, 0.0, FL - 0.11, 0.02, "M_Stn_Stone"))
         cuts = [0.0] + list(np.arange(0.76, L - 0.2, 0.76)) + [L]
         for a, b in zip(cuts[:-1], cuts[1:]):
-            q0, q1 = p0 + e * (a - (0.08 if a == 0 else 0)), p0 + e * (b + (0.08 if b == L else 0))
+            q0, q1 = p0 + e * (a - (ext_t[0] if a == 0 else 0)), p0 + e * (b + (ext_t[1] if b == L else 0))
             poly = [tuple(q0 - n * 0.36), tuple(q1 - n * 0.36), tuple(q1 + n * 0.08), tuple(q0 + n * 0.08)]
             parts.append(plan_slab(poly, FL - 0.14, FL, 0.018, "M_Stn_PavingLight"))
     for i, x0 in enumerate(np.arange(LX + 0.36, x_in - 1e-6, 0.76)):
@@ -342,7 +361,7 @@ def lean_to(rng):
     parts.append(rbox(LPOST_X - 0.14, LPOST_X + 0.14, beam_bot, beam_top, -D - 0.25, 0.25, 0.04, "M_Stn_Timber"))
     for z in post_z:
         y_wall = top_at(x_in) - ROOF_THICK / math.cos(L_PITCH)
-        prof = [(LPOST_X - 0.14, beam_bot), (x_in + 0.02, y_wall - 0.26), (x_in + 0.02, y_wall), (LPOST_X - 0.14, beam_top)]
+        prof = [(LPOST_X - 0.08, beam_bot), (x_in + 0.02, y_wall - 0.26), (x_in + 0.02, y_wall), (LPOST_X - 0.08, beam_top)]
         parts.append(slab(prof, (), z - 0.11, z + 0.11, 0.03, "M_Stn_TimberDark"))
         parts.append(capsule((LPOST_X + 0.06, beam_bot - 0.55, z), (LPOST_X + 0.62, beam_bot + 0.06, z), 0.065,
                              mat="M_Stn_Timber", seg=6, rings=1))
@@ -350,25 +369,16 @@ def lean_to(rng):
             if -D + 0.2 < z + dz < -0.2:
                 parts.append(capsule((LPOST_X, beam_bot - 0.55, z + dz * 0.1), (LPOST_X, beam_bot + 0.06, z + dz),
                                      0.065, mat="M_Stn_Timber", seg=6, rings=1))
-    # inrichting: bank met de rug naar de muur, ton, hangbord, lantaarn aan de paal
-    b, bc = props.bench(1.7)
-    R = mk.rot_y(-math.pi / 2)
-    parts.append(b.transform(R=R, t=(x_in - 0.42, FL, -1.25)))
-    cols.append(bc.transform(R=R, t=(x_in - 0.42, FL, -1.25)))
-    bar, barc = props.barrel()
-    parts.append(bar.transform(R=mk.rot_y(0.4), t=(x_in - 0.48, FL, -0.42)))
-    cols.append(barc.transform(t=(x_in - 0.48, FL, -0.42)))
-    bar2, _ = props.barrel(0.70, 0.29)
-    parts.append(bar2.transform(R=mk.rot_y(1.1), t=(LX + 0.70, FL, -D + 0.75)))
-    cols.append(_.transform(t=(LX + 0.70, FL, -D + 0.75)))
+    # inrichting: bank met de rug naar de muur (vrij van de plint), ton ernaast, kratten en tweede ton achterin,
+    # allemaal los van elkaar, van de palen en van de plint (test_station_kit controleert dat)
+    for name, (m, c), R, t in _furniture():
+        parts.append(m.transform(R=R, t=t))
+        cols.append(c.transform(R=R, t=t))
     sign, _s = props.hanging_sign(0.62, 0.48, 0.28)
     xs = -4.65                                           # aan de voorste dwarsbalk, naar het perron gericht
     y_wall = top_at(x_in) - ROOF_THICK / math.cos(L_PITCH) - 0.26
     y_sign = beam_bot + (y_wall - beam_bot) * (xs - (LPOST_X - 0.14)) / (x_in - (LPOST_X - 0.14))
     parts.append(sign.transform(t=(xs, y_sign + 0.01, post_z[0])))
-    crates, cc = props.crate_stack()
-    parts.append(crates.transform(R=mk.rot_y(0.5 * math.pi + 0.15), t=(LX + 0.85, FL, -D + 1.95)))
-    cols.append(cc.transform(R=mk.rot_y(0.5 * math.pi + 0.15), t=(LX + 0.85, FL, -D + 1.95)))
     return mk.merge(*parts), mk.merge(*cols)
 
 
@@ -381,8 +391,8 @@ def interior():
     for (a, b) in ((xi0, DOOR[0] - 0.08), (DOOR[1] + 0.08, xi1)):
         parts.append(rbox(a, b, FL, FL + 0.82, zi1 - 0.04, zi1, 0.015, "M_Stn_TimberDark"))
     parts.append(rbox(xi0, xi1, FL, FL + 0.82, zi0, zi0 + 0.04, 0.015, "M_Stn_TimberDark"))
-    parts.append(rbox(xi1 - 0.04, xi1, FL, FL + 0.82, zi0, zi1, 0.015, "M_Stn_TimberDark"))
-    for (a, b) in ((T, SIDE_DOOR[0] - 0.08), (SIDE_DOOR[1] + 0.08, D - T)):
+    parts.append(rbox(xi1 - 0.04, xi1, FL, FL + 0.82, zi0 + 0.04, zi1 - 0.04, 0.015, "M_Stn_TimberDark"))   # stoot tegen voor/achter
+    for (a, b) in ((T + 0.04, SIDE_DOOR[0] - 0.08), (SIDE_DOOR[1] + 0.08, D - T - 0.04)):
         parts.append(rbox(xi0, xi0 + 0.04, FL, FL + 0.82, -b, -a, 0.015, "M_Stn_TimberDark"))
     # loket: L-vormige toonbank met doorgang in de hoek
     za, zb = -1.98, -1.74
@@ -419,7 +429,7 @@ def interior():
     pot = mk.merge(mk.lathe([(0.0, 0.0), (0.18, 0.0), (0.24, 0.40), (0.0, 0.40)], 12, mat="M_Stn_Timber"),
                    mk.lathe([(0.0, 0.36), (0.22, 0.36), (0.22, 0.38), (0.0, 0.38)], 12, mat="M_Stn_Soil"),
                    props.bush_mass(np.random.default_rng(7), 0.35, 0.35, 0.45, 3).transform(t=(0, 0.30, 0)),
-                   props.bush_mass(np.random.default_rng(8), 0.30, 0.30, 0.40, 3).transform(R=mk.rot_y(1.5), t=(0, 0.52, 0)))
+                   props.bush_mass(np.random.default_rng(9), 0.30, 0.30, 0.40, 3).transform(R=mk.rot_y(1.3), t=(0, 0.52, 0)))
     parts.append(pot.transform(t=(xi1 - 0.38, FL, zi0 + 0.38)))
     case = props.suitcase(0.56, 0.42, 0.22, "M_Stn_Red", strap="M_Stn_TimberDark")
     parts.append(case.transform(R=mk.rot_y(0.3), t=(0.25, FL, zi0 + 0.55)))
@@ -433,7 +443,9 @@ def interior():
                                  seg=6, rings=1))
         truss.append(capsule((0.65, EAVE - 0.05, z), (0.65, EAVE - 0.52, z), 0.012, mat="M_Stn_Dark", seg=5, rings=1))
         truss.append(props.lantern(1.0).transform(t=(0.65, EAVE - 1.05, z)))
-    truss.append(rbox(-0.12, 0.12, roof_y_under(0.0) - 0.22, roof_y_under(0.0) + 0.04, -D, 0.0, 0.03, "M_Stn_TimberDark"))
+    # nokbalk eindigt 2 cm binnen de topgevels (kopse kant niet in het muurvlak)
+    truss.append(rbox(-0.12, 0.12, roof_y_under(0.0) - 0.22, roof_y_under(0.0) + 0.04, -D + 0.02, -0.02, 0.03,
+                      "M_Stn_TimberDark"))
     return mk.merge(*parts), mk.merge(*truss), cols
 
 
@@ -463,7 +475,7 @@ def facade():
     ring = slab(circle_loop(0, 0, 0.47, 24), [circle_loop(0, 0, 0.34, 24)], -T - 0.03, 0.06, 0.02, "M_Stn_Timber")
     glass = disc(0.36, -T / 2 - 0.012, -T / 2 + 0.012, "M_Stn_Window", 24, 0.004)
     bars = [rbox(-0.34, 0.34, -0.03, 0.03, -T / 2 - 0.025, -T / 2 + 0.025, 0.01, "M_Stn_Navy"),
-            rbox(-0.03, 0.03, -0.34, 0.34, -T / 2 - 0.025, -T / 2 + 0.025, 0.01, "M_Stn_Navy")]
+            rbox(-0.03, 0.03, -0.34, 0.34, -T / 2 - 0.018, -T / 2 + 0.018, 0.008, "M_Stn_Navy")]     # dunner: kruist
     parts.append(mk.merge(ring, glass, *bars).transform(R=mk.rot_y(math.pi), t=(0, EAVE + 1.25, -D)))
     # kozijn van de zijdeur naar de luifel
     u0, u1, us = SIDE_DOOR

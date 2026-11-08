@@ -31,13 +31,13 @@
    "fov": 30,
    "yaw": 24,
    "pitch": 12,
-   "dist": 3.2,
-   "target": "0.00,0.44,0.00",
+   "dist": 2.94,
+   "target": "0.01,0.43,0.00",
    "lightRel": 1,
    "groundShadowOnly": 1,
-   "groundR": 1.76,
-   "shadowSize": 1.12,
-   "far": 62.8,
+   "groundR": 1.61,
+   "shadowSize": 1.03,
+   "far": 61.8,
    "items": [
     {
      "url": "../Exports/Environment/Station/Prop_Barrel.glb"
@@ -100,13 +100,13 @@
    "fov": 30,
    "yaw": 24,
    "pitch": 12,
-   "dist": 3.49,
-   "target": "-0.01,0.34,0.01",
+   "dist": 3.48,
+   "target": "-0.00,0.34,0.01",
    "lightRel": 1,
    "groundShadowOnly": 1,
-   "groundR": 1.92,
-   "shadowSize": 1.23,
-   "far": 64.0,
+   "groundR": 1.91,
+   "shadowSize": 1.22,
+   "far": 63.9,
    "items": [
     {
      "url": "../Exports/Environment/Station/Prop_Planter.glb"
@@ -196,7 +196,7 @@
    "target": "0.00,-0.39,0.00",
    "lightRel": 1,
    "groundShadowOnly": 1,
-   "groundR": 1.28,
+   "groundR": 1.29,
    "shadowSize": 0.82,
    "far": 59.4,
    "items": [
@@ -330,13 +330,13 @@
    "fov": 30,
    "yaw": 24,
    "pitch": 12,
-   "dist": 5.59,
-   "target": "1.00,0.55,0.01",
+   "dist": 5.56,
+   "target": "0.99,0.55,0.01",
    "lightRel": 1,
    "groundShadowOnly": 1,
-   "groundR": 3.07,
-   "shadowSize": 1.96,
-   "far": 72.4,
+   "groundR": 3.05,
+   "shadowSize": 1.95,
+   "far": 72.2,
    "items": [
     {
      "url": "../Exports/Environment/Station/Prop_Fence_2m.glb"
@@ -560,13 +560,13 @@
    "fov": 30,
    "yaw": -30,
    "pitch": 26,
-   "dist": 9.8,
-   "target": "1.02,0.57,3.40",
+   "dist": 9.73,
+   "target": "1.05,0.57,3.40",
    "lightRel": 1,
    "groundShadowOnly": 1,
-   "groundR": 5.38,
-   "shadowSize": 3.44,
-   "far": 89.2,
+   "groundR": 5.34,
+   "shadowSize": 3.42,
+   "far": 88.9,
    "items": [
     {
      "url": "../Exports/Environment/Station/Platform_Stairs_End.glb"
@@ -583,13 +583,13 @@
    "fov": 30,
    "yaw": -30,
    "pitch": 26,
-   "dist": 9.8,
-   "target": "1.08,0.57,3.40",
+   "dist": 9.73,
+   "target": "1.05,0.57,3.40",
    "lightRel": 1,
    "groundShadowOnly": 1,
-   "groundR": 5.38,
-   "shadowSize": 3.44,
-   "far": 89.2,
+   "groundR": 5.34,
+   "shadowSize": 3.42,
+   "far": 88.9,
    "items": [
     {
      "url": "../Exports/Environment/Station/Platform_Stairs_Start.glb"
@@ -804,7 +804,7 @@
     {
      "url": "../Exports/Environment/Station/Prop_LampPost.glb",
      "pos": [
-      -8.2,
+      -7.5,
       1.05,
       4.6
      ]
@@ -1143,7 +1143,7 @@
     {
      "url": "../Exports/Environment/Station/Prop_LampPost.glb",
      "pos": [
-      -8.2,
+      -7.5,
       1.05,
       4.6
      ]
