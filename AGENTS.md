@@ -1,5 +1,7 @@
 # Agentinstructies — eerst lezen
 
+**Gebruikersvoorkeur:** lever nieuwe, gecontroleerde wijzigingen rechtstreeks als gerichte commits op `main` en push die direct; een PR is daarvoor niet verplicht. Behoud bestaande issues, controles en lokale wijzigingen. Bestaande PR's of uiteenlopende branches niet automatisch samenvoegen en nooit geforceerd pushen. Deze voorkeur gaat vóór de PR-verplichtingen hieronder.
+
 **CRITICAL — MULTIPLAYER FIRST:** Conductor Chaos is co-op first. Shared objects, train, door, NPCs and collision outcomes remain server-authoritative. **A short host+remote check is required when shared network behavior changes and it is feasible**; documentation, local art and local UI do not require a multiplayer/Play-test. Never claim a test was run if it was not. See the [small-task playbook](Docs/AI/SMALL_TASK_PLAYBOOK.md) for lean checks.
 
 ## Verplichte werkafspraak: klein, zuinig, geen dubbel werk
