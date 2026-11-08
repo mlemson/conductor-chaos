@@ -39,6 +39,11 @@ namespace ConductorChaos.Playground
         private float yaw, pitch = 18f;
         private Camera playerCamera;
         private float originalCameraFieldOfView;
+        private float originalCameraNearClip;
+        private Renderer[] cameraBodyRenderers;
+        private bool[] cameraBodyRenderingOff;
+        private bool cameraHidesBody;
+        private float cameraDistance, cameraZoomVelocity;
         private float desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
         private readonly RaycastHit[] hits = new RaycastHit[32];
 #if DEVELOPMENT_BUILD
@@ -81,8 +86,16 @@ namespace ConductorChaos.Playground
             if (IsOwner)
             {
                 playerCamera = Camera.main;
-                if (playerCamera) originalCameraFieldOfView = playerCamera.fieldOfView;
-                desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
+                if (playerCamera)
+                {
+                    originalCameraFieldOfView = playerCamera.fieldOfView;
+                    originalCameraNearClip = playerCamera.nearClipPlane;
+                    playerCamera.nearClipPlane = Mathf.Min(originalCameraNearClip, 0.08f);
+                    cameraBodyRenderers = visual ? visual.GetComponentsInChildren<Renderer>(true) : System.Array.Empty<Renderer>();
+                    cameraBodyRenderingOff = new bool[cameraBodyRenderers.Length];
+                }
+                cameraDistance = desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
+                cameraZoomVelocity = 0f;
                 yaw = transform.eulerAngles.y;
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
@@ -243,7 +256,10 @@ namespace ConductorChaos.Playground
                 handPush = Mathf.Max(left.PushUp(press, upSpeed), right.PushUp(press, upSpeed));
             }
             if (handPush > 0f) body.AddForce(Vector3.up * handPush, ForceMode.Acceleration);
-            legs?.Step(body.linearVelocity, handPush <= 0f && IsGrounded());
+            bool grounded = IsGrounded();
+            if (!grounded && handPush <= 0f && requestedMove.y <= 0.1f && left.HasGrip != right.HasGrip)
+                (left.HasGrip ? left : right).SlideDown();
+            legs?.Step(body.linearVelocity, handPush <= 0f && grounded);
             if (Time.time >= nextPose)
             {
                 leftPose.Value = left.LocalRotation;
@@ -279,15 +295,38 @@ namespace ConductorChaos.Playground
             Quaternion orbit = Quaternion.Euler(pitch, yaw, 0f);
             Vector3 focus = transform.position + Vector3.up * 0.9f;
             Vector3 direction = -(orbit * Vector3.forward);
-            float distance = desiredCameraDistance;
+            cameraDistance = PlaygroundControls.EaseCameraDistance(cameraDistance, desiredCameraDistance, ref cameraZoomVelocity);
+            float eyeBlend = 1f - Mathf.SmoothStep(0f, 1f, cameraDistance / PlaygroundControls.FirstPersonDistance);
+            focus += PlaygroundControls.FirstPersonEyeOffset(yaw) * eyeBlend;
+            float distance = cameraDistance;
             int count = Physics.SphereCastNonAlloc(focus, 0.16f, direction, hits, distance, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
-                if (!hits[i].collider.transform.IsChildOf(transform)) distance = Mathf.Min(distance, Mathf.Max(0.3f, hits[i].distance - 0.15f));
-            float targetFov = distance < 1.5f
+                if (!hits[i].collider.transform.IsChildOf(transform)) distance = Mathf.Min(distance, Mathf.Max(0f, hits[i].distance - 0.15f));
+            if (distance < cameraDistance)
+            {
+                cameraDistance = distance;
+                cameraZoomVelocity = 0f;
+            }
+            SetCameraBodyHidden(distance < PlaygroundControls.FirstPersonDistance);
+            float targetFov = desiredCameraDistance >= 1.5f && distance < 1.5f
                 ? PlaygroundControls.ZoomFieldOfView(originalCameraFieldOfView, desiredCameraDistance)
                 : originalCameraFieldOfView;
-            playerCamera.fieldOfView = Mathf.MoveTowards(playerCamera.fieldOfView, targetFov, 100f * Time.unscaledDeltaTime);
+            playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, targetFov, 1f - Mathf.Exp(-7f * Time.unscaledDeltaTime));
             playerCamera.transform.SetPositionAndRotation(focus + direction * distance, orbit);
+        }
+
+        private void SetCameraBodyHidden(bool hidden)
+        {
+            if (cameraBodyRenderers == null || cameraHidesBody == hidden) return;
+            cameraHidesBody = hidden;
+            for (int i = 0; i < cameraBodyRenderers.Length; i++)
+            {
+                Renderer renderer = cameraBodyRenderers[i];
+                if (!renderer) continue;
+                if (hidden) cameraBodyRenderingOff[i] = renderer.forceRenderingOff;
+                bool isArm = (leftArm && renderer.transform.IsChildOf(leftArm)) || (rightArm && renderer.transform.IsChildOf(rightArm));
+                renderer.forceRenderingOff = (hidden && !isArm) || cameraBodyRenderingOff[i];
+            }
         }
 
         public override void OnNetworkDespawn()
@@ -302,7 +341,12 @@ namespace ConductorChaos.Playground
             }
             if (IsOwner)
             {
-                if (playerCamera) playerCamera.fieldOfView = originalCameraFieldOfView;
+                SetCameraBodyHidden(false);
+                if (playerCamera)
+                {
+                    playerCamera.fieldOfView = originalCameraFieldOfView;
+                    playerCamera.nearClipPlane = originalCameraNearClip;
+                }
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
@@ -326,14 +370,17 @@ namespace ConductorChaos.Playground
             private readonly ConfigurableJoint shoulder;
             private SpringJoint grip;
             private Collider gripSurface;
+            private Vector3 gripNormal;
             private readonly Collider[] leverOverlaps = new Collider[12];
             private float nextAttempt;
 
             public Quaternion LocalRotation => arm ? arm.localRotation : Quaternion.identity;
             public Collider Collider => collider;
+            public bool HasGrip => grip;
             public bool IsHoldingBody(Rigidbody candidate) => grip && grip.connectedBody == candidate;
             public float PushUp(float press, float upSpeed) =>
                 PlaygroundControls.HandPushAcceleration(grip, gripSurface, press, upSpeed);
+            public void SlideDown() => PlaygroundControls.SlideWallGrip(grip, gripSurface, ref gripNormal);
 
             public ArmPhysics(Transform transform, Rigidbody body, bool server)
             {
@@ -418,6 +465,7 @@ namespace ConductorChaos.Playground
                 var train = chosen.rigidbody ? chosen.rigidbody.GetComponentInParent<TrainDrive>() : null;
                 bool leverGrip = train && train.IsSpawned && train.IsOwnedByServer && train.IsLeverCollider(chosen.collider);
                 gripSurface = leverGrip ? null : chosen.collider;
+                gripNormal = leverGrip ? Vector3.zero : chosen.collider.transform.InverseTransformDirection(chosen.normal);
                 grip.spring = leverGrip ? 450f : 180f;
                 grip.damper = leverGrip ? 40f : 18f;
                 grip.minDistance = 0f;
