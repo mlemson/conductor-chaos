@@ -48,6 +48,20 @@ P = {
     ("wool", "Schaap (lavendel schaduw)", ["#352F3C", "#BDABC1", "#DCC7C5", "#FDEEDC", "#FDF6E8"], (1360, 550, 1495, 660)),
     ("haze_purple", "Paarse rook / sfeer", ["#6B4269", "#684E6B", "#A7689C", "#B297B8", "#D2BCD0"], (1150, 520, 1330, 660)),
   ],
+  # Nieuwe personages: gemeten in hun eigen conceptblad (5e veld = bronbeeld), met
+  # Docs/References/tools/measure_character_ramps.py. Overall monteur = uniform_navy, helm = helmet.
+  "Reizigers & crew": [
+    ("coat_plum", "Jas oudere passagier (pruim)", ["#553642", "#6B4051", "#7C4A5B", "#864E63", "#8C5667"], (300, 640, 700, 900), "Characters/elderly-passenger-concept.png"),
+    ("beret_plum", "Baret & bril oudere passagier", ["#6D4067", "#824D7B", "#8C5484", "#975D8C", "#A9739B"], (230, 150, 620, 330), "Characters/elderly-passenger-concept.png"),
+    ("hair_grey", "Grijs haar (lavendel schaduw)", ["#8C787B", "#A89699", "#C1B0B3", "#CFBFC0", "#E2D2CF"], (200, 250, 760, 560), "Characters/elderly-passenger-concept.png"),
+    ("scarf_cream", "Sjaal & tas (crème)", ["#D3AA81", "#E7C198", "#EBC69D", "#EECAA1", "#FCDBB4"], (290, 590, 700, 760), "Characters/elderly-passenger-concept.png"),
+    ("safari_hat", "Safarihoed toerist", ["#C2925E", "#DDAC73", "#EFBF86", "#F4C892", "#FCD8A4"], (200, 190, 830, 420), "Characters/tourist-concept.png"),
+    ("shirt_coral", "Hawaïhemd toerist", ["#B24036", "#D25044", "#D55246", "#D85448", "#EC6755"], (220, 690, 820, 1000), "Characters/tourist-concept.png"),
+    ("shorts_olive", "Korte broek (olijf)", ["#574D2C", "#655931", "#706236", "#7B6B3A", "#9A8548"], (330, 990, 790, 1095), "Characters/tourist-concept.png"),
+    ("backpack_teal", "Rugzak (petrol)", ["#204052", "#295065", "#2F5A71", "#325E75", "#4A7B9A"], (110, 690, 330, 835), "Characters/tourist-concept.png"),
+    ("leather", "Leer: bretels, gordel, tasjes", ["#693B2E", "#774332", "#804936", "#8F5039", "#B46D4B"], (380, 520, 770, 730), "Characters/rail-mechanic-concept.png"),
+    ("boot_brown", "Werkhandschoen & laarzen", ["#3E2C2A", "#47322F", "#503936", "#563F3E", "#886B66"], (250, 560, 360, 680), "Characters/rail-mechanic-concept.png"),
+  ],
   "UI & logo": [
     ("ui_bg", "Achtergrond (pruim-grafiet)", ["#2A2730", "#302629", "#33303B", "#403E4B", "#4A4852"], (0, 780, 420, 1010)),
     ("parchment", "Perkament-labels", ["#9C8978", "#CAA791", "#F2D8BB", "#F4DCC0", "#FAECDC"], (10, 285, 390, 405)),
@@ -57,8 +71,13 @@ P = {
   ],
 }
 
-def thumb(box, w=150, h=96):
-    im = CONCEPT.crop(box)
+_SOURCES = {}
+
+
+def thumb(box, w=150, h=96, src=None):
+    if src and src not in _SOURCES:
+        _SOURCES[src] = Image.open(os.path.join(REF, src)).convert("RGB")
+    im = (_SOURCES[src] if src else CONCEPT).crop(box)
     sc = max(w / im.width, h / im.height)
     im = im.resize((max(w, round(im.width * sc)), max(h, round(im.height * sc))), Image.LANCZOS)
     l, t = (im.width - w) // 2, (im.height - h) // 2
@@ -142,8 +161,8 @@ text(470, y + 38, "Elke bol = één materiaal uit het concept: warm licht van li
 defs = ['<defs>',
         '<filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>']
 spheres = ["skin", "uniform_navy", "train_red", "helmet", "beanie", "track_wood", "mountain", "pine", "wool", "parchment"]
-allramps = {k: r for g in P.values() for (k, n, r, b) in g}
-names = {k: n for g in P.values() for (k, n, r, b) in g}
+allramps = {k: r for g in P.values() for (k, n, r, b, *_) in g}
+names = {k: n for g in P.values() for (k, n, r, b, *_) in g}
 sw = (W - 80) / len(spheres)
 for i, k in enumerate(spheres):
     r = allramps[k]
@@ -167,12 +186,12 @@ for gi, (group, items) in enumerate(P.items()):
     y += 74
     cols = 2
     colw = (W - 80 - 30) / cols
-    for i, (key, name, ramp, box) in enumerate(items):
+    for i, (key, name, ramp, box, *src) in enumerate(items):
         cx = 40 + (i % cols) * (colw + 30)
         cy = y + (i // cols) * rowh
         add(f'<rect x="{cx}" y="{cy}" width="{colw}" height="{rowh - 14}" rx="14" fill="#3B3843"/>')
         add(f'<clipPath id="c_{key}"><rect x="{cx + 8}" y="{cy + 8}" width="150" height="{rowh - 30}" rx="10"/></clipPath>')
-        add(f'<image x="{cx + 8}" y="{cy + 8}" width="150" height="{rowh - 30}" preserveAspectRatio="xMidYMid slice" clip-path="url(#c_{key})" href="{thumb(box, 150, rowh - 30)}"/>')
+        add(f'<image x="{cx + 8}" y="{cy + 8}" width="150" height="{rowh - 30}" preserveAspectRatio="xMidYMid slice" clip-path="url(#c_{key})" href="{thumb(box, 150, rowh - 30, src[0] if src else None)}"/>')
         text(cx + 176, cy + 32, name, 20, "#F4DCC0", 700)
         text(cx + colw - 14, cy + 32, key, 14, "#857771", 400, "end")
         swx, sww = cx + 176, (colw - 176 - 14) / 5
@@ -302,7 +321,7 @@ pj = {
   "source": "Docs/References/conductor-chaos-concept.png",
   "note": "Gemeten met k-means/percentielen per materiaalgebied in de conceptafbeelding; enkele uiterste tinten (diepste schaduw of hoogste licht) zijn handmatig doorgetrokken waar het concept te weinig pixels had.",
   "ramp_order": "index 0 = diepste schaduw ... index 4 = hoogste licht (index 4 bij 'vest' en 'cloth_dark' is een tweede materiaal, zie name)",
-  "groups": {g: {k: {"name": n, "ramp": r} for (k, n, r, b) in items} for g, items in P.items()},
+  "groups": {g: {k: {"name": n, "ramp": r} for (k, n, r, b, *_) in items} for g, items in P.items()},
   "lighting": {n: c for (n, c, d) in urp},
 }
 json.dump(pj, open(os.path.join(REF, "palette.json"), "w", encoding="utf-8"), indent=2, ensure_ascii=False)

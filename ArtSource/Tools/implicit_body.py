@@ -29,17 +29,11 @@ def _body_field(x,y,z,body_radius,body_depth):
     return smooth_max(body,-gap,0.018)
 
 
-def make_body(body_radius=0.28, body_depth=0.86, collar_y=0.53, spacing=0.028):
-    """Continuous body/trousers/shoes with a real open gap.
-
-    Small smooth unions join the trousers to the upper body without a skirt-like rim.
-    A tetrahedral isosurface shares vertices between adjacent cells.
-    """
-    xs=np.arange(-0.34,0.34+spacing,spacing)
-    ys=np.arange(-0.035,1.06+spacing,spacing)
-    zs=np.arange(-0.30,0.30+spacing,spacing)
+def polygonize(field_fn, xs, ys, zs):
+    """Tetrahedral isosurface (field < 0 = inside) on a regular grid; returns (vertex list, faces).
+    Adjacent cells share edge vertices, so the result is one connected, watertight surface."""
     x,y,z=np.meshgrid(xs,ys,zs,indexing='ij')
-    field=_body_field(x,y,z,body_radius,body_depth)
+    field=field_fn(x,y,z)
     shape=field.shape
     offsets=np.array([(0,0,0),(1,0,0),(1,1,0),(0,1,0),(0,0,1),(1,0,1),(1,1,1),(0,1,1)])
     samples=np.stack([field[dx:shape[0]-1+dx,dy:shape[1]-1+dy,dz:shape[2]-1+dz] for dx,dy,dz in offsets],axis=-1)
@@ -75,6 +69,22 @@ def make_body(body_radius=0.28, body_depth=0.86, collar_y=0.53, spacing=0.028):
                 p=np.array([vertices[j] for j in tri])
                 if np.dot(np.cross(p[1]-p[0],p[2]-p[0]),direction)<0: tri=[tri[0],tri[2],tri[1]]
                 faces.append(tuple(tri))
+    return vertices,faces
+
+
+def make_body(body_radius=0.28, body_depth=0.86, collar_y=0.53, spacing=0.028, bands=None):
+    """Continuous body/trousers/shoes with a real open gap.
+
+    bands: optional list of (low_y, high_y, material) horizontal material zones (None = open end).
+    Default: shoes below 0.085 m, uniform up to collar_y, skin above (the conductor).
+
+    Small smooth unions join the trousers to the upper body without a skirt-like rim.
+    A tetrahedral isosurface shares vertices between adjacent cells.
+    """
+    xs=np.arange(-0.34,0.34+spacing,spacing)
+    ys=np.arange(-0.035,1.06+spacing,spacing)
+    zs=np.arange(-0.30,0.30+spacing,spacing)
+    vertices,faces=polygonize(lambda x,y,z:_body_field(x,y,z,body_radius,body_depth),xs,ys,zs)
     # Split faces at shoe and collar planes; share edge intersections so the
     # trousers, shoes and torso remain a single connected mesh.
     intersections={}
@@ -94,10 +104,12 @@ def make_body(body_radius=0.28, body_depth=0.86, collar_y=0.53, spacing=0.028):
             if ina != inb: result.append(on_plane(a,b,level))
         return result
     cut_faces=[]; materials=[]; shoe_y=0.085
+    if bands is None:
+        bands=((None,shoe_y,'M_Conductor_Shoe'),
+               (shoe_y,collar_y,'M_Conductor_Uniform'),
+               (collar_y,None,'M_Conductor_Skin'))
     for face in faces:
-        for low,high,material in ((None,shoe_y,'M_Conductor_Shoe'),
-                                  (shoe_y,collar_y,'M_Conductor_Uniform'),
-                                  (collar_y,None,'M_Conductor_Skin')):
+        for low,high,material in bands:
             polygon=list(face)
             if low is not None: polygon=clip(polygon,low,False)
             if polygon and high is not None: polygon=clip(polygon,high,True)
