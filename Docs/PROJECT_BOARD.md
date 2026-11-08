@@ -6,7 +6,7 @@
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 69 | 25 | 1 | 0 | 3 |
+| 70 | 25 | 0 | 0 | 3 |
 
 ## 🗺️ Mijlpalen
 
@@ -44,7 +44,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 📋 Taken per status
 
-### 📝 Te doen (69)
+### 📝 Te doen (70)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -109,6 +109,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P1 | [#180 Voorkom wegtrillende kolen tijdens normaal treinrijden](https://github.com/mlemson/conductor-chaos/issues/180) | Overig | — | — |
 | P1 | [#183 Camerazoom en instelbare camerabeweging](https://github.com/mlemson/conductor-chaos/issues/183) | Overig | — | — |
 | P1 | [#184 Bukken in physics-playground](https://github.com/mlemson/conductor-chaos/issues/184) | Overig | — | — |
+| P1 | [#185 Unstuck: speler terug op de trein](https://github.com/mlemson/conductor-chaos/issues/185) | Overig | — | — |
 | P1 | [#187 Nieuwe terreindelen met het lichte gras](https://github.com/mlemson/conductor-chaos/issues/187) | Overig | — | — |
 | P1 | [#188 Rookdeeltjes met leesbaar mesh in builds](https://github.com/mlemson/conductor-chaos/issues/188) | Overig | — | — |
 | P1 | [#189 Voorkom uitgerekte ledematen van passagiers op clients](https://github.com/mlemson/conductor-chaos/issues/189) | Overig | — | — |
@@ -148,11 +149,9 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P2 | [#149 Herstel preset voor stenen kliffen op hersteltak](https://github.com/mlemson/conductor-chaos/issues/149) | Overig | @mlemson | — |
 | P2 | [#164 Verberg playground-HUD na tien seconden](https://github.com/mlemson/conductor-chaos/issues/164) | Overig | @mlemson | — |
 
-### 👀 Klaar voor review (1)
+### 👀 Klaar voor review (0)
 
-| Fase | Taak | Onderdeel | Eigenaar | Pull request |
-| :-- | :-- | :-- | :-- | :-- |
-| P1 | [#185 Unstuck: speler terug op de trein](https://github.com/mlemson/conductor-chaos/issues/185) | Overig | — | [#192](https://github.com/mlemson/conductor-chaos/pull/192) |
+*Geen taken in deze kolom.*
 
 ### ⛔ Geblokkeerd (0)
 
