@@ -72,6 +72,7 @@ namespace ConductorChaos.Playground
         private bool usingCabinCamera;
         private bool usingLookDownCamera;
         private Vector3 wagonPushDirection;
+        private Vector3 airborneSupportVelocity;
         private Vector3 cabinEye;
         private readonly RaycastHit[] hits = new RaycastHit[32];
         private readonly Collider[] ledgeObstacles = new Collider[64];
@@ -313,6 +314,8 @@ namespace ConductorChaos.Playground
             bool supported = !climbing && legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting && !hanging, out stepped);
             Vector3 groundVelocity = supported ? legs.SupportVelocity : grounded && groundHit.rigidbody && groundHit.rigidbody.isKinematic
                 ? groundHit.rigidbody.GetPointVelocity(groundHit.point) : Vector3.zero;
+            if (grounded || supported) airborneSupportVelocity = groundVelocity;
+            else groundVelocity = airborneSupportVelocity;
             Vector3 target = groundVelocity + moveDirection * walkSpeed * uprightControl;
             // Keep some steering when the torso touches uneven ground but neither foot probe finds support.
             float movementAcceleration = grounded ? acceleration * (supported ? (sprinting ? 1.35f : 1f) : 0.45f)
