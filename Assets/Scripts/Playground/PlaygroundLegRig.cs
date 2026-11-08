@@ -208,16 +208,15 @@ namespace ConductorChaos.Playground
             {
                 this.bone = bone;
                 rest = bone.localRotation;
+                if (!server) return;
                 rigid = bone.gameObject.AddComponent<Rigidbody>();
                 rigid.mass = 0.45f;
-                rigid.isKinematic = !server;
                 rigid.interpolation = RigidbodyInterpolation.Interpolate;
                 collider = bone.gameObject.AddComponent<CapsuleCollider>();
                 collider.radius = 0.08f;
                 collider.height = 0.23f;
                 collider.center = new Vector3(0f, -0.14f, 0f);
                 Physics.IgnoreCollision(collider, torso.GetComponent<Collider>());
-                if (!server) return;
                 hip = bone.gameObject.AddComponent<ConfigurableJoint>();
                 hip.connectedBody = torso;
                 hip.autoConfigureConnectedAnchor = false;

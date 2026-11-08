@@ -8,11 +8,23 @@ namespace ConductorChaos.Playground
         private ParticleSystem smoke;
         private AudioSource starter, engine;
         private AudioClip startupClip, engineClip;
+        private Mesh fallbackPuff;
         private bool wasPowered;
 
         // sizeScale: de wolkjes gebruiken de vorm van een kolenbrok; met grotere brokken blijft de rook zo even groot.
         public void Configure(Mesh puff, Material material, float sizeScale = 1f)
         {
+            if (!puff || !puff.isReadable)
+            {
+                fallbackPuff = new Mesh { name = "Readable steam puff" };
+                fallbackPuff.vertices = new[] { Vector3.up * .5f, Vector3.down * .5f, Vector3.right * .5f,
+                    Vector3.forward * .5f, Vector3.left * .5f, Vector3.back * .5f };
+                fallbackPuff.triangles = new[] { 0, 3, 2, 0, 4, 3, 0, 5, 4, 0, 2, 5,
+                    1, 2, 3, 1, 3, 4, 1, 4, 5, 1, 5, 2 };
+                fallbackPuff.RecalculateNormals();
+                puff = fallbackPuff;
+                sizeScale = .137f;
+            }
             smoke = gameObject.AddComponent<ParticleSystem>();
             smoke.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             var main = smoke.main;
@@ -45,6 +57,7 @@ namespace ConductorChaos.Playground
             engine.clip = engineClip;
             engine.loop = true;
         }
+
 
         private AudioSource AddSource()
         {
@@ -121,6 +134,7 @@ namespace ConductorChaos.Playground
 
         private void OnDestroy()
         {
+            if (fallbackPuff) Destroy(fallbackPuff);
             if (startupClip) Destroy(startupClip);
             if (engineClip) Destroy(engineClip);
         }

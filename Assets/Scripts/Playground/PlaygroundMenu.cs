@@ -15,7 +15,7 @@ namespace ConductorChaos.Playground
         private Screen screen;
         private Canvas canvas;
         private RectTransform logoPanel, mainPanel, pausePanel, lobbyPanel, settingsPanel;
-        private Text volumeText, muteText;
+        private Text volumeText, muteText, cameraBobText;
         private bool muted;
         private Button playButton, resumeButton, settingsBack;
         private Button hostButton, joinButton, beginButton, leaveButton, copyButton;
@@ -117,6 +117,10 @@ namespace ConductorChaos.Playground
             Button soundSwitch = ChaosUI.Action(settingsPanel, "Sound switch", muted ? "Uit" : "Aan",
                 V(.36f, .36f), V(.52f, .48f), ChaosUI.Paper, ChaosUI.Ink, ToggleMute, 23);
             muteText = soundSwitch.GetComponentInChildren<Text>();
+            ChaosUI.Label(settingsPanel, "Camera motion", "Camerabeweging", 20, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .20f), V(.34f, .32f));
+            Button cameraBobSwitch = ChaosUI.Action(settingsPanel, "Camera motion switch", PlayerPrefs.GetInt("ChaosUI.CameraBob", 1) != 0 ? "Aan" : "Uit",
+                V(.36f, .20f), V(.52f, .32f), ChaosUI.Paper, ChaosUI.Ink, ToggleCameraBob, 23);
+            cameraBobText = cameraBobSwitch.GetComponentInChildren<Text>();
             settingsBack = ChaosUI.Action(settingsPanel, "Back", "Terug", V(.69f, .035f), V(.96f, .125f), ChaosUI.Paper, ChaosUI.Ink, ShowLobby, 18, iconKey: "back");
 
             pausePanel = ChaosUI.Panel(root, "Pause", V(.36f, .19f), V(.64f, .81f), ChaosUI.Slate, 2, ChaosUI.Muted);
@@ -200,6 +204,7 @@ namespace ConductorChaos.Playground
         }
         private void SetVolume(float value) { AudioListener.volume = value; PlayerPrefs.SetFloat("ChaosUI.Volume", value); if (volumeText) volumeText.text = Mathf.RoundToInt(value * 100) + "%"; }
         private void ToggleMute() { muted = !muted; AudioListener.pause = muted; PlayerPrefs.SetInt("ChaosUI.Muted", muted ? 1 : 0); if (muteText) muteText.text = muted ? "Uit" : "Aan"; }
+        private void ToggleCameraBob() { bool enabled = PlayerPrefs.GetInt("ChaosUI.CameraBob", 1) == 0; PlayerPrefs.SetInt("ChaosUI.CameraBob", enabled ? 1 : 0); if (cameraBobText) cameraBobText.text = enabled ? "Aan" : "Uit"; }
         private void Unstuck()
         {
             foreach (var player in FindObjectsByType<PlaygroundPlayer>())

@@ -12,6 +12,7 @@ namespace ConductorChaos.Playground
         private readonly NetworkVariable<Quaternion> rightLegPose = new(Quaternion.identity);
         private readonly RaycastHit[] groundHits = new RaycastHit[24];
         private Rigidbody body, leftArm, rightArm;
+        private Transform leftArmVisual, rightArmVisual;
         private ConfigurableJoint leftShoulder, rightShoulder;
         private CapsuleCollider leftCollider, rightCollider;
         private PlaygroundLegRig legs;
@@ -29,9 +30,11 @@ namespace ConductorChaos.Playground
                     if (part.name == "Arm_R") right = part;
                 }
             if (!model || !left || !right) { Debug.LogError("Passenger model or arm anchors missing.", this); return; }
+            leftArmVisual = left;
+            rightArmVisual = right;
             leftArm = MakeArm(left, out leftShoulder, out leftCollider);
             rightArm = MakeArm(right, out rightShoulder, out rightCollider);
-            Physics.IgnoreCollision(leftCollider, rightCollider);
+            if (leftCollider && rightCollider) Physics.IgnoreCollision(leftCollider, rightCollider);
             legs = PlaygroundLegRig.Create(model, body, IsServer);
             if (IsServer)
             {
@@ -43,17 +46,17 @@ namespace ConductorChaos.Playground
 
         private Rigidbody MakeArm(Transform arm, out ConfigurableJoint shoulder, out CapsuleCollider capsule)
         {
+            shoulder = null;
+            capsule = null;
+            if (!IsServer) return null;
             var rigid = arm.gameObject.AddComponent<Rigidbody>();
             rigid.mass = 0.35f;
-            rigid.isKinematic = !IsServer;
             rigid.interpolation = RigidbodyInterpolation.Interpolate;
             capsule = arm.gameObject.AddComponent<CapsuleCollider>();
             capsule.center = new Vector3(0f, -0.18f, 0f);
             capsule.height = 0.27f;
             capsule.radius = 0.07f;
             Physics.IgnoreCollision(capsule, GetComponent<CapsuleCollider>());
-            shoulder = null;
-            if (!IsServer) return rigid;
             shoulder = arm.gameObject.AddComponent<ConfigurableJoint>();
             shoulder.connectedBody = body;
             shoulder.autoConfigureConnectedAnchor = false;
@@ -93,9 +96,9 @@ namespace ConductorChaos.Playground
 
         private void LateUpdate()
         {
-            if (!IsSpawned || IsServer || !leftArm || !rightArm) return;
-            leftArm.transform.localRotation = leftArmPose.Value;
-            rightArm.transform.localRotation = rightArmPose.Value;
+            if (!IsSpawned || IsServer || !leftArmVisual || !rightArmVisual) return;
+            leftArmVisual.localRotation = leftArmPose.Value;
+            rightArmVisual.localRotation = rightArmPose.Value;
             legs?.ShowRemote(leftLegPose.Value, rightLegPose.Value);
         }
 
