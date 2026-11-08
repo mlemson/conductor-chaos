@@ -32,3 +32,7 @@ sysinfo.txt
 ArtSource/Render/three
 ArtSource/Render/out/
 __pycache__/
+
+# Lokale werkbestanden en editorconfiguratie
+/work/
+/.vscode/

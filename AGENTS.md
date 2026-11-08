@@ -19,6 +19,14 @@
 - **Wijzig `Docs/PROJECT_BOARD.md` niet handmatig.** Het bord is afgeleid van issues/PR's en wordt door GitHub Actions opnieuw gegenereerd na merges en issue-/PR-wijzigingen. Bij workflowproblemen blijft de issue de bron van waarheid.
 - Houd [ROADMAP.md](Docs/ROADMAP.md) en [TESTPLAN.md](Docs/TESTPLAN.md) alleen inhoudelijk bij wanneer scope, testbewijs of afhankelijkheden daadwerkelijk wijzigen.
 
+## Veilig committen en synchroniseren
+
+- Controleer vóór wijzigingen en vóór een commit de huidige branch, upstream en volledige Git-status, inclusief staged en niet-gevolgde bestanden. Vergelijk zo nodig met de actuele doelbranch; een lokale branch kan achterlopen.
+- Behoud bestaande wijzigingen en staging van de gebruiker. Werk bij voorkeur op een aparte branch of in een geïsoleerde werkkopie en voeg alleen bestanden toe die bij de opdracht horen, inclusief noodzakelijke Unity-meta-bestanden. Gebruik geen ongerichte `git add .` of `git add -A` in een gemengde werkmap.
+- Bekijk vóór de commit de volledige staged bestandslijst en diff. Sluit `work/`, `.vscode/`, builds, tijdelijke bestanden, ingebedde repositories en geheimen uit, tenzij de gebruiker die expliciet wil delen. Ignore-regels verwijderen niet wat al staged of gevolgd is.
+- Bij onverwachte bestanden, een achterlopende branch of mogelijke conflicten: onderzoek en behoud alle lokale wijzigingen; voer geen destructieve reset, clean, geforceerde push of onveilige pull uit. Maak een veilig, controleerbaar voorstel en vraag alleen om hulp als de volgende stap daadwerkelijk geblokkeerd of onduidelijk is.
+- Kan de agent niet committen of pushen, geef dan de gebruiker een concrete, zo beperkt mogelijke opdracht met de juiste projectmap, branch en verwachte uitkomst; controleer na afloop het resultaat. Laat de gebruiker geen algemene add- of commitopdracht uitvoeren zonder eerst de inhoud te controleren.
+
 ## Start elke taak
 
 1. Lees **de gekozen kleine issue**, dit document en het [korte playbook](Docs/AI/SMALL_TASK_PLAYBOOK.md); voeg hooguit één of twee echt relevante guides toe. Niet alle documentatie elke keer.
