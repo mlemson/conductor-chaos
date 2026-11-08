@@ -127,6 +127,11 @@ Voorbeelden:
 - forens: neutrale kleding
 - oudere passagier: bril, sjaal, andere houding
 
+Uitgewerkt (zelfde basismodel, eigen silhouet, zie [crew-lineup](Art/Characters_Lineup.png)):
+- [oudere passagier](Art/ElderlyPassenger_DesignSheet.png): wolk grijze krullen, baret met bloem, rond brilletje, dikke sjaal, draagtas
+- [toerist](Art/Tourist_DesignSheet.png): safarihoed met zonnebril, hawaïhemd, korte broek, grote rugzak met slaapmatje, kaart + kaartje
+- [spoormonteur](Art/RailMechanic_DesignSheet.png): bouwhelm met lamp, vastberaden oogleden (geen wenkbrauwen), bretels, gereedschapsgordel, handschoenen
+
 ## Silhouette-regel
 Elk type character moet herkenbaar zijn aan zijn vorm, niet alleen aan kleur.
 
