@@ -2,26 +2,26 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand. Brede epics tellen niet als uitvoertaak.
 
-**Voortgang: 3/87 afgerond (3%)**
+**Voortgang: 3/97 afgerond (3%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 60 | 24 | 0 | 0 | 3 |
+| 64 | 29 | 1 | 0 | 3 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
-    P0["P0 · Technisch fundament + stijltest · 3/25 klaar"]
-    P1["P1 · Eerste speelbare co-opervaring · 0/56 klaar"]
+    P0["P0 · Technisch fundament + stijltest · 3/26 klaar"]
+    P1["P1 · Eerste speelbare co-opervaring · 0/65 klaar"]
     P2["P2 · Bergavontuur en chaos · 0/6 klaar"]
     P0 --> P1 --> P2
 ```
 
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
-| **P0** | 🟩⬜⬜⬜⬜⬜⬜⬜⬜⬜ 3/25 | Technisch fundament + stijltest |
-| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/56 | Eerste speelbare co-opervaring |
+| **P0** | 🟩⬜⬜⬜⬜⬜⬜⬜⬜⬜ 3/26 | Technisch fundament + stijltest |
+| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/65 | Eerste speelbare co-opervaring |
 | **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/6 | Bergavontuur en chaos |
 
 ## 🧩 Overkoepelende onderwerpen (geen uitvoertaken)
@@ -44,7 +44,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 📋 Taken per status
 
-### 📝 Te doen (60)
+### 📝 Te doen (64)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -104,12 +104,16 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P1 | [#142 Treinconfiguratie vindt spoor of locomotief niet duidelijk](https://github.com/mlemson/conductor-chaos/issues/142) | Overig | — | — |
 | P1 | [#144 Menu en HUD visueel verbeteren met bestaande iconen](https://github.com/mlemson/conductor-chaos/issues/144) | Overig | — | — |
 | P1 | [#172 Plaats drie personages met optilbare ragdoll in treinplayground](https://github.com/mlemson/conductor-chaos/issues/172) | Overig | — | — |
+| P1 | [#178 Maak de instaptrede van de regionale wagon dieper](https://github.com/mlemson/conductor-chaos/issues/178) | Overig | — | — |
+| P1 | [#180 Voorkom wegtrillende kolen tijdens normaal treinrijden](https://github.com/mlemson/conductor-chaos/issues/180) | Overig | — | — |
+| P1 | [#183 Camerazoom en instelbare camerabeweging](https://github.com/mlemson/conductor-chaos/issues/183) | Overig | — | — |
+| P1 | [#184 Bukken in physics-playground](https://github.com/mlemson/conductor-chaos/issues/184) | Overig | — | — |
 | P2 | [#86 Rotsval: één vallende rots als treinincident](https://github.com/mlemson/conductor-chaos/issues/86) | Gameplay | — | — |
 | P2 | [#89 Één ontsporing synchroniseren tussen host en client](https://github.com/mlemson/conductor-chaos/issues/89) | Multiplayer | — | — |
 | P2 | [#90 Koppeling kan breken bij hoge impact](https://github.com/mlemson/conductor-chaos/issues/90) | Physics | — | — |
 | P2 | [#92 Optionele mijlpaalcheck: sessie met vier en later zes spelers](https://github.com/mlemson/conductor-chaos/issues/92) | QA | — | — |
 
-### 🔧 Bezig (24)
+### 🔧 Bezig (29)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -135,12 +139,19 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P1 | [#162 Schep hoger vasthouden en kolen beter dragen](https://github.com/mlemson/conductor-chaos/issues/162) | Overig | @mlemson | — |
 | P1 | [#163 Verlichte startknop met bewuste indruk](https://github.com/mlemson/conductor-chaos/issues/163) | Overig | @mlemson | — |
 | P1 | [#170 Art: personagevarianten oudere passagier, toerist en spoormonteur](https://github.com/mlemson/conductor-chaos/issues/170) | Overig | @mlemson | — |
+| P1 | [#182 Art: stationsgebouw (begaanbaar) + perronkit en props](https://github.com/mlemson/conductor-chaos/issues/182) | Overig | @mlemson | — |
+| P1 | [#185 Unstuck: speler terug op de trein](https://github.com/mlemson/conductor-chaos/issues/185) | Overig | — | [#192](https://github.com/mlemson/conductor-chaos/pull/192) |
+| P1 | [#187 Nieuwe terreindelen met het lichte gras](https://github.com/mlemson/conductor-chaos/issues/187) | Overig | — | [#194](https://github.com/mlemson/conductor-chaos/pull/194) |
+| P1 | [#188 Rookdeeltjes met leesbaar mesh in builds](https://github.com/mlemson/conductor-chaos/issues/188) | Overig | — | [#195](https://github.com/mlemson/conductor-chaos/pull/195) |
+| P1 | [#189 Voorkom uitgerekte ledematen van passagiers op clients](https://github.com/mlemson/conductor-chaos/issues/189) | Overig | — | [#196](https://github.com/mlemson/conductor-chaos/pull/196) |
 | P2 | [#149 Herstel preset voor stenen kliffen op hersteltak](https://github.com/mlemson/conductor-chaos/issues/149) | Overig | @mlemson | — |
 | P2 | [#164 Verberg playground-HUD na tien seconden](https://github.com/mlemson/conductor-chaos/issues/164) | Overig | @mlemson | — |
 
-### 👀 Klaar voor review (0)
+### 👀 Klaar voor review (1)
 
-*Geen taken in deze kolom.*
+| Fase | Taak | Onderdeel | Eigenaar | Pull request |
+| :-- | :-- | :-- | :-- | :-- |
+| P0 | [#186 Behoud treinsnelheid bij springen en voor passagiers en objecten](https://github.com/mlemson/conductor-chaos/issues/186) | Overig | — | [#193](https://github.com/mlemson/conductor-chaos/pull/193) |
 
 ### ⛔ Geblokkeerd (0)
 
