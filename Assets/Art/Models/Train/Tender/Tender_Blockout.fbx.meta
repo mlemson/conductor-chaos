@@ -54,11 +54,6 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Tender_TailLamp
     second: {fileID: 2100000, guid: 7bc3e41e13fda387df3ffcd387dbabf9, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tender_CoalChunk
-    second: {fileID: 2100000, guid: ed1d55344d045a29c163c3b396c1c383, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -67,6 +62,7 @@ ModelImporter:
   animations:
     importAnimation: 0
   meshes:
+    isReadable: 1
     globalScale: 1
     useFileUnits: 1
     useFileScale: 1

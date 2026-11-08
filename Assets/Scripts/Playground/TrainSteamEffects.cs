@@ -10,7 +10,8 @@ namespace ConductorChaos.Playground
         private AudioClip startupClip, engineClip;
         private bool wasPowered;
 
-        public void Configure(Mesh puff, Material material)
+        // sizeScale: de wolkjes gebruiken de vorm van een kolenbrok; met grotere brokken blijft de rook zo even groot.
+        public void Configure(Mesh puff, Material material, float sizeScale = 1f)
         {
             smoke = gameObject.AddComponent<ParticleSystem>();
             smoke.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
@@ -19,7 +20,7 @@ namespace ConductorChaos.Playground
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.startLifetime = new ParticleSystem.MinMaxCurve(1.0f, 1.8f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(0.8f, 1.3f);
-            main.startSize = new ParticleSystem.MinMaxCurve(1.5f, 2.5f);
+            main.startSize = new ParticleSystem.MinMaxCurve(1.5f * sizeScale, 2.5f * sizeScale);
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
             main.maxParticles = 32;
             var shape = smoke.shape;
