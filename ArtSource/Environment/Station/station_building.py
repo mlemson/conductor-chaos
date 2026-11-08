@@ -323,8 +323,7 @@ def lean_to(rng):
     for i, x0 in enumerate(np.arange(LX + 0.36, x_in - 1e-6, 0.76)):
         for j, z0 in enumerate(np.arange(-D + 0.36, -0.36 - 1e-6, 0.76)):
             x1, z1 = min(x0 + 0.76, x_in), min(z0 + 0.76, -0.36)
-            mat = ("M_Stn_Paving", "M_Stn_PavingDark", "M_Stn_Paving", "M_Stn_PavingLight")[(i * 3 + j) % 4]
-            parts.append(rbox(x0 + 0.012, x1 - 0.012, FL - 0.10, FL, z0 + 0.012, z1 - 0.012, 0.025, mat))
+            parts.append(rbox(x0, x1, FL - 0.10, FL, z0, z1, 0.018, "M_Stn_Paving"))
     cols.append(col_box(LX, x_in, 0.0, FL, -D, 0.0))
     # dak
     x_hi = x_in
