@@ -15,7 +15,7 @@ namespace ConductorChaos.Playground
         private Screen screen;
         private Canvas canvas;
         private RectTransform logoPanel, mainPanel, pausePanel, lobbyPanel, settingsPanel;
-        private Text volumeText, muteText;
+        private Text volumeText, muteText, cameraBobText;
         private bool muted;
         private Button playButton, resumeButton, settingsBack;
         private Button hostButton, joinButton, beginButton, leaveButton, copyButton;
@@ -117,14 +117,19 @@ namespace ConductorChaos.Playground
             Button soundSwitch = ChaosUI.Action(settingsPanel, "Sound switch", muted ? "Uit" : "Aan",
                 V(.36f, .36f), V(.52f, .48f), ChaosUI.Paper, ChaosUI.Ink, ToggleMute, 23);
             muteText = soundSwitch.GetComponentInChildren<Text>();
+            ChaosUI.Label(settingsPanel, "Camera motion", "Camerabeweging", 20, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .20f), V(.34f, .32f));
+            Button cameraBobSwitch = ChaosUI.Action(settingsPanel, "Camera motion switch", PlayerPrefs.GetInt("ChaosUI.CameraBob", 1) != 0 ? "Aan" : "Uit",
+                V(.36f, .20f), V(.52f, .32f), ChaosUI.Paper, ChaosUI.Ink, ToggleCameraBob, 23);
+            cameraBobText = cameraBobSwitch.GetComponentInChildren<Text>();
             settingsBack = ChaosUI.Action(settingsPanel, "Back", "Terug", V(.69f, .035f), V(.96f, .125f), ChaosUI.Paper, ChaosUI.Ink, ShowLobby, 18, iconKey: "back");
 
             pausePanel = ChaosUI.Panel(root, "Pause", V(.36f, .19f), V(.64f, .81f), ChaosUI.Slate, 2, ChaosUI.Muted);
             ChaosUI.Label(pausePanel, "Heading", "GEPAUZEERD", 32, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.05f, .8f), V(.95f, .95f));
-            resumeButton = ChaosUI.Action(pausePanel, "Resume", "Verder spelen", V(.08f, .59f), V(.92f, .73f), ChaosUI.Gold, ChaosUI.Ink, () => SetScreen(Screen.Game), 22, iconKey: "play");
-            ChaosUI.Action(pausePanel, "Settings", "INSTELLINGEN", V(.08f, .42f), V(.92f, .56f), ChaosUI.Paper, ChaosUI.Ink, ShowSettings, 20, iconKey: "options");
-            ChaosUI.Action(pausePanel, "Main", "HOOFDMENU", V(.08f, .25f), V(.92f, .39f), ChaosUI.Paper, ChaosUI.Ink, () => SetScreen(Screen.Main), 20, iconKey: "back");
-            ChaosUI.Label(pausePanel, "Notice", "De wereld blijft actief terwijl dit menu open is.", 15, ChaosUI.Muted, TextAnchor.MiddleCenter, FontStyle.Normal, V(.05f, .05f), V(.95f, .2f));
+            resumeButton = ChaosUI.Action(pausePanel, "Resume", "Verder spelen", V(.08f, .62f), V(.92f, .74f), ChaosUI.Gold, ChaosUI.Ink, () => SetScreen(Screen.Game), 22, iconKey: "play");
+            ChaosUI.Action(pausePanel, "Unstuck", "Terug op de trein", V(.08f, .47f), V(.92f, .59f), ChaosUI.Paper, ChaosUI.Ink, Unstuck, 20);
+            ChaosUI.Action(pausePanel, "Settings", "INSTELLINGEN", V(.08f, .32f), V(.92f, .44f), ChaosUI.Paper, ChaosUI.Ink, ShowSettings, 20, iconKey: "options");
+            ChaosUI.Action(pausePanel, "Main", "HOOFDMENU", V(.08f, .17f), V(.92f, .29f), ChaosUI.Paper, ChaosUI.Ink, () => SetScreen(Screen.Main), 20, iconKey: "back");
+            ChaosUI.Label(pausePanel, "Notice", "De wereld blijft actief terwijl dit menu open is.", 15, ChaosUI.Muted, TextAnchor.MiddleCenter, FontStyle.Normal, V(.05f, .02f), V(.95f, .13f));
         }
 
         private Button MenuAction(string name, string caption, float bottom, float top, Color color,
@@ -199,6 +204,12 @@ namespace ConductorChaos.Playground
         }
         private void SetVolume(float value) { AudioListener.volume = value; PlayerPrefs.SetFloat("ChaosUI.Volume", value); if (volumeText) volumeText.text = Mathf.RoundToInt(value * 100) + "%"; }
         private void ToggleMute() { muted = !muted; AudioListener.pause = muted; PlayerPrefs.SetInt("ChaosUI.Muted", muted ? 1 : 0); if (muteText) muteText.text = muted ? "Uit" : "Aan"; }
+        private void ToggleCameraBob() { bool enabled = PlayerPrefs.GetInt("ChaosUI.CameraBob", 1) == 0; PlayerPrefs.SetInt("ChaosUI.CameraBob", enabled ? 1 : 0); if (cameraBobText) cameraBobText.text = enabled ? "Aan" : "Uit"; }
+        private void Unstuck()
+        {
+            foreach (var player in FindObjectsByType<PlaygroundPlayer>())
+                if (player.IsOwner && player.IsSpawned) { player.RequestUnstuck(); SetScreen(Screen.Game); break; }
+        }
         private void Update()
         {
             UpdateLobby();

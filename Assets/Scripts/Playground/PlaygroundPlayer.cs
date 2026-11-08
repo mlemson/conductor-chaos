@@ -52,7 +52,7 @@ namespace ConductorChaos.Playground
         private Vector2 requestedMove;
         private float requestedYaw;
         private float requestedPitch;
-        private bool leftHeld, rightHeld, jumpQueued, sprinting;
+        private bool leftHeld, rightHeld, jumpQueued, sprinting, crouching;
         private bool lastLeft, lastRight;
         private float nextInput, nextPose, lastJump;
         private float nextSprintHop;
@@ -66,12 +66,16 @@ namespace ConductorChaos.Playground
         private bool[] cameraBodyRenderingOff;
         private bool cameraHidesBody;
         private float cameraDistance = 4f;
+        private float desiredCameraDistance = 4f;
+        private float smoothFocusY, smoothFocusVelocity;
+        private bool hasSmoothFocus;
         private Vector3 lastClearCameraPosition;
         private bool hasClearCameraPosition;
         private TrainDrive trainDrive;
         private bool usingCabinCamera;
         private bool usingLookDownCamera;
         private Vector3 wagonPushDirection;
+        private Vector3 airborneSupportVelocity;
         private Vector3 cabinEye;
         private readonly RaycastHit[] hits = new RaycastHit[32];
         private readonly Collider[] ledgeObstacles = new Collider[64];
@@ -171,7 +175,7 @@ namespace ConductorChaos.Playground
             {
                 if (lastLeft || lastRight || Time.unscaledTime >= nextInput)
                 {
-                    SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false);
+                    SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
                     nextInput = Time.unscaledTime + 0.05f;
                     lastLeft = lastRight = false;
                 }
@@ -179,13 +183,13 @@ namespace ConductorChaos.Playground
             }
             if (keyboard == null || mouse == null)
             {
-                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false);
+                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
                 lastLeft = lastRight = false;
                 return;
             }
             if (mouse.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
             {
-                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false);
+                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
                 lastLeft = lastRight = false;
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
@@ -197,6 +201,7 @@ namespace ConductorChaos.Playground
                 Vector2 delta = mouse.delta.ReadValue();
                 yaw += delta.x * 0.12f;
                 pitch = Mathf.Clamp(pitch - delta.y * 0.12f, -80f, 65f);
+                desiredCameraDistance = Mathf.Clamp(desiredCameraDistance - mouse.scroll.ReadValue().y * 0.002f, 1.5f, 6f);
             }
             Vector2 move = active ? new Vector2((keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f),
                                (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f)) : Vector2.zero;
@@ -205,7 +210,8 @@ namespace ConductorChaos.Playground
             if (active && keyboard.spaceKey.wasPressedThisFrame) JumpServerRpc();
             if (Time.unscaledTime >= nextInput || l != lastLeft || r != lastRight)
             {
-                SendInputServerRpc(Vector2.ClampMagnitude(move, 1f), yaw, pitch, l, r, active && keyboard.leftShiftKey.isPressed);
+                SendInputServerRpc(Vector2.ClampMagnitude(move, 1f), yaw, pitch, l, r, active && keyboard.leftShiftKey.isPressed,
+                    active && (keyboard.leftCtrlKey.isPressed || keyboard.cKey.isPressed));
                 nextInput = Time.unscaledTime + 0.05f;
                 lastLeft = l;
                 lastRight = r;
@@ -213,7 +219,7 @@ namespace ConductorChaos.Playground
         }
 
         [ServerRpc]
-        private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r, bool sprint)
+        private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r, bool sprint, bool crouch)
         {
             if (!l) { leftHeld = false; left?.Release(); }
             if (!r) { rightHeld = false; right?.Release(); }
@@ -227,20 +233,56 @@ namespace ConductorChaos.Playground
             lastServerInput = Time.unscaledTime;
             leftHeld = l;
             rightHeld = r;
-            sprinting = sprint;
+            crouching = crouch;
+            sprinting = sprint && !crouch;
         }
 
         private void OnApplicationFocus(bool focused)
         {
             if (focused || !IsSpawned || !IsOwner) return;
             lastLeft = lastRight = false;
-            SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false);
+            SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
         }
 
         [ServerRpc]
         private void JumpServerRpc()
         {
             if (!sessionHost || sessionHost.Phase == PlaygroundHost.SessionPhase.Playing) jumpQueued = true;
+        }
+
+        internal void RequestUnstuck()
+        {
+            if (IsSpawned && IsOwner) UnstuckServerRpc();
+        }
+
+        [ServerRpc]
+        private void UnstuckServerRpc()
+        {
+            if (sessionHost && sessionHost.Phase != PlaygroundHost.SessionPhase.Playing) return;
+            if (!trainDrive) trainDrive = FindAnyObjectByType<TrainDrive>();
+            if (!trainDrive || !bodyCapsule || !trainDrive.TryFindRecoveryPoint(out Vector3 floor, out Vector3 velocity)) return;
+            float radius = bodyCapsule.radius;
+            Vector3 lower = floor + Vector3.up * (radius + 0.08f);
+            Vector3 upper = lower + Vector3.up * Mathf.Max(0f, bodyCapsule.height - 2f * radius);
+            int count = Physics.OverlapCapsuleNonAlloc(lower, upper, radius, ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
+            if (count == ledgeObstacles.Length) return;
+            for (int i = 0; i < count; i++)
+                if (!ledgeObstacles[i].transform.IsChildOf(transform)) return;
+            left.Release(); right.Release(); legs?.ReleaseSupport();
+            Quaternion rotation = Quaternion.Euler(0f, requestedYaw, 0f);
+            Vector3 destination = lower - rotation * (bodyCapsule.center - Vector3.up * (bodyCapsule.height * 0.5f - radius));
+            Quaternion turn = rotation * Quaternion.Inverse(body.rotation);
+            Rigidbody[] parts = GetComponentsInChildren<Rigidbody>();
+            Vector3[] positions = new Vector3[parts.Length];
+            Quaternion[] rotations = new Quaternion[parts.Length];
+            for (int i = 0; i < parts.Length; i++) { positions[i] = destination + turn * (parts[i].position - body.position); rotations[i] = turn * parts[i].rotation; }
+            GetComponent<NetworkTransform>().Teleport(destination, rotation, transform.localScale);
+            for (int i = 0; i < parts.Length; i++)
+            {
+                parts[i].position = positions[i];
+                parts[i].rotation = rotations[i];
+                if (!parts[i].isKinematic) { parts[i].linearVelocity = velocity; parts[i].angularVelocity = Vector3.zero; }
+            }
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -255,11 +297,11 @@ namespace ConductorChaos.Playground
             float legAngle = 0f;
             for (int i = 0; i < 25; i++)
             {
-                SendInputServerRpc(Vector2.up, 0f, 0f, false, false, false);
+                SendInputServerRpc(Vector2.up, 0f, 0f, false, false, false, false);
                 yield return new WaitForSeconds(0.05f);
                 if (testLeg) legAngle = Mathf.Max(legAngle, Quaternion.Angle(initialLeg, testLeg.localRotation));
             }
-            SendInputServerRpc(Vector2.zero, 0f, 0f, false, false, false);
+            SendInputServerRpc(Vector2.zero, 0f, 0f, false, false, false, false);
             yield return new WaitForSeconds(0.3f);
             float moved = Vector3.Distance(start, transform.position);
             float baseY = transform.position.y;
@@ -281,7 +323,7 @@ namespace ConductorChaos.Playground
             {
                 requestedMove = Vector2.zero;
                 leftHeld = rightHeld = false;
-                sprinting = false;
+                sprinting = crouching = false;
                 left.Release();
                 right.Release();
             }
@@ -313,6 +355,8 @@ namespace ConductorChaos.Playground
             bool supported = !climbing && legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting && !hanging, out stepped);
             Vector3 groundVelocity = supported ? legs.SupportVelocity : grounded && groundHit.rigidbody && groundHit.rigidbody.isKinematic
                 ? groundHit.rigidbody.GetPointVelocity(groundHit.point) : Vector3.zero;
+            if (grounded || supported) airborneSupportVelocity = groundVelocity;
+            else groundVelocity = airborneSupportVelocity;
             Vector3 target = groundVelocity + moveDirection * walkSpeed * uprightControl;
             // Keep some steering when the torso touches uneven ground but neither foot probe finds support.
             float movementAcceleration = grounded ? acceleration * (supported ? (sprinting ? 1.35f : 1f) : 0.45f)
@@ -341,7 +385,7 @@ namespace ConductorChaos.Playground
             smoothedLean = Vector3.Lerp(smoothedLean, desiredLean, 5f * Time.fixedDeltaTime);
             Quaternion targetBalance = climbing
                 ? Quaternion.LookRotation(ledgeInward) * Quaternion.Euler(mantling ? 78f : 12f, 0f, 0f)
-                : facing * Quaternion.Euler(smoothedLean.x, 0f, smoothedLean.z);
+                : facing * Quaternion.Euler(smoothedLean.x + (crouching ? 50f : 0f), 0f, smoothedLean.z);
             if (hanging)
             {
                 float lean = hangingHands == 1 ? 30f : 16f;
@@ -634,12 +678,20 @@ namespace ConductorChaos.Playground
             }
             if (!IsOwner || !playerCamera) return;
             Vector3 focus = transform.position + Vector3.up * 0.9f;
+            if (PlayerPrefs.GetInt("ChaosUI.CameraBob", 1) == 0)
+            {
+                if (!hasSmoothFocus || Mathf.Abs(focus.y - smoothFocusY) > 2f) { smoothFocusY = focus.y; smoothFocusVelocity = 0f; }
+                smoothFocusY = Mathf.SmoothDamp(smoothFocusY, focus.y, ref smoothFocusVelocity, 0.2f, Mathf.Infinity, Time.unscaledDeltaTime);
+                focus.y = smoothFocusY;
+                hasSmoothFocus = true;
+            }
+            else hasSmoothFocus = false;
             Quaternion look = Quaternion.Euler(pitch, yaw, 0f);
             usingLookDownCamera = pitch >= (usingLookDownCamera ? 50f : 58f);
             if (!trainDrive) trainDrive = FindAnyObjectByType<TrainDrive>();
             if (trainDrive && trainDrive.TryGetCabin(transform.position, usingCabinCamera ? 0.04f : -0.06f, out var cabinFrame))
             {
-                Vector3 cabinFocus = transform.position + Vector3.up * 0.72f - Quaternion.Euler(0f, yaw, 0f) * Vector3.forward * 0.10f;
+                Vector3 cabinFocus = focus - Vector3.up * 0.18f - Quaternion.Euler(0f, yaw, 0f) * Vector3.forward * 0.10f;
                 Vector3 eye = trainDrive.ClampCabinEye(cabinFrame.InverseTransformPoint(cabinFocus));
                 cabinEye = usingCabinCamera
                     ? Vector3.Lerp(cabinEye, eye, 1f - Mathf.Exp(-22f * Time.unscaledDeltaTime)) : eye;
@@ -658,7 +710,7 @@ namespace ConductorChaos.Playground
                 if (renderer && renderer.enabled && renderer.gameObject.activeInHierarchy) modelBounds.Encapsulate(renderer.bounds);
 
             Vector3 direction = -(look * Vector3.forward);
-            float available = usingLookDownCamera ? 0f : Mathf.SmoothStep(4f, 0f, Mathf.InverseLerp(44f, 58f, pitch));
+            float available = usingLookDownCamera ? 0f : Mathf.SmoothStep(desiredCameraDistance, 0f, Mathf.InverseLerp(44f, 58f, pitch));
             int focusCount = Physics.OverlapSphereNonAlloc(focus, radius, cameraFocusObstacles, ~0, QueryTriggerInteraction.Ignore);
             int count = Physics.SphereCastNonAlloc(focus, radius, direction, hits, available, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
