@@ -1249,6 +1249,85 @@
    ],
    "hide": [],
    "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Characters/Tourist/Tourist.fbx",
+   "pos": [
+    -5.0,
+    -0.68,
+    2.0
+   ],
+   "rotY": 35.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [
+    "Mouth_Surprised",
+    "Mouth_Happy",
+    "Mouth_Flat",
+    "Mouth_Hmm",
+    "Mouth_Smile",
+    "EyeClosed_L",
+    "EyeClosed_R",
+    "Prop_Sweat",
+    "Lid_L",
+    "Lid_R"
+   ],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Characters/ElderlyPassenger/ElderlyPassenger.fbx",
+   "pos": [
+    -3.2,
+    -0.68,
+    2.2
+   ],
+   "rotY": 20.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [
+    "Mouth_Surprised",
+    "Mouth_Happy",
+    "Mouth_Flat",
+    "Mouth_Hmm",
+    "Mouth_Smile",
+    "EyeClosed_L",
+    "EyeClosed_R",
+    "Prop_Sweat",
+    "Lid_L",
+    "Lid_R"
+   ],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Characters/RailMechanic/RailMechanic.fbx",
+   "pos": [
+    -1.4,
+    -0.68,
+    2.4
+   ],
+   "rotY": 5.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [
+    "Mouth_Neutral",
+    "Mouth_Surprised",
+    "Mouth_Happy",
+    "Mouth_Hmm",
+    "Mouth_Smile",
+    "EyeClosed_L",
+    "EyeClosed_R",
+    "Prop_Sweat"
+   ],
+   "show": []
   }
  ]
 }

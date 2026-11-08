@@ -11,6 +11,10 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 | Pad | Wat |
 |---|---|
 | `Characters/Conductor/build_conductor.py` | Conducteur-basismodel, parametrisch opgebouwd uit maten van het concept |
+| `Characters/character_kit.py` | Gedeeld kit voor personagevarianten: zelfde lijf/ogen/monden/armen als de conducteur + oppervlakte-helpers (zomen, banden, gordels, decals om het lijf), expressies en export |
+| `Characters/ElderlyPassenger/build_elderly_passenger.py` | Oudere passagier: krullend grijs haar, baret met bloem, brilletje, sjaal, pruimkleurige jas, draagtas |
+| `Characters/Tourist/build_tourist.py` | Toerist: safarihoed met zonnebril, hawaïhemd met print, korte broek, rugzak met slaapmatje en fles, kaart + kaartje |
+| `Characters/RailMechanic/build_rail_mechanic.py` | Spoormonteur: bouwhelm met lamp, vastberaden oogleden, overall met reflectieband, bretels, gereedschapsgordel, handschoenen |
 | `Train/RegionalWagon/build_regional_wagon.py` | Regionale wagon in facetstijl (deur, slot, grepen, ramen, draaistellen, koplampen) + art-check-decor |
 | `Train/Locomotive/build_locomotive.py` | Locomotief v2.1 (ronde ketelneus, rookkastring met lamp, gewelfd dak, sierlijsten, drijfstang) — issue #22. Cabine v3: brede lessenaar met startknop, vuurdeur, hittemeter (`HeatNeedle`), verticale trekhendel in een sleuf met pijlenbordje, plafondlamp (`CabLamp`); geen kachelpijp en kolenbak meer |
 | `Train/CattleWagon/build_cattle_wagon.py` | Veewagen: rode kooi uit één stuk om een lattenwand met echte kieren, schuifdeuren, gewelfd dak, interieur (stro, hooibalen), doorloopbaar — issue #25 |
@@ -25,18 +29,21 @@ het niet importeert. De Unity-assets in `Assets/Art/` worden hieruit gegenereerd
 | `Render/render.html`, `render.cjs` | Headless stijlrender (three.js + Playwright) met de stylized ramp-shader |
 | `Render/scenes/*.json` | Camera's, poses en expressies van alle renders |
 | `Render/make_sheets.py` | Stelt `Docs/Art/*.png` samen |
+| `Render/character_scenes.py`, `character_sheets.py` | Renderscènes en ontwerpbladen van de personagevarianten (+ crew-lineup en scène bij de trein) |
 | `Exports/` | `.glb`-versies (voor Blender/viewers) en `*.materials.json` (ramps per materiaal) |
 | `build_all.py` | Alles in één keer: modellen → renders → bladen |
 
 Gegenereerde uitvoer:
 
 - `Assets/Art/Models/Characters/Conductor/Conductor.fbx` (+ `.meta`)
+- `Assets/Art/Models/Characters/{ElderlyPassenger,Tourist,RailMechanic}/*.fbx` (+ `.meta`) + `Assets/Art/Materials/Characters/<naam>/*.mat`
 - `Assets/Art/Models/Train/RegionalWagon/RegionalWagon_Blockout.fbx` (+ `.meta`)
 - `Assets/Art/Models/Train/Locomotive/Locomotive_Blockout.fbx` (+ `.meta`)
 - `Assets/Art/Models/Train/Tender/Tender_Blockout.fbx` (+ `.meta`)
 - `Assets/Art/Models/Train/CattleWagon/CattleWagon_Blockout.fbx` (+ `.meta`)
 - `Assets/Art/Models/Environment/{Trees,Rocks,Cliffs,Mountains,Sky}/*.fbx` + `Assets/Art/Materials/Environment/*.mat`
 - `Assets/Art/Materials/...` URP Lit-materialen (middentoon van elke ramp)
+- `Docs/Art/ElderlyPassenger_DesignSheet.png`, `Tourist_DesignSheet.png`, `RailMechanic_DesignSheet.png`, `Characters_Lineup.png`, `Characters_InScene.png`
 - `Docs/Art/Conductor_DesignSheet.png`, `ArtCheck_Wagon.png`, `ArtCheck_vs_Concept.png`, `Locomotive_DesignSheet.png`, `CattleWagon_DesignSheet.png`, `Environment_DesignSheet.png`
 
 ## Opnieuw bouwen
@@ -64,6 +71,7 @@ Pas vormen of maten aan in de `build_*.py`-scripts, niet in de FBX. Kleuren kome
 - **Rigstatus:** de armen blijven aparte nodes en de sleutel kan aan `Hand_L` worden bevestigd. Per arm zijn mouw en hand nu één oppervlak met twee materialen. Lijf, broekspijpen en donker schoeisel vormen samen één verbonden `Body`-mesh. `Leg_L/R` zijn voorlopig lege plaatsaanduidingen: draaien van die nodes animeert de benen niet. Voor loopanimaties moet nog een huid-/bottenrig of een andere passende oplossing worden ontworpen en getest.
 - **Conceptstudie v5:** de klep en kroon van de pet bedekken de gouden band niet meer. De mouwen sluiten onder de uniformrand aan; handen hebben meer geleidelijke afronding. De tweede knoop is kleiner en donkerder en het strookje erachter is afgerond. De ronde benen en opening uit v4 blijven behouden. De oudere ontwerpbladen en v2/v3/v4-vergelijkingen tonen vorige modelversies; zie `Docs/Art/Conductor_ConceptStudy_v5.png` voor de huidige voorlopige vormvergelijking. Unity-import en materiaalweergave moeten nog worden getest; de meshdichtheid moet voor meerdere personages worden beoordeeld.
 - `python ArtSource/Tests/test_conductor_body.py` controleert onder meer of het lijf een enkele gesloten mesh is en de ruimte tussen de benen echt open is.
+- **Personagevarianten** (oudere passagier, toerist, spoormonteur) gebruiken exact het lijf, de ogen, monden en armen van de conducteur via `Characters/character_kit.py`; alleen kleding, haar/hoofddeksel en props verschillen. Hiërarchie: `<Naam> › Body › (kleding/haar, Eye_L/R › Pupil_L/R, EyeClosed_L/R, Lid_L/R, Mouth_Neutral|Surprised|Happy|Flat|Hmm|Smile, hoofddeksel, Arm_L/R › Hand_L/R › Prop_*)`, plus `Leg_L/R`. Standaard verborgen: alle monden behalve één (monteur: `Mouth_Flat`, anderen `Mouth_Neutral`), `EyeClosed_*`, `Lid_*` (monteur: zichtbaar = vastberaden) en `Prop_Sweat`. Kleuren: palette-groep *Reizigers & crew*, gemeten in `Docs/References/Characters/*-concept.png` met `Docs/References/tools/measure_character_ramps.py`. De Unity-showcase (`Conductor Chaos > Art > Build Showcase Scene`) zet ze naast het spoor. `python ArtSource/Tests/test_characters.py` controleert knopen, zichtbaarheid, palette-ramps, grondcontact en budget.
 - `python ArtSource/Tests/test_conductor_finish.py` controleert de vrije gouden band en de aansluiting van mouwen op het uniform.
 - Hiërarchie conducteur: `Conductor › Body › (Neckline, Collar, Buttons, Eye_L/R › Pupil_L/R, Mouth_Neutral|Surprised|Happy, Cap, Arm_L/R › Hand_L/R › Prop_Key)`, plus lege `Leg_L/R`-ankers.
   Standaard verborgen: `Mouth_Surprised`, `Mouth_Happy`, `Prop_Key`.

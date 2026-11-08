@@ -2,6 +2,13 @@
 
 Laatst opgesteld: 2026-11-02. Dit document is een momentopname; verifieer de huidige bestanden en Editor voordat je werkt.
 
+## Aanvulling 2026-11-08 — treinplayground
+
+- De actieve projectmap is `C:/Users/mauri/Documents/Codex/ConductorChaosGit`; de gebruikte editor is Unity 6000.6.8f1. Het project gebruikt URP, het Input System en Netcode for GameObjects 2.13.3.
+- `Assets/Scenes/TrainPlayground.unity` is de speelbare scène. `PlaygroundHost` start sessies; `PlaygroundPlayer` en `PlaygroundLegRig` verzorgen servergestuurde fysica en grijpen.
+- De passagiersmodellen uit #170 hebben dezelfde `Body`, `Arm_L/R` en `Leg_L/R`-ankers. Er is geen Unity-MCP in deze sessie; de geopende Editor is wel via de Windows-interface bereikbaar.
+- Multiplayergedrag, runtime-grijpen en de integratie van `main` met de herstelbranch moeten afzonderlijk worden gevalideerd; de oudere secties hieronder beschrijven historische projectstaten.
+
 ## Bevestigd in repository
 
 - Projectroot: de map met `Assets`, `Packages` en `ProjectSettings`.
