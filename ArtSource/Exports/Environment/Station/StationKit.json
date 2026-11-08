@@ -1,0 +1,1065 @@
+{
+  "assets": {
+    "Station_Building": {
+      "fbx": "Assets/Art/Models/Environment/Station/Station_Building.fbx",
+      "category": "Building",
+      "tris": 44566,
+      "min": [
+        -6.692,
+        0.0,
+        -6.03
+      ],
+      "max": [
+        3.936,
+        7.784,
+        0.76
+      ],
+      "nodes": [
+        "Station_Building",
+        "Walls",
+        "Plinth",
+        "Openings",
+        "Roof",
+        "LeanTo",
+        "Interior",
+        "RoofFrame",
+        "Facade",
+        "Door",
+        "Col_Door",
+        "Col_Main",
+        "Light_Lantern_L",
+        "Light_Lantern_R",
+        "Light_Hall_1",
+        "Light_Hall_2",
+        "Spawn_Ticket"
+      ],
+      "floor": 1.05,
+      "footprint": [
+        -6.2,
+        3.2,
+        -5.4,
+        0.0
+      ]
+    },
+    "Prop_Bench": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_Bench.fbx",
+      "category": "Props",
+      "tris": 580,
+      "min": [
+        -0.9,
+        0.0,
+        -0.424
+      ],
+      "max": [
+        0.9,
+        0.944,
+        0.28
+      ],
+      "nodes": [
+        "Prop_Bench",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_Barrel": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_Barrel.fbx",
+      "category": "Props",
+      "tris": 648,
+      "min": [
+        -0.387,
+        0.0,
+        -0.387
+      ],
+      "max": [
+        0.387,
+        0.88,
+        0.387
+      ],
+      "nodes": [
+        "Prop_Barrel",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_CrateStack": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_CrateStack.fbx",
+      "category": "Props",
+      "tris": 1428,
+      "min": [
+        -0.755,
+        0.0,
+        -0.428
+      ],
+      "max": [
+        0.778,
+        1.34,
+        0.395
+      ],
+      "nodes": [
+        "Prop_CrateStack",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_Crate": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_Crate.fbx",
+      "category": "Props",
+      "tris": 476,
+      "min": [
+        -0.365,
+        0.0,
+        -0.365
+      ],
+      "max": [
+        0.365,
+        0.7,
+        0.365
+      ],
+      "nodes": [
+        "Prop_Crate",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_Planter": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_Planter.fbx",
+      "category": "Props",
+      "tris": 1468,
+      "min": [
+        -0.647,
+        0.0,
+        -0.24
+      ],
+      "max": [
+        0.63,
+        0.681,
+        0.263
+      ],
+      "nodes": [
+        "Prop_Planter",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_TrashBin": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_TrashBin.fbx",
+      "category": "Props",
+      "tris": 632,
+      "min": [
+        -0.32,
+        0.0,
+        -0.32
+      ],
+      "max": [
+        0.32,
+        0.98,
+        0.33
+      ],
+      "nodes": [
+        "Prop_TrashBin",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_LampPost": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_LampPost.fbx",
+      "category": "Props",
+      "tris": 1104,
+      "min": [
+        -0.232,
+        0.0,
+        -0.232
+      ],
+      "max": [
+        0.232,
+        3.262,
+        0.232
+      ],
+      "nodes": [
+        "Prop_LampPost",
+        "Mesh",
+        "Col_Main",
+        "Light_Lamp"
+      ]
+    },
+    "Prop_WallLantern": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_WallLantern.fbx",
+      "category": "Props",
+      "tris": 1000,
+      "min": [
+        -0.191,
+        -0.16,
+        0.0
+      ],
+      "max": [
+        0.191,
+        0.502,
+        0.491
+      ],
+      "nodes": [
+        "Prop_WallLantern",
+        "Mesh",
+        "Light_Lamp"
+      ]
+    },
+    "Prop_HangingSign": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_HangingSign.fbx",
+      "category": "Props",
+      "tris": 2964,
+      "min": [
+        -0.31,
+        -0.8,
+        -0.048
+      ],
+      "max": [
+        0.31,
+        0.014,
+        0.048
+      ],
+      "nodes": [
+        "Prop_HangingSign",
+        "Mesh"
+      ]
+    },
+    "Prop_StationSign": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_StationSign.fbx",
+      "category": "Props",
+      "tris": 5024,
+      "min": [
+        -1.47,
+        0.0,
+        -0.17
+      ],
+      "max": [
+        1.47,
+        2.23,
+        0.17
+      ],
+      "nodes": [
+        "Prop_StationSign",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_Timetable": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_Timetable.fbx",
+      "category": "Props",
+      "tris": 2016,
+      "min": [
+        -0.625,
+        0.0,
+        -0.12
+      ],
+      "max": [
+        0.625,
+        2.21,
+        0.12
+      ],
+      "nodes": [
+        "Prop_Timetable",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_TicketMachine": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_TicketMachine.fbx",
+      "category": "Props",
+      "tris": 756,
+      "min": [
+        -0.36,
+        0.0,
+        -0.28
+      ],
+      "max": [
+        0.36,
+        1.5,
+        0.321
+      ],
+      "nodes": [
+        "Prop_TicketMachine",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_LuggageCart": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_LuggageCart.fbx",
+      "category": "Props",
+      "tris": 3680,
+      "min": [
+        -0.57,
+        0.003,
+        -0.368
+      ],
+      "max": [
+        0.602,
+        1.052,
+        0.368
+      ],
+      "nodes": [
+        "Prop_LuggageCart",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_LevelCrossing": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_LevelCrossing.fbx",
+      "category": "Props",
+      "tris": 2228,
+      "min": [
+        -0.55,
+        0.0,
+        -0.22
+      ],
+      "max": [
+        3.64,
+        2.913,
+        0.36
+      ],
+      "nodes": [
+        "Prop_LevelCrossing",
+        "Mesh",
+        "Col_Main",
+        "Boom",
+        "Col_Boom"
+      ]
+    },
+    "Prop_Fence_2m": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_Fence_2m.fbx",
+      "category": "Props",
+      "tris": 128,
+      "min": [
+        -0.092,
+        0.0,
+        -0.092
+      ],
+      "max": [
+        2.092,
+        1.1,
+        0.12
+      ],
+      "nodes": [
+        "Prop_Fence_2m",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_Shelter": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_Shelter.fbx",
+      "category": "Props",
+      "tris": 5564,
+      "min": [
+        -2.08,
+        0.0,
+        -1.621
+      ],
+      "max": [
+        2.08,
+        3.72,
+        1.621
+      ],
+      "nodes": [
+        "Prop_Shelter",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Platform_Straight_3m": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Straight_3m.fbx",
+      "category": "Platform",
+      "tris": 2360,
+      "min": [
+        0.0,
+        -0.0,
+        1.653
+      ],
+      "max": [
+        3.0,
+        1.08,
+        5.147
+      ],
+      "nodes": [
+        "Platform_Straight_3m",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Straight_6m": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Straight_6m.fbx",
+      "category": "Platform",
+      "tris": 4700,
+      "min": [
+        0.0,
+        -0.0,
+        1.653
+      ],
+      "max": [
+        6.0,
+        1.08,
+        5.147
+      ],
+      "nodes": [
+        "Platform_Straight_6m",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_EndCap_End": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_EndCap_End.fbx",
+      "category": "Platform",
+      "tris": 3598,
+      "min": [
+        0.0,
+        -0.0,
+        1.653
+      ],
+      "max": [
+        2.343,
+        1.08,
+        5.147
+      ],
+      "nodes": [
+        "Platform_EndCap_End",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_EndCap_Start": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_EndCap_Start.fbx",
+      "category": "Platform",
+      "tris": 3598,
+      "min": [
+        0.002,
+        -0.0,
+        1.653
+      ],
+      "max": [
+        2.345,
+        1.08,
+        5.147
+      ],
+      "nodes": [
+        "Platform_EndCap_Start",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Corner_End": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Corner_End.fbx",
+      "category": "Platform",
+      "tris": 3956,
+      "min": [
+        0.0,
+        -0.0,
+        1.653
+      ],
+      "max": [
+        3.497,
+        1.08,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Corner_End",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Corner_Start": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Corner_Start.fbx",
+      "category": "Platform",
+      "tris": 3956,
+      "min": [
+        0.003,
+        -0.0,
+        1.653
+      ],
+      "max": [
+        3.5,
+        1.08,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Corner_Start",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Ramp_End": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Ramp_End.fbx",
+      "category": "Platform",
+      "tris": 1576,
+      "min": [
+        0.0,
+        0.0,
+        1.65
+      ],
+      "max": [
+        5.0,
+        1.062,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Ramp_End",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Ramp_Start": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Ramp_Start.fbx",
+      "category": "Platform",
+      "tris": 1576,
+      "min": [
+        0.0,
+        0.0,
+        1.65
+      ],
+      "max": [
+        5.0,
+        1.062,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Ramp_Start",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Stairs_End": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Stairs_End.fbx",
+      "category": "Platform",
+      "tris": 480,
+      "min": [
+        -0.06,
+        0.0,
+        1.63
+      ],
+      "max": [
+        2.1,
+        1.15,
+        5.17
+      ],
+      "nodes": [
+        "Platform_Stairs_End",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Stairs_Start": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Stairs_Start.fbx",
+      "category": "Platform",
+      "tris": 480,
+      "min": [
+        0.0,
+        0.0,
+        1.63
+      ],
+      "max": [
+        2.16,
+        1.15,
+        5.17
+      ],
+      "nodes": [
+        "Platform_Stairs_Start",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    }
+  },
+  "station": {
+    "platformTop": 1.05,
+    "platformEdgeFromTrackCentre": 1.65
+  },
+  "materials": {
+    "M_Stn_Roof": {
+      "ramp": [
+        "#2F3E73",
+        "#424E86",
+        "#45528E",
+        "#445495",
+        "#545F9C"
+      ],
+      "smoothness": 0.1,
+      "rampShift": 0.0,
+      "opts": {
+        "cells": 0.7,
+        "cellSize": 0.9,
+        "rim": 0.25
+      }
+    },
+    "M_Stn_RoofDark": {
+      "ramp": [
+        "#2F3E73",
+        "#424E86",
+        "#45528E",
+        "#445495",
+        "#545F9C"
+      ],
+      "smoothness": 0.1,
+      "rampShift": -0.25,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.9
+      }
+    },
+    "M_Stn_Navy": {
+      "ramp": [
+        "#2F3E73",
+        "#424E86",
+        "#45528E",
+        "#445495",
+        "#545F9C"
+      ],
+      "smoothness": 0.2,
+      "rampShift": -0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.8,
+        "grime": 0.25
+      }
+    },
+    "M_Stn_NavyLight": {
+      "ramp": [
+        "#2F3E73",
+        "#424E86",
+        "#45528E",
+        "#445495",
+        "#545F9C"
+      ],
+      "smoothness": 0.2,
+      "rampShift": 0.3,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.8,
+        "grime": 0.25
+      }
+    },
+    "M_Stn_Plaster": {
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "smoothness": 0.05,
+      "rampShift": 0.1,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 1.0,
+        "grime": 0.45,
+        "paint": 1.2
+      }
+    },
+    "M_Stn_PlasterIn": {
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "smoothness": 0.05,
+      "rampShift": -0.05,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 1.0,
+        "grime": 0.2
+      }
+    },
+    "M_Stn_Timber": {
+      "ramp": [
+        "#A36037",
+        "#B76C45",
+        "#BD7244",
+        "#C17842",
+        "#D38949"
+      ],
+      "smoothness": 0.1,
+      "rampShift": 0.0,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.5,
+        "grime": 0.35
+      }
+    },
+    "M_Stn_TimberDark": {
+      "ramp": [
+        "#A36037",
+        "#B76C45",
+        "#BD7244",
+        "#C17842",
+        "#D38949"
+      ],
+      "smoothness": 0.1,
+      "rampShift": -0.35,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.5,
+        "grime": 0.35
+      }
+    },
+    "M_Stn_WoodLight": {
+      "ramp": [
+        "#684029",
+        "#C9813B",
+        "#DE913F",
+        "#F5AC4A",
+        "#F9B44F"
+      ],
+      "smoothness": 0.1,
+      "rampShift": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.5,
+        "grime": 0.35
+      }
+    },
+    "M_Stn_Floor": {
+      "ramp": [
+        "#6C422A",
+        "#814C32",
+        "#8D543A",
+        "#A56945",
+        "#E59843"
+      ],
+      "smoothness": 0.1,
+      "rampShift": 0.1,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.6,
+        "grime": 0.3
+      }
+    },
+    "M_Stn_FloorAlt": {
+      "ramp": [
+        "#6C422A",
+        "#814C32",
+        "#8D543A",
+        "#A56945",
+        "#E59843"
+      ],
+      "smoothness": 0.1,
+      "rampShift": -0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.6,
+        "grime": 0.3
+      }
+    },
+    "M_Stn_Stone": {
+      "ramp": [
+        "#6E6172",
+        "#89798C",
+        "#948393",
+        "#A8949D",
+        "#B9A4A4"
+      ],
+      "smoothness": 0.05,
+      "rampShift": 0.0,
+      "opts": {
+        "cells": 0.8,
+        "cellSize": 0.7,
+        "grime": 0.5
+      }
+    },
+    "M_Stn_StoneDark": {
+      "ramp": [
+        "#6E6172",
+        "#89798C",
+        "#948393",
+        "#A8949D",
+        "#B9A4A4"
+      ],
+      "smoothness": 0.05,
+      "rampShift": -0.3,
+      "opts": {
+        "cells": 0.8,
+        "cellSize": 0.7,
+        "grime": 0.5
+      }
+    },
+    "M_Stn_Paving": {
+      "ramp": [
+        "#6B5C67",
+        "#937A7C",
+        "#B1979B",
+        "#C9B0B5",
+        "#DEC6C4"
+      ],
+      "smoothness": 0.05,
+      "rampShift": 0.05,
+      "opts": {
+        "cells": 0.9,
+        "cellSize": 0.8,
+        "grime": 0.4
+      }
+    },
+    "M_Stn_PavingDark": {
+      "ramp": [
+        "#6B5C67",
+        "#937A7C",
+        "#B1979B",
+        "#C9B0B5",
+        "#DEC6C4"
+      ],
+      "smoothness": 0.05,
+      "rampShift": -0.18,
+      "opts": {
+        "cells": 0.8,
+        "cellSize": 0.8,
+        "grime": 0.6
+      }
+    },
+    "M_Stn_PavingLight": {
+      "ramp": [
+        "#6B5C67",
+        "#937A7C",
+        "#B1979B",
+        "#C9B0B5",
+        "#DEC6C4"
+      ],
+      "smoothness": 0.05,
+      "rampShift": 0.25,
+      "opts": {
+        "cells": 0.8,
+        "cellSize": 0.8,
+        "grime": 0.3
+      }
+    },
+    "M_Stn_Yellow": {
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "smoothness": 0.25,
+      "rampShift": 0.0,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 0.6
+      }
+    },
+    "M_Stn_YellowDark": {
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "smoothness": 0.25,
+      "rampShift": -0.35,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 0.6
+      }
+    },
+    "M_Stn_Cream": {
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "smoothness": 0.2,
+      "rampShift": 0.35,
+      "opts": {
+        "cells": 0.2
+      }
+    },
+    "M_Stn_Red": {
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "smoothness": 0.25,
+      "rampShift": 0.05,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 0.6
+      }
+    },
+    "M_Stn_White": {
+      "ramp": [
+        "#C2CAEA",
+        "#C7D0F0",
+        "#DFDDEE",
+        "#E7E1EA",
+        "#FDF2EB"
+      ],
+      "smoothness": 0.2,
+      "rampShift": 0.1,
+      "opts": {
+        "cells": 0.3,
+        "cellSize": 0.6
+      }
+    },
+    "M_Stn_Metal": {
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "smoothness": 0.35,
+      "rampShift": -0.1,
+      "opts": {
+        "cells": 0.3
+      }
+    },
+    "M_Stn_Dark": {
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "smoothness": 0.25,
+      "rampShift": 0.1,
+      "opts": {
+        "cells": 0.0
+      }
+    },
+    "M_Stn_Glow": {
+      "ramp": [
+        "#F9DA7C",
+        "#FDE080",
+        "#FEECA1",
+        "#FEF2B0",
+        "#FFF8DA"
+      ],
+      "smoothness": 0.5,
+      "rampShift": 0.15,
+      "opts": {
+        "emissive": 0.85,
+        "rim": 0.0,
+        "paint": 0.0,
+        "cells": 0.0
+      }
+    },
+    "M_Stn_Window": {
+      "ramp": [
+        "#F9DA7C",
+        "#FDE080",
+        "#FEECA1",
+        "#FEF2B0",
+        "#FFF8DA"
+      ],
+      "smoothness": 0.6,
+      "rampShift": -0.2,
+      "opts": {
+        "emissive": 0.35,
+        "opacity": 0.72,
+        "flat": 0.5,
+        "cells": 0.0,
+        "grime": 0.0
+      }
+    },
+    "M_Stn_SignalRed": {
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "smoothness": 0.4,
+      "rampShift": 0.45,
+      "opts": {
+        "emissive": 0.55,
+        "cells": 0.0
+      }
+    },
+    "M_Stn_Leaf": {
+      "ramp": [
+        "#566D3A",
+        "#6B7F38",
+        "#8B9F3B",
+        "#A1B044",
+        "#ADBC4A"
+      ],
+      "smoothness": 0.05,
+      "rampShift": -0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.4,
+        "rim": 0.25
+      }
+    },
+    "M_Stn_Soil": {
+      "ramp": [
+        "#462A21",
+        "#553022",
+        "#593323",
+        "#723F29",
+        "#A66739"
+      ],
+      "smoothness": 0.05,
+      "rampShift": -0.1,
+      "opts": {
+        "cells": 0.5
+      }
+    },
+    "M_Stn_Collider": {
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "smoothness": 0.0,
+      "rampShift": 0.0,
+      "opts": {
+        "cells": 0.0
+      }
+    }
+  }
+}

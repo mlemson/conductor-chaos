@@ -45,16 +45,20 @@ namespace ConductorChaos.EditorTools
         }
 
         [MenuItem("Conductor Chaos/Art/Build Showcase Scene")]
-        public static void Build()
+        public static void Build() => BuildFrom(LayoutPath, ScenePath, "ArtShowcase");
+
+        /// <summary>Bouwt een statische art-scène uit een layout-JSON (zelfde formaat als ArtShowcase.json);
+        /// ook gebruikt door de stationsvoorbeeldscène (StationKitEditor).</summary>
+        public static void BuildFrom(string layoutPath, string scenePath, string rootName)
         {
             // open scène met niet-opgeslagen wijzigingen? Eerst vragen (NewScene zou ze anders weggooien).
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            var json = AssetDatabase.LoadAssetAtPath<TextAsset>(LayoutPath);
-            if (json == null) { Debug.LogError($"[ArtShowcase] Layout ontbreekt: {LayoutPath}"); return; }
+            var json = AssetDatabase.LoadAssetAtPath<TextAsset>(layoutPath);
+            if (json == null) { Debug.LogError($"[ArtShowcase] Layout ontbreekt: {layoutPath}"); return; }
             var layout = JsonUtility.FromJson<Layout>(json.text);
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            var root = new GameObject("ArtShowcase");
+            var root = new GameObject(rootName);
             int placed = 0, missing = 0;
             foreach (var it in layout.items)
             {
@@ -107,10 +111,10 @@ namespace ConductorChaos.EditorTools
             RenderSettings.ambientLight = new Color(0.55f, 0.62f, 0.80f);
             RenderSettings.skybox = null;
 
-            Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
-            EditorSceneManager.SaveScene(scene, ScenePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(scenePath));
+            EditorSceneManager.SaveScene(scene, scenePath);
             AssetDatabase.Refresh();
-            Debug.Log($"[ArtShowcase] Scène opgeslagen: {ScenePath} ({placed} modellen, {missing} ontbrekend)");
+            Debug.Log($"[ArtShowcase] Scène opgeslagen: {scenePath} ({placed} modellen, {missing} ontbrekend)");
         }
 
         [MenuItem("Conductor Chaos/Art/Capture Showcase Screenshot")]

@@ -1,0 +1,1367 @@
+[
+ {
+  "name": "stn_Prop_Bench",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 4.9,
+   "target": "0.00,0.47,-0.07",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 2.69,
+   "shadowSize": 1.72,
+   "far": 69.6,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_Bench.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_Barrel",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 3.2,
+   "target": "0.00,0.44,0.00",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 1.76,
+   "shadowSize": 1.12,
+   "far": 62.8,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_Barrel.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_CrateStack",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 5.0,
+   "target": "0.01,0.67,-0.02",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 2.75,
+   "shadowSize": 1.76,
+   "far": 70.0,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_CrateStack.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_Crate",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 2.84,
+   "target": "0.00,0.35,0.00",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 1.56,
+   "shadowSize": 1.0,
+   "far": 61.4,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_Crate.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_Planter",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 3.49,
+   "target": "-0.01,0.34,0.01",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 1.92,
+   "shadowSize": 1.23,
+   "far": 64.0,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_Planter.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_TrashBin",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 3.05,
+   "target": "0.00,0.49,0.01",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 1.67,
+   "shadowSize": 1.07,
+   "far": 62.2,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_TrashBin.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_LampPost",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 7.57,
+   "target": "0.00,1.63,0.00",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 4.16,
+   "shadowSize": 2.66,
+   "far": 80.3,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_LampPost.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_WallLantern",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 2.07,
+   "target": "0.00,0.17,0.25",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 1.14,
+   "shadowSize": 0.73,
+   "far": 58.3,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_WallLantern.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_HangingSign",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 2.34,
+   "target": "0.00,-0.39,0.00",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 1.28,
+   "shadowSize": 0.82,
+   "far": 59.4,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_HangingSign.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_StationSign",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 8.44,
+   "target": "0.00,1.11,0.00",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 4.63,
+   "shadowSize": 2.96,
+   "far": 83.7,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_StationSign.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_Timetable",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 5.81,
+   "target": "0.00,1.10,0.00",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 3.19,
+   "shadowSize": 2.04,
+   "far": 73.2,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_Timetable.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_TicketMachine",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 4.03,
+   "target": "0.00,0.75,0.02",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 2.21,
+   "shadowSize": 1.42,
+   "far": 66.1,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_TicketMachine.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_LuggageCart",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 3.95,
+   "target": "0.02,0.53,0.00",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 2.17,
+   "shadowSize": 1.39,
+   "far": 65.8,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_LuggageCart.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_LevelCrossing",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 11.69,
+   "target": "1.54,1.46,0.07",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 6.42,
+   "shadowSize": 4.11,
+   "far": 96.8,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_LevelCrossing.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_Fence_2m",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 5.59,
+   "target": "1.00,0.55,0.01",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 3.07,
+   "shadowSize": 1.96,
+   "far": 72.4,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_Fence_2m.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Prop_Shelter",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": 24,
+   "pitch": 12,
+   "dist": 14.69,
+   "target": "0.00,1.86,0.00",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 8.07,
+   "shadowSize": 5.16,
+   "far": 108.8,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Prop_Shelter.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Platform_Straight_3m",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": -30,
+   "pitch": 26,
+   "dist": 10.77,
+   "target": "1.50,0.54,3.40",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 5.91,
+   "shadowSize": 3.78,
+   "far": 93.1,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Platform_Straight_3m.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Platform_Straight_6m",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": -30,
+   "pitch": 26,
+   "dist": 16.0,
+   "target": "3.00,0.54,3.40",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 8.78,
+   "shadowSize": 5.62,
+   "far": 114.0,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Platform_Straight_6m.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Platform_EndCap_End",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": -30,
+   "pitch": 26,
+   "dist": 9.89,
+   "target": "1.17,0.54,3.40",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 5.43,
+   "shadowSize": 3.47,
+   "far": 89.6,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Platform_EndCap_End.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Platform_EndCap_Start",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": -30,
+   "pitch": 26,
+   "dist": 9.89,
+   "target": "1.17,0.54,3.40",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 5.43,
+   "shadowSize": 3.47,
+   "far": 89.6,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Platform_EndCap_Start.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Platform_Corner_End",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": -30,
+   "pitch": 26,
+   "dist": 11.52,
+   "target": "1.75,0.54,3.40",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 6.33,
+   "shadowSize": 4.05,
+   "far": 96.1,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Platform_Corner_End.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Platform_Corner_Start",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": -30,
+   "pitch": 26,
+   "dist": 11.52,
+   "target": "1.75,0.54,3.40",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 6.33,
+   "shadowSize": 4.05,
+   "far": 96.1,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Platform_Corner_Start.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Platform_Ramp_End",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": -30,
+   "pitch": 26,
+   "dist": 14.1,
+   "target": "2.50,0.53,3.40",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 7.74,
+   "shadowSize": 4.96,
+   "far": 106.4,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Platform_Ramp_End.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Platform_Ramp_Start",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": -30,
+   "pitch": 26,
+   "dist": 14.1,
+   "target": "2.50,0.53,3.40",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 7.74,
+   "shadowSize": 4.96,
+   "far": 106.4,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Platform_Ramp_Start.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Platform_Stairs_End",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": -30,
+   "pitch": 26,
+   "dist": 9.8,
+   "target": "1.02,0.57,3.40",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 5.38,
+   "shadowSize": 3.44,
+   "far": 89.2,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Platform_Stairs_End.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_Platform_Stairs_Start",
+  "params": {
+   "w": 640,
+   "h": 540,
+   "ss": 1.3,
+   "fov": 30,
+   "yaw": -30,
+   "pitch": 26,
+   "dist": 9.8,
+   "target": "1.08,0.57,3.40",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 5.38,
+   "shadowSize": 3.44,
+   "far": 89.2,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Platform_Stairs_Start.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_bld_front",
+  "params": {
+   "w": 1400,
+   "h": 1050,
+   "yaw": -25,
+   "pitch": 12,
+   "dist": 20,
+   "fov": 35,
+   "target": "-1.4,3.2,-2.4",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 14,
+   "shadowSize": 9,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Station_Building.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_bld_back",
+  "params": {
+   "w": 1400,
+   "h": 1050,
+   "yaw": 150,
+   "pitch": 14,
+   "dist": 20,
+   "fov": 35,
+   "target": "-1.4,3.0,-2.4",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 14,
+   "shadowSize": 9,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Station_Building.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_bld_left",
+  "params": {
+   "w": 1400,
+   "h": 1050,
+   "yaw": -75,
+   "pitch": 6,
+   "dist": 15,
+   "fov": 35,
+   "target": "-3.5,2.4,-2.6",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 14,
+   "shadowSize": 9,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Station_Building.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_bld_inside",
+  "params": {
+   "w": 1400,
+   "h": 1050,
+   "yaw": 15,
+   "pitch": 74,
+   "dist": 17,
+   "fov": 35,
+   "target": "-1.3,1.2,-2.7",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 14,
+   "shadowSize": 9,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Station_Building.glb",
+     "pose": {
+      "Roof": {
+       "visible": false
+      },
+      "RoofFrame": {
+       "visible": false
+      }
+     }
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_bld_door",
+  "params": {
+   "w": 1400,
+   "h": 1050,
+   "yaw": -5,
+   "pitch": 6,
+   "dist": 7.5,
+   "fov": 35,
+   "target": "0.6,2.3,-0.5",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "groundR": 14,
+   "shadowSize": 9,
+   "items": [
+    {
+     "url": "../Exports/Environment/Station/Station_Building.glb"
+    }
+   ]
+  }
+ },
+ {
+  "name": "stn_scene_wide",
+  "params": {
+   "lightRel": 0,
+   "groundRamp": "[\"#566D3A\",\"#6B7F38\",\"#8B9F3B\",\"#A1B044\",\"#ADBC4A\"]",
+   "groundR": 60,
+   "far": 300,
+   "lightAz": -40,
+   "lightEl": 48,
+   "items": [
+    {
+     "url": "../Exports/Environment/Track/Track_Straight_12m.glb",
+     "pos": [
+      -12,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Track/Track_Straight_12m.glb",
+     "pos": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Track/Track_Straight_12m.glb",
+     "pos": [
+      12,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Platform_Stairs_Start.glb",
+     "pos": [
+      -11.1,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Platform_Straight_6m.glb",
+     "pos": [
+      -9.0,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Platform_Straight_6m.glb",
+     "pos": [
+      -3.0,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Platform_Straight_3m.glb",
+     "pos": [
+      3.0,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Platform_Straight_3m.glb",
+     "pos": [
+      6.0,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Platform_EndCap_End.glb",
+     "pos": [
+      9.0,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Station_Building.glb",
+     "pos": [
+      -1.2,
+      0,
+      5.3
+     ],
+     "rotY": 180
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_LampPost.glb",
+     "pos": [
+      -8.2,
+      1.05,
+      4.6
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_LampPost.glb",
+     "pos": [
+      6.6,
+      1.05,
+      4.6
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_Bench.glb",
+     "pos": [
+      4.6,
+      1.05,
+      4.55
+     ],
+     "rotY": 180
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_TrashBin.glb",
+     "pos": [
+      3.3,
+      1.05,
+      4.75
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_Timetable.glb",
+     "pos": [
+      8.4,
+      1.05,
+      4.65
+     ],
+     "rotY": 180
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_TicketMachine.glb",
+     "pos": [
+      -6.6,
+      1.05,
+      4.75
+     ],
+     "rotY": 180
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_LuggageCart.glb",
+     "pos": [
+      -4.9,
+      1.05,
+      3.6
+     ],
+     "rotY": 70
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_StationSign.glb",
+     "pos": [
+      -9.3,
+      1.05,
+      4.75
+     ],
+     "rotY": 180
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_Planter.glb",
+     "pos": [
+      1.6,
+      1.05,
+      4.8
+     ],
+     "rotY": 180
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_Fence_2m.glb",
+     "pos": [
+      10.6,
+      0,
+      6.3
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_Fence_2m.glb",
+     "pos": [
+      12.6,
+      0,
+      6.3
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_LevelCrossing.glb",
+     "pos": [
+      13.5,
+      0,
+      -2.5
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_CrateStack.glb",
+     "pos": [
+      11.5,
+      0,
+      4.2
+     ],
+     "rotY": 15
+    },
+    {
+     "url": "../Exports/Locomotive_Blockout.glb",
+     "pos": [
+      0.6,
+      1.05,
+      1.35
+     ]
+    },
+    {
+     "url": "../Exports/Tender_Blockout.glb",
+     "pos": [
+      -4.3,
+      1.05,
+      1.35
+     ]
+    },
+    {
+     "url": "../Exports/RegionalWagon_Blockout.glb",
+     "pos": [
+      -10.6,
+      1.05,
+      1.4
+     ]
+    },
+    {
+     "url": "../Exports/Conductor.glb",
+     "pos": [
+      -2.6,
+      1.05,
+      3.0
+     ],
+     "rotY": 200
+    },
+    {
+     "url": "../Exports/ElderlyPassenger.glb",
+     "pos": [
+      -0.2,
+      1.05,
+      3.9
+     ],
+     "rotY": 160
+    },
+    {
+     "url": "../Exports/Tourist.glb",
+     "pos": [
+      2.4,
+      1.05,
+      3.5
+     ],
+     "rotY": 210
+    },
+    {
+     "url": "../Exports/RailMechanic.glb",
+     "pos": [
+      6.2,
+      1.05,
+      2.6
+     ],
+     "rotY": 230
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
+     "pos": [
+      -14,
+      0,
+      12
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
+     "pos": [
+      -9.5,
+      0,
+      11.5
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
+     "pos": [
+      9.0,
+      0,
+      12.5
+     ],
+     "rotY": 40
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
+     "pos": [
+      14.5,
+      0,
+      9.0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Bush_01.glb",
+     "pos": [
+      -12.6,
+      0,
+      5.4
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Bush_01.glb",
+     "pos": [
+      11.8,
+      0,
+      7.6
+     ],
+     "rotY": 60
+    },
+    {
+     "url": "../Exports/Environment/Flower_Patch_01.glb",
+     "pos": [
+      -13.2,
+      0,
+      3.6
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Rock_Medium_01.glb",
+     "pos": [
+      15.5,
+      0,
+      4.0
+     ],
+     "rotY": 30
+    }
+   ],
+   "w": 2400,
+   "h": 1300,
+   "yaw": -198,
+   "pitch": 16,
+   "dist": 34,
+   "fov": 36,
+   "target": "-0.5,2.2,3.0"
+  }
+ },
+ {
+  "name": "stn_scene_close",
+  "params": {
+   "lightRel": 0,
+   "groundRamp": "[\"#566D3A\",\"#6B7F38\",\"#8B9F3B\",\"#A1B044\",\"#ADBC4A\"]",
+   "groundR": 60,
+   "far": 300,
+   "lightAz": -40,
+   "lightEl": 48,
+   "items": [
+    {
+     "url": "../Exports/Environment/Track/Track_Straight_12m.glb",
+     "pos": [
+      -12,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Track/Track_Straight_12m.glb",
+     "pos": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Track/Track_Straight_12m.glb",
+     "pos": [
+      12,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Platform_Stairs_Start.glb",
+     "pos": [
+      -11.1,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Platform_Straight_6m.glb",
+     "pos": [
+      -9.0,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Platform_Straight_6m.glb",
+     "pos": [
+      -3.0,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Platform_Straight_3m.glb",
+     "pos": [
+      3.0,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Platform_Straight_3m.glb",
+     "pos": [
+      6.0,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Platform_EndCap_End.glb",
+     "pos": [
+      9.0,
+      0,
+      0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Station_Building.glb",
+     "pos": [
+      -1.2,
+      0,
+      5.3
+     ],
+     "rotY": 180
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_LampPost.glb",
+     "pos": [
+      -8.2,
+      1.05,
+      4.6
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_LampPost.glb",
+     "pos": [
+      6.6,
+      1.05,
+      4.6
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_Bench.glb",
+     "pos": [
+      4.6,
+      1.05,
+      4.55
+     ],
+     "rotY": 180
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_TrashBin.glb",
+     "pos": [
+      3.3,
+      1.05,
+      4.75
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_Timetable.glb",
+     "pos": [
+      8.4,
+      1.05,
+      4.65
+     ],
+     "rotY": 180
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_TicketMachine.glb",
+     "pos": [
+      -6.6,
+      1.05,
+      4.75
+     ],
+     "rotY": 180
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_LuggageCart.glb",
+     "pos": [
+      -4.9,
+      1.05,
+      3.6
+     ],
+     "rotY": 70
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_StationSign.glb",
+     "pos": [
+      -9.3,
+      1.05,
+      4.75
+     ],
+     "rotY": 180
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_Planter.glb",
+     "pos": [
+      1.6,
+      1.05,
+      4.8
+     ],
+     "rotY": 180
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_Fence_2m.glb",
+     "pos": [
+      10.6,
+      0,
+      6.3
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_Fence_2m.glb",
+     "pos": [
+      12.6,
+      0,
+      6.3
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_LevelCrossing.glb",
+     "pos": [
+      13.5,
+      0,
+      -2.5
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Station/Prop_CrateStack.glb",
+     "pos": [
+      11.5,
+      0,
+      4.2
+     ],
+     "rotY": 15
+    },
+    {
+     "url": "../Exports/Conductor.glb",
+     "pos": [
+      -2.6,
+      1.05,
+      3.0
+     ],
+     "rotY": 200
+    },
+    {
+     "url": "../Exports/ElderlyPassenger.glb",
+     "pos": [
+      -0.2,
+      1.05,
+      3.9
+     ],
+     "rotY": 160
+    },
+    {
+     "url": "../Exports/Tourist.glb",
+     "pos": [
+      2.4,
+      1.05,
+      3.5
+     ],
+     "rotY": 210
+    },
+    {
+     "url": "../Exports/RailMechanic.glb",
+     "pos": [
+      6.2,
+      1.05,
+      2.6
+     ],
+     "rotY": 230
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
+     "pos": [
+      -14,
+      0,
+      12
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
+     "pos": [
+      -9.5,
+      0,
+      11.5
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Large_01.glb",
+     "pos": [
+      9.0,
+      0,
+      12.5
+     ],
+     "rotY": 40
+    },
+    {
+     "url": "../Exports/Environment/Tree_Pine_Medium_01.glb",
+     "pos": [
+      14.5,
+      0,
+      9.0
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Bush_01.glb",
+     "pos": [
+      -12.6,
+      0,
+      5.4
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Bush_01.glb",
+     "pos": [
+      11.8,
+      0,
+      7.6
+     ],
+     "rotY": 60
+    },
+    {
+     "url": "../Exports/Environment/Flower_Patch_01.glb",
+     "pos": [
+      -13.2,
+      0,
+      3.6
+     ]
+    },
+    {
+     "url": "../Exports/Environment/Rock_Medium_01.glb",
+     "pos": [
+      15.5,
+      0,
+      4.0
+     ],
+     "rotY": 30
+    }
+   ],
+   "w": 1800,
+   "h": 1200,
+   "yaw": -205,
+   "pitch": 9,
+   "dist": 15,
+   "fov": 38,
+   "target": "0.0,2.8,4.0"
+  }
+ }
+]
