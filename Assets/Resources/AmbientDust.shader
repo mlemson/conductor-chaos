@@ -1,31 +1,45 @@
 Shader "ConductorChaos/AmbientDust"
 {
-    Properties { _MainTex ("Dust", 2D) = "white" {} }
     SubShader
     {
-        Tags { "RenderType" = "Transparent" "Queue" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
+        Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline" }
         Pass
         {
             Tags { "LightMode" = "UniversalForward" }
-            Blend SrcAlpha OneMinusSrcAlpha
-            ZWrite Off
-            Cull Off
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma multi_compile_fog
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            TEXTURE2D(_MainTex); SAMPLER(sampler_MainTex);
-            struct Attributes { float4 positionOS : POSITION; float2 uv : TEXCOORD0; half4 color : COLOR; };
-            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; half4 color : COLOR; };
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
+                half4 color : COLOR;
+            };
+
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+                half3 color : COLOR;
+                half fog : TEXCOORD0;
+            };
+
             Varyings vert(Attributes v)
             {
                 Varyings o;
                 o.positionCS = TransformObjectToHClip(v.positionOS.xyz);
-                o.uv = v.uv;
-                o.color = v.color;
+                half light = saturate(dot(TransformObjectToWorldNormal(v.normalOS), normalize(half3(.4h, .8h, .5h))));
+                o.color = v.color.rgb * lerp(half3(.62h, .65h, .73h), half3(1.0h, .96h, .87h), light);
+                o.fog = ComputeFogFactor(o.positionCS.z);
                 return o;
             }
-            half4 frag(Varyings i) : SV_Target { return SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv) * i.color; }
+
+            half4 frag(Varyings i) : SV_Target
+            {
+                return half4(MixFog(i.color, i.fog), 1.0h);
+            }
             ENDHLSL
         }
     }
