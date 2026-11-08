@@ -76,13 +76,11 @@ namespace ConductorChaos.Playground
             for (int i = 0; i < count; i++)
                 if (!groundHits[i].collider.transform.IsChildOf(transform) && groundHits[i].normal.y > 0.55f) { grounded = true; break; }
             bool standing = grounded && Vector3.Dot(body.rotation * Vector3.up, Vector3.up) > 0.55f;
+            body.AddTorque(Vector3.up * (-body.angularVelocity.y * 4f), ForceMode.Acceleration);
             if (standing)
             {
                 Vector3 tilt = Vector3.Cross(body.rotation * Vector3.up, Vector3.up);
                 body.AddTorque(tilt * 28f - new Vector3(body.angularVelocity.x, 0f, body.angularVelocity.z) * 7f, ForceMode.Acceleration);
-                float sway = Mathf.Sin(Time.time * 1.5f + transform.position.x) * 0.8f;
-                leftArm.AddTorque(body.transform.forward * sway, ForceMode.Acceleration);
-                rightArm.AddTorque(-body.transform.forward * sway, ForceMode.Acceleration);
                 legs?.Step(body.linearVelocity, Vector2.zero, true, 0f, false, out _);
             }
             else legs?.ReleaseSupport();

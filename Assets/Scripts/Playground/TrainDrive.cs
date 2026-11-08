@@ -19,6 +19,7 @@ namespace ConductorChaos.Playground
         private readonly NetworkVariable<float> throttle = new(0f);
         private readonly NetworkVariable<float> displayedSpeed = new(0f);
         private readonly NetworkVariable<float> doorAngle = new(0f);
+        private readonly NetworkVariable<Vector2> wagonDoorOffsets = new(Vector2.zero);
         private const float FuelCapacity = 3f;
         private const float StartingFuel = FuelCapacity * 0.5f;
         private readonly NetworkVariable<float> fuel = new(StartingFuel);
@@ -91,7 +92,21 @@ namespace ConductorChaos.Playground
         // Kolenposes zijn relatief aan het voertuig met de kolen (coalSource): stil liggende kolen veranderen dan niet.
         private NetworkList<CoalPose> coalPoses;
         private static readonly HashSet<Rigidbody> GrippableCoal = new();
-        private static readonly Dictionary<Rigidbody, TrainDrive> ShovelOwners = new();
+        private static readonly Dictionary<Rigidbody, TrainDrive> ControlOwners = new();
+        private readonly WagonDoorPanel[] wagonDoors = new WagonDoorPanel[2];
+        private const float WagonDoorTravel = 0.56f;
+
+        private sealed class WagonDoorPanel
+        {
+            public Transform Leaf, Hand;
+            public Rigidbody Body;
+            public BoxCollider Panel;
+            public SphereCollider Handle;
+            public Collider[] OriginalColliders;
+            public bool[] OriginalEnabled;
+            public Vector3 RestPosition;
+            public float PreviousHandX;
+        }
 
         // Positie/rotatie relatief aan het voertuig waar de kolen bij horen (coalSource), niet in wereldruimte.
         private struct CoalPose : INetworkSerializable, System.IEquatable<CoalPose>
@@ -114,7 +129,7 @@ namespace ConductorChaos.Playground
         }
         internal static bool IsCoalBody(Rigidbody target) => target && GrippableCoal.Contains(target);
         internal static TrainDrive FindControlOwner(Rigidbody target) =>
-            target && ShovelOwners.TryGetValue(target, out var owner) ? owner : target ? target.GetComponentInParent<TrainDrive>() : null;
+            target && ControlOwners.TryGetValue(target, out var owner) ? owner : target ? target.GetComponentInParent<TrainDrive>() : null;
 
         internal bool TryGetCabin(Vector3 playerPosition, float margin, out Transform frame)
         {
@@ -193,7 +208,9 @@ namespace ConductorChaos.Playground
         public void Configure(TrackPiece first, float start) { firstTrack = first; startDistance = start; }
         public void ConfigureWagons(Rigidbody[] wagons) => availableWagons = wagons;
         internal bool IsCabControlCollider(Collider candidate) =>
-            candidate && (candidate == latchCollider || IsShovelGrip(candidate) || IsLeverHandle(candidate));
+            candidate && (candidate == latchCollider || IsShovelGrip(candidate) || IsLeverHandle(candidate) ||
+                (wagonDoors[0] != null && candidate == wagonDoors[0].Handle) ||
+                (wagonDoors[1] != null && candidate == wagonDoors[1].Handle));
 
         internal bool IsLeverHandle(Collider candidate) => leverPivot && candidate && candidate.transform == leverPivot;
         internal bool IsShovelGrip(Collider candidate) => candidate && (candidate == shovelGrip || candidate.transform == shovelLoad);
@@ -219,7 +236,7 @@ namespace ConductorChaos.Playground
             body.isKinematic = true;
             body.useGravity = false;
             body.interpolation = IsServer ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
-            if (IsServer) { powered.Value = false; throttle.Value = 0f; displayedSpeed.Value = 0f; doorAngle.Value = 0f; speed = 0f; buttonDown.Value = false; nextButtonPress = 0f; }
+            if (IsServer) { powered.Value = false; throttle.Value = 0f; displayedSpeed.Value = 0f; doorAngle.Value = 0f; wagonDoorOffsets.Value = Vector2.zero; speed = 0f; buttonDown.Value = false; nextButtonPress = 0f; }
             coalBin = coalScoopPoint = coalSource = null;
             coalSourceBody = null;
             foreach (var t in GetComponentsInChildren<Transform>(true))
@@ -299,6 +316,7 @@ namespace ConductorChaos.Playground
             rearwardRailSign = couplers[body].FrontSign;
             foreach (var wagon in availableWagons)
                 if (wagon && wagon != body) couplers[wagon] = GetCouplers(wagon.transform);
+            PrepareWagonDoors();
             if (!IsServer) return;
             BuildRailLinks();
             foreach (var wagon in availableWagons)
@@ -346,6 +364,7 @@ namespace ConductorChaos.Playground
                 heatNeedle.localRotation = Quaternion.Euler(240f * displayedHeat, 0f, 0f);
             }
             if (!IsServer && fireboxDoor && fireboxLatch) ApplyDoorAngle();
+            if (IsSpawned && !IsServer) ApplyWagonDoors();
             if (IsSpawned && canStoke) PresentStoking();
             if (steamEffects) steamEffects.Present(powered.Value, displayedSpeed.Value / Mathf.Max(maximumSpeed, 0.01f));
         }
@@ -861,6 +880,7 @@ namespace ConductorChaos.Playground
                 nextPlayerScan = Time.time + 0.25f;
             }
             UpdateFireboxDoor();
+            UpdateWagonDoors();
             UpdateShovel();
             UpdateCoal();
             if (!leverPivot || !startButton) return;
@@ -907,6 +927,98 @@ namespace ConductorChaos.Playground
                 nextButtonPress = Time.time + 0.35f;
             }
             if (buttonDown.Value != pressed) buttonDown.Value = pressed;
+        }
+
+        private void PrepareWagonDoors()
+        {
+            Debug.Assert(Mathf.Approximately(MoveWagonDoor(-WagonDoorTravel, -1f, true), -WagonDoorTravel));
+            Debug.Assert(Mathf.Approximately(MoveWagonDoor(WagonDoorTravel, 1f, false), WagonDoorTravel));
+            foreach (var wagon in availableWagons)
+            {
+                if (!wagon) continue;
+                Transform left = null, right = null;
+                foreach (var part in wagon.GetComponentsInChildren<Transform>(true))
+                {
+                    if (part.name == "DoorLeaf_L") left = part;
+                    else if (part.name == "DoorLeaf_R") right = part;
+                }
+                if (!left || !right) continue;
+                var leftMesh = left.GetComponent<MeshFilter>();
+                var rightMesh = right.GetComponent<MeshFilter>();
+                if (!leftMesh || !leftMesh.sharedMesh || !rightMesh || !rightMesh.sharedMesh ||
+                    left.GetComponent<Rigidbody>() || right.GetComponent<Rigidbody>())
+                {
+                    Debug.LogWarning("TrainDrive: wagon door panels are missing meshes or already have rigidbodies.", wagon);
+                    return;
+                }
+                wagonDoors[0] = CreateWagonDoor(left, leftMesh.sharedMesh.bounds, true);
+                wagonDoors[1] = CreateWagonDoor(right, rightMesh.sharedMesh.bounds, false);
+                ApplyWagonDoors();
+                return;
+            }
+        }
+
+        private WagonDoorPanel CreateWagonDoor(Transform leaf, Bounds bounds, bool left)
+        {
+            var panel = new WagonDoorPanel { Leaf = leaf, RestPosition = leaf.localPosition };
+            panel.OriginalColliders = leaf.GetComponents<Collider>();
+            panel.OriginalEnabled = new bool[panel.OriginalColliders.Length];
+            for (int i = 0; i < panel.OriginalColliders.Length; i++)
+            {
+                panel.OriginalEnabled[i] = panel.OriginalColliders[i].enabled;
+                panel.OriginalColliders[i].enabled = false;
+            }
+            panel.Body = leaf.gameObject.AddComponent<Rigidbody>();
+            panel.Body.isKinematic = true;
+            panel.Body.useGravity = false;
+            panel.Panel = leaf.gameObject.AddComponent<BoxCollider>();
+            panel.Panel.center = bounds.center;
+            panel.Panel.size = new Vector3(bounds.size.x, bounds.size.y, Mathf.Max(0.09f, bounds.size.z));
+            panel.Handle = leaf.gameObject.AddComponent<SphereCollider>();
+            panel.Handle.center = new Vector3(Mathf.Lerp(bounds.min.x, bounds.max.x, left ? 0.82f : 0.18f),
+                Mathf.Lerp(bounds.min.y, bounds.max.y, 0.45f), bounds.max.z + 0.03f);
+            panel.Handle.radius = 0.09f;
+            ControlOwners[panel.Body] = this;
+            return panel;
+        }
+
+        private void UpdateWagonDoors()
+        {
+            Vector2 offsets = wagonDoorOffsets.Value;
+            for (int i = 0; i < wagonDoors.Length; i++)
+            {
+                var panel = wagonDoors[i];
+                if (panel == null || !panel.Body) continue;
+                Transform holdingHand = null;
+                foreach (var player in players)
+                {
+                    if (!player || !player.IsSpawned || !player.TryGetControlHand(panel.Body, out var hand, out var position, useAim: true)) continue;
+                    float handX = panel.Leaf.parent.InverseTransformPoint(position).x;
+                    if (panel.Hand == hand)
+                    {
+                        float delta = handX - panel.PreviousHandX;
+                        if (i == 0) offsets.x = MoveWagonDoor(offsets.x, delta, true);
+                        else offsets.y = MoveWagonDoor(offsets.y, delta, false);
+                    }
+                    panel.PreviousHandX = handX;
+                    holdingHand = hand;
+                    break;
+                }
+                panel.Hand = holdingHand;
+            }
+            if (offsets != wagonDoorOffsets.Value) wagonDoorOffsets.Value = offsets;
+            ApplyWagonDoors();
+        }
+
+        private static float MoveWagonDoor(float offset, float delta, bool left) =>
+            Mathf.Clamp(offset + Mathf.Clamp(delta, -0.06f, 0.06f), left ? -WagonDoorTravel : 0f, left ? 0f : WagonDoorTravel);
+
+        private void ApplyWagonDoors()
+        {
+            Vector2 offsets = wagonDoorOffsets.Value;
+            for (int i = 0; i < wagonDoors.Length; i++)
+                if (wagonDoors[i] != null && wagonDoors[i].Leaf)
+                    wagonDoors[i].Leaf.localPosition = wagonDoors[i].RestPosition + Vector3.right * (i == 0 ? offsets.x : offsets.y);
         }
 
         private void UpdateFireboxDoor()
@@ -1028,7 +1140,7 @@ namespace ConductorChaos.Playground
             shovelBody.isKinematic = !IsServer;
             shovelBody.useGravity = IsServer;
             shovelBody.interpolation = RigidbodyInterpolation.Interpolate;
-            ShovelOwners[shovelBody] = this;
+            ControlOwners[shovelBody] = this;
             shovelGrip = shovel.gameObject.AddComponent<SphereCollider>();
             shovelGrip.radius = 0.066f;
             shovelBlade = shovelLoad.gameObject.AddComponent<BoxCollider>();
@@ -1378,12 +1490,24 @@ namespace ConductorChaos.Playground
             if (fireboxDoor && fireboxLatch) fireboxDoor.localRotation = doorRest;
             if (latchCollider) Destroy(latchCollider);
             if (doorBody) Destroy(doorBody);
+            for (int i = 0; i < wagonDoors.Length; i++)
+            {
+                var panel = wagonDoors[i];
+                if (panel == null) continue;
+                if (panel.Leaf) panel.Leaf.localPosition = panel.RestPosition;
+                if (panel.Body) { ControlOwners.Remove(panel.Body); Destroy(panel.Body); }
+                if (panel.Handle) Destroy(panel.Handle);
+                if (panel.Panel) Destroy(panel.Panel);
+                for (int j = 0; j < panel.OriginalColliders.Length; j++)
+                    if (panel.OriginalColliders[j]) panel.OriginalColliders[j].enabled = panel.OriginalEnabled[j];
+                wagonDoors[i] = null;
+            }
             if (canStoke)
             {
                 SetShovelHolderCollisions(false);
                 shovelHolderColliders = null;
                 shovelHeld = false;
-                ShovelOwners.Remove(shovelBody);
+                ControlOwners.Remove(shovelBody);
                 if (shovelBody) shovelBody.isKinematic = true;
                 shovel.SetParent(shovelParent, false);
                 shovel.localPosition = shovelRestPosition;
