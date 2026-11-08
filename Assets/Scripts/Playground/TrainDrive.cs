@@ -95,6 +95,8 @@ namespace ConductorChaos.Playground
         private static readonly Dictionary<Rigidbody, TrainDrive> ControlOwners = new();
         private readonly WagonDoorPanel[] wagonDoors = new WagonDoorPanel[2];
         private const float WagonDoorTravel = 0.56f;
+        private const float WagonDoorLeadIn = 0.08f;
+        private const float WagonDoorInset = 0.16f;
 
         private sealed class WagonDoorPanel
         {
@@ -933,6 +935,8 @@ namespace ConductorChaos.Playground
         {
             Debug.Assert(Mathf.Approximately(MoveWagonDoor(-WagonDoorTravel, -1f, true), -WagonDoorTravel));
             Debug.Assert(Mathf.Approximately(MoveWagonDoor(WagonDoorTravel, 1f, false), WagonDoorTravel));
+            Debug.Assert(Mathf.Approximately(WagonDoorDisplacement(WagonDoorLeadIn * 0.5f).x, 0f));
+            Debug.Assert(Mathf.Approximately(WagonDoorDisplacement(WagonDoorTravel).z, -WagonDoorInset));
             foreach (var wagon in availableWagons)
             {
                 if (!wagon) continue;
@@ -1013,12 +1017,19 @@ namespace ConductorChaos.Playground
         private static float MoveWagonDoor(float offset, float delta, bool left) =>
             Mathf.Clamp(offset + Mathf.Clamp(delta, -0.06f, 0.06f), left ? -WagonDoorTravel : 0f, left ? 0f : WagonDoorTravel);
 
+        private static Vector3 WagonDoorDisplacement(float offset)
+        {
+            float distance = Mathf.Abs(offset);
+            float slide = Mathf.Max(0f, distance - WagonDoorLeadIn) * WagonDoorTravel / (WagonDoorTravel - WagonDoorLeadIn);
+            return new Vector3(Mathf.Sign(offset) * slide, 0f, -WagonDoorInset * Mathf.Clamp01(distance / WagonDoorLeadIn));
+        }
+
         private void ApplyWagonDoors()
         {
             Vector2 offsets = wagonDoorOffsets.Value;
             for (int i = 0; i < wagonDoors.Length; i++)
                 if (wagonDoors[i] != null && wagonDoors[i].Leaf)
-                    wagonDoors[i].Leaf.localPosition = wagonDoors[i].RestPosition + Vector3.right * (i == 0 ? offsets.x : offsets.y);
+                    wagonDoors[i].Leaf.localPosition = wagonDoors[i].RestPosition + WagonDoorDisplacement(i == 0 ? offsets.x : offsets.y);
         }
 
         private void UpdateFireboxDoor()
