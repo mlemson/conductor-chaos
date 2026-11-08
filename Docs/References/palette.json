@@ -303,6 +303,108 @@
         ]
       }
     },
+    "Reizigers & crew": {
+      "coat_plum": {
+        "name": "Jas oudere passagier (pruim)",
+        "ramp": [
+          "#553642",
+          "#6B4051",
+          "#7C4A5B",
+          "#864E63",
+          "#8C5667"
+        ]
+      },
+      "beret_plum": {
+        "name": "Baret & bril oudere passagier",
+        "ramp": [
+          "#6D4067",
+          "#824D7B",
+          "#8C5484",
+          "#975D8C",
+          "#A9739B"
+        ]
+      },
+      "hair_grey": {
+        "name": "Grijs haar (lavendel schaduw)",
+        "ramp": [
+          "#8C787B",
+          "#A89699",
+          "#C1B0B3",
+          "#CFBFC0",
+          "#E2D2CF"
+        ]
+      },
+      "scarf_cream": {
+        "name": "Sjaal & tas (crème)",
+        "ramp": [
+          "#D3AA81",
+          "#E7C198",
+          "#EBC69D",
+          "#EECAA1",
+          "#FCDBB4"
+        ]
+      },
+      "safari_hat": {
+        "name": "Safarihoed toerist",
+        "ramp": [
+          "#C2925E",
+          "#DDAC73",
+          "#EFBF86",
+          "#F4C892",
+          "#FCD8A4"
+        ]
+      },
+      "shirt_coral": {
+        "name": "Hawaïhemd toerist",
+        "ramp": [
+          "#B24036",
+          "#D25044",
+          "#D55246",
+          "#D85448",
+          "#EC6755"
+        ]
+      },
+      "shorts_olive": {
+        "name": "Korte broek (olijf)",
+        "ramp": [
+          "#574D2C",
+          "#655931",
+          "#706236",
+          "#7B6B3A",
+          "#9A8548"
+        ]
+      },
+      "backpack_teal": {
+        "name": "Rugzak (petrol)",
+        "ramp": [
+          "#204052",
+          "#295065",
+          "#2F5A71",
+          "#325E75",
+          "#4A7B9A"
+        ]
+      },
+      "leather": {
+        "name": "Leer: bretels, gordel, tasjes",
+        "ramp": [
+          "#693B2E",
+          "#774332",
+          "#804936",
+          "#8F5039",
+          "#B46D4B"
+        ]
+      },
+      "boot_brown": {
+        "name": "Werkhandschoen & laarzen",
+        "ramp": [
+          "#3E2C2A",
+          "#47322F",
+          "#503936",
+          "#563F3E",
+          "#886B66"
+        ]
+      }
+    },
     "UI & logo": {
       "ui_bg": {
         "name": "Achtergrond (pruim-grafiet)",

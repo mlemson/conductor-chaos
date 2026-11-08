@@ -1,0 +1,140 @@
+fileFormatVersion: 2
+guid: 94f21fae756c79955ef5b811a2b7cc34
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Skin
+    second: {fileID: 2100000, guid: 0ef31e23a20a8575be58a8517fff9695, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_EyeWhite
+    second: {fileID: 2100000, guid: 6f6224b1e904abae4ccf6e5199f09d39, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Pupil
+    second: {fileID: 2100000, guid: 93f5ec17189afc2141e93f5bcb57d8eb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Mouth
+    second: {fileID: 2100000, guid: 9c4b453d62c982bc5a83a5ff95b1892f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Tongue
+    second: {fileID: 2100000, guid: fff73534ec0a36a9d0017b34e7761365, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Overall
+    second: {fileID: 2100000, guid: f244cbc4ac1034500463a7786298b861, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_OverallDark
+    second: {fileID: 2100000, guid: 4e9ddb39cf3020b957987da98e560f82, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Undershirt
+    second: {fileID: 2100000, guid: 35fa53dcaa2463cd7af2690f759b9f97, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Reflect
+    second: {fileID: 2100000, guid: 6ab2b740ff421b4f63ddfc89ba8e0e13, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Boot
+    second: {fileID: 2100000, guid: 97cc5ad4eb23ea24b0656dc7025cc2b9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Glove
+    second: {fileID: 2100000, guid: 418750276691ebddfe6cfcfd16173258, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Helmet
+    second: {fileID: 2100000, guid: 796c2703703256b1b14e2aaccd8b6a95, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_HelmetBand
+    second: {fileID: 2100000, guid: 367fc162fefa50ff926ff8d899ab51e5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_LampHousing
+    second: {fileID: 2100000, guid: a0b9ad11538d290dc8401b1336e0744f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_LampBezel
+    second: {fileID: 2100000, guid: b1d0633c2c0b96de2f5306fcf42d940d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Lamp
+    second: {fileID: 2100000, guid: 9ba438a1257b297469e00f201e1c0a6c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Leather
+    second: {fileID: 2100000, guid: ce4219690116ee288e4b8caf8cbc3d52, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_LeatherDark
+    second: {fileID: 2100000, guid: 1acc84574f56817c4383c118e3c31015, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Buckle
+    second: {fileID: 2100000, guid: cc80202671f8ae4a972ce6c00130c606, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Metal
+    second: {fileID: 2100000, guid: bb4f234bcf358d6fa48ae039b205a2b9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_ToolHandle
+    second: {fileID: 2100000, guid: 5c7b293d4f71d70b3089268d23f3b078, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_RailMechanic_Sweat
+    second: {fileID: 2100000, guid: 975b373aef1283c22a5e0559c8132913, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

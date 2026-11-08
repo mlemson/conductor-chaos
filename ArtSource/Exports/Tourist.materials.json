@@ -1,0 +1,667 @@
+{
+  "model": "Tourist",
+  "height_m": 1.18,
+  "stats": {
+    "parts": 28,
+    "tris": 63761,
+    "verts": 32221,
+    "materials": 36
+  },
+  "materials": {
+    "M_Tourist_Skin": {
+      "base": "#DB9966",
+      "ramp": [
+        "#BA7756",
+        "#D28658",
+        "#DB9966",
+        "#E7A773",
+        "#EFB27C"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1
+      }
+    },
+    "M_Tourist_EyeWhite": {
+      "base": "#FDEEDC",
+      "ramp": [
+        "#352F3C",
+        "#BDABC1",
+        "#DCC7C5",
+        "#FDEEDC",
+        "#FDF6E8"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.35,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.45,
+        "noShadow": true
+      }
+    },
+    "M_Tourist_Pupil": {
+      "base": "#0D0B0C",
+      "ramp": [
+        "#1C0F0E",
+        "#291D1B",
+        "#351B13",
+        "#382520",
+        "#5A4038"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.45,
+      "opts": {
+        "spec": 0.25,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "noShadow": true
+      }
+    },
+    "M_Tourist_Mouth": {
+      "base": "#662C23",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": -0.55,
+      "smoothness": 0.2,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Tongue": {
+      "base": "#B84A3C",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Shirt": {
+      "base": "#D55246",
+      "ramp": [
+        "#B24036",
+        "#D25044",
+        "#D55246",
+        "#D85448",
+        "#EC6755"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2
+      }
+    },
+    "M_Tourist_ShirtDark": {
+      "base": "#D25044",
+      "ramp": [
+        "#B24036",
+        "#D25044",
+        "#D55246",
+        "#D85448",
+        "#EC6755"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Undershirt": {
+      "base": "#F4DCC0",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.2,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Button": {
+      "base": "#F4DCC0",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.35,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_PrintFlower": {
+      "base": "#F5AC4A",
+      "ramp": [
+        "#684029",
+        "#C9813B",
+        "#DE913F",
+        "#F5AC4A",
+        "#F9B44F"
+      ],
+      "rampShift": 0.15,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_PrintFlowerAlt": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_PrintHeart": {
+      "base": "#FAECDC",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.4,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_PrintLeaf": {
+      "base": "#6B7F38",
+      "ramp": [
+        "#566D3A",
+        "#6B7F38",
+        "#8B9F3B",
+        "#A1B044",
+        "#ADBC4A"
+      ],
+      "rampShift": -0.15,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Shorts": {
+      "base": "#706236",
+      "ramp": [
+        "#574D2C",
+        "#655931",
+        "#706236",
+        "#7B6B3A",
+        "#9A8548"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2
+      }
+    },
+    "M_Tourist_ShortsDark": {
+      "base": "#655931",
+      "ramp": [
+        "#574D2C",
+        "#655931",
+        "#706236",
+        "#7B6B3A",
+        "#9A8548"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Boot": {
+      "base": "#503936",
+      "ramp": [
+        "#3E2C2A",
+        "#47322F",
+        "#503936",
+        "#563F3E",
+        "#886B66"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Hat": {
+      "base": "#EFBF86",
+      "ramp": [
+        "#C2925E",
+        "#DDAC73",
+        "#EFBF86",
+        "#F4C892",
+        "#FCD8A4"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1
+      }
+    },
+    "M_Tourist_HatBand": {
+      "base": "#C54D3E",
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Lens": {
+      "base": "#403E4B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.15,
+      "smoothness": 0.45,
+      "opts": {
+        "spec": 0.2,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Frame": {
+      "base": "#351B13",
+      "ramp": [
+        "#1C0F0E",
+        "#291D1B",
+        "#351B13",
+        "#382520",
+        "#5A4038"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Backpack": {
+      "base": "#2F5A71",
+      "ramp": [
+        "#204052",
+        "#295065",
+        "#2F5A71",
+        "#325E75",
+        "#4A7B9A"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2
+      }
+    },
+    "M_Tourist_BackpackDark": {
+      "base": "#295065",
+      "ramp": [
+        "#204052",
+        "#295065",
+        "#2F5A71",
+        "#325E75",
+        "#4A7B9A"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Strap": {
+      "base": "#503936",
+      "ramp": [
+        "#3E2C2A",
+        "#47322F",
+        "#503936",
+        "#563F3E",
+        "#886B66"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Buckle": {
+      "base": "#DA993A",
+      "ramp": [
+        "#9D662F",
+        "#AD7031",
+        "#DA993A",
+        "#FBBA39",
+        "#FCCF53"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.35,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Bedroll": {
+      "base": "#F5B038",
+      "ramp": [
+        "#B57326",
+        "#E59C2F",
+        "#F5B038",
+        "#FDBF40",
+        "#FDC443"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_BedrollDark": {
+      "base": "#B57326",
+      "ramp": [
+        "#B57326",
+        "#E59C2F",
+        "#F5B038",
+        "#FDBF40",
+        "#FDC443"
+      ],
+      "rampShift": -0.45,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_BedrollStrap": {
+      "base": "#804936",
+      "ramp": [
+        "#693B2E",
+        "#774332",
+        "#804936",
+        "#8F5039",
+        "#B46D4B"
+      ],
+      "rampShift": -0.1,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Bottle": {
+      "base": "#8EC7EC",
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.4,
+      "opts": {
+        "spec": 0.15,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_BottleCap": {
+      "base": "#33303B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Map": {
+      "base": "#F2D8BB",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_MapGreen": {
+      "base": "#8B9F3B",
+      "ramp": [
+        "#566D3A",
+        "#6B7F38",
+        "#8B9F3B",
+        "#A1B044",
+        "#ADBC4A"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_MapPath": {
+      "base": "#FAECDC",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.45,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_MapPin": {
+      "base": "#CD4C2C",
+      "ramp": [
+        "#9E3A22",
+        "#B8432A",
+        "#CD4C2C",
+        "#E06A48",
+        "#E79E80"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_MapIcon": {
+      "base": "#593323",
+      "ramp": [
+        "#462A21",
+        "#553022",
+        "#593323",
+        "#723F29",
+        "#A66739"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_Ticket": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Tourist_TicketInk": {
+      "base": "#593323",
+      "ramp": [
+        "#462A21",
+        "#553022",
+        "#593323",
+        "#723F29",
+        "#A66739"
+      ],
+      "rampShift": -0.1,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    }
+  }
+}

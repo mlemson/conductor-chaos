@@ -22,6 +22,19 @@ FIXED = {
     "Conductor": "Assets/Art/Models/Characters/Conductor/Conductor.fbx",
     "ArtCheck_Environment": "Assets/Art/Models/Environment/Showcase/ArtCheck_Environment.fbx",
 }
+# Personagevarianten naast het spoor (bronassen, net als de render 'env_chars' in Docs/Art/Characters_InScene.png)
+CHARACTERS = [
+    ("Assets/Art/Models/Characters/Tourist/Tourist.fbx", [-5.0, -0.68, 2.0], 35.0, "Neutral", False),
+    ("Assets/Art/Models/Characters/ElderlyPassenger/ElderlyPassenger.fbx", [-3.2, -0.68, 2.2], 20.0, "Neutral", False),
+    ("Assets/Art/Models/Characters/RailMechanic/RailMechanic.fbx", [-1.4, -0.68, 2.4], 5.0, "Flat", True),
+]
+MOUTHS = ("Neutral", "Surprised", "Happy", "Flat", "Hmm", "Smile")
+
+
+def character_hidden(default_mouth, lids):
+    """Standaard verborgen expressieknopen (ook als Unity de FBX-zichtbaarheid niet importeert)."""
+    hide = ["Mouth_" + m for m in MOUTHS if m != default_mouth] + ["EyeClosed_L", "EyeClosed_R", "Prop_Sweat"]
+    return hide + ([] if lids else ["Lid_L", "Lid_R"])
 
 
 def main():
@@ -40,6 +53,10 @@ def main():
                       "scale": it.get("scale", [1, 1, 1]),
                       "hide": [k for k, v in pose.items() if v.get("visible") is False],
                       "show": [k for k, v in pose.items() if v.get("visible") is True]})
+    for path, pos, rot, mouth, lids in CHARACTERS:
+        if os.path.exists(os.path.join(ROOT, path)):
+            items.append({"path": path, "pos": pos, "rotY": rot, "scale": [1, 1, 1],
+                          "hide": character_hidden(mouth, lids), "show": []})
     layout = {
         "camera": {"target": [float(v) for v in ex["target"].split(",")], "yaw": ex["yaw"], "pitch": ex["pitch"],
                    "dist": ex["dist"], "fov": ex["fov"], "far": ex.get("far", 700)},
