@@ -126,19 +126,19 @@ def timber_frame():
 def plinth(rng):
     """Stenen plint rond de hal (drie lagen, verspringend) en een kern onder de vloer."""
     parts = [rbox(-HW + 0.05, HW - 0.05, 0.0, FL - 0.06, -D + 0.05, -0.05, 0.0, "M_Stn_StoneDark")]
-    rows = ((0.0, 0.48), (0.48, 0.96), (0.96, PLINTH))
+    rows = ((0.0, FL - 0.02), (FL - 0.02, PLINTH))     # onderlaag + band boven de vloer (onderbroken bij deuren)
 
     def run(p0, p1, normal, row_i, y0, y1, skip=()):
         """skip: [(as, lo, hi)] -> boven de vloer geen blokken in dat bereik (deuren); de rij wordt daar afgeknipt."""
         p0, p1 = np.array(p0, float), np.array(p1, float)
         L = np.linalg.norm(p1 - p0)
         e = (p1 - p0) / L
-        cuts = set([0.0, L] + list(np.arange(0.30 + 0.33 * (row_i % 2), L - 0.25, 0.68)))
+        cuts = set([0.0, L] + list(np.arange(0.55 + 0.6 * (row_i % 2), L - 0.4, 1.2)))
         holes = []
         if y0 >= FL - 0.1:
             for ax, lo, hi in skip:
                 ta, tb = sorted(((lo - p0[ax]) / e[ax], (hi - p0[ax]) / e[ax]))
-                holes.append((ta - 0.16, tb + 0.16))
+                holes.append((ta - 0.14, tb + 0.14))
         for ta, tb in holes:
             cuts = {c for c in cuts if not (ta - 0.2 < c < tb + 0.2)} | {ta, tb}
         cuts = sorted(cuts)
@@ -146,11 +146,10 @@ def plinth(rng):
             mid = (a + b) / 2
             if any(ta <= mid <= tb for ta, tb in holes):
                 continue
-            q = [p0 + e * (a + 0.012), p0 + e * (b - 0.012)]
+            q = [p0 + e * (a - (0.10 if a == 0 else 0)), p0 + e * (b + (0.10 if b == L else 0))]
             n = np.array(normal, float)
             poly = [tuple(q[0] - n * 0.12), tuple(q[1] - n * 0.12), tuple(q[1] + n * 0.10), tuple(q[0] + n * 0.10)]
-            mat = "M_Stn_Stone" if rng.random() > 0.3 else "M_Stn_StoneDark"
-            parts.append(plan_slab(poly, y0 + 0.01, y1 - 0.01, 0.04, mat))
+            parts.append(plan_slab(poly, y0, y1, 0.025, "M_Stn_Stone"))
     for i, (y0, y1) in enumerate(rows):
         run((-HW - 0.06, 0.06), (HW + 0.06, 0.06), (0, 1), i, y0, y1, skip=[(0, DOOR[0], DOOR[1])])
         run((HW + 0.06, -D - 0.06), (-HW - 0.06, -D - 0.06), (0, -1), i, y0, y1)
@@ -309,17 +308,14 @@ def lean_to(rng):
         p0, p1, n = np.array(p0, float), np.array(p1, float), np.array(n, float)
         L = np.linalg.norm(p1 - p0)
         e = (p1 - p0) / L
-        for row, (y0, y1) in enumerate(((0.0, 0.48), (0.48, FL - 0.13))):
-            cuts = [0.0] + list(np.arange(0.34 + 0.34 * (row % 2), L - 0.25, 0.68)) + [L]
-            for a, b in zip(cuts[:-1], cuts[1:]):
-                q0, q1 = p0 + e * (a + 0.012), p0 + e * (b - 0.012)
-                poly = [tuple(q0 - n * 0.16), tuple(q1 - n * 0.16), tuple(q1 + n * 0.06), tuple(q0 + n * 0.06)]
-                parts.append(plan_slab(poly, y0 + 0.01, y1 - 0.01, 0.04, "M_Stn_Stone" if rng.random() > 0.3 else "M_Stn_StoneDark"))
-        cuts = [0.0] + list(np.arange(0.8, L - 0.2, 0.8)) + [L]
+        q0, q1 = p0 - e * 0.06, p1 + e * 0.06                  # één doorlopend vlak, hoeken sluiten
+        poly = [tuple(q0 - n * 0.16), tuple(q1 - n * 0.16), tuple(q1 + n * 0.06), tuple(q0 + n * 0.06)]
+        parts.append(plan_slab(poly, 0.0, FL - 0.11, 0.02, "M_Stn_Stone"))
+        cuts = [0.0] + list(np.arange(0.76, L - 0.2, 0.76)) + [L]
         for a, b in zip(cuts[:-1], cuts[1:]):
-            q0, q1 = p0 + e * (a + 0.012), p0 + e * (b - 0.012)
+            q0, q1 = p0 + e * (a - (0.08 if a == 0 else 0)), p0 + e * (b + (0.08 if b == L else 0))
             poly = [tuple(q0 - n * 0.36), tuple(q1 - n * 0.36), tuple(q1 + n * 0.08), tuple(q0 + n * 0.08)]
-            parts.append(plan_slab(poly, FL - 0.14, FL, 0.03, "M_Stn_PavingLight"))
+            parts.append(plan_slab(poly, FL - 0.14, FL, 0.018, "M_Stn_PavingLight"))
     for i, x0 in enumerate(np.arange(LX + 0.36, x_in - 1e-6, 0.76)):
         for j, z0 in enumerate(np.arange(-D + 0.36, -0.36 - 1e-6, 0.76)):
             x1, z1 = min(x0 + 0.76, x_in), min(z0 + 0.76, -0.36)

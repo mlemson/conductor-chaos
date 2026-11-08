@@ -5,8 +5,8 @@ loopt langs +X vanaf x = 0, het perron ligt aan de +Z-kant. Zet een module dus m
 draaiing neer als het spoorstuk ernaast. Andere kant van het spoor: 180 graden draaien.
   * bovenkant perron y = 1,05 (= bodem wagonbak), voorrand z = 1,65 (loc steekt tot 1,58 uit)
   * diepte 3,5 m (achterrand z = 5,15)
-  * opbouw: donkere kern, stenen blokken langs de zichtbare zijden, randtegels (band van 0,45 m),
-    gele geleidelijn met noppen langs de spoorkant, tegelvloer in een raster van 0,75 m
+  * opbouw: donkere kern, één doorlopende stenen zijwand per zichtbare zijde, randtegels (band van 0,45 m),
+    effen gele geleidelijn langs de spoorkant, tegelvloer in een recht raster van 0,75 m zonder voegen
   * 'joint'-zijden (aansluitingen op het volgende module) hebben geen rand en geen blokken
 """
 import math
@@ -195,13 +195,12 @@ def build_module(outline, kinds, rng, front_kinds=("front",), tactile=True, extr
     # kern
     core = inset_region(outline, kinds, {"joint": 0.0, "edge": 0.10, "front": 0.10})
     parts.append(plan_slab(core, 0.0, TOP - TILE_T + 0.004, 0.02, "M_Stn_StoneDark"))
-    # stenen blokken langs zichtbare zijden (twee lagen, verspringend)
+    # zijwand: één doorlopend stenen vlak per zichtbare zijde (geen losse blokken of voegen, zoals de kliffen),
+    # tot net in de randtegels zodat er geen naad of gat overblijft
     for run in runs(outline, kinds, ("front", "edge")):
-        for row, (y0, y1) in enumerate(((0.0, 0.46), (0.46, TOP - COPE_T))):
-            for k, poly in enumerate(_band(outline, run, 0.0, 0.20, 0.72, phase=0.36 * row, kinds=kinds)):
-                if _poly_ok(poly):
-                    mat = "M_Stn_Stone" if rng.random() > 0.3 else "M_Stn_StoneDark"
-                    parts.append(plan_slab(_shrink(poly, 0.012), y0 + 0.008, y1 - 0.008, 0.035, mat))
+        for poly in _band(outline, run, 0.0, 0.20, 1000.0, kinds=kinds):
+            if _poly_ok(poly):
+                parts.append(plan_slab(poly, 0.0, TOP - COPE_T + 0.03, 0.02, "M_Stn_Stone"))
     # randtegels: aan de spoorkant 0,45 m (daarachter de geleidelijn), elders één brede rand tot de tegelvloer
     for want, width in ((("front",), COPING if tactile else INSET), (("edge",), INSET)):
         for run in runs(outline, kinds, want):
@@ -287,17 +286,9 @@ def ramp(rng, L=5.0):
     def ytop(x):
         return TOP * (1.0 - x / L)
     # zijwanden (spoorkant + achterkant) als wigvormige stenen platen, in blokken
-    for (z0, z1) in ((E, E + 0.22), (B - 0.22, B)):
-        for x0 in np.arange(0.0, L, 0.9):
-            x1 = min(L, x0 + 0.9)
-            prof = [(x0 + 0.01, 0.0), (x1 - 0.01, 0.0), (x1 - 0.01, max(ytop(x1) - COPE_T, 0.0)),
-                    (x0 + 0.01, max(ytop(x0) - COPE_T, 0.0))]
-            if prof[3][1] - prof[0][1] < 0.03:
-                continue
-            if prof[2][1] < 0.02:
-                prof = [prof[0], (x1 - 0.01, 0.0), prof[3]]
-                prof = [(x0 + 0.01, 0.0), (x1 - 0.01, 0.0), (x0 + 0.01, max(ytop(x0) - COPE_T, 0.0))]
-            parts.append(slab(prof, (), z0, z1, 0.02, "M_Stn_Stone" if rng.random() > 0.3 else "M_Stn_StoneDark"))
+    for (z0, z1) in ((E, E + 0.22), (B - 0.22, B)):                # wigvormige zijwanden uit één stuk
+        prof = [(0.0, 0.0), (L - 0.4, 0.0), (0.0, TOP - COPE_T + 0.03)]
+        parts.append(slab(prof, (), z0, z1, 0.02, "M_Stn_Stone"))
     core = [(0.0, 0.0), (L, 0.0), (0.0, TOP - TILE_T)]
     parts.append(slab(core, (), E + 0.15, B - 0.15, 0.0, "M_Stn_StoneDark"))
     # randstenen en tegels als schuine platen (parallellogram-profiel per stuk)
