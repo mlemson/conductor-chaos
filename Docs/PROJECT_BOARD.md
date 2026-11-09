@@ -2,11 +2,11 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand. Brede epics tellen niet als uitvoertaak.
 
-**Voortgang: 3/101 afgerond (3%)**
+**Voortgang: 3/102 afgerond (3%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 71 | 27 | 0 | 0 | 3 |
+| 71 | 28 | 0 | 0 | 3 |
 
 ## 🗺️ Mijlpalen
 
@@ -14,7 +14,7 @@
 flowchart LR
     P0["P0 · Technisch fundament + stijltest · 3/26 klaar"]
     P1["P1 · Eerste speelbare co-opervaring · 0/66 klaar"]
-    P2["P2 · Bergavontuur en chaos · 0/9 klaar"]
+    P2["P2 · Bergavontuur en chaos · 0/10 klaar"]
     P0 --> P1 --> P2
 ```
 
@@ -22,7 +22,7 @@ flowchart LR
 | :-- | :-- | :-- |
 | **P0** | 🟩⬜⬜⬜⬜⬜⬜⬜⬜⬜ 3/26 | Technisch fundament + stijltest |
 | **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/66 | Eerste speelbare co-opervaring |
-| **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/9 | Bergavontuur en chaos |
+| **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/10 | Bergavontuur en chaos |
 
 ## 🧩 Overkoepelende onderwerpen (geen uitvoertaken)
 
@@ -120,7 +120,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P2 | [#92 Optionele mijlpaalcheck: sessie met vier en later zes spelers](https://github.com/mlemson/conductor-chaos/issues/92) | QA | — | — |
 | P2 | [#197 Subtiele zwevende stofdeeltjes in de speelwereld](https://github.com/mlemson/conductor-chaos/issues/197) | Overig | — | — |
 
-### 🔧 Bezig (27)
+### 🔧 Bezig (28)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -151,6 +151,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P2 | [#164 Verberg playground-HUD na tien seconden](https://github.com/mlemson/conductor-chaos/issues/164) | Overig | @mlemson | — |
 | P2 | [#208 Gebruik het nieuwe logo in het hoofdmenu](https://github.com/mlemson/conductor-chaos/issues/208) | Overig | @mlemson | — |
 | P2 | [#210 Rustiger hoofdmenu en lobby naar de nieuwe referentie](https://github.com/mlemson/conductor-chaos/issues/210) | Overig | @mlemson | — |
+| P2 | [#211 Handen dichter bij elkaar bij inzoomen](https://github.com/mlemson/conductor-chaos/issues/211) | Overig | @mlemson | — |
 
 ### 👀 Klaar voor review (0)
 
