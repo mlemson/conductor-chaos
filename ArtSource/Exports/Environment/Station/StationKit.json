@@ -58,7 +58,8 @@
       "nodes": [
         "Prop_Bench",
         "Mesh",
-        "Col_Main"
+        "Col_Main",
+        "Col_2"
       ]
     },
     "Prop_Barrel": {
@@ -98,7 +99,9 @@
       "nodes": [
         "Prop_CrateStack",
         "Mesh",
-        "Col_Main"
+        "Col_Main",
+        "Col_2",
+        "Col_3"
       ]
     },
     "Prop_Crate": {
@@ -298,7 +301,8 @@
       "nodes": [
         "Prop_LuggageCart",
         "Mesh",
-        "Col_Main"
+        "Col_Main",
+        "Col_2"
       ]
     },
     "Prop_LevelCrossing": {

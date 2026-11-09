@@ -26,16 +26,19 @@ from station_common import export, mk, write_manifest  # noqa: E402
 def simple(name, mesh, col, extra_nodes=()):
     nodes = [("Mesh", mesh, None, (0, 0, 0), None, True)]
     if col is not None:
-        nodes.append(("Col_Main", col, None, (0, 0, 0), None, False))
+        colliders = col if isinstance(col, tuple) else (col,)
+        for i, part in enumerate(colliders):
+            node = "Col_Main" if i == 0 else f"Col_{i + 1}"
+            nodes.append((node, part, None, (0, 0, 0), None, False))
     nodes += list(extra_nodes)
     return nodes
 
 
 def build_props(manifest):
     P = {}
-    P["Prop_Bench"] = simple("Prop_Bench", *props.bench())
+    P["Prop_Bench"] = simple("Prop_Bench", *props.bench(split_colliders=True))
     P["Prop_Barrel"] = simple("Prop_Barrel", *props.barrel())
-    P["Prop_CrateStack"] = simple("Prop_CrateStack", *props.crate_stack())
+    P["Prop_CrateStack"] = simple("Prop_CrateStack", *props.crate_stack(split_colliders=True))
     m, c = props.crate()
     P["Prop_Crate"] = simple("Prop_Crate", m, c)
     P["Prop_Planter"] = simple("Prop_Planter", *props.planter())

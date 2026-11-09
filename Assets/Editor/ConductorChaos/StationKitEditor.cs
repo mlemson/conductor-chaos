@@ -10,9 +10,12 @@
 //    props, trein en personages (layout Assets/Art/Layouts/StationExample.json uit ArtSource/Render/station_scenes.py).
 // Plaatsing: perronmodules hebben dezelfde pivot als een spoorstuk (hart spoor, maaiveld) -> zelfde positie en
 // draaiing als het spoorstuk ernaast. Het gebouw: voorgevel tegen de achterrand van het perron, 180 graden gedraaid.
-// Statische art: geen netwerkstatus (multiplayer niet van toepassing).
+// Losse stationsprops krijgen physics en server-authoritatieve netwerksynchronisatie.
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
+using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEditor;
 using UnityEngine;
 
@@ -27,6 +30,16 @@ namespace ConductorChaos.EditorTools
         const string ExampleScene = "Assets/Scenes/Art/StationExample.unity";
         static readonly Color LampColor = new Color(1.0f, 0.85f, 0.55f);
         static readonly string[] Moving = { "Door", "Boom" };
+        static readonly Dictionary<string, float> MovableMasses = new()
+        {
+            { "Prop_Barrel", 2f },
+            { "Prop_Bench", 6f },
+            { "Prop_Crate", 1f },
+            { "Prop_CrateStack", 5f },
+            { "Prop_LuggageCart", 3.5f },
+            { "Prop_Planter", 8f },
+            { "Prop_TrashBin", 1.5f }
+        };
 
         static StationKitPrefabs()
         {
@@ -37,6 +50,8 @@ namespace ConductorChaos.EditorTools
                 int models = AssetDatabase.FindAssets("t:Model", new[] { ModelDir }).Length;
                 int prefabs = AssetDatabase.IsValidFolder(PrefabDir) ? AssetDatabase.FindAssets("t:Prefab", new[] { PrefabDir }).Length : 0;
                 if (models > 0 && prefabs < models) Build();
+                else if (MovableMasses.Keys.Any(NeedsPhysics))
+                    BuildPrefabs(movableOnly: true);
             };
         }
 
@@ -46,7 +61,15 @@ namespace ConductorChaos.EditorTools
         }
 
         [MenuItem("Conductor Chaos/Art/Station/Rebuild Station Prefabs")]
-        public static void Build()
+        public static void Build() => BuildPrefabs(movableOnly: false);
+
+        static bool NeedsPhysics(string name)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/Props/{name}.prefab");
+            return prefab && !prefab.GetComponent<NetworkRigidbody>();
+        }
+
+        static void BuildPrefabs(bool movableOnly)
         {
             EnsureFolder(PrefabDir);
             int made = 0;
@@ -57,6 +80,9 @@ namespace ConductorChaos.EditorTools
                 if (model == null) continue;
                 var name = Path.GetFileNameWithoutExtension(path);
                 var sub = Path.GetDirectoryName(path).Replace('\\', '/').Substring(ModelDir.Length).TrimStart('/');
+                float mass = 0f;
+                bool movable = sub == "Props" && MovableMasses.TryGetValue(name, out mass);
+                if (movableOnly && !movable) continue;
                 var outDir = string.IsNullOrEmpty(sub) ? PrefabDir : $"{PrefabDir}/{sub}";
                 EnsureFolder(outDir);
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(model);
@@ -72,6 +98,7 @@ namespace ConductorChaos.EditorTools
                             if (mf != null && mf.sharedMesh != null)
                             {
                                 var col = t.gameObject.AddComponent<MeshCollider>();
+                                col.convex = movable;
                                 col.sharedMesh = mf.sharedMesh;
                             }
                         }
@@ -91,10 +118,23 @@ namespace ConductorChaos.EditorTools
                                 StaticEditorFlags.ContributeGI;
                     foreach (var t in go.GetComponentsInChildren<Transform>(true))
                     {
-                        bool moving = false;
-                        for (var p = t; p != null && p != go.transform.parent; p = p.parent)
+                        bool moving = movable;
+                        for (var p = t; !moving && p != null && p != go.transform.parent; p = p.parent)
                             if (Moving.Contains(p.name)) { moving = true; break; }
                         GameObjectUtility.SetStaticEditorFlags(t.gameObject, moving ? (StaticEditorFlags)0 : flags);
+                    }
+                    if (movable)
+                    {
+                        var body = go.AddComponent<Rigidbody>();
+                        body.mass = mass;
+                        body.interpolation = RigidbodyInterpolation.Interpolate;
+                        body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+                        if (name == "Prop_LuggageCart")
+                            body.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+                        // In-scene props use the same server-authoritative physics as the playground crate.
+                        go.AddComponent<NetworkObject>();
+                        go.AddComponent<NetworkTransform>();
+                        go.AddComponent<NetworkRigidbody>();
                     }
                     go.name = name;
                     PrefabUtility.SaveAsPrefabAsset(go, $"{outDir}/{name}.prefab");

@@ -13,7 +13,7 @@ from station_common import (DEG, arch_loop, ball, capsule, circle_loop, clock, c
 
 
 # ------------------------------------------------------------------ zitten & opslag
-def bench(length=1.8):
+def bench(length=1.8, *, split_colliders=False):
     """Parkbank: drie dikke zittinglatten, twee rugleuninglatten, marine gietijzeren zijframes."""
     L = length
     parts = []
@@ -31,8 +31,8 @@ def bench(length=1.8):
             rbox(x - 0.06, x + 0.06, 0.0, 0.05, -0.32, -0.14, 0.02, "M_Stn_Navy"),
             capsule((x, 0.40, -0.25), (x, 0.90, -0.36), 0.045, mat="M_Stn_Navy", seg=8, rings=1))
         parts.append(leg)
-    col = mk.merge(col_box(-L / 2, L / 2, 0.0, 0.48, -0.30, 0.26), col_box(-L / 2, L / 2, 0.48, 0.92, -0.40, -0.22))
-    return mk.merge(*parts), col
+    cols = (col_box(-L / 2, L / 2, 0.0, 0.48, -0.30, 0.26), col_box(-L / 2, L / 2, 0.48, 0.92, -0.40, -0.22))
+    return mk.merge(*parts), cols if split_colliders else mk.merge(*cols)
 
 
 def barrel(h=0.86, r=0.34, staves=14):
@@ -104,15 +104,15 @@ def crate(s=0.7, seed=0):
     return mk.merge(*parts), col
 
 
-def crate_stack():
+def crate_stack(*, split_colliders=False):
     a, ca = crate(0.72)
     b, cb = crate(0.72)
     c, cc = crate(0.62)
     parts = [a.transform(t=(-0.38, 0, 0.02)), b.transform(R=mk.rot_y(0.08), t=(0.38, 0, -0.03)),
              c.transform(R=mk.rot_y(-0.12), t=(-0.05, 0.72, 0.0))]
-    col = mk.merge(ca.transform(t=(-0.38, 0, 0.02)), cb.transform(R=mk.rot_y(0.08), t=(0.38, 0, -0.03)),
-                   cc.transform(R=mk.rot_y(-0.12), t=(-0.05, 0.72, 0.0)))
-    return mk.merge(*parts), col
+    cols = (ca.transform(t=(-0.38, 0, 0.02)), cb.transform(R=mk.rot_y(0.08), t=(0.38, 0, -0.03)),
+            cc.transform(R=mk.rot_y(-0.12), t=(-0.05, 0.72, 0.0)))
+    return mk.merge(*parts), cols if split_colliders else mk.merge(*cols)
 
 
 def daisy(rng, h):
@@ -359,9 +359,9 @@ def luggage_cart():
     parts.append(tube([(L / 2 + 0.02, 0.62, -W / 2 + 0.03), (L / 2 + 0.02, 0.62, W / 2 - 0.03)], 0.022, "M_Stn_Yellow", seg=8))
     parts.append(suitcase(0.78, 0.34, 0.52, "M_Stn_Timber").transform(t=(-0.10, y_deck, 0.0)))
     parts.append(suitcase(0.52, 0.24, 0.36, "M_Stn_Navy", strap="M_Stn_TimberDark").transform(R=mk.rot_y(0.12), t=(-0.12, y_deck + 0.34, 0.02)))
-    col = mk.merge(col_box(-L / 2 - 0.02, L / 2 + 0.06, 0.0, y_deck + 0.64, -W / 2 - 0.08, W / 2 + 0.08),
-                   col_box(L / 2 - 0.03, L / 2 + 0.06, 0.0, 1.06, -W / 2, W / 2))
-    return mk.merge(*parts), col
+    cols = (col_box(-L / 2 - 0.02, L / 2 + 0.06, 0.0, y_deck + 0.64, -W / 2 - 0.08, W / 2 + 0.08),
+            col_box(L / 2 - 0.03, L / 2 + 0.06, 0.0, 1.06, -W / 2, W / 2))
+    return mk.merge(*parts), cols
 
 
 def level_crossing(arm=3.2):
