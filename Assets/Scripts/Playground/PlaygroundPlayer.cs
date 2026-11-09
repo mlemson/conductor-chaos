@@ -78,6 +78,7 @@ namespace ConductorChaos.Playground
         private bool usingLookDownCamera;
         private Vector3 wagonPushDirection;
         private Vector3 airborneSupportVelocity;
+        private Rigidbody airborneTrainSupport;
         private Vector3 cameraEyeOffset;
         private readonly RaycastHit[] hits = new RaycastHit[32];
         private readonly Collider[] ledgeObstacles = new Collider[64];
@@ -117,6 +118,8 @@ namespace ConductorChaos.Playground
             usingCabinCamera = false;
             usingLookDownCamera = false;
             wagonPushDirection = Vector3.zero;
+            airborneSupportVelocity = Vector3.zero;
+            airborneTrainSupport = null;
             clearingLimbs = false;
             stalledTime = nextRecoveryProbe = nextTrackStep = 0f;
             body.isKinematic = !IsServer;
@@ -342,6 +345,8 @@ namespace ConductorChaos.Playground
             Vector3 moveDirection = facing * new Vector3(requestedMove.x, 0f, requestedMove.y);
             bool stretchArms = (leftHeld || rightHeld) && !left.HoldingShovel && !right.HoldingShovel;
             if (!trainDrive) trainDrive = FindAnyObjectByType<TrainDrive>();
+            Rigidbody trainSupport = grounded && trainDrive ? trainDrive.GuidedSupport(groundHit.rigidbody) : null;
+            Vector3 trainVelocity = trainSupport ? trainDrive.GuidedPointVelocity(trainSupport, body.position) : Vector3.zero;
             bool cabinView = trainDrive && trainDrive.TryGetCabin(transform.position, -0.06f, out _);
             left.Step(leftHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView);
             right.Step(rightHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView);
@@ -358,7 +363,7 @@ namespace ConductorChaos.Playground
             int hangingHands = StaticGripCenter(out Vector3 gripCenter);
             bool hanging = !climbing && hangingHands > 0;
             wagonPushDirection = grounded && !hanging && !climbing && !jumpQueued ? moveDirection * uprightControl : Vector3.zero;
-            Vector3 recoveryGroundVelocity = grounded && groundHit.rigidbody && groundHit.rigidbody.isKinematic
+            Vector3 recoveryGroundVelocity = trainSupport ? trainVelocity : grounded && groundHit.rigidbody && groundHit.rigidbody.isKinematic
                 ? groundHit.rigidbody.GetPointVelocity(groundHit.point) : Vector3.zero;
             RecoverFromPinch(moveDirection, recoveryGroundVelocity);
             if ((grounded || stalledTime >= 0.25f) && !jumpQueued && !left.HasGrip && !right.HasGrip)
@@ -368,17 +373,31 @@ namespace ConductorChaos.Playground
             if (climbing) legs?.BraceForClimb(mantling);
             if (bracing) legs?.ReleaseSupport();
             bool supported = !climbing && !bracing && legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting && !hanging, out stepped);
-            Vector3 groundVelocity = supported ? legs.SupportVelocity : grounded && groundHit.rigidbody && groundHit.rigidbody.isKinematic
-                ? groundHit.rigidbody.GetPointVelocity(groundHit.point) : Vector3.zero;
-            if (grounded || supported) airborneSupportVelocity = groundVelocity;
-            else groundVelocity = airborneSupportVelocity;
+            Vector3 groundVelocity = trainSupport ? trainVelocity : supported ? legs.SupportVelocity : recoveryGroundVelocity;
+            if (grounded || supported)
+            {
+                airborneSupportVelocity = groundVelocity;
+                airborneTrainSupport = trainSupport;
+            }
+            else
+            {
+                Vector3 correction = FollowTrainInAir();
+                if (correction.sqrMagnitude > 0f)
+                {
+                    body.AddForce(correction, ForceMode.VelocityChange);
+                    current += correction;
+                }
+                groundVelocity = airborneSupportVelocity;
+            }
             Vector3 target = groundVelocity + moveDirection * walkSpeed * uprightControl;
+            bool jumping = jumpQueued && Time.time - lastJump > 0.25f &&
+                (grounded || ((left.HasGrip || right.HasGrip) && legs != null && legs.HasFootContact()));
             // Keep some steering when the torso touches uneven ground but neither foot probe finds support.
             float movementAcceleration = grounded ? acceleration * (supported ? (sprinting ? 1.35f : 1f) : 0.45f)
                 : acceleration * (sprinting ? 0.45f : 0.2f);
             Vector3 change = Vector3.ClampMagnitude(new Vector3(target.x - current.x, 0f, target.z - current.z), movementAcceleration * Time.fixedDeltaTime);
             if (climbing || hanging) change = Vector3.zero;
-            else body.AddForce(change, ForceMode.VelocityChange);
+            else if (!jumping || !trainSupport) body.AddForce(change, ForceMode.VelocityChange);
             if (hanging) MoveWhileGripping(gripCenter, moveDirection, hangingHands, pulling && !jumpQueued && !bracing);
             if (bracing) body.AddForce(Vector3.up * handPush, ForceMode.Acceleration);
 
@@ -417,12 +436,11 @@ namespace ConductorChaos.Playground
             if (jumpQueued)
             {
                 jumpQueued = false;
-                bool hasGrip = left.HasGrip || right.HasGrip;
-                if (Time.time - lastJump > 0.25f && (grounded || (hasGrip && legs != null && legs.HasFootContact())))
+                if (jumping)
                 {
                     legs?.ReleaseSupport();
-                    Vector3 velocity = body.linearVelocity;
-                    velocity.y = jumpSpeed * (hanging ? 0.8f : 1f);
+                    Vector3 velocity = trainSupport ? target : body.linearVelocity;
+                    velocity.y = (trainSupport ? trainVelocity.y : 0f) + jumpSpeed * (hanging ? 0.8f : 1f);
                     body.linearVelocity = velocity;
                     lastJump = Time.time;
                 }
@@ -659,14 +677,36 @@ namespace ConductorChaos.Playground
             return nearest.collider != null;
         }
 
-        private bool IsGrounded(out RaycastHit groundHit)
+        private Vector3 FollowTrainInAir()
+        {
+            if (!trainDrive || !airborneTrainSupport) return Vector3.zero;
+            if (!IsGrounded(out var below, 1.6f) || trainDrive.GuidedSupport(below.rigidbody) != airborneTrainSupport)
+            {
+                airborneTrainSupport = null;
+                return Vector3.zero;
+            }
+            // Apply only the change in wagon velocity so the initial carry is counted once.
+            Vector3 velocity = trainDrive.GuidedPointVelocity(airborneTrainSupport, body.position);
+            Vector3 correction = Vector3.ClampMagnitude(velocity - airborneSupportVelocity, 20f * Time.fixedDeltaTime);
+            airborneSupportVelocity += correction;
+            return correction;
+        }
+
+        private bool IsGrounded(out RaycastHit groundHit, float distance = 0.22f)
         {
             groundHit = default;
             Vector3 origin = body.position + body.rotation * Vector3.up * 0.28f;
-            int count = Physics.SphereCastNonAlloc(origin, 0.22f, Vector3.down, hits, 0.22f, ~0, QueryTriggerInteraction.Ignore);
+            int count = Physics.SphereCastNonAlloc(origin, 0.22f, Vector3.down, hits, distance, ~0, QueryTriggerInteraction.Ignore);
+            bool bestIsLooseCoal = false;
             for (int i = 0; i < count; i++)
-                if (!hits[i].collider.transform.IsChildOf(transform) && hits[i].normal.y > 0.55f &&
-                    (!groundHit.collider || hits[i].distance < groundHit.distance)) groundHit = hits[i];
+            {
+                var hit = hits[i];
+                if (hit.collider.transform.IsChildOf(transform) || hit.normal.y <= 0.55f) continue;
+                bool looseCoal = TrainDrive.IsCoalBody(hit.rigidbody) && !hit.rigidbody.isKinematic;
+                if (groundHit.collider && (looseCoal == bestIsLooseCoal ? hit.distance >= groundHit.distance : looseCoal)) continue;
+                groundHit = hit;
+                bestIsLooseCoal = looseCoal;
+            }
             return groundHit.collider;
         }
 
@@ -1042,6 +1082,7 @@ namespace ConductorChaos.Playground
                     else if (surface is SphereCollider handle) point = handle.transform.TransformPoint(handle.center);
                     if (collider) Physics.IgnoreCollision(collider, surface, true);
                 }
+                TrainDrive.WakeGrippedCoal(target);
                 gripSurface = surface;
                 gripNormal = cabGrip ? Vector3.zero : surface.transform.InverseTransformDirection(normal);
                 var spring = arm.gameObject.AddComponent<SpringJoint>();
