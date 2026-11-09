@@ -20,6 +20,9 @@ Shader "Hidden/ConductorChaos/StylizedTerrainAddPass"
         [HideInInspector] _GrassDetect ("Gras herkennen (0 = alles textuur)", Range(0, 1)) = 1
         [HideInInspector] _ShadowTint ("Schaduwtint niet-gras", Color) = (0.78, 0.82, 1.0, 1)
         [HideInInspector] _ReceiveShadowsF ("Receive Shadows", Float) = 1
+        [HideInInspector] _DetailNear ("Textuur dichtbij", Range(0, 1)) = 0.35
+        [HideInInspector] _DetailFadeStart ("Textuur vervaagt vanaf (m)", Float) = 10
+        [HideInInspector] _DetailFadeEnd ("Textuur egaal vanaf (m)", Float) = 45
         [HideInInspector] _Control ("Control (RGBA)", 2D) = "black" {}
         [HideInInspector] _Splat0 ("Layer 0", 2D) = "grey" {}
         [HideInInspector] _Splat1 ("Layer 1", 2D) = "grey" {}

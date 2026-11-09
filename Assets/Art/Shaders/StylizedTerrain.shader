@@ -22,6 +22,10 @@ Shader "ConductorChaos/StylizedTerrain"
         _GrassDetect ("Gras herkennen (0 = alles textuur)", Range(0, 1)) = 1
         _ShadowTint ("Schaduwtint niet-gras", Color) = (0.78, 0.82, 1.0, 1)
         _ReceiveShadowsF ("Receive Shadows", Float) = 1
+        [Header(Rust op afstand (aarde en steen))]
+        _DetailNear ("Textuur dichtbij (0 = egaal zoals gras)", Range(0, 1)) = 0.35
+        _DetailFadeStart ("Textuur vervaagt vanaf (m)", Float) = 10
+        _DetailFadeEnd ("Textuur egaal vanaf (m)", Float) = 45
 
         // door Terrain gezet
         [HideInInspector] _Control ("Control (RGBA)", 2D) = "red" {}
