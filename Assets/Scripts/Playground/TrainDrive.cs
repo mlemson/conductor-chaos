@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace ConductorChaos.Playground
 {
+    [DefaultExecutionOrder(-100)]
     [RequireComponent(typeof(NetworkObject), typeof(NetworkTransform), typeof(Rigidbody))]
     public sealed class TrainDrive : NetworkBehaviour
     {
@@ -17,6 +18,9 @@ namespace ConductorChaos.Playground
         private readonly NetworkVariable<bool> buttonDown = new(false);
         private readonly NetworkVariable<float> throttle = new(0f);
         private Rigidbody body;
+        private Pose guidedOrigin;
+        private Pose guidedTarget;
+        private bool hasGuidedTarget;
         private TrackPiece track;
         private float distance, speed;
         private Transform lever;
@@ -39,6 +43,14 @@ namespace ConductorChaos.Playground
 
         public void Configure(TrackPiece first, float start) { firstTrack = first; startDistance = start; }
         internal bool IsLeverCollider(Collider candidate) => leverPivot && candidate && candidate.transform == leverPivot;
+
+        internal Vector3 GuidedPointVelocity(Vector3 point)
+        {
+            if (!hasGuidedTarget) return Vector3.zero;
+            Vector3 local = Quaternion.Inverse(guidedOrigin.rotation) * (point - guidedOrigin.position);
+            Vector3 velocity = (guidedTarget.position + guidedTarget.rotation * local - point) / Time.fixedDeltaTime;
+            return Vector3.ClampMagnitude(velocity, maximumSpeed + 3f);
+        }
 
         public override void OnNetworkSpawn()
         {
@@ -81,6 +93,7 @@ namespace ConductorChaos.Playground
 
         private void FixedUpdate()
         {
+            hasGuidedTarget = false;
             if (!IsSpawned || !IsServer || !track || !track.HasSockets) return;
             UpdateCabControls();
             speed = Mathf.MoveTowards(speed, powered.Value ? throttle.Value * maximumSpeed : 0f, acceleration * Time.fixedDeltaTime);
@@ -130,6 +143,9 @@ namespace ConductorChaos.Playground
                     return;
                 }
             }
+            guidedOrigin = new Pose(body.position, body.rotation);
+            guidedTarget = new Pose(target, rotation);
+            hasGuidedTarget = true;
             body.MovePosition(target);
             body.MoveRotation(rotation);
         }

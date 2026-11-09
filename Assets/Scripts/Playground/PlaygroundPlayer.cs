@@ -36,6 +36,8 @@ namespace ConductorChaos.Playground
         private bool lastLeft, lastRight;
         private float nextInput, nextPose, lastJump;
         private float lastServerInput;
+        private Vector3 trainVelocity;
+        private TrainDrive airborneTrain;
         private float yaw, pitch = 18f;
         private Camera playerCamera;
         private float originalCameraFieldOfView;
@@ -66,6 +68,8 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkSpawn()
         {
+            trainVelocity = Vector3.zero;
+            airborneTrain = null;
             body.isKinematic = !IsServer;
             if (IsServer)
             {
@@ -222,10 +226,32 @@ namespace ConductorChaos.Playground
                 right.Release();
             }
             Quaternion facing = Quaternion.Euler(0f, requestedYaw, 0f);
-            Vector3 target = facing * new Vector3(requestedMove.x, 0f, requestedMove.y) * speed;
             Vector3 current = body.linearVelocity;
+            bool grounded = IsGrounded(out var ground);
+            var support = grounded && ground.rigidbody && ground.rigidbody.isKinematic
+                ? ground.rigidbody.GetComponent<TrainDrive>() : null;
+            if (grounded)
+            {
+                airborneTrain = support;
+                trainVelocity = support ? support.GuidedPointVelocity(body.position) : Vector3.zero;
+            }
+            else if (airborneTrain)
+            {
+                if (IsGrounded(out var below, 1.6f) && below.rigidbody &&
+                    below.rigidbody.GetComponent<TrainDrive>() == airborneTrain)
+                {
+                    Vector3 correction = Vector3.ClampMagnitude(airborneTrain.GuidedPointVelocity(body.position) - trainVelocity,
+                        20f * Time.fixedDeltaTime);
+                    body.AddForce(correction, ForceMode.VelocityChange);
+                    current += correction;
+                    trainVelocity += correction;
+                }
+                else airborneTrain = null;
+            }
+            Vector3 target = trainVelocity + facing * new Vector3(requestedMove.x, 0f, requestedMove.y) * speed;
+            bool jumping = jumpQueued && grounded && Time.time - lastJump > 0.25f;
             Vector3 change = Vector3.ClampMagnitude(new Vector3(target.x - current.x, 0f, target.z - current.z), acceleration * Time.fixedDeltaTime);
-            body.AddForce(change, ForceMode.VelocityChange);
+            if (!jumping || !support) body.AddForce(change, ForceMode.VelocityChange);
 
             // A damped upright motor yields to impacts instead of freezing body rotation.
             Quaternion error = facing * Quaternion.Inverse(body.rotation);
@@ -237,10 +263,10 @@ namespace ConductorChaos.Playground
             if (jumpQueued)
             {
                 jumpQueued = false;
-                if (Time.time - lastJump > 0.25f && IsGrounded())
+                if (jumping)
                 {
-                    Vector3 velocity = body.linearVelocity;
-                    velocity.y = jumpSpeed;
+                    Vector3 velocity = support ? target : body.linearVelocity;
+                    velocity.y = jumpSpeed + (support ? trainVelocity.y : 0f);
                     body.linearVelocity = velocity;
                     lastJump = Time.time;
                 }
@@ -256,7 +282,6 @@ namespace ConductorChaos.Playground
                 handPush = Mathf.Max(left.PushUp(press, upSpeed), right.PushUp(press, upSpeed));
             }
             if (handPush > 0f) body.AddForce(Vector3.up * handPush, ForceMode.Acceleration);
-            bool grounded = IsGrounded();
             if (!grounded && handPush <= 0f && requestedMove.y <= 0.1f && left.HasGrip != right.HasGrip)
                 (left.HasGrip ? left : right).SlideDown();
             legs?.Step(body.linearVelocity, handPush <= 0f && grounded);
@@ -273,13 +298,15 @@ namespace ConductorChaos.Playground
             }
         }
 
-        private bool IsGrounded()
+        private bool IsGrounded(out RaycastHit ground, float distance = 0.22f)
         {
+            ground = default;
             Vector3 origin = body.position + body.rotation * Vector3.up * 0.28f;
-            int count = Physics.SphereCastNonAlloc(origin, 0.22f, Vector3.down, hits, 0.22f, ~0, QueryTriggerInteraction.Ignore);
+            int count = Physics.SphereCastNonAlloc(origin, 0.22f, Vector3.down, hits, distance, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
-                if (!hits[i].collider.transform.IsChildOf(transform) && hits[i].normal.y > 0.55f) return true;
-            return false;
+                if (!hits[i].collider.transform.IsChildOf(transform) && hits[i].normal.y > 0.55f &&
+                    (!ground.collider || hits[i].distance < ground.distance)) ground = hits[i];
+            return ground.collider;
         }
 
         private void LateUpdate()
