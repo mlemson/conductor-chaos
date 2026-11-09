@@ -3,6 +3,8 @@
 //    in Assets/Art/Prefabs/Track, met TrackPiece (sporen) en een MeshCollider op de verborgen botsvorm Col_Main.
 //    Bochten krijgen Left/Right in de naam na meten van hun echte richting in Unity.
 //    Gebeurt automatisch als de prefabs ontbreken; opnieuw via Conductor Chaos > Art > Track > Rebuild Track Prefabs.
+//    Wissels (#214) krijgen een tweede TrackPiece op Route_Diverge (DivSocket_*, DivPath_*), TrackSwitch, RepairPoint en
+//    een NetworkObject; het kapotte stuk (#215) een RepairPoint en NetworkObject (repareren met de moersleutel).
 // 2) Track Builder (Conductor Chaos > Art > Track > Track Builder): selecteer een spoorstuk en klik een stuk aan;
 //    het nieuwe stuk wordt precies aan het eind vastgezet en geselecteerd; met Achteruit bouwen aan het begin.
 //    Zonder selectie komt het eerste stuk midden in de Scene view op de grond.
@@ -10,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ConductorChaos.Track;
+using Unity.Netcode;
 using UnityEditor;
 using UnityEngine;
 
@@ -57,8 +60,23 @@ namespace ConductorChaos.EditorTools
                     {
                         var piece = go.AddComponent<TrackPiece>();
                         piece.FindSockets();
-                        if (piece.HasSockets && (name.EndsWith("_A") || name.EndsWith("_B")))
+                        if (name.StartsWith("Track_Switch_"))
+                        {
+                            var diverge = SetUpSwitch(go, piece);
+                            if (diverge && piece.HasSockets && (name.EndsWith("_A") || name.EndsWith("_B")))
+                            {
+                                Vector3 side = Vector3.Cross(go.transform.up, piece.StartDirection);
+                                name = name.Substring(0, name.Length - 2) +
+                                       (Vector3.Dot(diverge.EndPosition - piece.StartPosition, side) > 0f ? "_Right" : "_Left");
+                            }
+                        }
+                        else if (piece.HasSockets && (name.EndsWith("_A") || name.EndsWith("_B")))
                             name = name.Substring(0, name.Length - 2) + (piece.TurnDegrees > 0f ? "_Right" : "_Left");
+                        if (name.StartsWith("Track_Broken"))
+                        {
+                            go.AddComponent<RepairPoint>().Configure(true);
+                            go.AddComponent<NetworkObject>();
+                        }
                     }
                     foreach (var t in go.GetComponentsInChildren<Transform>(true))
                     {
@@ -87,6 +105,38 @@ namespace ConductorChaos.EditorTools
             Debug.Log($"[Track] {made} spoorprefabs gemaakt in {PrefabDir}. Bouwen: Conductor Chaos > Art > Track > Track Builder.");
         }
 
+        /// <summary>Wissel: afbuigende route als eigen TrackPiece, plus TrackSwitch/RepairPoint/NetworkObject.</summary>
+        static TrackPiece SetUpSwitch(GameObject go, TrackPiece straight)
+        {
+            var nodes = go.GetComponentsInChildren<Transform>(true);
+            System.Func<string, Transform> Find = n => nodes.FirstOrDefault(t => t.name == n);
+            var route = new GameObject("Route_Diverge");
+            route.transform.SetParent(go.transform, false);
+            var diverge = route.AddComponent<TrackPiece>();
+            diverge.start = Find("DivSocket_Start");
+            diverge.startForward = Find("DivSocket_Start_Fwd");
+            diverge.end = Find("DivSocket_End");
+            diverge.endForward = Find("DivSocket_End_Fwd");
+            var path = new List<Transform>();
+            for (int k = 0; k < 100; k++)
+            {
+                var p = Find("DivPath_" + k.ToString("00"));
+                if (!p) break;
+                path.Add(p);
+            }
+            diverge.pathPoints = path.Count >= 2 ? path.ToArray() : null;
+            if (!diverge.HasSockets)
+            {
+                Debug.LogError($"[Track] {go.name}: DivSocket_* ontbreken; wissel zonder afbuigende route.");
+                Object.DestroyImmediate(route);
+                return null;
+            }
+            go.AddComponent<RepairPoint>().Configure(false);      // wissel begint heel; kapot maken kan per scène
+            go.AddComponent<TrackSwitch>().Configure(straight, diverge);
+            go.AddComponent<NetworkObject>();
+            return diverge;
+        }
+
         static void EnsureFolder(string path)
         {
             if (AssetDatabase.IsValidFolder(path)) return;
@@ -112,6 +162,7 @@ namespace ConductorChaos.EditorTools
         List<GameObject> prefabs = new List<GameObject>();
         Vector2 scroll;
         [SerializeField] bool buildBackwards;
+        [SerializeField] bool fromDiverge;
 
         [MenuItem("Conductor Chaos/Art/Track/Track Builder")]
         static void Open() => GetWindow<TrackBuilderWindow>("Track Builder");
@@ -134,6 +185,13 @@ namespace ConductorChaos.EditorTools
         {
             var sel = Selection.activeGameObject != null ? Selection.activeGameObject.GetComponentInParent<TrackPiece>() : null;
             if (sel != null && !sel.gameObject.scene.IsValid()) sel = null;
+            var junction = sel != null ? sel.GetComponentInParent<TrackSwitch>() : null;
+            if (junction != null && junction.Diverge != null)
+            {
+                fromDiverge = EditorGUILayout.ToggleLeft(new GUIContent("Wissel: verder vanaf de afbuigende route",
+                    "Bouw aan het eind van de afbuigende route van de geselecteerde wissel."), fromDiverge);
+                sel = fromDiverge ? junction.Diverge : junction.Straight;
+            }
             buildBackwards = EditorGUILayout.ToggleLeft(new GUIContent("Achteruit bouwen",
                 "Plaats het volgende spoorstuk aan het begin van het geselecteerde stuk."), buildBackwards);
             EditorGUILayout.HelpBox(sel != null
@@ -174,7 +232,7 @@ namespace ConductorChaos.EditorTools
             var piece = go.GetComponent<TrackPiece>();
             if (selected != null && piece != null && piece.HasSockets && selected.HasSockets)
             {
-                go.transform.SetParent(selected.transform.parent, false);
+                go.transform.SetParent(ParentFor(selected), false);
                 go.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
                 Vector3 targetDirection = buildBackwards ? selected.StartDirection : selected.EndDirection;
                 Vector3 socketDirection = buildBackwards ? piece.EndDirection : piece.StartDirection;
@@ -194,7 +252,7 @@ namespace ConductorChaos.EditorTools
             else if (selected != null && selected.HasSockets)
             {
                 // Prop (bord, slagboom): naast het uiteinde waarvandaan je bouwt.
-                go.transform.SetParent(selected.transform.parent, false);
+                go.transform.SetParent(ParentFor(selected), false);
                 Vector3 target = buildBackwards ? selected.StartPosition : selected.EndPosition;
                 Vector3 direction = buildBackwards ? -selected.StartDirection : selected.EndDirection;
                 Vector3 side = Vector3.Cross(selected.transform.up, direction).normalized;
@@ -225,6 +283,13 @@ namespace ConductorChaos.EditorTools
                 }
             }
             Selection.activeGameObject = piece != null ? go : (selected != null ? selected.gameObject : go);
+        }
+
+        // nieuwe stukken naast een wissel niet ín het wisselprefab hangen, maar ernaast
+        static Transform ParentFor(TrackPiece selected)
+        {
+            var junction = selected.GetComponentInParent<TrackSwitch>();
+            return junction ? junction.transform.parent : selected.transform.parent;
         }
 
         internal static void FitToTerrain(TrackPiece piece, bool backwards)

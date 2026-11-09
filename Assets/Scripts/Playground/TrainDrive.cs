@@ -130,6 +130,10 @@ namespace ConductorChaos.Playground
         }
         internal static bool IsCoalBody(Rigidbody target) => target && GrippableCoal.ContainsKey(target);
 
+        // Locomotieven en wagons van alle treinen (issue #214: een wissel is bezet zolang er een op staat).
+        private static readonly HashSet<Rigidbody> TrainBodies = new();
+        internal static bool IsTrainBody(Rigidbody target) => target && TrainBodies.Contains(target);
+
         internal static void WakeGrippedCoal(Rigidbody target)
         {
             if (target && GrippableCoal.TryGetValue(target, out var train)) train.WakeCoal(train.coalIndex[target]);
@@ -358,6 +362,9 @@ namespace ConductorChaos.Playground
             }
             couplers.Clear();
             couplers.Add(body, GetCouplers(transform));
+            TrainBodies.Add(body);
+            foreach (var wagon in availableWagons)
+                if (wagon) TrainBodies.Add(wagon);
             railCenterOffset = couplers[body].Center;
             rearwardRailSign = couplers[body].FrontSign;
             foreach (var wagon in availableWagons)
@@ -448,6 +455,13 @@ namespace ConductorChaos.Playground
             float oldDistance = distance;
             float remaining = speed * Time.fixedDeltaTime;
             bool reachedEnd = !AdvanceOnRail(ref track, ref distance, remaining);
+            // kapotte wissel (issue #214): wie erop rijdt, ontspoort echt
+            if (track != oldTrack && TrackSwitch.For(track) is { IsBroken: true })
+            {
+                SampleRail(oldTrack, oldDistance, out _, out var brokenDirection);
+                Derail(brokenDirection * speed);
+                return;
+            }
             bool towardTail = remaining * rearwardRailSign > 0f;
             float leadingEnd = Mathf.Sign(remaining) * (towardTail ? ConsistRearExtent() : FrontExtent(body));
             bool wagonsFit = coupledWagons.Count == 0 || CanPlaceWagons(track, distance);
@@ -551,7 +565,20 @@ namespace ConductorChaos.Playground
         }
 
         private static bool RailUsable(TrackPiece piece) =>
-            piece && piece.isActiveAndEnabled && piece.HasSockets && piece.Length >= 0.01f && !piece.name.Contains("Broken");
+            RailLinkable(piece) && piece.isActiveAndEnabled && !IsBrokenTrack(piece);
+
+        // Mag in het spoornet (ook als het nu kapot is): een kapot stuk met RepairPoint wordt na reparatie berijdbaar
+        // (issue #215). Een kapot stuk zonder RepairPoint blijft zoals vroeger buiten het spoornet.
+        private static bool RailLinkable(TrackPiece piece) =>
+            piece && piece.HasSockets && piece.Length >= 0.01f &&
+            (!piece.name.Contains("Broken") || piece.GetComponent<RepairPoint>());
+
+        private static bool IsBrokenTrack(TrackPiece piece)
+        {
+            if (!piece.name.Contains("Broken")) return false;
+            var repair = piece.GetComponent<RepairPoint>();
+            return !repair || repair.IsBroken;
+        }
 
         private void BuildRailLinks()
         {
@@ -564,12 +591,12 @@ namespace ConductorChaos.Playground
             }
             foreach (var piece in railPieces)
             {
-                if (!RailUsable(piece) || following.ContainsKey(piece) || piece.name.Contains("BufferStop")) continue;
+                if (!RailLinkable(piece) || following.ContainsKey(piece) || piece.name.Contains("BufferStop")) continue;
                 TrackPiece nearest = null;
                 float best = 0.25f * 0.25f;
                 foreach (var candidate in railPieces)
                 {
-                    if (candidate == piece || previous.ContainsKey(candidate) || !RailUsable(candidate)) continue;
+                    if (candidate == piece || previous.ContainsKey(candidate) || !RailLinkable(candidate)) continue;
                     float gap = (piece.EndPosition - candidate.StartPosition).sqrMagnitude;
                     if (gap >= best || Vector3.Dot(piece.EndDirection, candidate.StartDirection) < 0.9f) continue;
                     nearest = candidate;
@@ -578,6 +605,18 @@ namespace ConductorChaos.Playground
                 if (!nearest) continue;
                 following.Add(piece, nearest);
                 previous.Add(nearest, piece);
+            }
+            // wissels (issue #214): beide routes hebben hetzelfde stuk ervoor; welke je oprijdt, kiest de wissel
+            foreach (var piece in railPieces)
+            {
+                var junction = TrackSwitch.For(piece);
+                if (!junction || piece != junction.Straight || !junction.Diverge) continue;
+                TrackPiece entry = null;
+                if (!previous.TryGetValue(junction.Straight, out entry)) previous.TryGetValue(junction.Diverge, out entry);
+                if (!entry) continue;
+                previous[junction.Straight] = entry;
+                previous[junction.Diverge] = entry;
+                following[entry] = junction.Straight;
             }
         }
 
@@ -594,7 +633,11 @@ namespace ConductorChaos.Playground
                 }
                 bool forward = target > length;
                 var links = forward ? following : previous;
-                if (!links.TryGetValue(piece, out var next) || !RailUsable(next))
+                links.TryGetValue(piece, out var next);
+                // oprijden vanaf het begin van een wissel (issue #214): de stand van de wissel kiest de route
+                var junction = forward ? TrackSwitch.For(next) : null;
+                if (junction && previous.TryGetValue(next, out var entry) && entry == piece) next = junction.ActiveRoute;
+                if (!next || !RailUsable(next))
                 {
                     along = forward ? length : 0f;
                     return false;
@@ -1523,6 +1566,9 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkDespawn()
         {
+            if (body) TrainBodies.Remove(body);
+            foreach (var wagon in availableWagons)
+                if (wagon) TrainBodies.Remove(wagon);
             if (derailed)
             {
                 if (body) { body.isKinematic = true; body.useGravity = false; }

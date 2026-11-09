@@ -12,6 +12,7 @@
 // Plaatsing: perronmodules hebben dezelfde pivot als een spoorstuk (hart spoor, maaiveld) -> zelfde positie en
 // draaiing als het spoorstuk ernaast. Het gebouw: voorgevel tegen de achterrand van het perron, 180 graden gedraaid.
 // Losse stationsprops krijgen physics en server-authoritatieve netwerksynchronisatie.
+using ConductorChaos.Playground;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
@@ -39,7 +40,9 @@ namespace ConductorChaos.EditorTools
             { "Prop_CrateStack", 5f },
             { "Prop_LuggageCart", 3.5f },
             { "Prop_Planter", 8f },
-            { "Prop_TrashBin", 1.5f }
+            { "Prop_TrashBin", 1.5f },
+            { "Prop_Wrench", 1.2f },          // gereedschap (#215, #216): oppakken met de handgrip
+            { "Prop_TicketPunch", 0.5f }
         };
 
         static StationKitPrefabs()
@@ -138,6 +141,8 @@ namespace ConductorChaos.EditorTools
                         go.AddComponent<NetworkObject>();
                         go.AddComponent<NetworkTransform>();
                         go.AddComponent<NetworkRigidbody>();
+                        if (name == "Prop_Wrench") go.AddComponent<RepairWrench>();          // repareert wissels en spoor
+                        if (name == "Prop_TicketPunch") go.AddComponent<TicketPunch>();      // knipt kaartjes
                     }
                     if (signFont) StationSignTools.Attach(go, name, signFont);      // Sign_*: aanpasbare naam (#209)
                     go.name = name;
