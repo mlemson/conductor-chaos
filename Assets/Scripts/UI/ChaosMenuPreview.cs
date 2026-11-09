@@ -44,10 +44,7 @@ namespace ConductorChaos.UI
 
             RectTransform left = ChaosUI.Panel(root, "Left menu", V(0.035f, 0.13f), V(0.31f, 0.9f),
                 ChaosUI.Slate, 2, ChaosUI.Muted);
-            ChaosUI.Label(left, "Logo title", "CONDUCTOR", 35, ChaosUI.Paper,
-                TextAnchor.MiddleCenter, FontStyle.Bold, V(0.045f, 0.84f), V(0.955f, 0.97f));
-            ChaosUI.Label(left, "Logo subtitle", "CHAOS", 51, ChaosUI.TrainRed,
-                TextAnchor.MiddleCenter, FontStyle.Bold, V(0.07f, 0.73f), V(0.93f, 0.86f));
+            ChaosUI.MenuLogo(left, V(0.045f, 0.73f), V(0.955f, 0.975f));
             ChaosUI.Label(left, "Tagline", "The train will probably be fine.", 15, ChaosUI.Muted,
                 TextAnchor.MiddleCenter, FontStyle.Normal, V(0.05f, 0.665f), V(0.95f, 0.72f));
 

@@ -91,6 +91,16 @@ namespace ConductorChaos.UI
             return rt;
         }
 
+        public static RectTransform MenuLogo(Transform parent, Vector2 min, Vector2 max)
+        {
+            RectTransform rect = Rect(parent, "Conductor Chaos logo", min, max, Vector2.zero, Vector2.zero);
+            var image = rect.gameObject.AddComponent<Image>();
+            image.sprite = Resources.Load<Sprite>("ConductorChaosLogo");
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+            return rect;
+        }
+
         public static RectTransform Panel(Transform parent, string name, Vector2 min, Vector2 max,
             Color color, int border = 0, Color outline = default)
         {
