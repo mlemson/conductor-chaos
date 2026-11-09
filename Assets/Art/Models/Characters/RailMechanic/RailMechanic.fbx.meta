@@ -121,6 +121,7 @@ ModelImporter:
     materialLocation: 1
   animations:
     importAnimation: 0
+    isReadable: 1
   meshes:
     globalScale: 1
     useFileUnits: 1

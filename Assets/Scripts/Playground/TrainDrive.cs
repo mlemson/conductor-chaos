@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ConductorChaos.Stations;
 using ConductorChaos.Track;
 using Unity.Netcode;
 using Unity.Netcode.Components;
@@ -213,6 +214,15 @@ namespace ConductorChaos.Playground
         private bool canStoke;
         internal bool HasCoalFurnace => IsSpawned && canStoke;
         internal float FuelFraction => fuel.Value / FuelCapacity;
+        internal bool ServicePowerOn => powered.Value;
+        internal float ServiceSpeed => displayedSpeed.Value;
+        internal Vector3 ServiceRailPosition => transform.TransformPoint(0f, -TrackPiece.RailToTrainPivot, railCenterOffset);
+        internal bool ServiceDerailed => derailed;
+        internal bool ServiceDoorsClosed => wagonDoorOffsets.Value.sqrMagnitude < .035f * .035f;
+        internal bool ServiceDoorOpened => Mathf.Max(Mathf.Abs(wagonDoorOffsets.Value.x), Mathf.Abs(wagonDoorOffsets.Value.y)) >= .38f;
+        internal bool IsServiceDoorOpen(Transform leaf) =>
+            (wagonDoors[0]?.Leaf == leaf && Mathf.Abs(wagonDoorOffsets.Value.x) >= .38f) ||
+            (wagonDoors[1]?.Leaf == leaf && Mathf.Abs(wagonDoorOffsets.Value.y) >= .38f);
         private Quaternion leverRest;
         private float railCenterOffset, rearwardRailSign;
         private const float CouplingRange = 1.05f;
@@ -447,7 +457,8 @@ namespace ConductorChaos.Playground
                 displayedSpeed.Value = 0f;
                 return;
             }
-            bool canDrive = powered.Value && (!canStoke || fuel.Value > 0f);
+            var service = ServiceRun.Active;
+            bool canDrive = powered.Value && (!canStoke || fuel.Value > 0f) && (!service || service.AllowsMotion(this));
             if (canDrive && canStoke)
                 fuel.Value = Mathf.Max(0f, fuel.Value - Mathf.Abs(throttle.Value) * Time.fixedDeltaTime / 35f);
             speed = Mathf.MoveTowards(speed, canDrive ? throttle.Value * maximumSpeed : 0f, acceleration * Time.fixedDeltaTime);

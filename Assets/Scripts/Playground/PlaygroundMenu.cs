@@ -1,4 +1,5 @@
 using ConductorChaos.UI;
+using ConductorChaos.Stations;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
@@ -10,7 +11,7 @@ namespace ConductorChaos.Playground
     [DefaultExecutionOrder(-1000)]
     public sealed class PlaygroundMenu : MonoBehaviour
     {
-        private enum Screen { Main, Game, Pause }
+        private enum Screen { Main, Game, Pause, Service }
         private static PlaygroundMenu instance;
         private Screen screen;
         private Canvas canvas;
@@ -25,6 +26,7 @@ namespace ConductorChaos.Playground
         private int displayedLobbyCount = -1;
         private InputField joinCodeInput;
         private PlaygroundHost networkHost;
+        private ServicePresentation service;
         private PlaygroundHost.SessionPhase previousPhase;
 
         public static bool BlocksInput => instance && instance.screen != Screen.Game;
@@ -43,11 +45,13 @@ namespace ConductorChaos.Playground
         private void Awake()
         {
             instance = this;
+            DontDestroyOnLoad(gameObject);
             AudioListener.volume = Mathf.Clamp01(PlayerPrefs.GetFloat("ChaosUI.Volume", 0.8f));
             muted = PlayerPrefs.GetInt("ChaosUI.Muted", 0) != 0;
             AudioListener.pause = muted;
             networkHost = FindAnyObjectByType<PlaygroundHost>();
             Build();
+            service = new ServicePresentation(transform, networkHost);
             SetScreen(Screen.Main);
         }
 
@@ -101,7 +105,11 @@ namespace ConductorChaos.Playground
             resumeButton = ChaosUI.Action(pausePanel, "Resume", "Verder spelen", V(.08f, .62f), V(.92f, .74f), ChaosUI.Gold, ChaosUI.Ink, () => SetScreen(Screen.Game), 22, iconKey: "play");
             ChaosUI.Action(pausePanel, "Unstuck", "Terug op de trein", V(.08f, .47f), V(.92f, .59f), ChaosUI.Paper, ChaosUI.Ink, Unstuck, 20);
             ChaosUI.Action(pausePanel, "Settings", "INSTELLINGEN", V(.08f, .32f), V(.92f, .44f), ChaosUI.Paper, ChaosUI.Ink, ShowSettings, 20, iconKey: "options");
-            ChaosUI.Action(pausePanel, "Main", "HOOFDMENU", V(.08f, .17f), V(.92f, .29f), ChaosUI.Paper, ChaosUI.Ink, () => SetScreen(Screen.Main), 20, iconKey: "back");
+            ChaosUI.Action(pausePanel, "Main", "HOOFDMENU", V(.08f, .17f), V(.92f, .29f), ChaosUI.Paper, ChaosUI.Ink, () =>
+            {
+                if (ServiceRun.Active) networkHost?.Leave();
+                SetScreen(Screen.Main);
+            }, 20, iconKey: "back");
             ChaosUI.Label(pausePanel, "Notice", "De wereld blijft actief terwijl dit menu open is.", 15, ChaosUI.Muted, TextAnchor.MiddleCenter, FontStyle.Normal, V(.05f, .02f), V(.95f, .13f));
         }
 
@@ -250,6 +258,14 @@ namespace ConductorChaos.Playground
         private void Update()
         {
             UpdateLobby();
+            var run = ServiceRun.Active;
+            if (ServicePresentation.IsModal(networkHost, run))
+            {
+                if (screen != Screen.Service) SetScreen(Screen.Service);
+            }
+            else if (screen == Screen.Service)
+                SetScreen(networkHost && networkHost.Phase == PlaygroundHost.SessionPhase.Playing ? Screen.Game : Screen.Main);
+            service.Present(networkHost, run, screen == Screen.Service, screen == Screen.Game && run);
             if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
             if (screen == Screen.Game) SetScreen(Screen.Pause);
             else if (settingsPanel.gameObject.activeSelf) ShowLobby();
@@ -258,7 +274,7 @@ namespace ConductorChaos.Playground
         private void SetScreen(Screen next)
         {
             screen = next;
-            canvas.gameObject.SetActive(next != Screen.Game);
+            canvas.gameObject.SetActive(next is Screen.Main or Screen.Pause);
             mainPanel.gameObject.SetActive(next == Screen.Main);
             logoPanel.gameObject.SetActive(next == Screen.Main);
             ShowLobby();

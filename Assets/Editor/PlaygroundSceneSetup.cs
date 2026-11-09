@@ -1,5 +1,6 @@
 using System.Linq;
 using ConductorChaos.Playground;
+using ConductorChaos.Stations;
 using ConductorChaos.Track;
 using Unity.Netcode;
 using Unity.Netcode.Components;
@@ -129,11 +130,22 @@ namespace ConductorChaos.Editor
         [MenuItem("Tools/Conductor Chaos/Build Windows Client")]
         public static void BuildLocalTrialClient()
         {
+            var scenes = new[]
+            {
+                "Assets/Scenes/TrainPlayground.unity",
+                $"Assets/Scenes/{ServiceRun.IntroScene}.unity",
+                $"Assets/Scenes/{ServiceRun.FirstLevelScene}.unity"
+            };
+            if (scenes.Any(path => !AssetDatabase.LoadAssetAtPath<SceneAsset>(path)))
+            {
+                Debug.LogError("De lobby, introductie en het eerste level moeten aanwezig zijn om de dienst te bouwen.");
+                return;
+            }
             const string directory = "work/PlaygroundClient";
             System.IO.Directory.CreateDirectory(directory);
             var result = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                scenes = new[] { "Assets/Scenes/TrainPlayground.unity" },
+                scenes = scenes,
                 locationPathName = directory + "/ConductorChaos.exe",
                 target = BuildTarget.StandaloneWindows64,
                 options = BuildOptions.Development

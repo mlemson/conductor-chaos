@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using ConductorChaos.Stations;
 using Unity.Collections;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -9,6 +11,7 @@ using Unity.Services.Core;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace ConductorChaos.Playground
 {
@@ -20,24 +23,35 @@ namespace ConductorChaos.Playground
         internal const int Capacity = 6;
         private const string RelayProtocol = "dtls";
         private const string LobbyStateMessage = "Playground.LobbyState";
+        private const string LobbyScene = "TrainPlayground";
+        private static PlaygroundHost persistentHost;
         private NetworkManager manager;
         private UnityTransport transport;
         private bool preparingOnline;
         private string pendingHostCode;
         private float connectionDeadline;
-        public enum SessionPhase { Offline, Connecting, Lobby, Playing }
+        private bool returningToLobby;
+        public enum SessionPhase : byte { Offline, Connecting, Lobby, Loading, Playing }
         public SessionPhase Phase { get; private set; }
         public string JoinCode { get; private set; }
         public string Message { get; private set; }
         public int PlayerCount { get; private set; }
         public bool IsHost => manager && manager.IsHost;
+        public bool HasServiceScenes => Application.CanStreamedLevelBeLoaded(ServiceRun.IntroScene) &&
+                                        Application.CanStreamedLevelBeLoaded(ServiceRun.FirstLevelScene);
         public bool CanStart => Phase == SessionPhase.Offline && !preparingOnline &&
-                                manager && !manager.IsListening && !manager.ShutdownInProgress;
+                                !returningToLobby && manager && !manager.IsListening && !manager.ShutdownInProgress;
 
         public void Configure(GameObject prefab) => remotePlayerPrefab = prefab;
 
         private void Awake()
         {
+            if (persistentHost && persistentHost != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            persistentHost = this;
             manager = GetComponent<NetworkManager>();
             transport = GetComponent<UnityTransport>();
             manager.OnClientConnectedCallback += OnConnected;
@@ -50,10 +64,23 @@ namespace ConductorChaos.Playground
         private void Start()
         {
             if (Application.isBatchMode || Array.IndexOf(Environment.GetCommandLineArgs(), "-playground-host") >= 0)
-                StartLocal();
+                StartLocalTrial();
         }
 
         public void StartLocal()
+        {
+            if (!CanStart) return;
+            if (!HasServiceScenes)
+            {
+                StartLocalTrial();
+                return;
+            }
+            transport.SetConnectionData(true, "127.0.0.1", SoloPort, "127.0.0.1");
+            if (StartHost(SessionPhase.Lobby, "De solo-dienst kon niet starten."))
+                LoadServiceScene(ServiceRun.IntroScene);
+        }
+
+        private void StartLocalTrial()
         {
             if (!CanStart) return;
             transport.SetConnectionData(true, "127.0.0.1", SoloPort, "127.0.0.1");
@@ -170,6 +197,71 @@ namespace ConductorChaos.Playground
         public void BeginGame()
         {
             if (!IsHost || Phase != SessionPhase.Lobby) return;
+            if (HasServiceScenes)
+            {
+                LoadServiceScene(ServiceRun.IntroScene);
+                return;
+            }
+            Phase = SessionPhase.Playing;
+            BroadcastLobbyState();
+        }
+
+        internal void LoadServiceScene(string scene)
+        {
+            if (!IsHost || Phase is not (SessionPhase.Lobby or SessionPhase.Playing)) return;
+            if (scene != ServiceRun.IntroScene && scene != ServiceRun.FirstLevelScene) return;
+            if (!Application.CanStreamedLevelBeLoaded(scene))
+            {
+                Message = "De dienstscène ontbreekt in deze build.";
+                return;
+            }
+
+            var scenes = manager.SceneManager;
+            scenes.OnLoadEventCompleted -= OnServiceLoaded;
+            scenes.OnLoadEventCompleted += OnServiceLoaded;
+            var previous = Phase;
+            Phase = SessionPhase.Loading;
+            if (scenes.LoadScene(scene, LoadSceneMode.Single) != SceneEventProgressStatus.Started)
+            {
+                scenes.OnLoadEventCompleted -= OnServiceLoaded;
+                Phase = previous;
+                Message = "De volgende scène kon niet laden.";
+            }
+            BroadcastLobbyState();
+        }
+
+        private void OnServiceLoaded(string scene, LoadSceneMode mode, List<ulong> loaded, List<ulong> timedOut)
+        {
+            if (!IsHost || Phase != SessionPhase.Loading) return;
+            manager.SceneManager.OnLoadEventCompleted -= OnServiceLoaded;
+            var run = ServiceRun.Active;
+            if (!run || run.gameObject.scene.name != scene || !run.IsConfigured || !loaded.Contains(NetworkManager.ServerClientId))
+            {
+                Leave();
+                Message = "De dienstscène heeft onvolledige stations- of routegegevens.";
+                return;
+            }
+            foreach (ulong id in timedOut)
+                if (id != NetworkManager.ServerClientId && manager.ConnectedClients.ContainsKey(id))
+                    manager.DisconnectClient(id, "Je scène kon niet op tijd laden.");
+
+            Transform spawn = run.Departure.CrewSpawn;
+            int seat = 0;
+            foreach (ulong id in loaded)
+            {
+                if (!manager.ConnectedClients.ContainsKey(id)) continue;
+                float column = seat % 3 - 1f;
+                float row = seat / 3;
+                Vector3 position = spawn.position + spawn.right * column * .75f - spawn.forward * row * .8f;
+                SpawnPlayer(id, position, spawn.rotation);
+                seat++;
+            }
+            if (!run.BeginOnServer())
+            {
+                Leave();
+                Message = "De dienst kon niet worden gestart.";
+                return;
+            }
             Phase = SessionPhase.Playing;
             BroadcastLobbyState();
         }
@@ -177,6 +269,7 @@ namespace ConductorChaos.Playground
         public void Leave()
         {
             ResetSession(null);
+            returningToLobby = SceneManager.GetActiveScene().name != LobbyScene;
             if (manager && manager.IsListening) manager.Shutdown();
         }
 
@@ -191,6 +284,13 @@ namespace ConductorChaos.Playground
 
         private void Update()
         {
+            if (!manager) return;
+            if (returningToLobby && !manager.IsListening && !manager.ShutdownInProgress)
+            {
+                returningToLobby = false;
+                SceneManager.LoadScene(LobbyScene);
+                return;
+            }
             if (pendingHostCode != null && IsHost &&
                 transport.GetNetworkDriver().GetRelayConnectionStatus() == RelayConnectionStatus.Established)
             {
@@ -211,16 +311,18 @@ namespace ConductorChaos.Playground
         {
             bool online = transport.Protocol == UnityTransport.ProtocolType.RelayUnityTransport;
             response.Approved = request.ClientNetworkId == NetworkManager.ServerClientId ||
-                                (online && manager.ConnectedClientsIds.Count < Capacity);
+                                (online && (Phase is SessionPhase.Connecting or SessionPhase.Lobby) &&
+                                 manager.ConnectedClientsIds.Count < Capacity);
             response.CreatePlayerObject = false;
-            if (!response.Approved) response.Reason = online ? "De lobby is vol." : "Deze sessie is alleen voor solo spelen.";
+            if (!response.Approved) response.Reason = !online ? "Deze sessie is alleen voor solo spelen."
+                : Phase is SessionPhase.Loading or SessionPhase.Playing ? "Deze dienst is al gestart." : "De lobby is vol.";
         }
 
         private void BroadcastLobbyState()
         {
             PlayerCount = manager.ConnectedClientsIds.Count;
-            using var writer = new FastBufferWriter(sizeof(bool) + sizeof(int), Allocator.Temp);
-            writer.WriteValueSafe(Phase == SessionPhase.Playing);
+            using var writer = new FastBufferWriter(sizeof(byte) + sizeof(int), Allocator.Temp);
+            writer.WriteValueSafe((byte)Phase);
             writer.WriteValueSafe(PlayerCount);
             foreach (ulong clientId in manager.ConnectedClientsIds)
                 if (clientId != NetworkManager.ServerClientId)
@@ -230,36 +332,54 @@ namespace ConductorChaos.Playground
         private void ReceiveLobbyState(ulong sender, FastBufferReader reader)
         {
             if (sender != NetworkManager.ServerClientId || Phase == SessionPhase.Offline ||
-                !reader.TryBeginRead(sizeof(bool) + sizeof(int))) return;
-            reader.ReadValue(out bool playing);
+                !reader.TryBeginRead(sizeof(byte) + sizeof(int))) return;
+            reader.ReadValue(out byte serverPhase);
             reader.ReadValue(out int count);
             PlayerCount = Mathf.Clamp(count, 1, Capacity);
-            Phase = playing ? SessionPhase.Playing : SessionPhase.Lobby;
+            Phase = (SessionPhase)serverPhase switch
+            {
+                SessionPhase.Loading => SessionPhase.Loading,
+                SessionPhase.Playing => SessionPhase.Playing,
+                _ => SessionPhase.Lobby
+            };
             Message = null;
         }
 
         private void OnConnected(ulong clientId)
         {
             if (!manager.IsServer || clientId == NetworkManager.ServerClientId) return;
-            Vector3 position = new Vector3(11f + 1.2f * (manager.ConnectedClientsIds.Count - 2), 0.3f, 3f);
-            GameObject instance = Instantiate(remotePlayerPrefab, position, Quaternion.identity);
-            instance.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, true);
+            if (!HasServiceScenes)
+            {
+                Vector3 position = new Vector3(11f + 1.2f * (manager.ConnectedClientsIds.Count - 2), 0.3f, 3f);
+                SpawnPlayer(clientId, position, Quaternion.identity);
+            }
             BroadcastLobbyState();
+        }
+
+        private void SpawnPlayer(ulong clientId, Vector3 position, Quaternion rotation)
+        {
+            if (manager.ConnectedClients[clientId].PlayerObject is { IsSpawned: true } old) old.Despawn();
+            var instance = Instantiate(remotePlayerPrefab, position, rotation);
+            instance.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, true);
         }
 
         private void OnDisconnected(ulong clientId)
         {
             if (IsHost || Phase == SessionPhase.Offline) return;
             ResetSession(string.IsNullOrEmpty(manager.DisconnectReason) ? "Verbinding met de host verbroken." : manager.DisconnectReason);
+            returningToLobby = SceneManager.GetActiveScene().name != LobbyScene;
         }
 
         private void OnTransportFailure()
         {
-            if (Phase != SessionPhase.Offline) ResetSession("De netwerkverbinding is weggevallen.");
+            if (Phase == SessionPhase.Offline) return;
+            Leave();
+            Message = "De netwerkverbinding is weggevallen.";
         }
 
         private void OnDestroy()
         {
+            if (persistentHost == this) persistentHost = null;
             if (!manager) return;
             manager.OnClientConnectedCallback -= OnConnected;
             manager.OnClientDisconnectCallback -= OnDisconnected;
