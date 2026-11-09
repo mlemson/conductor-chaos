@@ -2,9 +2,9 @@
   "model": "Conductor",
   "height_m": 1.25,
   "stats": {
-    "parts": 20,
-    "tris": 30463,
-    "verts": 15300,
+    "parts": 26,
+    "tris": 34367,
+    "verts": 17268,
     "materials": 10
   },
   "materials": {

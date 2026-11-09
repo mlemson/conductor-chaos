@@ -8,8 +8,8 @@
    "fov": 35,
    "yaw": 32,
    "pitch": 4,
-   "dist": 7,
-   "target": "-3.2,0.05,2.2",
+   "dist": 11.5,
+   "target": "0.1,0.05,2.6",
    "lightAz": -40,
    "lightEl": 48,
    "shadowSize": 26,
@@ -914,6 +914,56 @@
       2.4
      ],
      "rotY": 5
+    },
+    {
+     "url": "../Exports/StationMaster.glb",
+     "mats": "../Exports/StationMaster.materials.json",
+     "pos": [
+      0.65,
+      -0.68,
+      2.3
+     ],
+     "rotY": -5
+    },
+    {
+     "url": "../Exports/BusinessTraveler.glb",
+     "mats": "../Exports/BusinessTraveler.materials.json",
+     "pos": [
+      2.0,
+      -0.68,
+      2.6
+     ],
+     "rotY": -15
+    },
+    {
+     "url": "../Exports/ChildPassenger.glb",
+     "mats": "../Exports/ChildPassenger.materials.json",
+     "pos": [
+      -0.45,
+      -0.68,
+      3.0
+     ],
+     "rotY": 10
+    },
+    {
+     "url": "../Exports/BaggageHelper.glb",
+     "mats": "../Exports/BaggageHelper.materials.json",
+     "pos": [
+      3.6,
+      -0.68,
+      2.5
+     ],
+     "rotY": -25
+    },
+    {
+     "url": "../Exports/BaggageTrolley.glb",
+     "mats": "../Exports/BaggageTrolley.materials.json",
+     "pos": [
+      4.56,
+      -0.68,
+      2.95
+     ],
+     "rotY": -25
     }
    ]
   }

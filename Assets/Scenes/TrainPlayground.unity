@@ -36038,6 +36038,7 @@ GameObject:
   - component: {fileID: 1153904351}
   - component: {fileID: 1153904350}
   - component: {fileID: 1153904349}
+  - component: {fileID: 6800553713305275161}
   m_Layer: 0
   m_Name: Playground Passenger - RailMechanic
   m_TagString: Untagged
@@ -36045,6 +36046,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &6800553713305275161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1153904344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fcee59aaae740c080b55ac33db449f4, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.Characters.CharacterFace
+  eyes: 1
+  mouth: 3
+  blink: 1
+  blinkInterval: {x: 2.2, y: 5.5}
+  blinkDuration: 0.11
+  doubleBlinkChance: 0.18
+  captured: 1
 --- !u!114 &1153904345
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -36229,6 +36249,7 @@ GameObject:
   - component: {fileID: 1451680468}
   - component: {fileID: 1451680467}
   - component: {fileID: 1451680466}
+  - component: {fileID: 6800553713305275162}
   m_Layer: 0
   m_Name: Playground Passenger - Elderly
   m_TagString: Untagged
@@ -36236,6 +36257,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &6800553713305275162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1451680461}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fcee59aaae740c080b55ac33db449f4, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.Characters.CharacterFace
+  eyes: 0
+  mouth: 0
+  blink: 1
+  blinkInterval: {x: 2.2, y: 5.5}
+  blinkDuration: 0.11
+  doubleBlinkChance: 0.18
+  captured: 1
 --- !u!114 &1451680462
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -36420,6 +36460,7 @@ GameObject:
   - component: {fileID: 1452205944}
   - component: {fileID: 1452205943}
   - component: {fileID: 1452205942}
+  - component: {fileID: 6800553713305275163}
   m_Layer: 0
   m_Name: Playground Passenger - Tourist
   m_TagString: Untagged
@@ -36427,6 +36468,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &6800553713305275163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1452205937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fcee59aaae740c080b55ac33db449f4, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.Characters.CharacterFace
+  eyes: 0
+  mouth: 0
+  blink: 1
+  blinkInterval: {x: 2.2, y: 5.5}
+  blinkDuration: 0.11
+  doubleBlinkChance: 0.18
+  captured: 1
 --- !u!114 &1452205938
 MonoBehaviour:
   m_ObjectHideFlags: 0

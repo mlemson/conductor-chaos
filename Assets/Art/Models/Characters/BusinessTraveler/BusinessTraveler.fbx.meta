@@ -1,0 +1,160 @@
+fileFormatVersion: 2
+guid: 90817095e81da4fe6ba6397ccca7f9e2
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Skin
+    second: {fileID: 2100000, guid: 839abeb580715d579f205c17cdbbfc77, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_EyeWhite
+    second: {fileID: 2100000, guid: d4253675ac64171908c13725badac9d3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Pupil
+    second: {fileID: 2100000, guid: 14f529036c0f4d14991c097872a50c6b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Mouth
+    second: {fileID: 2100000, guid: 89b1e078682e8fae4b6bbc75e6753ce7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Tongue
+    second: {fileID: 2100000, guid: 9f4f5a4031a508e0fa87f0cbe1cf3797, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Blazer
+    second: {fileID: 2100000, guid: b325c6714a8ee0c1eb635c81bd0d1729, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_BlazerDark
+    second: {fileID: 2100000, guid: bc7c611beae8bfedfe831859736c8d4a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Trousers
+    second: {fileID: 2100000, guid: ba414ac5b158a74dd5be68ad2d1d76d7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Shirt
+    second: {fileID: 2100000, guid: d2ae60ab54b6f9cd9c79973fb10f4505, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Tie
+    second: {fileID: 2100000, guid: 2abd1e51a15058220b77fa66f97ed89a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Belt
+    second: {fileID: 2100000, guid: 47aee77e708731d3b5a873caf6ad6af1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Gold
+    second: {fileID: 2100000, guid: 9fbfc2495e751931fee2255a286a131c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Shoe
+    second: {fileID: 2100000, guid: fbcc507453af15680ff650f0346e0aba, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Hair
+    second: {fileID: 2100000, guid: 86f49c7f8e4b9eaade6e1e2c5ce0daf8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Frame
+    second: {fileID: 2100000, guid: 2a2446370912efce487937267d2eb551, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Lens
+    second: {fileID: 2100000, guid: ad3b7b176b8c7e15410fbf6d63807089, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Bag
+    second: {fileID: 2100000, guid: fe400d1e0c4a381c206ee5abe861fb0e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_BagDark
+    second: {fileID: 2100000, guid: f70dc14b02b898e5187c3111e86cc50c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Paper
+    second: {fileID: 2100000, guid: 57287f7d2033b46e3b9f09b26690f04d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_PaperInk
+    second: {fileID: 2100000, guid: 95b882117a39b46fc55c75dfbca9f625, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Suitcase
+    second: {fileID: 2100000, guid: d3ff8cd7d65e5528e5bbc35d239adb6a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_SuitcaseDark
+    second: {fileID: 2100000, guid: b9d962ae74714b3fdfa2093a79cf3781, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Wheel
+    second: {fileID: 2100000, guid: 859db1ae6c8dc557424ffc0c40daef50, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Tag
+    second: {fileID: 2100000, guid: 5562e5be2f7012b011e9915af45e9f54, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_TagInk
+    second: {fileID: 2100000, guid: 2e0c751f4461b535dc1976fe20c6239d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTraveler_Sweat
+    second: {fileID: 2100000, guid: 18b82862384423a7d2c037c7abb4f7de, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

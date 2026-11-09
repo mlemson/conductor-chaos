@@ -27,8 +27,15 @@ CHARACTERS = [
     ("Assets/Art/Models/Characters/Tourist/Tourist.fbx", [-5.0, -0.68, 2.0], 35.0, "Neutral", False),
     ("Assets/Art/Models/Characters/ElderlyPassenger/ElderlyPassenger.fbx", [-3.2, -0.68, 2.2], 20.0, "Neutral", False),
     ("Assets/Art/Models/Characters/RailMechanic/RailMechanic.fbx", [-1.4, -0.68, 2.4], 5.0, "Flat", True),
+    ("Assets/Art/Models/Characters/StationMaster/StationMaster.fbx", [0.65, -0.68, 2.3], -5.0, "Smile", True),
+    ("Assets/Art/Models/Characters/BusinessTraveler/BusinessTraveler.fbx", [2.0, -0.68, 2.6], -15.0, "Neutral", False),
+    ("Assets/Art/Models/Characters/ChildPassenger/ChildPassenger.fbx", [-0.45, -0.68, 3.0], 10.0, "Grin", True),
+    ("Assets/Art/Models/Characters/BaggageHelper/BaggageHelper.fbx", [3.6, -0.68, 2.5], -25.0, "Happy", False),
 ]
-MOUTHS = ("Neutral", "Surprised", "Happy", "Flat", "Hmm", "Smile")
+PROPS = [   # losse props naast de personages (zelfde plek als in Render/character_scenes.py)
+    ("Assets/Art/Models/Characters/BaggageTrolley/BaggageTrolley.fbx", [4.56, -0.68, 2.95], -25.0),
+]
+MOUTHS = ("Neutral", "Surprised", "Happy", "Flat", "Hmm", "Smile", "Grin")
 
 
 def character_hidden(default_mouth, lids):
@@ -57,6 +64,9 @@ def main():
         if os.path.exists(os.path.join(ROOT, path)):
             items.append({"path": path, "pos": pos, "rotY": rot, "scale": [1, 1, 1],
                           "hide": character_hidden(mouth, lids), "show": []})
+    for path, pos, rot in PROPS:
+        if os.path.exists(os.path.join(ROOT, path)):
+            items.append({"path": path, "pos": pos, "rotY": rot, "scale": [1, 1, 1], "hide": [], "show": []})
     layout = {
         "camera": {"target": [float(v) for v in ex["target"].split(",")], "yaw": ex["yaw"], "pitch": ex["pitch"],
                    "dist": ex["dist"], "fov": ex["fov"], "far": ex.get("far", 700)},

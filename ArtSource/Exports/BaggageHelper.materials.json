@@ -1,0 +1,289 @@
+{
+  "model": "BaggageHelper",
+  "height_m": 1.25,
+  "stats": {
+    "parts": 27,
+    "tris": 40018,
+    "verts": 20099,
+    "materials": 15
+  },
+  "materials": {
+    "M_BaggageHelper_Skin": {
+      "base": "#DB9966",
+      "ramp": [
+        "#BA7756",
+        "#D28658",
+        "#DB9966",
+        "#E7A773",
+        "#EFB27C"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1
+      }
+    },
+    "M_BaggageHelper_EyeWhite": {
+      "base": "#FDEEDC",
+      "ramp": [
+        "#352F3C",
+        "#BDABC1",
+        "#DCC7C5",
+        "#FDEEDC",
+        "#FDF6E8"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.35,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.45,
+        "noShadow": true
+      }
+    },
+    "M_BaggageHelper_Pupil": {
+      "base": "#0D0B0C",
+      "ramp": [
+        "#1C0F0E",
+        "#291D1B",
+        "#351B13",
+        "#382520",
+        "#5A4038"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.45,
+      "opts": {
+        "spec": 0.25,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "noShadow": true
+      }
+    },
+    "M_BaggageHelper_Mouth": {
+      "base": "#662C23",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": -0.55,
+      "smoothness": 0.2,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_BaggageHelper_Tongue": {
+      "base": "#B84A3C",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_BaggageHelper_Overall": {
+      "base": "#3E3D70",
+      "ramp": [
+        "#1D1C2D",
+        "#34335B",
+        "#3E3D70",
+        "#454377",
+        "#565191"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.3
+      }
+    },
+    "M_BaggageHelper_OverallDark": {
+      "base": "#34335B",
+      "ramp": [
+        "#1D1C2D",
+        "#34335B",
+        "#3E3D70",
+        "#454377",
+        "#565191"
+      ],
+      "rampShift": -0.22,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_BaggageHelper_Shirt": {
+      "base": "#F4DCC0",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1
+      }
+    },
+    "M_BaggageHelper_Glove": {
+      "base": "#503936",
+      "ramp": [
+        "#3E2C2A",
+        "#47322F",
+        "#503936",
+        "#563F3E",
+        "#886B66"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1
+      }
+    },
+    "M_BaggageHelper_Shoe": {
+      "base": "#503936",
+      "ramp": [
+        "#3E2C2A",
+        "#47322F",
+        "#503936",
+        "#563F3E",
+        "#886B66"
+      ],
+      "rampShift": -0.1,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_BaggageHelper_Cap": {
+      "base": "#681E2D",
+      "ramp": [
+        "#511621",
+        "#5E1A28",
+        "#681E2D",
+        "#752434",
+        "#873142"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2
+      }
+    },
+    "M_BaggageHelper_CapDark": {
+      "base": "#5E1A28",
+      "ramp": [
+        "#511621",
+        "#5E1A28",
+        "#681E2D",
+        "#752434",
+        "#873142"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_BaggageHelper_Gold": {
+      "base": "#DA993A",
+      "ramp": [
+        "#9D662F",
+        "#AD7031",
+        "#DA993A",
+        "#FBBA39",
+        "#FCCF53"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.35,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_BaggageHelper_Ink": {
+      "base": "#511621",
+      "ramp": [
+        "#511621",
+        "#5E1A28",
+        "#681E2D",
+        "#752434",
+        "#873142"
+      ],
+      "rampShift": -0.45,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_BaggageHelper_Sweat": {
+      "base": "#9ACCEC",
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "rampShift": 0.2,
+      "smoothness": 0.4,
+      "opts": {
+        "spec": 0.15,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    }
+  }
+}

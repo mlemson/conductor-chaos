@@ -1,0 +1,125 @@
+fileFormatVersion: 2
+guid: b0e4b540f098b8318e7636b217516e59
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Skin
+    second: {fileID: 2100000, guid: 7e1e99955daddebee54371b748549a3f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_EyeWhite
+    second: {fileID: 2100000, guid: 467ea9eab07282e6a4ef30d83fb651a2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Pupil
+    second: {fileID: 2100000, guid: 7f94ef2258145e41e8af272c7d50dbae, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Mouth
+    second: {fileID: 2100000, guid: eb5c3e0fc04a47717363da6824f39229, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Tongue
+    second: {fileID: 2100000, guid: 9a80737bf4540a3474995b8890c0569b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Jacket
+    second: {fileID: 2100000, guid: ff813cdc71bcc0deec56c31bb7228a58, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_JacketDark
+    second: {fileID: 2100000, guid: 83f737a8b82267dfd238573cbd665da0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Trousers
+    second: {fileID: 2100000, guid: 9c4368185d67efae4e8ee48a17ef6a2e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Gold
+    second: {fileID: 2100000, guid: 6018f42e00dc1c5afee5ac487e97a438, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_GoldLow
+    second: {fileID: 2100000, guid: 9387e0c34047c092c611786f880ac69f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Vest
+    second: {fileID: 2100000, guid: 7dc63acb2cb3785aee336e7b137084f0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Tie
+    second: {fileID: 2100000, guid: 5e7797ea86cfb4f4647e669975eae754, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Shirt
+    second: {fileID: 2100000, guid: 4052acdb2f26532477b88045e8e22c1a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Cap
+    second: {fileID: 2100000, guid: 4b8284ce62fbba80823b10f5d432e692, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Visor
+    second: {fileID: 2100000, guid: 8798424b9ac13cd6c6a0a5dacea41fe9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Hair
+    second: {fileID: 2100000, guid: 2b9f63ab9a27ef3c89f3c3313a58d163, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Shoe
+    second: {fileID: 2100000, guid: 621bf16531a950ac089484099ffb22df, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_Ink
+    second: {fileID: 2100000, guid: b891a7d37e460b230e5caf03f96467d8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_StationMaster_WatchFace
+    second: {fileID: 2100000, guid: f1da764ab17d281f60ff209f0a51e959, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

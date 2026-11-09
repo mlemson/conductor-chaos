@@ -2,9 +2,9 @@
   "model": "Tourist",
   "height_m": 1.18,
   "stats": {
-    "parts": 28,
-    "tris": 63761,
-    "verts": 32221,
+    "parts": 30,
+    "tris": 65765,
+    "verts": 33291,
     "materials": 36
   },
   "materials": {

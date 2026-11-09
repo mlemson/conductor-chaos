@@ -62,6 +62,18 @@ P = {
     ("leather", "Leer: bretels, gordel, tasjes", ["#693B2E", "#774332", "#804936", "#8F5039", "#B46D4B"], (380, 520, 770, 730), "Characters/rail-mechanic-concept.png"),
     ("boot_brown", "Werkhandschoen & laarzen", ["#3E2C2A", "#47322F", "#503936", "#563F3E", "#886B66"], (250, 560, 360, 680), "Characters/rail-mechanic-concept.png"),
   ],
+  # Stationschef, zakenreiziger, kind, bagagedrager (issue #204): gemeten met measure_character_ramps.py.
+  # Hergebruikt: uniform_navy (blazer, overall, korte broek), gold_trim, parchment, accent_yellow, leather, boot_brown.
+  "Stationspersoneel & reizigers": [
+    ("cap_maroon", "Pet & gilet (bordeaux)", ["#511621", "#5E1A28", "#681E2D", "#752434", "#873142"], (320, 30, 540, 110), "Characters/station-master-concept.png"),
+    ("master_navy", "Jas stationschef (paars-marine)", ["#221B2C", "#2F253C", "#372B47", "#3C2D4C", "#574E6C"], (270, 360, 340, 470), "Characters/station-master-concept.png"),
+    ("mustache_cream", "Snor & zijhaar", ["#DABDAE", "#E1C5B5", "#E4C9B8", "#E7CCBD", "#EBD1C1"], (380, 230, 460, 270), "Characters/station-master-concept.png"),
+    ("hair_brown", "Bruin haar", ["#392828", "#583430", "#603935", "#643C39", "#714644"], (320, 110, 560, 190), "Characters/business-traveler-concept.png"),
+    ("hoodie_red", "Hoodie & das (rood)", ["#872B2B", "#AF3A38", "#B83F3C", "#BE443F", "#D76552"], (380, 460, 520, 560), "Characters/child-passenger-concept.png"),
+    ("luggage_blue", "Koffer (blauw)", ["#434667", "#4A5377", "#4E5980", "#4F5C83", "#6D7AA8"], (780, 385, 1000, 440), "Characters/baggage-helper-concept.png"),
+    ("luggage_red", "Koffer (rood)", ["#84353E", "#983E49", "#9F404B", "#A3434D", "#E1696E"], (790, 300, 1000, 350), "Characters/baggage-helper-concept.png"),
+    ("dino_green", "Dinoknuffel", ["#6F8C35", "#7A9B3C", "#82A740", "#92BC4B", "#A3D25B"], (950, 1150, 1090, 1290), "Characters/child-passenger-concept.png"),
+  ],
   # Stationnetje + perronkit: gemeten met Docs/References/tools/measure_station_ramps.py.
   # Pleisterwerk = parchment, geel = accent_yellow, overweg = train_red, lampgloed = headlight.
   "Station & perron": [

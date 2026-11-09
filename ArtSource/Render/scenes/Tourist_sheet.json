@@ -156,6 +156,9 @@
       "Mouth_Smile": {
        "visible": false
       },
+      "Mouth_Grin": {
+       "visible": false
+      },
       "Pupil_L": {
        "addPos": [
         0.0,
@@ -219,6 +222,9 @@
        "visible": false
       },
       "Mouth_Smile": {
+       "visible": false
+      },
+      "Mouth_Grin": {
        "visible": false
       },
       "Pupil_L": {
@@ -286,6 +292,9 @@
       "Mouth_Smile": {
        "visible": false
       },
+      "Mouth_Grin": {
+       "visible": false
+      },
       "Eye_L": {
        "visible": false
       },
@@ -343,6 +352,9 @@
        "visible": false
       },
       "Mouth_Smile": {
+       "visible": false
+      },
+      "Mouth_Grin": {
        "visible": false
       },
       "Pupil_L": {

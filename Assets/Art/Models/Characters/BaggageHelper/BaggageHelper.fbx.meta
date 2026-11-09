@@ -1,0 +1,105 @@
+fileFormatVersion: 2
+guid: b6bb6c34feda324d70105fd570d5015f
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_Skin
+    second: {fileID: 2100000, guid: b82e3bc45a6cbd4281ddbb33ef3d345b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_EyeWhite
+    second: {fileID: 2100000, guid: 3502b95ed0f882da444555588b8d9830, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_Pupil
+    second: {fileID: 2100000, guid: f2022bb4a1e40a37403c49cd0dd43dae, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_Mouth
+    second: {fileID: 2100000, guid: 4aa419e876202a0171770ffde4872b4b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_Tongue
+    second: {fileID: 2100000, guid: 3d54f4bee5d2a920426d3224f8f3215d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_Overall
+    second: {fileID: 2100000, guid: abb66a53628d9169735c969cb7dc4949, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_OverallDark
+    second: {fileID: 2100000, guid: 9937e924b5ed1446d8dd85c12a3666bf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_Shirt
+    second: {fileID: 2100000, guid: 3178bea8d3f5c8383ad3ebe1edea0f07, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_Glove
+    second: {fileID: 2100000, guid: 4e4b6cafd98adb46e76155ac42fa6384, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_Shoe
+    second: {fileID: 2100000, guid: a5abd3186ddc1990a3ddc1325d14508c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_Cap
+    second: {fileID: 2100000, guid: 74474da491598c31018f3fbc0999ca2f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_CapDark
+    second: {fileID: 2100000, guid: 88b9ffb28d9472a77b4c7a3c65031c8d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_Gold
+    second: {fileID: 2100000, guid: 54aaac069b94a7c8337ddbf6ee581aff, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_Ink
+    second: {fileID: 2100000, guid: c44beb928ddc1cd1282d8d111958db35, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageHelper_Sweat
+    second: {fileID: 2100000, guid: 9c5794fb702e1a5d41fefe74df6cdc84, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

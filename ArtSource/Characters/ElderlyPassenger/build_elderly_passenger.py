@@ -159,14 +159,14 @@ def build_bag():
         pts = [(-0.070, -0.076, z), (-0.052, -0.030, z * 0.7), (0.0, 0.004, z * 0.3), (0.052, -0.030, z * 0.7),
                (0.070, -0.076, z)]
         handles.append(ck.tube(pts, 0.0095, P + "BagPrint", n=20))
-    zf = 0.042
+    zf = 0.0435                                    # tasvoorkant op 0.0425: icoon-achterkant erin, voorkant 6 mm erboven
     sy, sxy = -0.020, 1.25
-    icon = [mk.rounded_box(0.112, 0.056, 0.010, 0.012, 2, mat=P + "BagPrint").transform(t=(0, -0.152, 0)),
-            mk.rounded_box(0.122, 0.014, 0.010, 0.006, 2, mat=P + "BagPrint").transform(t=(0, -0.118, 0))]
+    icon = [mk.rounded_box(0.112, 0.056, 0.010, 0.0045, 2, mat=P + "BagPrint").transform(t=(0, -0.152, 0)),
+            mk.rounded_box(0.122, 0.014, 0.012, 0.0045, 2, mat=P + "BagPrint").transform(t=(0, -0.118, 0.001))]
     for x in (-0.032, 0.0, 0.032):
-        icon.append(mk.rounded_box(0.020, 0.018, 0.006, 0.004, 1, mat=P + "Bag").transform(t=(x, -0.145, 0.005)))
+        icon.append(mk.ellipsoid(0.0105, 0.0095, 0.0032, 14, 6, mat=P + "Bag", n=3.0).transform(t=(x, -0.145, 0.005)))
     for x in (-0.030, 0.030):
-        icon.append(mk.cylinder(0.012, 0.010, 14, 0.002, mat=P + "BagPrint", axis="z").transform(t=(x, -0.185, 0)))
+        icon.append(mk.ellipsoid(0.012, 0.012, 0.0075, 14, 6, mat=P + "BagPrint").transform(t=(x, -0.185, 0.0)))
     icon = mk.merge(*icon).transform(t=(0, 0.152, 0)).transform(s=(sxy, sxy, 1.0), t=(0, -0.152 * sxy + sy, zf))
     return mk.merge(body, *handles, icon)
 

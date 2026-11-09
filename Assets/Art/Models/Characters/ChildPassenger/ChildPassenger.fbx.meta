@@ -1,0 +1,175 @@
+fileFormatVersion: 2
+guid: 227ba7336d2899f2d2a6f3ec61e9b885
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Skin
+    second: {fileID: 2100000, guid: f654896013a74bac7fa5e3fc05f3aa5e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_EyeWhite
+    second: {fileID: 2100000, guid: 7f64fe1ebfb07634648d06fde7661e70, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Pupil
+    second: {fileID: 2100000, guid: 4d2c5a81485e4b455116ab3e289354c4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Mouth
+    second: {fileID: 2100000, guid: 7f4d16202976c8ed370d9a4e8b74737b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Tongue
+    second: {fileID: 2100000, guid: 786f54210d624ec0227f4632cfedfa3c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Hoodie
+    second: {fileID: 2100000, guid: b30dbc3a22dc49d3366e2bfd20a5cd3b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_HoodieLight
+    second: {fileID: 2100000, guid: d1b8e6033b705500cae8207eb01eb6d3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_HoodieDark
+    second: {fileID: 2100000, guid: 85c12978de9e24174977afb26bd48f5c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Hood
+    second: {fileID: 2100000, guid: cf85d1efeca2902a370369b66afc42c9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_String
+    second: {fileID: 2100000, guid: 06a165caa29b9240de0a0afec553100a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Shorts
+    second: {fileID: 2100000, guid: 6318d2c2ba220383715782b470e34d2f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Sock
+    second: {fileID: 2100000, guid: ec2d9bc5798ae36e4c6c54e2e177ddbc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Shoe
+    second: {fileID: 2100000, guid: 282de20f753a2c9d544b2dc4d91d845c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Cap
+    second: {fileID: 2100000, guid: 1087e74fb5b8247a563390dbbb06c16b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_CapCream
+    second: {fileID: 2100000, guid: 225b3a11a70b4642db5f95dac452afdb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_CapRed
+    second: {fileID: 2100000, guid: 7f089abc37cba03d133b685cc9af4c17, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Hole
+    second: {fileID: 2100000, guid: f951323a2f5a7901c4b1384a92c48e0b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Hair
+    second: {fileID: 2100000, guid: b836dffd979019dcf9a437c5d147dc9c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Bandaid
+    second: {fileID: 2100000, guid: d5220a9b83f66a7e5d4fb8108ccc5580, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_BandaidDot
+    second: {fileID: 2100000, guid: c917ad38ec906297ea1b10b68e0aeeba, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Backpack
+    second: {fileID: 2100000, guid: 30338cc83cdbb4a59e0ef1cdec7a9cee, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_BackpackDark
+    second: {fileID: 2100000, guid: 7e33586e046c0e674bb530f7267b1649, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Star
+    second: {fileID: 2100000, guid: 0b7fe0905b2848726d47bfaad0bf0da3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Dino
+    second: {fileID: 2100000, guid: 8ada537cd8d45bd3d5c6f156c8aec9ee, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_DinoLight
+    second: {fileID: 2100000, guid: 9f6a13977d7ed0eccd38b2fc9fc69cb4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_DinoBelly
+    second: {fileID: 2100000, guid: 7bf9ddf6a176c84b77b743da9e2b1408, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_DinoEye
+    second: {fileID: 2100000, guid: 920f97ef95e355325c2eea35270340e4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_Paper
+    second: {fileID: 2100000, guid: 934bcfca48c68f22e2b0e3cecbc16889, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassenger_PaperFold
+    second: {fileID: 2100000, guid: 6b0c7883575ac6c47cf2f2178c45564b, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

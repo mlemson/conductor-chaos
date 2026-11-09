@@ -122,11 +122,12 @@ def build_buttons():
     outline=[]
     for cy,start in ((0.420,0.0),(0.336,math.pi)):
         for theta in np.linspace(start,start+math.pi,13):
-            outline.append((0.011*math.cos(theta),cy+0.011*math.sin(theta),0.0))
-    v=np.array([(0,0.378,0)]+outline)
+            outline.append((0.011*math.cos(theta),cy+0.011*math.sin(theta),-0.0015))
+    # lage rug: midden 5 mm boven het lijf, rand in het lijf -> geen evenwijdig vlak vlak boven de stof (z-fight)
+    v=np.array([(0,0.378,0.0055)]+outline)
     f=[(0,i+1,(i+1)%len(outline)+1) for i in range(len(outline))]
     placket=mk.Mesh(v,f,["M_Conductor_UniformDark"]*len(f))
-    parts=[conform(placket,0.003)]
+    parts=[conform(placket,0.0)]
     for y,r,material in ((0.425,0.022,"M_Conductor_Gold"),(0.350,0.014,"M_Conductor_GoldLow")):
         z, nrm = body_surface(0.0, y)
         b = mk.ellipsoid(r, r, r*0.5, 20, 10, mat=material)
@@ -270,6 +271,10 @@ def build_scene(arm_angle_deg=50.0):
         eye_pos = np.array([x, EYE_Y, z - EYE_R * 0.20]) - hip
         sc.add(mk.Part("Eye_" + nm, build_eye(), tuple(eye_pos), "Body", Rf))
         sc.add(mk.Part("Pupil_" + nm, build_pupil(side), (0, 0, 0), "Eye_" + nm))
+    # wisselbare oogstanden (dicht, ooglid, knipperen), net als de andere personages; standaard verborgen
+    sys.path.insert(0, os.path.dirname(HERE))
+    import character_kit as ck
+    ck.add_eye_states(sc, "M_Conductor_", lids=False)
 
     zm, nm_ = body_surface(0.0, MOUTH_Y)
     for kind in ("Neutral", "Surprised", "Happy"):

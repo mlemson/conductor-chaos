@@ -1,0 +1,387 @@
+[
+ {
+  "name": "BaggageHelper_front",
+  "params": {
+   "w": 560,
+   "h": 860,
+   "yaw": 0,
+   "pitch": 3,
+   "dist": 6,
+   "ortho": 0.74,
+   "target": "0,0.62,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/BaggageHelper.glb",
+     "mats": "../Exports/BaggageHelper.materials.json"
+    }
+   ]
+  }
+ },
+ {
+  "name": "BaggageHelper_34",
+  "params": {
+   "w": 560,
+   "h": 860,
+   "yaw": -38,
+   "pitch": 3,
+   "dist": 6,
+   "ortho": 0.74,
+   "target": "0,0.62,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/BaggageHelper.glb",
+     "mats": "../Exports/BaggageHelper.materials.json"
+    }
+   ]
+  }
+ },
+ {
+  "name": "BaggageHelper_side",
+  "params": {
+   "w": 560,
+   "h": 860,
+   "yaw": -90,
+   "pitch": 3,
+   "dist": 6,
+   "ortho": 0.74,
+   "target": "0,0.62,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/BaggageHelper.glb",
+     "mats": "../Exports/BaggageHelper.materials.json"
+    }
+   ]
+  }
+ },
+ {
+  "name": "BaggageHelper_back",
+  "params": {
+   "w": 560,
+   "h": 860,
+   "yaw": 180,
+   "pitch": 3,
+   "dist": 6,
+   "ortho": 0.74,
+   "target": "0,0.62,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/BaggageHelper.glb",
+     "mats": "../Exports/BaggageHelper.materials.json"
+    }
+   ]
+  }
+ },
+ {
+  "name": "BaggageHelper_side_r",
+  "params": {
+   "w": 560,
+   "h": 860,
+   "yaw": 90,
+   "pitch": 3,
+   "dist": 6,
+   "ortho": 0.74,
+   "target": "0,0.62,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/BaggageHelper.glb",
+     "mats": "../Exports/BaggageHelper.materials.json"
+    }
+   ]
+  }
+ },
+ {
+  "name": "BaggageHelper_expr_helpful",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -14,
+   "pitch": 2,
+   "dist": 2.5,
+   "fov": 21,
+   "target": "0,0.80,0",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/BaggageHelper.glb",
+     "mats": "../Exports/BaggageHelper.materials.json",
+     "pose": {},
+     "aim": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "BaggageHelper_expr_focused",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -14,
+   "pitch": 2,
+   "dist": 2.5,
+   "fov": 21,
+   "target": "0,0.80,0",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/BaggageHelper.glb",
+     "mats": "../Exports/BaggageHelper.materials.json",
+     "pose": {
+      "Lid_L": {
+       "visible": true
+      },
+      "Lid_R": {
+       "visible": true
+      },
+      "Mouth_Neutral": {
+       "visible": false
+      },
+      "Mouth_Surprised": {
+       "visible": false
+      },
+      "Mouth_Happy": {
+       "visible": false
+      },
+      "Mouth_Flat": {
+       "visible": true
+      },
+      "Mouth_Hmm": {
+       "visible": false
+      },
+      "Mouth_Smile": {
+       "visible": false
+      },
+      "Mouth_Grin": {
+       "visible": false
+      },
+      "Pupil_L": {
+       "addPos": [
+        0.0,
+        -0.006,
+        0
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        0.0,
+        -0.006,
+        0
+       ]
+      }
+     },
+     "aim": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "BaggageHelper_expr_cheerful",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -14,
+   "pitch": 2,
+   "dist": 2.5,
+   "fov": 21,
+   "target": "0,0.80,0",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/BaggageHelper.glb",
+     "mats": "../Exports/BaggageHelper.materials.json",
+     "pose": {
+      "Mouth_Neutral": {
+       "visible": false
+      },
+      "Mouth_Surprised": {
+       "visible": false
+      },
+      "Mouth_Happy": {
+       "visible": true
+      },
+      "Mouth_Flat": {
+       "visible": false
+      },
+      "Mouth_Hmm": {
+       "visible": false
+      },
+      "Mouth_Smile": {
+       "visible": false
+      },
+      "Mouth_Grin": {
+       "visible": false
+      },
+      "Eye_L": {
+       "visible": false
+      },
+      "Eye_R": {
+       "visible": false
+      },
+      "EyeClosed_L": {
+       "visible": true
+      },
+      "EyeClosed_R": {
+       "visible": true
+      },
+      "Lid_L": {
+       "visible": false
+      },
+      "Lid_R": {
+       "visible": false
+      }
+     },
+     "aim": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "BaggageHelper_expr_surprised",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -14,
+   "pitch": 2,
+   "dist": 2.5,
+   "fov": 21,
+   "target": "0,0.80,0",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/BaggageHelper.glb",
+     "mats": "../Exports/BaggageHelper.materials.json",
+     "pose": {
+      "Prop_Sweat": {
+       "visible": true
+      },
+      "Mouth_Neutral": {
+       "visible": false
+      },
+      "Mouth_Surprised": {
+       "visible": true
+      },
+      "Mouth_Happy": {
+       "visible": false
+      },
+      "Mouth_Flat": {
+       "visible": false
+      },
+      "Mouth_Hmm": {
+       "visible": false
+      },
+      "Mouth_Smile": {
+       "visible": false
+      },
+      "Mouth_Grin": {
+       "visible": false
+      },
+      "Pupil_L": {
+       "addPos": [
+        0.0,
+        0.02,
+        0
+       ],
+       "scale": [
+        0.8,
+        0.8,
+        1
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        0.0,
+        0.02,
+        0
+       ],
+       "scale": [
+        0.8,
+        0.8,
+        1
+       ]
+      }
+     },
+     "aim": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "BaggageHelper_hero",
+  "params": {
+   "w": 1300,
+   "h": 1100,
+   "yaw": -30,
+   "pitch": 6,
+   "dist": 5.6,
+   "fov": 22,
+   "target": "0.55,0.52,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/BaggageHelper.glb",
+     "mats": "../Exports/BaggageHelper.materials.json",
+     "pose": {
+      "Pupil_L": {
+       "addPos": [
+        0.01,
+        0.016,
+        0
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        0.01,
+        0.016,
+        0
+       ]
+      }
+     }
+    },
+    {
+     "url": "../Exports/BaggageTrolley.glb",
+     "mats": "../Exports/BaggageTrolley.materials.json",
+     "pos": [
+      1.06,
+      0,
+      -0.01
+     ],
+     "rotY": 0
+    }
+   ]
+  }
+ },
+ {
+  "name": "BaggageTrolley_34",
+  "params": {
+   "w": 760,
+   "h": 860,
+   "yaw": -38,
+   "pitch": 3,
+   "dist": 6,
+   "ortho": 0.78,
+   "target": "0,0.50,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/BaggageTrolley.glb",
+     "mats": "../Exports/BaggageTrolley.materials.json"
+    }
+   ]
+  }
+ }
+]

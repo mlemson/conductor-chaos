@@ -1,0 +1,80 @@
+fileFormatVersion: 2
+guid: 84aad5fe470a26856e5f23e2f3033911
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageTrolley_Frame
+    second: {fileID: 2100000, guid: fbb328373271b2e87c213fe87b21f85e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageTrolley_FrameDark
+    second: {fileID: 2100000, guid: 9e35faffbe393ccee15f1c6195cc2bfa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageTrolley_Wheel
+    second: {fileID: 2100000, guid: 61dd2189648af1b6e40b7ef9040ceb83, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageTrolley_Hub
+    second: {fileID: 2100000, guid: d5b35db6d8d31aca967b6bdda7d998bc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageTrolley_Grip
+    second: {fileID: 2100000, guid: e8fe7777339d7dc1047227ba11947287, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageTrolley_Blue
+    second: {fileID: 2100000, guid: 4801383b3c4d9b9219f237366734bc64, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageTrolley_Red
+    second: {fileID: 2100000, guid: e2f0105a835236a8cb90e1eb5929c66b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageTrolley_Brown
+    second: {fileID: 2100000, guid: 2c5c8314b586952aa2576821b7aa6ec3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageTrolley_Trim
+    second: {fileID: 2100000, guid: a1fc68cd0e11f527d915b66d5d3f6ff2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BaggageTrolley_Buckle
+    second: {fileID: 2100000, guid: a9053b322cbe8e1114b5b1715b4e3f29, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

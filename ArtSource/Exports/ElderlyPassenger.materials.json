@@ -2,9 +2,9 @@
   "model": "ElderlyPassenger",
   "height_m": 1.26,
   "stats": {
-    "parts": 28,
-    "tris": 55076,
-    "verts": 27720,
+    "parts": 30,
+    "tris": 56900,
+    "verts": 28644,
     "materials": 19
   },
   "materials": {
