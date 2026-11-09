@@ -70,6 +70,13 @@ MATERIALS = {
     "M_Stn_Leaf": (R["grass"], 0.05, -0.05, {"cells": 0.6, "cellSize": 0.4, "rim": 0.25}),
     "M_Stn_Soil": (R["cab_interior"], 0.05, -0.10, {"cells": 0.5}),
     "M_Stn_Collider": (R["ui_bg"], 0.0, 0.0, {"cells": 0.0}),
+    # hoofdstation met briefingruimte (issue #207): pannendak, routebord en kluisjes, gemeten in het concept
+    "M_Stn_RoofRed": (R["roof_terracotta"], 0.10, 0.00, {"cells": 0.7, "cellSize": 0.9, "rim": 0.25}),
+    "M_Stn_RoofRedDark": (R["roof_terracotta"], 0.10, -0.30, {"cells": 0.6, "cellSize": 0.9}),
+    "M_Stn_Chalk": (R["chalk_green"], 0.05, 0.00, {"cells": 0.5, "cellSize": 0.8, "grime": 0.2}),
+    "M_Stn_ChalkDark": (R["chalk_green"], 0.05, -0.35, {"cells": 0.3}),
+    "M_Stn_Locker": (R["locker_blue"], 0.25, 0.05, PAINT),
+    "M_Stn_LockerDark": (R["locker_blue"], 0.25, -0.35, PAINT),
 }
 
 
@@ -334,8 +341,8 @@ def smooth_path(points, n=40):
     return np.stack([np.interp(t, d, P[:, k]) for k in range(3)], 1)
 
 
-def tube(points, radius, mat, n=None, seg=10, smooth=False, closed=False, caps=True):
-    """Ronde buis langs een pad (parallel transport), met bolle eindkappen."""
+def tube(points, radius, mat, n=None, seg=10, smooth=False, closed=False, caps=True, phase=0.0):
+    """Ronde buis langs een pad (parallel transport), met bolle eindkappen. phase draait de doorsnede."""
     P = np.asarray(points, float)
     if smooth:
         P = smooth_path(P, n or max(12, 6 * len(P)))
@@ -354,7 +361,7 @@ def tube(points, radius, mat, n=None, seg=10, smooth=False, closed=False, caps=T
         B.append(b / np.linalg.norm(b))
     B = np.array(B)
     U = np.cross(T, B)
-    sec = [(math.cos(2 * math.pi * k / seg), math.sin(2 * math.pi * k / seg)) for k in range(seg)]
+    sec = [(math.cos(2 * math.pi * k / seg + phase), math.sin(2 * math.pi * k / seg + phase)) for k in range(seg)]
     n_, k_ = len(P), seg
     V = [P[i] + (B[i] * u + U[i] * v) * radius for i in range(n_) for (u, v) in sec]
     F = []
@@ -363,8 +370,11 @@ def tube(points, radius, mat, n=None, seg=10, smooth=False, closed=False, caps=T
         for j in range(k_):
             j2 = (j + 1) % k_
             F.append((i * k_ + j, i * k_ + j2, i2 * k_ + j2, i2 * k_ + j))
-    if caps and not closed:
-        for end, sgn in ((0, -1), (n_ - 1, 1)):
+    cap_ends = (caps, caps) if isinstance(caps, bool) else tuple(caps)     # (begin, eind)
+    if not closed:
+        for end, sgn, on in ((0, -1, cap_ends[0]), (n_ - 1, 1, cap_ends[1])):
+            if not on:
+                continue
             prev = list(range(end * k_, end * k_ + k_))
             for q in range(1, 3):
                 a = math.pi / 2 * q / 3
@@ -402,7 +412,80 @@ GLYPHS = {
     "I": (0.0, [([(0.0, 0.0), (0.0, 1.0)], False)]),
     "O": (0.78, [(_arc(0.39, 0.5, 0.39, 0.5, 0, 360, 25)[:-1], True)]),
     "N": (0.66, [([(0.0, 0.0), (0.0, 1.0), (0.66, 0.0), (0.66, 1.0)], False)]),
+    # hoofdstation (issue #207): TICKETS e.a.
+    "M": (0.84, [([(0.0, 0.0), (0.0, 1.0), (0.42, 0.40), (0.84, 1.0), (0.84, 0.0)], False)]),
+    "E": (0.54, [([(0.54, 1.0), (0.0, 1.0), (0.0, 0.0), (0.54, 0.0)], False), ([(0.0, 0.5), (0.44, 0.5)], False)]),
+    "H": (0.64, [([(0.0, 0.0), (0.0, 1.0)], False), ([(0.64, 0.0), (0.64, 1.0)], False),
+                 ([(0.0, 0.5), (0.64, 0.5)], False)]),
+    "U": (0.64, [([(0.0, 1.0)] + _arc(0.32, 0.32, 0.32, 0.32, 180, 360, 11) + [(0.64, 1.0)], False)]),
+    "B": (0.60, [([(0.0, 0.0), (0.0, 1.0)], False),
+                 ([(0.0, 1.0), (0.30, 1.0)] + _arc(0.30, 0.765, 0.235, 0.235, 90, -90, 9), False),   # eindigt op de middenstreep
+                 ([(0.0, 0.53), (0.32, 0.53)] + _arc(0.32, 0.265, 0.265, 0.265, 90, -90, 9) + [(0.0, 0.0)], False)]),
+    "R": (0.62, [([(0.0, 0.0), (0.0, 1.0)], False),
+                 ([(0.0, 1.0), (0.32, 1.0)] + _arc(0.32, 0.75, 0.25, 0.25, 90, -90, 9) + [(0.0, 0.50)], False),
+                 ([(0.26, 0.50), (0.62, 0.0)], False)]),
+    "G": (0.74, [(_arc(0.39, 0.5, 0.39, 0.5, 50, 335, 15) + [(0.74, 0.44), (0.44, 0.44)], False)]),
+    "C": (0.70, [(_arc(0.39, 0.5, 0.39, 0.5, 50, 310, 15), False)]),
+    "K": (0.60, [([(0.0, 0.0), (0.0, 1.0)], False), ([(0.60, 1.0), (0.04, 0.40)], False),
+                 ([(0.22, 0.60), (0.62, 0.0)], False)]),
+    # aanpasbare stationsnamen (issue #209): rest van het alfabet, cijfers en leestekens
+    "D": (0.66, [([(0.0, 0.0), (0.0, 1.0), (0.24, 1.0)] + _arc(0.24, 0.5, 0.42, 0.5, 90, -90, 13)[1:-1] + [(0.24, 0.0)], True)]),
+    "F": (0.52, [([(0.52, 1.0), (0.0, 1.0), (0.0, 0.0)], False), ([(0.0, 0.52), (0.42, 0.52)], False)]),
+    "J": (0.52, [([(0.52, 1.0), (0.52, 0.30)] + _arc(0.26, 0.30, 0.26, 0.30, 0, -180, 11)[1:], False)]),
+    "L": (0.50, [([(0.0, 1.0), (0.0, 0.0), (0.50, 0.0)], False)]),
+    "P": (0.58, [([(0.0, 0.0), (0.0, 1.0), (0.30, 1.0)] + _arc(0.30, 0.74, 0.27, 0.26, 90, -90, 9) + [(0.04, 0.48)], False)]),
+    "Q": (0.78, [(_arc(0.39, 0.5, 0.39, 0.5, 0, 360, 25)[:-1], True), ([(0.50, 0.22), (0.80, -0.04)], False)]),
+    "V": (0.70, [([(0.0, 1.0), (0.35, 0.0), (0.70, 1.0)], False)]),
+    "W": (0.98, [([(0.0, 1.0), (0.22, 0.0), (0.49, 0.64), (0.76, 0.0), (0.98, 1.0)], False)]),
+    "X": (0.64, [([(0.0, 1.0), (0.64, 0.0)], False), ([(0.0, 0.0), (0.64, 1.0)], False)]),
+    "Y": (0.68, [([(0.0, 1.0), (0.34, 0.47)], False), ([(0.68, 1.0), (0.34, 0.50), (0.34, 0.0)], False)]),
+    "Z": (0.62, [([(0.0, 1.0), (0.62, 1.0), (0.0, 0.0), (0.62, 0.0)], False)]),
+    "0": (0.62, [(_arc(0.31, 0.5, 0.31, 0.5, 0, 360, 25)[:-1], True)]),
+    "1": (0.34, [([(0.0, 0.78), (0.30, 1.0), (0.30, 0.0)], False)]),
+    "2": (0.60, [(_arc(0.30, 0.70, 0.28, 0.28, 160, -40, 11) + [(0.0, 0.0), (0.60, 0.0)], False)]),
+    "3": (0.58, [(_arc(0.28, 0.76, 0.25, 0.24, 155, -90, 11), False),
+                 (_arc(0.28, 0.27, 0.29, 0.27, 90, -155, 11), False)]),
+    "4": (0.62, [([(0.46, 0.0), (0.46, 1.0), (0.0, 0.30), (0.62, 0.30)], False)]),
+    "5": (0.58, [([(0.56, 1.0), (0.08, 1.0), (0.06, 0.58)] + _arc(0.28, 0.32, 0.30, 0.32, 125, -150, 11), False)]),
+    "6": (0.60, [(_arc(0.40, 0.42, 0.38, 0.58, 80, 180, 8) + _arc(0.30, 0.30, 0.28, 0.30, 180, 520, 15)[1:], False)]),
+    "7": (0.58, [([(0.0, 1.0), (0.58, 1.0), (0.16, 0.0)], False)]),
+    "8": (0.60, [(_arc(0.30, 0.765, 0.235, 0.235, -90, 270, 21)[:-1], True),
+                 (_arc(0.30, 0.27, 0.29, 0.27, 90, 450, 23)[:-1], True)]),
+    "9": (0.60, [([(0.60 - x, 1.0 - y) for x, y in _arc(0.40, 0.42, 0.38, 0.58, 80, 180, 8) +
+                   _arc(0.30, 0.30, 0.28, 0.30, 180, 520, 15)[1:]], False)]),
+    "-": (0.40, [([(0.0, 0.45), (0.40, 0.45)], False)]),
+    "'": (0.0, [([(0.0, 1.0), (0.0, 0.74)], False)]),
+    ".": (0.0, [([(0.0, 0.0), (0.0, 0.02)], False)]),
 }
+
+
+def _split_sharp(P, closed, max_turn=40.0):
+    """Knipt een streek op scherpe hoeken (> max_turn graden) in stukken, zodat de buis daar een ronde kop krijgt
+    in plaats van een spitse verstekhoek (M, W, D, P ...). Gesloten lussen zonder scherpe hoek blijven heel."""
+    n = len(P)
+
+    def sharp(i):
+        a, b, c = np.array(P[(i - 1) % n]), np.array(P[i]), np.array(P[(i + 1) % n])
+        u, v = b - a, c - b
+        lu, lv = np.linalg.norm(u), np.linalg.norm(v)
+        if lu < 1e-6 or lv < 1e-6:
+            return False
+        return math.degrees(math.acos(np.clip(u @ v / (lu * lv), -1, 1))) > max_turn
+    if closed:
+        corners = [i for i in range(n) if sharp(i)]
+        if not corners:
+            return [(P, True)]
+        k = corners[0]
+        P = P[k:] + P[:k] + [P[k]]                         # open lus die op een hoek begint en eindigt
+        n = len(P)
+    pieces, cur = [], [P[0]]
+    for i in range(1, n):
+        cur.append(P[i])
+        if i < n - 1 and sharp(i):
+            pieces.append(cur)
+            cur = [P[i]]
+    pieces.append(cur)
+    return [(q, False) for q in pieces]
 
 
 def text_mesh(text, height, depth, mat, stroke=0.25, spacing=0.30):
@@ -418,9 +501,20 @@ def text_mesh(text, height, depth, mat, stroke=0.25, spacing=0.30):
             P = [(x + px, py, 0.0) for (px, py) in pts]
             if len(P) <= 4 and not closed:          # rechte streken: losse capsules met ronde koppen
                 for a, b in zip(P[:-1], P[1:]):
-                    parts.append(tube([a, b], r, mat, seg=10))
-            else:
-                parts.append(tube(P, r, mat, seg=10, closed=closed))
+                    parts.append(tube([a, b], r, mat, seg=10, phase=math.pi / 10))
+                continue
+            pieces = _split_sharp(P, closed)
+            for k, (Q, cl) in enumerate(pieces):
+                # op een knik heeft alleen het vorige stuk een kop; het volgende begint open in die kop,
+                # zodat er geen twee bolkoppen op elkaar liggen (z-fighting)
+                first = k == 0 and not closed
+                if cl:
+                    parts.append(tube(Q, r, mat, seg=10, closed=True, phase=math.pi / 10))
+                elif len(Q) <= 3:
+                    for i, (a, b) in enumerate(zip(Q[:-1], Q[1:])):
+                        parts.append(tube([a, b], r, mat, seg=10, phase=math.pi / 10, caps=(first and i == 0, True)))
+                else:
+                    parts.append(tube(Q, r, mat, seg=10, phase=math.pi / 10, caps=(first, True)))
         x += w + spacing
     width = x - spacing
     m = mk.merge(*parts)
@@ -443,9 +537,10 @@ def train_icon(size, depth, mat, wheel_mat=None, c=None):
     body = [(x * s, y * s) for x, y in body]
     win = [(x * s, y * s) for x, y in win]
     parts = [slab(rounded_corners(body, 0.025 * s), [win], 0.0, depth, c, mat)]
+    pw = max(0.006, 0.3 * depth)                    # wielen steken iets uit, anders vallen ze samen met de romp
     for (wx, wr) in ((0.17, 0.13), (0.50, 0.12), (0.80, 0.12)):
         parts.append(slab(circle_loop(wx * s, 0.13 * s, wr * s, 16), [circle_loop(wx * s, 0.13 * s, wr * s * 0.35, 10)],
-                          0.0, depth, c, wheel_mat or mat))
+                          -pw, depth + pw, c, wheel_mat or mat))
     m = mk.merge(*parts)
     return m.transform(t=(-0.48 * s, -0.46 * s, 0.0))
 
@@ -515,8 +610,10 @@ def ensure_materials():
     return _GUIDS
 
 
-def export(name, sub, parts, density=600, radius=0.20, smooth=(), manifest=None, extra=None):
-    """parts: [(knoopnaam, mesh, parent of None, pivot, rotatie, zichtbaar)], Col_* = verborgen botsvorm."""
+def export(name, sub, parts, density=600, radius=0.20, smooth=(), manifest=None, extra=None, model_dir=None,
+           readable=False):
+    """parts: [(knoopnaam, mesh, parent of None, pivot, rotatie, zichtbaar)], Col_* = verborgen botsvorm.
+    model_dir: andere Unity-map dan de stationsmodellen (bijv. de bordletters, die geen prefab worden)."""
     guids = ensure_materials()
     sc = mk.Scene(name)
     used = sorted({m for (_, mesh, *_r) in parts if mesh is not None for m in mesh.M})
@@ -529,14 +626,15 @@ def export(name, sub, parts, density=600, radius=0.20, smooth=(), manifest=None,
         sc.parts[-1].gradient = 0.0 if pname.startswith("Col_") else 0.2
     sc.facet_all(skip=smooth)
     sc.bake_shading(density=density, radius=radius, noise_freq=0.9, edge_range=(3.0, 12.0), max_samples=60000)
-    rel_dir = f"{MODEL_DIR}/{sub}" if sub else MODEL_DIR
+    base = model_dir or MODEL_DIR
+    rel_dir = f"{base}/{sub}" if sub else base
     os.makedirs(os.path.join(ROOT, rel_dir), exist_ok=True)
-    unity_assets.folder_meta(ROOT, MODEL_DIR)
+    unity_assets.folder_meta(ROOT, base)
     unity_assets.folder_meta(ROOT, rel_dir)
     fbx_rel = f"{rel_dir}/{name}.fbx"
     sc.write_fbx_ascii(os.path.join(ROOT, fbx_rel))
     sc.write_glb(os.path.join(EXP_DIR, name + ".glb"), include_hidden=False)
-    unity_assets.model_meta(ROOT, fbx_rel, {m: guids[m] for m in sc.materials})
+    unity_assets.model_meta(ROOT, fbx_rel, {m: guids[m] for m in sc.materials}, readable=readable)
     pts = []
     for p in sc.parts:
         if p.mesh is None or not p.visible:

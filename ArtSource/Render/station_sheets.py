@@ -1,10 +1,12 @@
-"""Ontwerpbladen voor het stationnetje en de perronkit (issue #182) -> Docs/Art/.
+"""Ontwerpbladen voor het stationnetje, het hoofdstation en de perronkit (issues #182, #207) -> Docs/Art/.
 
     python ArtSource/Render/station_sheets.py      (na het renderen van Render/scenes/station_sheet.json)
 
 * Station_DesignSheet.png   gebouw van alle kanten, doorkijk zonder dak, deur, concept, kleurramps, kenmerken
 * Station_PlatformKit.png   perronmodules + props als thumbnails, met concept
 * Station_InScene.png       het station bij de trein, met personages
+* StationMain_DesignSheet.png   hoofdstation van buiten, doorkijk, concept, kleurramps, kenmerken
+* StationMain_BriefingRoom.png  de briefingruimte van binnen, plattegrond met gameplay-ankers
 """
 import json
 import os
@@ -29,6 +31,9 @@ NAMES = {
     "Platform_EndCap_Start": "Kopeinde (begin)", "Platform_Corner_End": "Hoek (eind)", "Platform_Corner_Start": "Hoek (begin)",
     "Platform_Ramp_End": "Helling (eind)", "Platform_Ramp_Start": "Helling (begin)", "Platform_Stairs_End": "Trap (eind)",
     "Platform_Stairs_Start": "Trap (begin)",
+    "Prop_Lockers": "Kluisjes", "Prop_RouteBoard": "Routebord", "Prop_NoticeBoard": "Prikbord",
+    "Prop_CoffeeCounter": "Koffiebar", "Prop_CoatStand": "Kapstok", "Prop_TicketBooth": "Kaartjeshuisje",
+    "Prop_Banner": "Banier", "Prop_PendantLamp": "Hanglamp",
 }
 
 
@@ -109,6 +114,87 @@ def building_sheet():
     return path
 
 
+def _panel(sheet, d, name, cap, x0, y0, w, h, interior=False):
+    d.rounded_rectangle([x0, y0, x0 + w, y0 + h], 22, fill=PANEL)
+    if interior:                                   # binnenaanzicht: vullen, met lucht achter deur en ramen
+        im = load(name)
+        bg = sky(im.size)
+        bg.alpha_composite(im)
+        im = fit(bg, w - 40, h - 84)
+    else:
+        im = fit(crop_alpha(load(name)), w - 40, h - 84)
+    sheet.alpha_composite(im, (x0 + (w - im.width) // 2, y0 + 64 + (h - 84 - im.height) // 2))
+    label(d, (x0 + 20, y0 + 14), cap, 24)
+
+
+def main_sheet():
+    W, H = 3200, 2150
+    sheet = Image.new("RGBA", (W, H), BG + (255,))
+    d = ImageDraw.Draw(sheet)
+    label(d, (60, 46), "Hoofdstation · ontwerpblad v1", 58)
+    d.text((64, 156), "Kopstation met klokgevel, twee vleugels met dakkapellen en een perronluifel · de hal is de briefingruimte "
+                      "(9,1 × 8,5 m), vloer op perronhoogte (1,05 m)", font=font(25, False), fill=SUB)
+    _panel(sheet, d, "stn_main_front", "Voorkant (naar het spoor)", 60, 210, 1900, 1100)
+    _panel(sheet, d, "stn_main_entrance", "Ingang: klok, bord, dubbele deur", 2000, 210, 1140, 540)
+    _panel(sheet, d, "stn_main_back", "Achterkant", 2000, 770, 1140, 540)
+    by = 1350
+    _panel(sheet, d, "stn_main_canopy", "Perronluifel (links)", 60, by, 860, 750)
+    concept_box(sheet, d, os.path.join(REF, "main-station-concept.png"), 950, by, 520, 640)
+    d.rounded_rectangle([1530, by, 2420, H - 50], 22, fill=PANEL)
+    label(d, (1554, by + 18), "Kenmerken", 30)
+    traits = [
+        "Klokgevel met waaierraam en klok, naambord WHISTLETON (in Unity aan te passen), gele nokbol",
+        "Rondboog-dubbeldeur: knopen Door_L / Door_R met scharnier en botsvorm",
+        "Vleugels met dakkapellen en schoorsteen (dicht, niet begaanbaar)",
+        "Rode pannendaken (eigen ramp), vakwerk met korbelen, stenen plint",
+        "Perronluifel met banken, bagagekar, lantaarn en hangbord",
+        "Banieren, wandlantaarns en bloempotten bij de ingang",
+    ]
+    for k, t in enumerate(traits):
+        d.text((1560, by + 88 + k * 40), "✓  " + t, font=font(20, False), fill=TXT)
+    a = KIT["Station_Main"]
+    tech = [f"{a['tris']:,} driehoeken (incl. interieur) · 0 textures · M_Stn_*".replace(",", "."),
+            "Pivot: midden voorgevel op maaiveld, voorkant +Z (net als Station_Building)",
+            "Unity: Col_* → MeshColliders, Light_* → warme puntlichten"]
+    for k, t in enumerate(tech):
+        d.text((1560, by + 88 + (len(traits) + 0.5 + k) * 40), "•  " + t, font=font(18, False), fill=SUB)
+    d.rounded_rectangle([2460, by, W - 50, H - 50], 22, fill=PANEL)
+    ramps_panel(d, 2460, by, 690, [("Pannendak", "roof_terracotta"), ("Vakwerk & deuren", "station_timber"),
+                                   ("Pleisterwerk", "parchment"), ("Deur, borden", "station_navy"),
+                                   ("Plint", "plinth_stone"), ("Krijtbord", "chalk_green")])
+    path = os.path.join(DOCS, "StationMain_DesignSheet.png")
+    sheet.convert("RGB").save(path, optimize=True)
+    return path
+
+
+def briefing_sheet():
+    W, H = 3200, 2200
+    sheet = Image.new("RGBA", (W, H), BG + (255,))
+    d = ImageDraw.Draw(sheet)
+    label(d, (60, 46), "Briefingruimte · Training Hub", 58)
+    d.text((64, 156), "De hal van het hoofdstation als speelbare ruimte: routebord, prikbord, vertrekbord, koffiebar, kluisjes, "
+                      "kapstok, 4 banken (8 zitplaatsen), hanglampen", font=font(25, False), fill=SUB)
+    _panel(sheet, d, "stn_main_brief_back", "Achterwand: routebord + ROUTE-bord", 60, 210, 1560, 1000, interior=True)
+    _panel(sheet, d, "stn_main_brief_door", "Naar de deur", 1660, 210, 1480, 1000, interior=True)
+    _panel(sheet, d, "stn_main_brief_coffee", "Koffiebar (links)", 60, 1250, 1060, 900, interior=True)
+    _panel(sheet, d, "stn_main_brief_lockers", "Kluisjes + kapstok (rechts)", 1150, 1250, 1060, 900, interior=True)
+    x0, y0, w = 2240, 1250, W - 50 - 2240
+    d.rounded_rectangle([x0, y0, x0 + w, H - 50], 22, fill=PANEL)
+    label(d, (x0 + 20, y0 + 14), "Plattegrond (dak weg)", 24)
+    im = fit(crop_alpha(load("stn_main_top")), w - 40, 520)
+    sheet.alpha_composite(im, (x0 + (w - im.width) // 2, y0 + 70))
+    anchors = ["Spawn_Briefing — startplek midden in de hal",
+               "Briefing_Board — routebord (camera/UI-focus)",
+               "Briefing_Seat_1..8 — zitplaatsen op de banken",
+               "Spot_Coffee / Spot_Lockers — interactieplekken",
+               "Light_Pendant_1..6 — hanglampen (helder)"]
+    for k, t in enumerate(anchors):
+        d.text((x0 + 24, y0 + 610 + k * 34), "•  " + t, font=font(18, False), fill=TXT)
+    path = os.path.join(DOCS, "StationMain_BriefingRoom.png")
+    sheet.convert("RGB").save(path, optimize=True)
+    return path
+
+
 def kit_sheet():
     plat = [n for n in NAMES if n.startswith("Platform")]
     prop = [n for n in NAMES if n.startswith("Prop")]
@@ -180,7 +266,7 @@ def in_scene():
 
 
 def main():
-    print("\n".join([building_sheet(), kit_sheet(), in_scene()]))
+    print("\n".join([building_sheet(), main_sheet(), briefing_sheet(), kit_sheet(), in_scene()]))
 
 
 if __name__ == "__main__":

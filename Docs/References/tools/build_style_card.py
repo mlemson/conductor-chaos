@@ -81,6 +81,9 @@ P = {
     ("station_timber", "Vakwerk, palen, bank", ["#A36037", "#B76C45", "#BD7244", "#C17842", "#D38949"], (130, 330, 900, 560), "Environment/station-concept.png"),
     ("plinth_stone", "Plint & schoorsteen", ["#6E6172", "#89798C", "#948393", "#A8949D", "#B9A4A4"], (420, 480, 880, 560), "Environment/station-concept.png"),
     ("platform_stone", "Perrontegels", ["#6B5C67", "#937A7C", "#B1979B", "#C9B0B5", "#DEC6C4"], (0, 400, 1122, 520), "Environment/platform-kit-concept.png"),
+    ("roof_terracotta", "Hoofdstation: pannendak", ["#833C32", "#9F473D", "#AC4E43", "#B7564B", "#CE6758"], (520, 30, 1100, 250), "Environment/main-station-concept.png"),
+    ("chalk_green", "Briefing: routebord", ["#4F5F3A", "#576840", "#5B6C41", "#5E6F41", "#647544"], (450, 815, 660, 905), "Environment/main-station-concept.png"),
+    ("locker_blue", "Briefing: kluisjes", ["#333A62", "#3A4270", "#545E90", "#5D689A", "#6F76A2"], (805, 830, 955, 975), "Environment/main-station-concept.png"),
   ],
   "UI & logo": [
     ("ui_bg", "Achtergrond (pruim-grafiet)", ["#2A2730", "#302629", "#33303B", "#403E4B", "#4A4852"], (0, 780, 420, 1010)),

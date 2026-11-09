@@ -24,6 +24,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Stn_TimberDark
     second: {fileID: 2100000, guid: 2f498810574076f0b305a7a994febd41, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_WoodLight
+    second: {fileID: 2100000, guid: a90ea068aa940855226823fc42964908, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

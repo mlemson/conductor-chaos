@@ -1,59 +1,14 @@
 fileFormatVersion: 2
 guid: 8ca6be13683843b587b2412aecdcda1f
 ModelImporter:
-  serializedVersion: 24600
+  serializedVersion: 22200
   internalIDToNameTable: []
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Tourist_Backpack
-    second: {fileID: 2100000, guid: e32a26c3e27f39ef7052e3a9b019e25c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_BackpackDark
-    second: {fileID: 2100000, guid: 4e51c196e0e886e8535b377e3e74e0dd, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_Bedroll
-    second: {fileID: 2100000, guid: 78936ef18fb250db585a721e4f25cd0d, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_BedrollDark
-    second: {fileID: 2100000, guid: a34cdb58b3e6e3f69491a4eb385ef3ef, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_BedrollStrap
-    second: {fileID: 2100000, guid: d39b1b2c92da05fb39af8a18cc38ec0e, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_Boot
-    second: {fileID: 2100000, guid: 5c2bf83d6520308d4684cfda66185040, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_Bottle
-    second: {fileID: 2100000, guid: 1ac5c8af0342229c24cfe4bd41f11c49, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_BottleCap
-    second: {fileID: 2100000, guid: eaa2e8423fdf0b8d52e15913d61c692c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_Buckle
-    second: {fileID: 2100000, guid: 84c11bf173241cb24a9b8393a672cf0d, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_Button
-    second: {fileID: 2100000, guid: 29b5f1f2ab38c353d5e02c0e98ec0de0, type: 2}
+      name: M_Tourist_Skin
+    second: {fileID: 2100000, guid: 2567eb0e2cbdd63bc27e21500d9d89ba, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -62,53 +17,38 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Tourist_Frame
-    second: {fileID: 2100000, guid: 6ffcd33acd2702abaa0c07911045790e, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_Hat
-    second: {fileID: 2100000, guid: a698b9afa39f42a02e182692e44c5679, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_HatBand
-    second: {fileID: 2100000, guid: ab9550eaadc19f08f1a599b2be5f9ad7, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_Lens
-    second: {fileID: 2100000, guid: 02ec57a01ee8e5ed626a7da81b260227, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_Map
-    second: {fileID: 2100000, guid: 793be4d3edb12fad296724546fdc2487, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_MapGreen
-    second: {fileID: 2100000, guid: a45fc859795f24c105f621d77a127360, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_MapIcon
-    second: {fileID: 2100000, guid: 766c3de35cd54d09ff21e53a85f47026, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_MapPath
-    second: {fileID: 2100000, guid: 8bc2cb8e2ac192da092772c4a28bea39, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_MapPin
-    second: {fileID: 2100000, guid: 4461f606faa924dbe62fecaa24fa3cd3, type: 2}
+      name: M_Tourist_Pupil
+    second: {fileID: 2100000, guid: eaf2becd747ac0c293e74cd59f2b3d8d, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: M_Tourist_Mouth
     second: {fileID: 2100000, guid: 2aa0ab1e89f792d9ed9a4182fb582526, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_Tongue
+    second: {fileID: 2100000, guid: f793e022401869a2affcefd6a2e0b799, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_Shirt
+    second: {fileID: 2100000, guid: 8172f6b040e2204d27413f4fe400660d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_ShirtDark
+    second: {fileID: 2100000, guid: d54a5059035938e8ada26f896c172678, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_Undershirt
+    second: {fileID: 2100000, guid: 07c6231f70eb6f28e167ed05a2f0f85b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_Button
+    second: {fileID: 2100000, guid: 29b5f1f2ab38c353d5e02c0e98ec0de0, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -132,21 +72,6 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Tourist_Pupil
-    second: {fileID: 2100000, guid: eaf2becd747ac0c293e74cd59f2b3d8d, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_Shirt
-    second: {fileID: 2100000, guid: 8172f6b040e2204d27413f4fe400660d, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_ShirtDark
-    second: {fileID: 2100000, guid: d54a5059035938e8ada26f896c172678, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
       name: M_Tourist_Shorts
     second: {fileID: 2100000, guid: 1105f1a59723a0fa579a8d8e6d34892e, type: 2}
   - first:
@@ -157,13 +82,98 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Tourist_Skin
-    second: {fileID: 2100000, guid: 2567eb0e2cbdd63bc27e21500d9d89ba, type: 2}
+      name: M_Tourist_Boot
+    second: {fileID: 2100000, guid: 5c2bf83d6520308d4684cfda66185040, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_Hat
+    second: {fileID: 2100000, guid: a698b9afa39f42a02e182692e44c5679, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_HatBand
+    second: {fileID: 2100000, guid: ab9550eaadc19f08f1a599b2be5f9ad7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_Lens
+    second: {fileID: 2100000, guid: 02ec57a01ee8e5ed626a7da81b260227, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_Frame
+    second: {fileID: 2100000, guid: 6ffcd33acd2702abaa0c07911045790e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_Backpack
+    second: {fileID: 2100000, guid: e32a26c3e27f39ef7052e3a9b019e25c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_BackpackDark
+    second: {fileID: 2100000, guid: 4e51c196e0e886e8535b377e3e74e0dd, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: M_Tourist_Strap
     second: {fileID: 2100000, guid: 57a6f0837c7d08d339d9e34d67bf87ff, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_Buckle
+    second: {fileID: 2100000, guid: 84c11bf173241cb24a9b8393a672cf0d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_Bedroll
+    second: {fileID: 2100000, guid: 78936ef18fb250db585a721e4f25cd0d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_BedrollDark
+    second: {fileID: 2100000, guid: a34cdb58b3e6e3f69491a4eb385ef3ef, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_BedrollStrap
+    second: {fileID: 2100000, guid: d39b1b2c92da05fb39af8a18cc38ec0e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_Bottle
+    second: {fileID: 2100000, guid: 1ac5c8af0342229c24cfe4bd41f11c49, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_BottleCap
+    second: {fileID: 2100000, guid: eaa2e8423fdf0b8d52e15913d61c692c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_Map
+    second: {fileID: 2100000, guid: 793be4d3edb12fad296724546fdc2487, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_MapGreen
+    second: {fileID: 2100000, guid: a45fc859795f24c105f621d77a127360, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_MapPath
+    second: {fileID: 2100000, guid: 8bc2cb8e2ac192da092772c4a28bea39, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_MapPin
+    second: {fileID: 2100000, guid: 4461f606faa924dbe62fecaa24fa3cd3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Tourist_MapIcon
+    second: {fileID: 2100000, guid: 766c3de35cd54d09ff21e53a85f47026, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -174,123 +184,27 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Tourist_TicketInk
     second: {fileID: 2100000, guid: 2c4d6bb3dc85be2f9e70bd3b7bd6459a, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_Tongue
-    second: {fileID: 2100000, guid: f793e022401869a2affcefd6a2e0b799, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Tourist_Undershirt
-    second: {fileID: 2100000, guid: 07c6231f70eb6f28e167ed05a2f0f85b, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
     materialSearch: 1
     materialLocation: 1
-    searchTexturesGlobally: 1
   animations:
-    legacyGenerateAnimations: 4
-    bakeSimulation: 0
-    resampleCurves: 1
-    optimizeGameObjects: 0
-    removeConstantScaleCurves: 0
-    motionNodeName: 
-    animationImportErrors: 
-    animationImportWarnings: 
-    animationRetargetingWarnings: 
-    animationDoRetargetingWarnings: 0
-    importAnimatedCustomProperties: 0
-    importConstraints: 0
-    animationCompression: 1
-    animationRotationError: 0.5
-    animationPositionError: 0.5
-    animationScaleError: 0.5
-    animationWrapMode: 0
-    extraExposedTransformPaths: []
-    extraUserProperties: []
-    clipAnimations: []
-    isReadable: 1
+    importAnimation: 0
   meshes:
-    lODScreenPercentages: []
     globalScale: 1
-    meshCompression: 0
-    addColliders: 0
-    useSRGBMaterialColor: 1
-    sortHierarchyByName: 1
-    preBakeConvexCollisionMesh: 0
-    preBakeTriangleCollisionMesh: 0
-    importPhysicalCameras: 1
-    importVisibility: 1
+    useFileUnits: 1
+    useFileScale: 1
     importBlendShapes: 0
+    importVisibility: 1
     importCameras: 0
     importLights: 0
-    nodeNameCollisionStrategy: 1
-    fileIdsGeneration: 2
-    swapUVChannels: 0
     generateSecondaryUV: 0
-    useFileUnits: 1
-    keepQuads: 0
-    weldVertices: 1
-    bakeAxisConversion: 0
-    preserveHierarchy: 0
-    skinWeightsMode: 0
-    maxBonesPerVertex: 4
-    minBoneWeight: 0.001
-    optimizeBones: 1
-    generateMeshLods: 0
-    meshLodGenerationFlags: 0
-    maximumMeshLod: -1
-    importUVs: -1
-    importVertexColors: 1
-    meshOptimizationFlags: -1
-    indexFormat: 0
-    secondaryUVAngleDistortion: 8
-    secondaryUVAreaDistortion: 15.000001
-    secondaryUVHardAngle: 88
-    secondaryUVMarginMethod: 1
-    secondaryUVMinLightmapResolution: 40
-    secondaryUVMinObjectScale: 1
-    secondaryUVPackMargin: 4
-    useFileScale: 1
-    strictVertexDataChecks: 0
-  tangentSpace:
-    normalSmoothAngle: 60
     normalImportMode: 0
     tangentImportMode: 3
-    normalCalculationMode: 4
-    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
-    blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
-    calculateBlendshapeNormalsDeltaFromImportedNormals: 1
-  referencedClips: []
   importAnimation: 0
-  humanDescription:
-    serializedVersion: 3
-    human: []
-    skeleton: []
-    armTwist: 0.5
-    foreArmTwist: 0.5
-    upperLegTwist: 0.5
-    legTwist: 0.5
-    armStretch: 0.05
-    legStretch: 0.05
-    feetSpacing: 0
-    globalScale: 1
-    rootMotionBoneName: 
-    hasTranslationDoF: 0
-    hasExtraRoot: 0
-    skeletonHasParents: 1
-  lastHumanDescriptionAvatarSource: {instanceID: 0}
-  autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 0
-  humanoidOversampling: 1
-  avatarSetup: 0
-  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
-  importBlendShapeDeformPercent: 1
-  remapMaterialsIfMaterialImportModeIsNone: 0
-  additionalBone: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

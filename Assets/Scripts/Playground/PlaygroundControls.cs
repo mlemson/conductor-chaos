@@ -32,6 +32,16 @@ namespace ConductorChaos.Playground
             return target;
         }
 
+        public static float FirstPersonBlend(float distance)
+        {
+            return 1f - Mathf.SmoothStep(0f, 1f, distance / FirstPersonDistance);
+        }
+
+        public static Quaternion HandGripAim(Quaternion aim, float side, float closeView)
+        {
+            return aim * Quaternion.Euler(0f, -side * 12f * closeView, 0f);
+        }
+
         public static Vector3 FirstPersonEyeOffset(float yaw)
         {
             return Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, -0.18f, -0.16f);

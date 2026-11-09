@@ -1,0 +1,212 @@
+{
+ "spacing": 0.3,
+ "space": 0.5,
+ "glyphs": [
+  {
+   "c": "'",
+   "advance": 0.0
+  },
+  {
+   "c": "-",
+   "advance": 0.4
+  },
+  {
+   "c": ".",
+   "advance": 0.0
+  },
+  {
+   "c": "0",
+   "advance": 0.62
+  },
+  {
+   "c": "1",
+   "advance": 0.34
+  },
+  {
+   "c": "2",
+   "advance": 0.6
+  },
+  {
+   "c": "3",
+   "advance": 0.58
+  },
+  {
+   "c": "4",
+   "advance": 0.62
+  },
+  {
+   "c": "5",
+   "advance": 0.58
+  },
+  {
+   "c": "6",
+   "advance": 0.6
+  },
+  {
+   "c": "7",
+   "advance": 0.58
+  },
+  {
+   "c": "8",
+   "advance": 0.6
+  },
+  {
+   "c": "9",
+   "advance": 0.6
+  },
+  {
+   "c": "A",
+   "advance": 0.74
+  },
+  {
+   "c": "B",
+   "advance": 0.6
+  },
+  {
+   "c": "C",
+   "advance": 0.7
+  },
+  {
+   "c": "D",
+   "advance": 0.66
+  },
+  {
+   "c": "E",
+   "advance": 0.54
+  },
+  {
+   "c": "F",
+   "advance": 0.52
+  },
+  {
+   "c": "G",
+   "advance": 0.74
+  },
+  {
+   "c": "H",
+   "advance": 0.64
+  },
+  {
+   "c": "I",
+   "advance": 0.0
+  },
+  {
+   "c": "J",
+   "advance": 0.52
+  },
+  {
+   "c": "K",
+   "advance": 0.6
+  },
+  {
+   "c": "L",
+   "advance": 0.5
+  },
+  {
+   "c": "M",
+   "advance": 0.84
+  },
+  {
+   "c": "N",
+   "advance": 0.66
+  },
+  {
+   "c": "O",
+   "advance": 0.78
+  },
+  {
+   "c": "P",
+   "advance": 0.58
+  },
+  {
+   "c": "Q",
+   "advance": 0.78
+  },
+  {
+   "c": "R",
+   "advance": 0.62
+  },
+  {
+   "c": "S",
+   "advance": 0.64
+  },
+  {
+   "c": "T",
+   "advance": 0.66
+  },
+  {
+   "c": "U",
+   "advance": 0.64
+  },
+  {
+   "c": "V",
+   "advance": 0.7
+  },
+  {
+   "c": "W",
+   "advance": 0.98
+  },
+  {
+   "c": "X",
+   "advance": 0.64
+  },
+  {
+   "c": "Y",
+   "advance": 0.68
+  },
+  {
+   "c": "Z",
+   "advance": 0.62
+  }
+ ],
+ "signs": [
+  {
+   "asset": "Prop_StationSign",
+   "node": "Sign_Name",
+   "iconScale": 0.84919,
+   "text": "STATION",
+   "letterHeight": 0.264,
+   "room": 1.724,
+   "iconWidth": 0.3432,
+   "iconGap": 0.1188,
+   "textZ": 0.056,
+   "textDepth": 0.035
+  },
+  {
+   "asset": "Station_Building",
+   "node": "Sign_Name",
+   "iconScale": 1.0,
+   "text": "STATION",
+   "letterHeight": 0.28,
+   "room": 2.5,
+   "iconWidth": 0.364,
+   "iconGap": 0.126,
+   "textZ": 0.066,
+   "textDepth": 0.035
+  },
+  {
+   "asset": "Station_Main",
+   "node": "Sign_Name",
+   "iconScale": 1.0,
+   "text": "WHISTLETON",
+   "letterHeight": 0.368,
+   "room": 4.268,
+   "iconWidth": 0.4784,
+   "iconGap": 0.1656,
+   "textZ": 0.076,
+   "textDepth": 0.035
+  },
+  {
+   "asset": "Station_Main",
+   "node": "Sign_Route",
+   "iconScale": 1.0,
+   "text": "ROUTE",
+   "letterHeight": 0.224,
+   "room": 1.684,
+   "iconWidth": 0.2912,
+   "iconGap": 0.1008,
+   "textZ": 0.056,
+   "textDepth": 0.035
+  }
+ ]
+}

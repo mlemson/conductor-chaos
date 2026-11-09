@@ -108,6 +108,7 @@ Richtlijn:
   - oogrichting en pupilgrootte
   - mondvorm (dicht, open, O-vorm)
   - hele lichaamshouding en hoofdkanteling
+- **elk personage heeft dezelfde wisselbare oogstanden** (ook de conducteur): `Eye_L/R` (open), `Lid_L/R` (half dicht ooglid), `EyeClosed_L/R` (blij dichtgeknepen) en `Blink_L/R` (knipperooglid met wimperlijn). In Unity regelt `CharacterFace` (Assets/Scripts/Characters) de oogstand en mond en laat het personage om de 2–5,5 s knipperen (soms dubbel); puur cosmetisch, geen netwerkstate
 
 ## Basismodel conducteur (P0 art proof, issue #9)
 Maatvoering, gemeten in het concept en vastgelegd in het [ontwerpblad](Art/Conductor_DesignSheet.png) en het [art-check-beeld](Art/ArtCheck_Wagon.png):
@@ -131,6 +132,10 @@ Uitgewerkt (zelfde basismodel, eigen silhouet, zie [crew-lineup](Art/Characters_
 - [oudere passagier](Art/ElderlyPassenger_DesignSheet.png): wolk grijze krullen, baret met bloem, rond brilletje, dikke sjaal, draagtas
 - [toerist](Art/Tourist_DesignSheet.png): safarihoed met zonnebril, hawaïhemd, korte broek, grote rugzak met slaapmatje, kaart + kaartje
 - [spoormonteur](Art/RailMechanic_DesignSheet.png): bouwhelm met lamp, vastberaden oogleden (geen wenkbrauwen), bretels, gereedschapsgordel, handschoenen
+- [stationschef](Art/StationMaster_DesignSheet.png): hoge bordeauxrode pet met locomotief-embleem, witte krulsnor, uniformjasje met gouden biezen, gilet met zakhorloge. **Uitzondering op 'geen wenkbrauwen'**: zijn witte wenkbrauwen (knoop `Brows`) horen bij zijn silhouet, zoals op het conceptblad
+- [zakenreiziger](Art/BusinessTraveler_DesignSheet.png): blauw colbert met rode das, kuif met brilletje erop, schoudertas met papieren, rolkoffer met label, zweetdruppels
+- [ondeugend kind](Art/ChildPassenger_DesignSheet.png): 80% schaal, achterstevoren pet, rode hoodie met gele kraag, rugzak met dinootje, papieren vliegtuigje, pleister, scheve grijns (`Mouth_Grin`)
+- [bagagehelper](Art/BaggageHelper_DesignSheet.png): bordeauxrode pet, marineblauwe tuinbroek met koffer-badge, handschoenen; losse gele bagagekar met koffers (`BaggageTrolley`, anker `Handle` op handhoogte)
 
 ## Silhouette-regel
 Elk type character moet herkenbaar zijn aan zijn vorm, niet alleen aan kleur.
@@ -184,6 +189,11 @@ Uitgewerkt in het stationnetje en de perronkit (issue #182, [ontwerpblad](Art/St
 - **Gebouw:** topgevel naar het spoor, crème pleisterwerk met oranjebruin vakwerk en korbelen, marine dak van dikke pannen in rijen, stenen plint, boogloket + boogdeur, klok en STATION-bord, gele nokbol. Groter dan op het conceptblad zodat je naar binnen kunt (wanden 2,4× de personagehoogte), maar met één hal en een luifel blijft het knus.
 - **Perron:** grijs-mauve tegels in een raster van 0,75 m, lichte randtegels, gele geleidelijn met noppen, stenen blokken langs de zijkant; bovenkant 1,05 m (= bodem wagonbak), rand 1,65 m uit het hart van het spoor.
 - **Props:** marine metaal (bank-poten, palen, borden), geel als accent, oranjebruin hout; tekst en pictogrammen in crème met afgeronde streken (geen fontbestand).
+- **Stationsnamen** (issue #209): de naam op een bord is in Unity in te typen (component `StationSign`); de letters komen uit dezelfde ronde streekletters (`SignGlyphs/StationGlyphs.fbx`, A–Z, 0–9, `- ' .`). Lange namen worden kleiner, het treinpictogram schuift mee. Voorbeeldnamen: Bumblewick, Whistleton (hoofdstation), Puddleford, Wobblebridge, Muddle Junction, Brackenhill, Tumbleton, Crooked Creek, Clatterbury, Last Stop.
+
+Hoofdstation met briefingruimte (issue #207, [ontwerpblad](Art/StationMain_DesignSheet.png), [briefingruimte](Art/StationMain_BriefingRoom.png)):
+- **Gebouw:** dezelfde taal als het stationnetje (crème pleister, oranjebruin vakwerk, stenen plint, marine deuren en borden), maar groter en feestelijker: klokgevel met waaierraam, naambord (WHISTLETON), twee vleugels met dakkapellen, perronluifel. Daken in **rode pannen** (`roof_terracotta`) zodat het hoofdstation zich onderscheidt van de marine daken van de kleine stations.
+- **Briefingruimte:** warme houten vloer en lambrisering, open kap met trekbalken, marine hanglampen. Achterwand = blikvanger: ROUTE-bord, groen krijtbord met route (`chalk_green`), prikbord en vertrekbord. Koffiebar links, blauwe kluisjes (`locker_blue`) en kapstok met pet en jas rechts, banken in twee rijen op een rond marine kleed.
 
 ### Spoor / landschap
 - duidelijke spoorlijn
@@ -247,6 +257,20 @@ Een prop moet al herkenbaar zijn als silhouette, nog vóór textuur of detail.
 - geschilderde **inzetpanelen**: een iets donkerder vlak (dezelfde ramp, lagere positie) zonder lichte rand, zoals op de concept-loc. Gebruik ze spaarzaam op grote wanden, eventueel met gouden klinknagels
 - koele rimlight langs de randen (zie Lighting)
 - geen heavy realism
+
+## Geen dubbele vlakken (z-fighting)
+Twee zichtbare vlakken die (bijna) in hetzelfde vlak liggen en elkaar overlappen gaan in Unity flikkeren of strepen
+(besluit @mlemson: "voortaan altijd fixen"). Daarom bij elk model:
+- **leg delen naast elkaar, niet in elkaar met gelijke buitenkant.** Hoekblokken lopen aan één kant door en stoppen aan
+  de andere kant ertegen; lagen (wand, kern, vulling, tegels) raken elkaar alleen met boven- en onderkant.
+- **iets dat erop ligt (dorpel, strip, lat, wiel op een icoon) steekt minstens 1 cm uit**, of het vlak eronder wordt
+  weggesneden. Kruisende latten (raamroedes, Andreaskruis) krijgen een verschillende dikte of liggen voor elkaar.
+- **aan elkaar klikbare stukken** (perron, hek) vallen bij het aanklikken niet samen: het eindstuk zit binnen het
+  beginstuk van het volgende stuk, of de stukken stoppen precies op de naad.
+- **controle:** `python ArtSource/Tools/zfight.py <glb>` (en voor de stationkit `ArtSource/Tests/test_station_kit.py`,
+  die ook de voorbeeldopstelling en aan elkaar geklikte stukken controleert). Meldt alles dat dichter dan 5 mm bij
+  elkaar ligt en meer dan 4 cm² overlapt; vlakken die in een ander blok zitten of tegen een ander vlak liggen tellen
+  niet mee.
 
 ## Vermijd
 - hoge metallic

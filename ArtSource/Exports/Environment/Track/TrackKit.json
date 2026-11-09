@@ -8,10 +8,12 @@
   "assets": {
     "Track_Straight_1_5m": {
       "fbx": "Assets/Art/Models/Environment/Track/Track_Straight_1_5m.fbx",
-      "tris": 1248,
+      "tris": 1216,
       "length": 1.5,
       "radius": null,
       "angleDeg": 0.0,
+      "rise": 0.0,
+      "hill": 0.0,
       "side": 0,
       "min": [
         0.0,
@@ -26,10 +28,12 @@
     },
     "Track_Straight_3m": {
       "fbx": "Assets/Art/Models/Environment/Track/Track_Straight_3m.fbx",
-      "tris": 2424,
+      "tris": 2368,
       "length": 3.0,
       "radius": null,
       "angleDeg": 0.0,
+      "rise": 0.0,
+      "hill": 0.0,
       "side": 0,
       "min": [
         0.0,
@@ -44,10 +48,12 @@
     },
     "Track_Straight_6m": {
       "fbx": "Assets/Art/Models/Environment/Track/Track_Straight_6m.fbx",
-      "tris": 4800,
+      "tris": 4696,
       "length": 6.0,
       "radius": null,
       "angleDeg": 0.0,
+      "rise": 0.0,
+      "hill": 0.0,
       "side": 0,
       "min": [
         0.0,
@@ -62,10 +68,12 @@
     },
     "Track_Straight_12m": {
       "fbx": "Assets/Art/Models/Environment/Track/Track_Straight_12m.fbx",
-      "tris": 9528,
+      "tris": 9328,
       "length": 12.0,
       "radius": null,
       "angleDeg": 0.0,
+      "rise": 0.0,
+      "hill": 0.0,
       "side": 0,
       "min": [
         0.0,
@@ -80,10 +88,12 @@
     },
     "Track_Curve_R20_15_A": {
       "fbx": "Assets/Art/Models/Environment/Track/Track_Curve_R20_15_A.fbx",
-      "tris": 4228,
+      "tris": 4132,
       "length": 5.236,
       "radius": 20.0,
       "angleDeg": 15.0,
+      "rise": 0.0,
+      "hill": 0.0,
       "side": 1,
       "min": [
         0.0,
@@ -98,10 +108,12 @@
     },
     "Track_Curve_R20_15_B": {
       "fbx": "Assets/Art/Models/Environment/Track/Track_Curve_R20_15_B.fbx",
-      "tris": 4228,
+      "tris": 4132,
       "length": 5.236,
       "radius": 20.0,
       "angleDeg": 15.0,
+      "rise": 0.0,
+      "hill": 0.0,
       "side": -1,
       "min": [
         0.0,
@@ -116,10 +128,12 @@
     },
     "Track_Curve_R20_30_A": {
       "fbx": "Assets/Art/Models/Environment/Track/Track_Curve_R20_30_A.fbx",
-      "tris": 8352,
+      "tris": 8176,
       "length": 10.472,
       "radius": 20.0,
       "angleDeg": 30.0,
+      "rise": 0.0,
+      "hill": 0.0,
       "side": 1,
       "min": [
         0.0,
@@ -134,10 +148,12 @@
     },
     "Track_Curve_R20_30_B": {
       "fbx": "Assets/Art/Models/Environment/Track/Track_Curve_R20_30_B.fbx",
-      "tris": 8352,
+      "tris": 8176,
       "length": 10.472,
       "radius": 20.0,
       "angleDeg": 30.0,
+      "rise": 0.0,
+      "hill": 0.0,
       "side": -1,
       "min": [
         0.0,
@@ -152,10 +168,12 @@
     },
     "Track_BufferStop": {
       "fbx": "Assets/Art/Models/Environment/Track/Track_BufferStop.fbx",
-      "tris": 6192,
+      "tris": 6136,
       "length": 3.0,
       "radius": null,
       "angleDeg": 0.0,
+      "rise": 0.0,
+      "hill": 0.0,
       "side": 0,
       "min": [
         0.0,
@@ -170,10 +188,12 @@
     },
     "Track_Broken_6m": {
       "fbx": "Assets/Art/Models/Environment/Track/Track_Broken_6m.fbx",
-      "tris": 4768,
+      "tris": 4644,
       "length": 6.0,
       "radius": null,
       "angleDeg": 0.0,
+      "rise": 0.0,
+      "hill": 0.0,
       "side": 0,
       "min": [
         0.0,
@@ -188,10 +208,12 @@
     },
     "Track_Bridge_Trestle_6m": {
       "fbx": "Assets/Art/Models/Environment/Track/Track_Bridge_Trestle_6m.fbx",
-      "tris": 7784,
+      "tris": 7680,
       "length": 6.0,
       "radius": null,
       "angleDeg": 0.0,
+      "rise": 0.0,
+      "hill": 0.0,
       "side": 0,
       "min": [
         -0.02,
@@ -204,12 +226,154 @@
         2.764
       ]
     },
+    "Track_Ramp_Up_12m": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Ramp_Up_12m.fbx",
+      "tris": 17724,
+      "length": 12.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "rise": 1.5,
+      "hill": 0.0,
+      "side": 0,
+      "min": [
+        0.0,
+        -10.42,
+        -2.772
+      ],
+      "max": [
+        12.0,
+        1.93,
+        2.772
+      ]
+    },
+    "Track_Ramp_Down_12m": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Ramp_Down_12m.fbx",
+      "tris": 16224,
+      "length": 12.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "rise": -1.5,
+      "hill": 0.0,
+      "side": 0,
+      "min": [
+        0.0,
+        -10.42,
+        -2.764
+      ],
+      "max": [
+        12.0,
+        0.43,
+        2.764
+      ]
+    },
+    "Track_Ramp_Up_18m_Steep": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Ramp_Up_18m_Steep.fbx",
+      "tris": 26764,
+      "length": 18.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "rise": 3.0,
+      "hill": 0.0,
+      "side": 0,
+      "min": [
+        0.0,
+        -10.42,
+        -2.773
+      ],
+      "max": [
+        18.0,
+        3.43,
+        2.773
+      ]
+    },
+    "Track_Ramp_Down_18m_Steep": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Ramp_Down_18m_Steep.fbx",
+      "tris": 24264,
+      "length": 18.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "rise": -3.0,
+      "hill": 0.0,
+      "side": 0,
+      "min": [
+        0.0,
+        -10.42,
+        -2.776
+      ],
+      "max": [
+        18.0,
+        0.43,
+        2.776
+      ]
+    },
+    "Track_Hill_12m": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Hill_12m.fbx",
+      "tris": 17224,
+      "length": 12.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "rise": 0.0,
+      "hill": 1.2,
+      "side": 0,
+      "min": [
+        0.0,
+        -10.42,
+        -2.764
+      ],
+      "max": [
+        12.0,
+        1.63,
+        2.764
+      ]
+    },
+    "Track_Bridge_Curve_R20_15_A": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Bridge_Curve_R20_15_A.fbx",
+      "tris": 7588,
+      "length": 5.236,
+      "radius": 20.0,
+      "angleDeg": 15.0,
+      "rise": 0.0,
+      "hill": 0.0,
+      "side": 1,
+      "min": [
+        0.0,
+        -10.42,
+        -2.721
+      ],
+      "max": [
+        5.663,
+        0.43,
+        3.113
+      ]
+    },
+    "Track_Bridge_Curve_R20_15_B": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Bridge_Curve_R20_15_B.fbx",
+      "tris": 7588,
+      "length": 5.236,
+      "radius": 20.0,
+      "angleDeg": 15.0,
+      "rise": 0.0,
+      "hill": 0.0,
+      "side": -1,
+      "min": [
+        0.0,
+        -10.42,
+        -3.113
+      ],
+      "max": [
+        5.663,
+        0.43,
+        2.721
+      ]
+    },
     "Prop_WarningSign": {
       "fbx": "Assets/Art/Models/Environment/Track/Prop_WarningSign.fbx",
       "tris": 988,
       "length": null,
       "radius": null,
       "angleDeg": null,
+      "rise": 0.0,
+      "hill": 0.0,
       "side": 0,
       "min": [
         -0.09,
@@ -228,6 +392,8 @@
       "length": null,
       "radius": null,
       "angleDeg": null,
+      "rise": 0.0,
+      "hill": 0.0,
       "side": 0,
       "min": [
         -0.16,

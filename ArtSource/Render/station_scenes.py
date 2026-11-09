@@ -1,8 +1,9 @@
-"""Renderscènes voor het stationnetje en de perronkit (issue #182) -> scenes/station_sheet.json.
+"""Renderscènes voor het stationnetje, het hoofdstation en de perronkit (issues #182, #207) -> scenes/station_sheet.json.
 
 * stn_<asset>: één thumbnail per asset uit StationKit.json (camera uit de bounding box)
 * stn_bld_*: het gebouw van voor, achter, links, een doorkijk zonder dak en een close-up van de deur
 * stn_scene_*: het gebouw achter een perron van spoorstukken, met trein, props en personages
+* stn_main_*: het hoofdstation van buiten, een doorkijk zonder dak en de briefingruimte van binnen
 
     python ArtSource/Render/station_scenes.py
 """
@@ -33,7 +34,7 @@ def item(name, pos=None, rot=None, base=S, pose=None):
 def thumbs(man):
     out = []
     for name, a in man.items():
-        if name == "Station_Building":
+        if name in ("Station_Building", "Station_Main"):
             continue
         mn, mx = a["min"], a["max"]
         c = [(mn[i] + mx[i]) / 2 for i in range(3)]
@@ -61,6 +62,26 @@ def building_views():
             v("stn_bld_door", -5, 6, 7.5, "0.6,2.3,-0.5")]
 
 
+def main_station_views():
+    def v(n, yaw, pitch, dist, tgt, pose=None, w=1400, h=1050, fov=35, ground=True):
+        p = {"w": w, "h": h, "yaw": yaw, "pitch": pitch, "dist": dist, "fov": fov, "target": tgt, "lightRel": 1,
+             "items": [item("Station_Main", pose=pose)]}
+        if ground:
+            p.update({"groundShadowOnly": 1, "groundR": 34, "shadowSize": 22, "far": 260})
+        return {"name": n, "params": p}
+    no_roof = {"Roof": {"visible": False}, "RoofFrame": {"visible": False}}
+    return [v("stn_main_front", -20, 11, 31, "-3.8,4.4,-4.2", w=1800, h=1050),
+            v("stn_main_back", 152, 15, 30, "-3.8,4.2,-4.4", w=1600, h=1000),
+            v("stn_main_entrance", -4, 4, 16, "0,4.6,0", fov=40),
+            v("stn_main_canopy", -58, 8, 17, "-13.0,2.6,-1.2"),
+            v("stn_main_top", 0, 80, 17, "0,1.4,-4.6", pose=no_roof, fov=40),
+            # binnen: camera in de briefingruimte
+            v("stn_main_brief_back", 0, 4, 5.2, "0,2.6,-6", fov=62, w=1500, h=1000, ground=False),
+            v("stn_main_brief_coffee", 70, 2, 6.4, "-3,2.1,-3.6", fov=58, w=1500, h=1000, ground=False),
+            v("stn_main_brief_lockers", -70, 2, 6.4, "3,2.1,-4.2", fov=58, w=1500, h=1000, ground=False),
+            v("stn_main_brief_door", 180, 8, 4.6, "0,2.8,-3.2", fov=62, w=1500, h=1000, ground=False)]
+
+
 def station_scene():
     """Perron langs twee spoorstukken van 12 m, gebouw erachter (180 graden gedraaid), trein + personages."""
     its = [item("Track_Straight_12m", (-12, 0, 0), base=TR), item("Track_Straight_12m", (0, 0, 0), base=TR),
@@ -71,7 +92,7 @@ def station_scene():
             item("Platform_Straight_3m", (6.0, 0, 0)), item("Platform_EndCap_End", (9.0, 0, 0))]
     y = 1.05
     its += [item("Station_Building", (-1.2, 0, 5.30), 180)]
-    its += [item("Prop_LampPost", (-8.2, y, 4.6)), item("Prop_LampPost", (6.6, y, 4.6)),
+    its += [item("Prop_LampPost", (-7.5, y, 4.6)), item("Prop_LampPost", (6.6, y, 4.6)),
             item("Prop_Bench", (4.6, y, 4.55), 180), item("Prop_TrashBin", (3.3, y, 4.75)),
             item("Prop_Timetable", (8.4, y, 4.65), 180), item("Prop_TicketMachine", (-6.6, y, 4.75), 180),
             item("Prop_LuggageCart", (-4.9, y, 3.6), 70), item("Prop_StationSign", (-9.3, y, 4.75), 180),
@@ -147,7 +168,7 @@ def main():
     man = json.load(open(os.path.join(ROOT, "ArtSource", "Exports", "Environment", "Station", "StationKit.json"),
                          encoding="utf-8"))["assets"]
     scene = station_scene()
-    scenes = thumbs(man) + building_views() + scene
+    scenes = thumbs(man) + building_views() + main_station_views() + scene
     json.dump(scenes, open(OUT, "w", encoding="utf-8"), indent=1)
     print("station scenes:", len(scenes))
     unity_layout(scene[0], man)

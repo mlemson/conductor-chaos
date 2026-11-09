@@ -3,7 +3,7 @@
     "Station_Building": {
       "fbx": "Assets/Art/Models/Environment/Station/Station_Building.fbx",
       "category": "Building",
-      "tris": 41794,
+      "tris": 43458,
       "min": [
         -6.692,
         -0.0,
@@ -31,7 +31,10 @@
         "Light_Lantern_R",
         "Light_Hall_1",
         "Light_Hall_2",
-        "Spawn_Ticket"
+        "Spawn_Ticket",
+        "Sign_Name",
+        "Sign_Name_Icon",
+        "Sign_Name_Text"
       ],
       "floor": 1.05,
       "footprint": [
@@ -39,6 +42,19 @@
         3.2,
         -5.4,
         0.0
+      ],
+      "signs": [
+        {
+          "node": "Sign_Name",
+          "iconScale": 1.0,
+          "text": "STATION",
+          "letterHeight": 0.28,
+          "room": 2.5,
+          "iconWidth": 0.364,
+          "iconGap": 0.126,
+          "textZ": 0.066,
+          "textDepth": 0.035
+        }
       ]
     },
     "Prop_Bench": {
@@ -58,22 +74,23 @@
       "nodes": [
         "Prop_Bench",
         "Mesh",
-        "Col_Main"
+        "Col_Main",
+        "Col_2"
       ]
     },
     "Prop_Barrel": {
       "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_Barrel.fbx",
       "category": "Props",
-      "tris": 648,
+      "tris": 1536,
       "min": [
-        -0.387,
+        -0.339,
         0.0,
-        -0.387
+        -0.335
       ],
       "max": [
-        0.387,
-        0.88,
-        0.387
+        0.353,
+        0.86,
+        0.335
       ],
       "nodes": [
         "Prop_Barrel",
@@ -98,7 +115,9 @@
       "nodes": [
         "Prop_CrateStack",
         "Mesh",
-        "Col_Main"
+        "Col_Main",
+        "Col_2",
+        "Col_3"
       ]
     },
     "Prop_Crate": {
@@ -126,14 +145,14 @@
       "category": "Props",
       "tris": 1468,
       "min": [
-        -0.647,
+        -0.639,
         0.0,
-        -0.24
+        -0.248
       ],
       "max": [
         0.63,
         0.681,
-        0.263
+        0.265
       ],
       "nodes": [
         "Prop_Planter",
@@ -209,12 +228,12 @@
       "min": [
         -0.31,
         -0.8,
-        -0.048
+        -0.054
       ],
       "max": [
         0.31,
         0.014,
-        0.048
+        0.054
       ],
       "nodes": [
         "Prop_HangingSign",
@@ -238,7 +257,23 @@
       "nodes": [
         "Prop_StationSign",
         "Mesh",
-        "Col_Main"
+        "Col_Main",
+        "Sign_Name",
+        "Sign_Name_Icon",
+        "Sign_Name_Text"
+      ],
+      "signs": [
+        {
+          "node": "Sign_Name",
+          "iconScale": 0.84919,
+          "text": "STATION",
+          "letterHeight": 0.264,
+          "room": 1.724,
+          "iconWidth": 0.3432,
+          "iconGap": 0.1188,
+          "textZ": 0.056,
+          "textDepth": 0.035
+        }
       ]
     },
     "Prop_Timetable": {
@@ -298,7 +333,8 @@
       "nodes": [
         "Prop_LuggageCart",
         "Mesh",
-        "Col_Main"
+        "Col_Main",
+        "Col_2"
       ]
     },
     "Prop_LevelCrossing": {
@@ -333,7 +369,7 @@
         -0.092
       ],
       "max": [
-        2.092,
+        2.079,
         1.1,
         0.12
       ],
@@ -366,7 +402,7 @@
     "Platform_Straight_3m": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Straight_3m.fbx",
       "category": "Platform",
-      "tris": 672,
+      "tris": 668,
       "min": [
         0.0,
         -0.0,
@@ -390,7 +426,7 @@
     "Platform_Straight_6m": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Straight_6m.fbx",
       "category": "Platform",
-      "tris": 1260,
+      "tris": 1256,
       "min": [
         0.0,
         -0.0,
@@ -414,7 +450,7 @@
     "Platform_EndCap_End": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_EndCap_End.fbx",
       "category": "Platform",
-      "tris": 1320,
+      "tris": 1292,
       "min": [
         0.0,
         -0.0,
@@ -438,7 +474,7 @@
     "Platform_EndCap_Start": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_EndCap_Start.fbx",
       "category": "Platform",
-      "tris": 1320,
+      "tris": 1292,
       "min": [
         -0.0,
         -0.0,
@@ -462,7 +498,7 @@
     "Platform_Corner_End": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Corner_End.fbx",
       "category": "Platform",
-      "tris": 1180,
+      "tris": 1176,
       "min": [
         0.0,
         -0.0,
@@ -486,7 +522,7 @@
     "Platform_Corner_Start": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Corner_Start.fbx",
       "category": "Platform",
-      "tris": 1180,
+      "tris": 1176,
       "min": [
         0.0,
         -0.0,
@@ -510,7 +546,7 @@
     "Platform_Ramp_End": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Ramp_End.fbx",
       "category": "Platform",
-      "tris": 1224,
+      "tris": 1236,
       "min": [
         0.0,
         0.0,
@@ -534,7 +570,7 @@
     "Platform_Ramp_Start": {
       "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Ramp_Start.fbx",
       "category": "Platform",
-      "tris": 1224,
+      "tris": 1236,
       "min": [
         0.0,
         0.0,
@@ -560,7 +596,7 @@
       "category": "Platform",
       "tris": 480,
       "min": [
-        -0.06,
+        0.0,
         0.0,
         1.63
       ],
@@ -589,7 +625,7 @@
         1.63
       ],
       "max": [
-        2.16,
+        2.1,
         1.15,
         5.17
       ],
@@ -602,6 +638,501 @@
       "platformTop": 1.05,
       "edge": 1.65,
       "depth": 3.5
+    },
+    "Platform_Straight_3m_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Straight_3m_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 640,
+      "min": [
+        0.0,
+        -0.0,
+        1.65
+      ],
+      "max": [
+        3.0,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Straight_3m_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Straight_6m_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Straight_6m_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1200,
+      "min": [
+        0.0,
+        -0.0,
+        1.65
+      ],
+      "max": [
+        6.0,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Straight_6m_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_EndCap_End_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_EndCap_End_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1068,
+      "min": [
+        0.0,
+        -0.0,
+        1.65
+      ],
+      "max": [
+        2.345,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_EndCap_End_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_EndCap_Start_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_EndCap_Start_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1068,
+      "min": [
+        -0.0,
+        -0.0,
+        1.65
+      ],
+      "max": [
+        2.345,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_EndCap_Start_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Corner_End_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Corner_End_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1024,
+      "min": [
+        0.0,
+        -0.0,
+        1.65
+      ],
+      "max": [
+        3.5,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Corner_End_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Corner_Start_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Corner_Start_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1024,
+      "min": [
+        0.0,
+        -0.0,
+        1.65
+      ],
+      "max": [
+        3.5,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Corner_Start_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Ramp_End_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Ramp_End_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1040,
+      "min": [
+        0.0,
+        0.0,
+        1.65
+      ],
+      "max": [
+        5.0,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Ramp_End_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Ramp_Start_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Ramp_Start_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1040,
+      "min": [
+        0.0,
+        0.0,
+        1.65
+      ],
+      "max": [
+        5.0,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Ramp_Start_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Stairs_End_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Stairs_End_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 312,
+      "min": [
+        0.0,
+        0.0,
+        1.63
+      ],
+      "max": [
+        2.1,
+        1.15,
+        5.17
+      ],
+      "nodes": [
+        "Platform_Stairs_End_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Stairs_Start_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Stairs_Start_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 312,
+      "min": [
+        0.0,
+        0.0,
+        1.63
+      ],
+      "max": [
+        2.1,
+        1.15,
+        5.17
+      ],
+      "nodes": [
+        "Platform_Stairs_Start_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Prop_Lockers": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_Lockers.fbx",
+      "category": "Props",
+      "tris": 2444,
+      "min": [
+        -0.95,
+        0.0,
+        -0.261
+      ],
+      "max": [
+        0.95,
+        2.1,
+        0.27
+      ],
+      "nodes": [
+        "Prop_Lockers",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_RouteBoard": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_RouteBoard.fbx",
+      "category": "Props",
+      "tris": 3036,
+      "min": [
+        -0.8,
+        0.0,
+        -0.22
+      ],
+      "max": [
+        0.8,
+        1.65,
+        0.12
+      ],
+      "nodes": [
+        "Prop_RouteBoard",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_NoticeBoard": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_NoticeBoard.fbx",
+      "category": "Props",
+      "tris": 1960,
+      "min": [
+        -0.65,
+        0.0,
+        -0.22
+      ],
+      "max": [
+        0.65,
+        1.675,
+        0.1
+      ],
+      "nodes": [
+        "Prop_NoticeBoard",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_CoffeeCounter": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_CoffeeCounter.fbx",
+      "category": "Props",
+      "tris": 1444,
+      "min": [
+        -1.05,
+        0.0,
+        -0.34
+      ],
+      "max": [
+        1.05,
+        1.34,
+        0.35
+      ],
+      "nodes": [
+        "Prop_CoffeeCounter",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_CoatStand": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_CoatStand.fbx",
+      "category": "Props",
+      "tris": 2116,
+      "min": [
+        -0.26,
+        0.0,
+        -0.299
+      ],
+      "max": [
+        0.387,
+        1.924,
+        0.302
+      ],
+      "nodes": [
+        "Prop_CoatStand",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_TicketBooth": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_TicketBooth.fbx",
+      "category": "Props",
+      "tris": 6240,
+      "min": [
+        -0.98,
+        0.0,
+        -0.857
+      ],
+      "max": [
+        0.98,
+        2.82,
+        0.915
+      ],
+      "nodes": [
+        "Prop_TicketBooth",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Prop_Banner": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_Banner.fbx",
+      "category": "Props",
+      "tris": 2856,
+      "min": [
+        -0.06,
+        -0.99,
+        -0.002
+      ],
+      "max": [
+        0.06,
+        0.14,
+        0.823
+      ],
+      "nodes": [
+        "Prop_Banner",
+        "Mesh"
+      ]
+    },
+    "Prop_PendantLamp": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_PendantLamp.fbx",
+      "category": "Props",
+      "tris": 506,
+      "min": [
+        -0.306,
+        -1.305,
+        -0.306
+      ],
+      "max": [
+        0.306,
+        0.01,
+        0.306
+      ],
+      "nodes": [
+        "Prop_PendantLamp",
+        "Mesh",
+        "Light_Lamp"
+      ]
+    },
+    "Station_Main": {
+      "fbx": "Assets/Art/Models/Environment/Station/Station_Main.fbx",
+      "category": "Building",
+      "tris": 119526,
+      "min": [
+        -18.28,
+        -0.0,
+        -9.63
+      ],
+      "max": [
+        10.73,
+        12.187,
+        0.8
+      ],
+      "nodes": [
+        "Station_Main",
+        "Walls",
+        "Plinth",
+        "Openings",
+        "Roof",
+        "Canopy",
+        "Facade",
+        "BriefingRoom",
+        "RoofFrame",
+        "Door_L",
+        "Col_Door_L",
+        "Door_R",
+        "Col_Door_R",
+        "Col_Main",
+        "Light_Lantern_L",
+        "Light_Lantern_R",
+        "Light_Fanlight",
+        "Light_Canopy",
+        "Spawn_Briefing",
+        "Briefing_Board",
+        "Spot_Coffee",
+        "Spot_Lockers",
+        "Light_Pendant_1",
+        "Light_Pendant_2",
+        "Light_Pendant_3",
+        "Light_Pendant_4",
+        "Light_Pendant_5",
+        "Light_Pendant_6",
+        "Briefing_Seat_1",
+        "Briefing_Seat_2",
+        "Briefing_Seat_3",
+        "Briefing_Seat_4",
+        "Briefing_Seat_5",
+        "Briefing_Seat_6",
+        "Briefing_Seat_7",
+        "Briefing_Seat_8",
+        "Sign_Name",
+        "Sign_Name_Icon",
+        "Sign_Name_Text",
+        "Sign_Route",
+        "Sign_Route_Icon",
+        "Sign_Route_Text"
+      ],
+      "floor": 1.05,
+      "footprint": [
+        -17.8,
+        10.2,
+        -9.0,
+        0.0
+      ],
+      "briefingRoom": [
+        -4.54,
+        4.54,
+        -8.74,
+        -0.26
+      ],
+      "signs": [
+        {
+          "node": "Sign_Name",
+          "iconScale": 1.0,
+          "text": "WHISTLETON",
+          "letterHeight": 0.368,
+          "room": 4.268,
+          "iconWidth": 0.4784,
+          "iconGap": 0.1656,
+          "textZ": 0.076,
+          "textDepth": 0.035
+        },
+        {
+          "node": "Sign_Route",
+          "iconScale": 1.0,
+          "text": "ROUTE",
+          "letterHeight": 0.224,
+          "room": 1.684,
+          "iconWidth": 0.2912,
+          "iconGap": 0.1008,
+          "textZ": 0.056,
+          "textDepth": 0.035
+        }
+      ]
     }
   },
   "station": {
@@ -1059,6 +1590,99 @@
       "rampShift": 0.0,
       "opts": {
         "cells": 0.0
+      }
+    },
+    "M_Stn_RoofRed": {
+      "ramp": [
+        "#833C32",
+        "#9F473D",
+        "#AC4E43",
+        "#B7564B",
+        "#CE6758"
+      ],
+      "smoothness": 0.1,
+      "rampShift": 0.0,
+      "opts": {
+        "cells": 0.7,
+        "cellSize": 0.9,
+        "rim": 0.25
+      }
+    },
+    "M_Stn_RoofRedDark": {
+      "ramp": [
+        "#833C32",
+        "#9F473D",
+        "#AC4E43",
+        "#B7564B",
+        "#CE6758"
+      ],
+      "smoothness": 0.1,
+      "rampShift": -0.3,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.9
+      }
+    },
+    "M_Stn_Chalk": {
+      "ramp": [
+        "#4F5F3A",
+        "#576840",
+        "#5B6C41",
+        "#5E6F41",
+        "#647544"
+      ],
+      "smoothness": 0.05,
+      "rampShift": 0.0,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.8,
+        "grime": 0.2
+      }
+    },
+    "M_Stn_ChalkDark": {
+      "ramp": [
+        "#4F5F3A",
+        "#576840",
+        "#5B6C41",
+        "#5E6F41",
+        "#647544"
+      ],
+      "smoothness": 0.05,
+      "rampShift": -0.35,
+      "opts": {
+        "cells": 0.3
+      }
+    },
+    "M_Stn_Locker": {
+      "ramp": [
+        "#333A62",
+        "#3A4270",
+        "#545E90",
+        "#5D689A",
+        "#6F76A2"
+      ],
+      "smoothness": 0.25,
+      "rampShift": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.8,
+        "grime": 0.25
+      }
+    },
+    "M_Stn_LockerDark": {
+      "ramp": [
+        "#333A62",
+        "#3A4270",
+        "#545E90",
+        "#5D689A",
+        "#6F76A2"
+      ],
+      "smoothness": 0.25,
+      "rampShift": -0.35,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.8,
+        "grime": 0.25
       }
     }
   }

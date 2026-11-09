@@ -187,7 +187,7 @@
   {
    "path": "Assets/Art/Prefabs/Station/Props/Prop_LampPost.prefab",
    "pos": [
-    -8.2,
+    -7.5,
     1.05,
     4.6
    ],
@@ -475,6 +475,7 @@
     "Mouth_Flat",
     "Mouth_Hmm",
     "Mouth_Smile",
+    "Mouth_Grin",
     "EyeClosed_L",
     "EyeClosed_R",
     "Prop_Sweat",
@@ -502,6 +503,7 @@
     "Mouth_Flat",
     "Mouth_Hmm",
     "Mouth_Smile",
+    "Mouth_Grin",
     "EyeClosed_L",
     "EyeClosed_R",
     "Prop_Sweat",
@@ -529,6 +531,7 @@
     "Mouth_Happy",
     "Mouth_Hmm",
     "Mouth_Smile",
+    "Mouth_Grin",
     "EyeClosed_L",
     "EyeClosed_R",
     "Prop_Sweat"
