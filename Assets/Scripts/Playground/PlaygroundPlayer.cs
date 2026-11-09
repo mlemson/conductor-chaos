@@ -67,6 +67,7 @@ namespace ConductorChaos.Playground
         private bool[] cameraBodyRenderingOff;
         private bool cameraHidesBody;
         private float cameraDistance = 4f;
+        private float cameraZoomVelocity;
         private float desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
         private float smoothFocusY, smoothFocusVelocity;
         private bool hasSmoothFocus;
@@ -77,7 +78,7 @@ namespace ConductorChaos.Playground
         private bool usingLookDownCamera;
         private Vector3 wagonPushDirection;
         private Vector3 airborneSupportVelocity;
-        private Vector3 cabinEye;
+        private Vector3 cameraEyeOffset;
         private readonly RaycastHit[] hits = new RaycastHit[32];
         private readonly Collider[] ledgeObstacles = new Collider[64];
         private readonly Collider[] cameraFocusObstacles = new Collider[16];
@@ -110,6 +111,8 @@ namespace ConductorChaos.Playground
         {
             sessionHost = NetworkManager.GetComponent<PlaygroundHost>();
             cameraDistance = desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
+            cameraZoomVelocity = 0f;
+            cameraEyeOffset = Vector3.zero;
             hasClearCameraPosition = false;
             usingCabinCamera = false;
             usingLookDownCamera = false;
@@ -350,6 +353,8 @@ namespace ConductorChaos.Playground
                 handPush = Mathf.Max(left.PushUp(press, current.y), right.PushUp(press, current.y));
             }
             bool bracing = handPush > 0f;
+            if (!grounded && !climbing && !bracing && !pulling && !jumpQueued && left.HasGrip != right.HasGrip)
+                (left.HasGrip ? left : right).SlideDown();
             int hangingHands = StaticGripCenter(out Vector3 gripCenter);
             bool hanging = !climbing && hangingHands > 0;
             wagonPushDirection = grounded && !hanging && !climbing && !jumpQueued ? moveDirection * uprightControl : Vector3.zero;
@@ -700,21 +705,19 @@ namespace ConductorChaos.Playground
             Quaternion look = Quaternion.Euler(pitch, yaw, 0f);
             usingLookDownCamera = pitch >= (usingLookDownCamera ? 50f : 58f);
             if (!trainDrive) trainDrive = FindAnyObjectByType<TrainDrive>();
-            if (trainDrive && trainDrive.TryGetCabin(transform.position, usingCabinCamera ? 0.04f : -0.06f, out var cabinFrame))
+            Transform cabinFrame = null;
+            usingCabinCamera = trainDrive && trainDrive.TryGetCabin(transform.position, usingCabinCamera ? 0.04f : -0.06f, out cabinFrame);
+            float zoomTarget = usingCabinCamera ? 0f : Mathf.SmoothStep(desiredCameraDistance, 0f, Mathf.InverseLerp(44f, 58f, pitch));
+            cameraDistance = PlaygroundControls.EaseCameraDistance(cameraDistance, zoomTarget, ref cameraZoomVelocity);
+            float eyeBlend = 1f - Mathf.SmoothStep(0f, 1f, cameraDistance / PlaygroundControls.FirstPersonDistance);
+            Vector3 eyeOffset = PlaygroundControls.FirstPersonEyeOffset(yaw) * eyeBlend;
+            if (usingCabinCamera)
             {
-                Vector3 cabinFocus = focus - Vector3.up * 0.18f - Quaternion.Euler(0f, yaw, 0f) * Vector3.forward * 0.10f;
-                Vector3 eye = trainDrive.ClampCabinEye(cabinFrame.InverseTransformPoint(cabinFocus));
-                cabinEye = usingCabinCamera
-                    ? Vector3.Lerp(cabinEye, eye, 1f - Mathf.Exp(-22f * Time.unscaledDeltaTime)) : eye;
-                usingCabinCamera = true;
-                cameraDistance = 0f;
-                hasClearCameraPosition = false;
-                SetCameraBodyHidden(true);
-                UpdateCameraFieldOfView(true);
-                playerCamera.transform.SetPositionAndRotation(cabinFrame.TransformPoint(cabinEye), look);
-                return;
+                Vector3 eye = trainDrive.ClampCabinEye(cabinFrame.InverseTransformPoint(focus + eyeOffset));
+                eyeOffset = cabinFrame.TransformPoint(eye) - focus;
             }
-            usingCabinCamera = false;
+            cameraEyeOffset = Vector3.Lerp(cameraEyeOffset, eyeOffset, 1f - Mathf.Exp(-12f * Time.unscaledDeltaTime));
+            focus += cameraEyeOffset;
             float nearHeight = Mathf.Tan(playerCamera.fieldOfView * 0.5f * Mathf.Deg2Rad) * playerCamera.nearClipPlane;
             float radius = Mathf.Max(0.16f, new Vector3(nearHeight * playerCamera.aspect, nearHeight, playerCamera.nearClipPlane).magnitude);
             Bounds modelBounds = new(focus, Vector3.one * 0.45f);
@@ -722,7 +725,7 @@ namespace ConductorChaos.Playground
                 if (renderer && renderer.enabled && renderer.gameObject.activeInHierarchy) modelBounds.Encapsulate(renderer.bounds);
 
             Vector3 direction = -(look * Vector3.forward);
-            float available = usingLookDownCamera ? 0f : Mathf.SmoothStep(desiredCameraDistance, 0f, Mathf.InverseLerp(44f, 58f, pitch));
+            float available = cameraDistance;
             int focusCount = Physics.OverlapSphereNonAlloc(focus, radius, cameraFocusObstacles, ~0, QueryTriggerInteraction.Ignore);
             int count = Physics.SphereCastNonAlloc(focus, radius, direction, hits, available, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
@@ -735,7 +738,11 @@ namespace ConductorChaos.Playground
                     { containsFocus = true; break; }
                 if (!containsFocus) available = Mathf.Min(available, Mathf.Max(0f, hits[i].distance - 0.025f));
             }
-            cameraDistance = Mathf.Min(available, Mathf.MoveTowards(cameraDistance, available, 4f * Time.unscaledDeltaTime));
+            if (available < cameraDistance)
+            {
+                cameraDistance = available;
+                cameraZoomVelocity = 0f;
+            }
             Vector3 cameraPosition = focus + direction * cameraDistance;
             bool clear = CameraPositionClear(cameraPosition, radius);
             if (!clear)
@@ -773,8 +780,10 @@ namespace ConductorChaos.Playground
             Vector3 viewDirection = offset.sqrMagnitude > 0.0001f ? offset.normalized : direction;
             Vector3 axis = new(Mathf.Abs(viewDirection.x), Mathf.Abs(viewDirection.y), Mathf.Abs(viewDirection.z));
             float modelEdge = Vector3.Dot(modelBounds.center - focus, viewDirection) + Vector3.Dot(modelBounds.extents, axis);
-            SetCameraBodyHidden(usingLookDownCamera || offset.magnitude < modelEdge + radius + (cameraHidesBody ? 0.15f : 0.03f));
-            UpdateCameraFieldOfView(usingLookDownCamera || offset.sqrMagnitude < 1.5f * 1.5f);
+            SetCameraBodyHidden(offset.magnitude < Mathf.Max(PlaygroundControls.FirstPersonDistance,
+                modelEdge + radius + (cameraHidesBody ? 0.15f : 0.03f)));
+            UpdateCameraFieldOfView(usingCabinCamera || usingLookDownCamera ||
+                (desiredCameraDistance >= 1.5f && offset.sqrMagnitude < 1.5f * 1.5f));
             playerCamera.transform.SetPositionAndRotation(cameraPosition, look);
         }
 
@@ -783,7 +792,7 @@ namespace ConductorChaos.Playground
             float target = fixedPosition
                 ? PlaygroundControls.ZoomFieldOfView(originalCameraFieldOfView, desiredCameraDistance)
                 : originalCameraFieldOfView;
-            playerCamera.fieldOfView = Mathf.MoveTowards(playerCamera.fieldOfView, target, 100f * Time.unscaledDeltaTime);
+            playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, target, 1f - Mathf.Exp(-7f * Time.unscaledDeltaTime));
         }
 
         private bool CameraPositionClear(Vector3 position, float radius)
@@ -868,6 +877,7 @@ namespace ConductorChaos.Playground
             private readonly ConfigurableJoint shoulder;
             private SpringJoint grip;
             private Collider gripSurface;
+            private Vector3 gripNormal;
             private TrainDrive cabGripTrain;
             private readonly Collider[] leverOverlaps = new Collider[32];
             private float nextAttempt;
@@ -885,6 +895,7 @@ namespace ConductorChaos.Playground
             public bool HasGrip => grip;
             public float PushUp(float press, float upSpeed) => cabGripTrain ? 0f
                 : PlaygroundControls.HandPushAcceleration(grip, gripSurface, press, upSpeed);
+            public void SlideDown() => PlaygroundControls.SlideWallGrip(grip, gripSurface, ref gripNormal);
 
             public bool TryStaticAnchor(out Vector3 anchor)
             {
@@ -1003,10 +1014,10 @@ namespace ConductorChaos.Playground
 
                 var train = TrainDrive.FindControlOwner(chosen.rigidbody);
                 bool cabGrip = train && train.IsSpawned && train.IsOwnedByServer && train.IsCabControlCollider(chosen.collider);
-                AttachGrip(chosen.collider, chosen.rigidbody, chosen.point, IsClimbSurface(chosen), cabGrip);
+                AttachGrip(chosen.collider, chosen.rigidbody, chosen.point, IsClimbSurface(chosen), cabGrip, chosen.normal);
             }
 
-            private bool AttachGrip(Collider surface, Rigidbody target, Vector3 point, bool climbingGrip, bool cabGrip)
+            private bool AttachGrip(Collider surface, Rigidbody target, Vector3 point, bool climbingGrip, bool cabGrip, Vector3 normal = default)
             {
                 if (cabGrip)
                 {
@@ -1018,6 +1029,7 @@ namespace ConductorChaos.Playground
                     if (collider) Physics.IgnoreCollision(collider, surface, true);
                 }
                 gripSurface = surface;
+                gripNormal = cabGrip ? Vector3.zero : surface.transform.InverseTransformDirection(normal);
                 grip = arm.gameObject.AddComponent<SpringJoint>();
                 grip.autoConfigureConnectedAnchor = false;
                 grip.connectedBody = target;

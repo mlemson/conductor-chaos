@@ -6,6 +6,7 @@ namespace ConductorChaos.Playground
     internal static class PlaygroundControls
     {
         public const float DefaultCameraDistance = 4f;
+        public const float FirstPersonDistance = 0.8f;
 
         public static float ZoomDistance(float distance, float scroll)
         {
@@ -13,14 +14,47 @@ namespace ConductorChaos.Playground
                 && (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer))
                 scroll /= 120f;
 
-            return Mathf.Clamp(distance - scroll * 0.35f, 1.5f, 6f);
+            return Mathf.Clamp(distance - scroll * 0.35f, 0f, 6f);
         }
 
         public static float ZoomFieldOfView(float original, float distance)
         {
-            float halfAngle = original * 0.5f * Mathf.Deg2Rad;
-            float zoomed = 2f * Mathf.Atan(Mathf.Tan(halfAngle) * distance / DefaultCameraDistance) * Mathf.Rad2Deg;
-            return Mathf.Clamp(zoomed, 30f, 85f);
+            return Mathf.Clamp(original + (distance - DefaultCameraDistance) * 2.5f, 45f, 85f);
+        }
+
+        public static float EaseCameraDistance(float current, float target, ref float velocity)
+        {
+            float distance = Mathf.SmoothDamp(current, target, ref velocity, 0.22f, 9f, Time.unscaledDeltaTime);
+            if (Mathf.Abs(distance - target) > 0.005f) return distance;
+            velocity = 0f;
+            return target;
+        }
+
+        public static Vector3 FirstPersonEyeOffset(float yaw)
+        {
+            return Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, -0.18f, -0.16f);
+        }
+
+        public static void SlideWallGrip(SpringJoint grip, Collider surface, ref Vector3 surfaceNormal)
+        {
+            if (!grip || !surface || !surface.enabled || !surface.gameObject.activeInHierarchy
+                || surfaceNormal.sqrMagnitude < 0.5f) return;
+
+            var support = grip.connectedBody;
+            if (support && !support.isKinematic) return;
+            Vector3 normal = surface.transform.TransformDirection(surfaceNormal);
+            if (Mathf.Abs(normal.y) > 0.35f) return;
+
+            Vector3 anchor = support ? support.transform.TransformPoint(grip.connectedAnchor) : grip.connectedAnchor;
+            if ((grip.transform.TransformPoint(grip.anchor) - anchor).sqrMagnitude > 0.30f * 0.30f) return;
+            Vector3 step = Vector3.ProjectOnPlane(Vector3.down, normal).normalized * (0.25f * Time.fixedDeltaTime);
+            var probe = new Ray(anchor + step + normal * 0.10f, -normal);
+            // Stay on the same wall and do not carry the grip around a sharp edge or across a gap.
+            if (!surface.Raycast(probe, out RaycastHit hit, 0.20f) || Mathf.Abs(hit.normal.y) > 0.35f
+                || Vector3.Dot(normal, hit.normal) < 0.75f || hit.point.y >= anchor.y) return;
+
+            grip.connectedAnchor = support ? support.transform.InverseTransformPoint(hit.point) : hit.point;
+            surfaceNormal = surface.transform.InverseTransformDirection(hit.normal);
         }
 
         public static float HandPushAcceleration(SpringJoint grip, Collider surface, float press, float upSpeed)
