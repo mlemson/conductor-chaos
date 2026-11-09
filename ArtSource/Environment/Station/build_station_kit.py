@@ -1,15 +1,19 @@
-"""Stationnetje + perronkit + props bouwen (issue #182). Zie de modules in deze map voor maten en conventies.
+"""Stationnetje + hoofdstation + perronkit + props bouwen (issues #182, #207). Zie de modules in deze map voor maten
+en conventies.
 
-    python ArtSource/Environment/Station/build_station_kit.py
+    python ArtSource/Environment/Station/build_station_kit.py                 # alles
+    python ArtSource/Environment/Station/build_station_kit.py main briefing   # alleen hoofdstation + briefingprops
 
 Uitvoer:
   Assets/Art/Models/Environment/Station/Station_Building.fbx
+  Assets/Art/Models/Environment/Station/Station_Main.fbx             (hoofdstation met briefingruimte)
   Assets/Art/Models/Environment/Station/Platform/Platform_*.fbx      (zelfde pivot als een spoorstuk)
   Assets/Art/Models/Environment/Station/Props/Prop_*.fbx             (pivot midden-onder, voorkant +Z)
   Assets/Art/Materials/Environment/Station/M_Stn_*.mat
   ArtSource/Exports/Environment/Station/*.glb + StationKit.json
 Col_*-knopen zijn verborgen botsvormen; de prefabbouwer in Unity (Conductor Chaos > Art > Station) maakt er
-MeshColliders van. Light_*-knopen zijn ankers voor lampen, Door draait om zijn scharnier (Y-as).
+MeshColliders van. Light_*-knopen zijn ankers voor lampen, Door (Door_L/Door_R) draait om zijn scharnier (Y-as).
+Spawn_*, Briefing_* en Spot_* zijn lege ankers voor gameplay (briefingruimte).
 """
 import os
 import sys
@@ -17,6 +21,8 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import main_station as main_station  # noqa: E402
+import main_station_props as mprops  # noqa: E402
 import station_building as building  # noqa: E402
 import station_platform as platform  # noqa: E402
 import station_props as props  # noqa: E402
@@ -62,6 +68,29 @@ def build_props(manifest):
         export(name, "Props", nodes, density=900, radius=0.12, manifest=manifest)
 
 
+def build_briefing_props(manifest):
+    """Losse props uit de briefingruimte van het hoofdstation (issue #207), voor hergebruik."""
+    P = {}
+    P["Prop_Lockers"] = simple("Prop_Lockers", *mprops.lockers())
+    P["Prop_RouteBoard"] = simple("Prop_RouteBoard", *mprops.route_board_prop())
+    P["Prop_NoticeBoard"] = simple("Prop_NoticeBoard", *mprops.notice_board_prop())
+    P["Prop_CoffeeCounter"] = simple("Prop_CoffeeCounter", *mprops.coffee_counter_prop())
+    P["Prop_CoatStand"] = simple("Prop_CoatStand", *mprops.coat_stand())
+    P["Prop_TicketBooth"] = simple("Prop_TicketBooth", *mprops.ticket_booth())
+    m, _ = mprops.banner()
+    P["Prop_Banner"] = simple("Prop_Banner", m, None)
+    P["Prop_PendantLamp"] = simple("Prop_PendantLamp", mprops.pendant_lamp(1.2), None,
+                                   [("Light_Lamp", None, None, (0, -1.22, 0), None, True)])
+    for name, nodes in P.items():
+        export(name, "Props", nodes, density=900, radius=0.12, manifest=manifest)
+
+
+def build_main(manifest):
+    export("Station_Main", None, main_station.build(), density=170, radius=0.30, manifest=manifest,
+           extra={"floor": main_station.FL, "footprint": [main_station.CX0, main_station.WX1, -main_station.HD, 0.0],
+                  "briefingRoom": [main_station.XI0, main_station.XI1, main_station.ZI0, main_station.ZI1]})
+
+
 def build_platform(manifest, *, tactile=True):
     rng = np.random.default_rng([2026, 182])
     mods = {f"Platform_Straight_{length}m": platform.straight(length, rng, tactile=tactile) for length in (3, 6)}
@@ -87,18 +116,25 @@ def build_building(manifest):
            extra={"floor": building.FL, "footprint": [building.LX, building.HW, -building.D, 0.0]})
 
 
-def main(which=("props", "platform", "building")):
+ALL = ("props", "briefing", "platform", "building", "main")
+
+
+def main(which=ALL):
     manifest = {}
     if "props" in which:
         build_props(manifest)
+    if "briefing" in which:
+        build_briefing_props(manifest)
     if "platform" in which:
         build_platform(manifest)
     if "platform" in which or "platform-no-stripe" in which:
         build_platform(manifest, tactile=False)
     if "building" in which:
         build_building(manifest)
+    if "main" in which:
+        build_main(manifest)
     write_manifest(manifest)
 
 
 if __name__ == "__main__":
-    main(tuple(sys.argv[1:]) or ("props", "platform", "building"))
+    main(tuple(sys.argv[1:]) or ALL)

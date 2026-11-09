@@ -3,7 +3,7 @@
 //    Assets/Art/Prefabs/Station/... met:
 //      - een MeshCollider op elke verborgen botsvorm Col_* (renderer uit), zoals de spoorkit;
 //      - een warm puntlicht op elk anker Light_* (lantaarns, hanglampen in de hal);
-//      - static flags op alles behalve bewegende delen (Door van het gebouw, Boom van de overweg).
+//      - static flags op alles behalve bewegende delen (Door/Door_L/Door_R van de gebouwen, Boom van de overweg).
 //    Gebeurt automatisch als prefabs ontbreken of na het (her)importeren van de modellen;
 //    opnieuw via Conductor Chaos > Art > Station > Rebuild Station Prefabs.
 // 2) Conductor Chaos > Art > Station > Build Station Example Scene: perron langs drie spoorstukken, het gebouw,
@@ -29,7 +29,7 @@ namespace ConductorChaos.EditorTools
         const string ExampleLayout = "Assets/Art/Layouts/StationExample.json";
         const string ExampleScene = "Assets/Scenes/Art/StationExample.unity";
         static readonly Color LampColor = new Color(1.0f, 0.85f, 0.55f);
-        static readonly string[] Moving = { "Door", "Boom" };
+        static readonly string[] Moving = { "Door", "Door_L", "Door_R", "Boom" };
         static readonly Dictionary<string, float> MovableMasses = new()
         {
             { "Prop_Barrel", 2f },
@@ -107,7 +107,8 @@ namespace ConductorChaos.EditorTools
                             var light = t.gameObject.AddComponent<Light>();
                             light.type = LightType.Point;
                             light.color = LampColor;
-                            bool hall = t.name.StartsWith("Light_Hall");
+                            bool hall = t.name.StartsWith("Light_Hall") || t.name.StartsWith("Light_Pendant") ||
+                                        t.name.StartsWith("Light_Fanlight");
                             light.range = hall ? 5.5f : 4.0f;
                             light.intensity = hall ? 1.6f : 1.2f;
                             light.shadows = LightShadows.None;

@@ -1,0 +1,70 @@
+fileFormatVersion: 2
+guid: 37785e585f5ef385b8f8ad44160f570a
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Collider
+    second: {fileID: 2100000, guid: a7fc0ff57b6e8961de45c5adb6ed0b72, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Cream
+    second: {fileID: 2100000, guid: f33ba799c431d373cd590530ce10a073, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Dark
+    second: {fileID: 2100000, guid: f4f8c14a2d071b7df81729e35f8c15fb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Locker
+    second: {fileID: 2100000, guid: 3997a5df31b8cf4834b8d7e9b35a15f2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_LockerDark
+    second: {fileID: 2100000, guid: 0442184946bbeebf7e1522095cb07aeb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Timber
+    second: {fileID: 2100000, guid: 649095d9b374d32d067d51345ade6719, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_WoodLight
+    second: {fileID: 2100000, guid: a90ea068aa940855226823fc42964908, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Yellow
+    second: {fileID: 2100000, guid: a6e0339c23b66e2d77f37e89e2641770, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

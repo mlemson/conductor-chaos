@@ -226,7 +226,8 @@ def station_board(text="STATION", width=2.4, height=0.62, depth=0.10):
     """Marine bord met gele rand, crème treinpictogram en tekst (voorkant +Z), gecentreerd in de oorsprong."""
     w, h = width, height
     parts = [slab(rounded_rect_loop(-w / 2, w / 2, -h / 2, h / 2, h * 0.48, 6), [], -depth / 2, depth / 2, 0.025, "M_Stn_Yellow"),
-             slab(rounded_rect_loop(-w / 2 + 0.07, w / 2 - 0.07, -h / 2 + 0.07, h / 2 - 0.07, h * 0.38, 6), [],
+             slab(rounded_rect_loop(-w / 2 + 0.07, w / 2 - 0.07, -h / 2 + 0.07, h / 2 - 0.07,
+                                    min(h * 0.38, h / 2 - 0.075), 6), [],
                   -depth / 2 - 0.01, depth / 2 + 0.012, 0.02, "M_Stn_Navy")]
     th = h * 0.40
     txt, tw = text_mesh(text, th, 0.035, "M_Stn_Cream")
@@ -441,7 +442,8 @@ def shelter(W=3.4, D=2.2):
     return mk.merge(*parts), col
 
 
-def gable_roof(L, D, y0, rise, ridge_axis="x", tiles=True, thick=0.16, rows=None):
+def gable_roof(L, D, y0, rise, ridge_axis="x", tiles=True, thick=0.16, rows=None, tile_mat="M_Stn_Roof",
+               ridge_mat="M_Stn_RoofDark"):
     """Zadeldak met dikke dakpannen in rijen (concept), nokbalk en windveren; nok langs `ridge_axis`.
     L = lengte langs de nok, D = totale breedte, y0 = onderkant dakrand, rise = hoogte tot de nok."""
     half = D / 2
@@ -471,11 +473,11 @@ def gable_roof(L, D, y0, rise, ridge_axis="x", tiles=True, thick=0.16, rows=None
                     top = s0 + row + 0.10
                     e_ins = ins + 0.02 * (r % 2)                    # overlappende rijen: kopse kanten verspringen
                     xa_, xb_ = xa + (e_ins if xa <= -L / 2 + 1e-6 else 0), xb - (e_ins if xb >= L / 2 - 1e-6 else 0)
-                    t = rbox(xa_ + 0.012, xb_ - 0.012, 0.0, 0.10, s0 - 0.02 - top, 0.0, 0.045, "M_Stn_Roof", div=1)
+                    t = rbox(xa_ + 0.012, xb_ - 0.012, 0.0, 0.10, s0 - 0.02 - top, 0.0, 0.045, tile_mat, div=1)
                     t = t.transform(R=mk.rot_x(0.09), t=(0, 0.004, top))      # onderrand iets opgetild: geschubd
                     parts.append(_orient_slope(t.transform(R=mk.rot_x(-pitch)), side, pitch, half, y0, rise))
     # nokbalk
-    parts.append(cyl(0.13, L + 0.06, 16, 0.03, "M_Stn_RoofDark", axis="x").transform(t=(0, y0 + rise + 0.07, 0)))
+    parts.append(cyl(0.13, L + 0.06, 16, 0.03, ridge_mat, axis="x").transform(t=(0, y0 + rise + 0.07, 0)))
     m = mk.merge(*parts)
     col_parts = []
     for side in (1, -1):

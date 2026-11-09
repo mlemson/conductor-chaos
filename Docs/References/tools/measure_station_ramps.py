@@ -16,6 +16,10 @@ SPECS = {
     "plinth_stone": ("Environment/station-concept.png", (420, 480, 880, 560), "#AD9BA4", 7),
     # Perronkit (Docs/References/Environment/platform-kit-concept.png)
     "platform_stone": ("Environment/platform-kit-concept.png", (0, 400, 1122, 520), "#B69B9A", 7),
+    # Hoofdstation met briefingruimte (Docs/References/Environment/main-station-concept.png)
+    "roof_terracotta": ("Environment/main-station-concept.png", (520, 30, 1100, 250), "#A5503F", 9),
+    "chalk_green": ("Environment/main-station-concept.png", (450, 815, 660, 905), "#5F7042", 8),
+    "locker_blue": ("Environment/main-station-concept.png", (805, 830, 955, 975), "#5B6493", 8),
 }
 
 

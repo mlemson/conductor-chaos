@@ -190,6 +190,10 @@ Uitgewerkt in het stationnetje en de perronkit (issue #182, [ontwerpblad](Art/St
 - **Perron:** grijs-mauve tegels in een raster van 0,75 m, lichte randtegels, gele geleidelijn met noppen, stenen blokken langs de zijkant; bovenkant 1,05 m (= bodem wagonbak), rand 1,65 m uit het hart van het spoor.
 - **Props:** marine metaal (bank-poten, palen, borden), geel als accent, oranjebruin hout; tekst en pictogrammen in crème met afgeronde streken (geen fontbestand).
 
+Hoofdstation met briefingruimte (issue #207, [ontwerpblad](Art/StationMain_DesignSheet.png), [briefingruimte](Art/StationMain_BriefingRoom.png)):
+- **Gebouw:** dezelfde taal als het stationnetje (crème pleister, oranjebruin vakwerk, stenen plint, marine deuren en borden), maar groter en feestelijker: klokgevel met waaierraam, MAIN STATION-bord, twee vleugels met dakkapellen, perronluifel. Daken in **rode pannen** (`roof_terracotta`) zodat het hoofdstation zich onderscheidt van de marine daken van de kleine stations.
+- **Briefingruimte:** warme houten vloer en lambrisering, open kap met trekbalken, marine hanglampen. Achterwand = blikvanger: TRAINING HUB-bord, groen krijtbord met route (`chalk_green`), prikbord en vertrekbord. Koffiebar links, blauwe kluisjes (`locker_blue`) en kapstok met pet en jas rechts, banken in twee rijen op een rond marine kleed.
+
 ### Spoor / landschap
 - duidelijke spoorlijn
 - grote leesbare bruggen

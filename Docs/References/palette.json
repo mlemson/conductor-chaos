@@ -527,6 +527,36 @@
           "#C9B0B5",
           "#DEC6C4"
         ]
+      },
+      "roof_terracotta": {
+        "name": "Hoofdstation: pannendak",
+        "ramp": [
+          "#833C32",
+          "#9F473D",
+          "#AC4E43",
+          "#B7564B",
+          "#CE6758"
+        ]
+      },
+      "chalk_green": {
+        "name": "Briefing: routebord",
+        "ramp": [
+          "#4F5F3A",
+          "#576840",
+          "#5B6C41",
+          "#5E6F41",
+          "#647544"
+        ]
+      },
+      "locker_blue": {
+        "name": "Briefing: kluisjes",
+        "ramp": [
+          "#333A62",
+          "#3A4270",
+          "#545E90",
+          "#5D689A",
+          "#6F76A2"
+        ]
       }
     },
     "UI & logo": {

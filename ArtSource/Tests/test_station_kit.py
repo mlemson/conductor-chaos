@@ -1,4 +1,4 @@
-"""Controleert het stationnetje en de perronkit (issue #182). Draai na build_station_kit.py:
+"""Controleert het stationnetje, het hoofdstation en de perronkit (issues #182, #207). Draai na build_station_kit.py:
 
     python ArtSource/Tests/test_station_kit.py
 
@@ -9,9 +9,11 @@
 * geen dubbele vlakken (z-fighting): niet binnen een asset, niet tussen de assets in de voorbeeldopstelling,
   en aan elkaar geklikte hekken/perronstukken vallen niet samen (ArtSource/Tools/zfight.py)
 * spullen onder de luifel staan los van elkaar, van de palen en van de plint
+* hoofdstation: dubbele deur ruim genoeg, briefingruimte met ankers op de vloer en binnen de muren
 """
 import json
 import os
+import re
 import struct
 import sys
 
@@ -20,6 +22,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "ArtSource", "Environment", "Station"))
+import main_station as MS  # noqa: E402
 import station_building as B  # noqa: E402
 import station_common as C  # noqa: E402
 sys.path.insert(0, os.path.join(ROOT, "ArtSource", "Tools"))
@@ -129,18 +132,21 @@ def test_building_walkable():
 
 
 def test_assets():
-    decorative = {"Prop_WallLantern", "Prop_HangingSign"}
+    decorative = {"Prop_WallLantern", "Prop_HangingSign", "Prop_Banner", "Prop_PendantLamp"}
+    budgets = {"Station_Building": 50000, "Station_Main": 130000}   # hoofdstation: gevel, vleugels én interieur
     for name, a in KIT["assets"].items():
         cols = [n for n in a["nodes"] if n.startswith("Col_")]
         if name not in decorative:
             assert cols, f"{name}: geen botsvorm"
-        budget = 50000 if name == "Station_Building" else 8000
+        budget = budgets.get(name, 8000)
         assert a["tris"] < budget, f"{name}: {a['tris']} driehoeken"
     for mname, m in KIT["materials"].items():
         assert m["ramp"] in RAMPS, f"{mname}: ramp niet uit palette.json"
     assert "Door" in KIT["assets"]["Station_Building"]["nodes"]
     assert "Col_Door" in KIT["assets"]["Station_Building"]["nodes"]
     assert "Boom" in KIT["assets"]["Prop_LevelCrossing"]["nodes"]
+    for n in ("Door_L", "Door_R", "Col_Door_L", "Col_Door_R", "Spawn_Briefing", "Briefing_Board"):
+        assert n in KIT["assets"]["Station_Main"]["nodes"], f"Station_Main mist {n}"
     print(f"PASS assets: {len(KIT['assets'])} modellen, {len(KIT['materials'])} materialen uit palette.json")
 
 
@@ -166,7 +172,7 @@ def test_layout_no_double_faces():
     # extra: elk perronstuk en het hek tegen een kopie van zichzelf geklikt
     for name, a in KIT["assets"].items():
         if name.startswith("Platform_Straight") or name == "Prop_Fence_2m":
-            L = float(name.rsplit("_", 1)[1].rstrip("m"))          # Straight_3m / Straight_6m / Fence_2m
+            L = float(re.search(r"_(\d+(?:\.\d+)?)m(?:_|$)", name).group(1))   # Straight_3m(_NoStripe) / Fence_2m
             items += [{"url": S.S + name + ".glb", "pos": [100.0, 0, 50.0 + 10 * len(items)]},
                       {"url": S.S + name + ".glb", "pos": [100.0 + L, 0, 50.0 + 10 * len(items)]}]
     for k, it in enumerate(items):
@@ -197,6 +203,30 @@ def test_leanto_furniture_free():
     print(f"PASS luifel: {len(B._furniture())} spullen staan vrij")
 
 
+def test_main_station():
+    """Hoofdstation: deur, vrije hoogte binnen, briefingankers op de vloer en binnen de muren."""
+    heights = [json.load(open(os.path.join(EXP, f + ".materials.json"), encoding="utf-8"))["height_m"]
+               for f in ("Conductor", "ElderlyPassenger", "Tourist", "RailMechanic")]
+    tallest = max(heights)
+    assert abs(MS.FL - C.PLATFORM_TOP) < 1e-9, "vloer niet op perronhoogte"
+    door_w = MS.DOOR[1] - MS.DOOR[0]
+    door_h = MS.DOOR[2] + door_w / 2 - MS.FL
+    assert door_w >= 2.0 and door_h >= 1.8 * tallest, (door_w, door_h)
+    assert MS.TIE_Y - MS.FL >= 2.2 * tallest, "trekbalken te laag"
+    nodes = {n[0]: n for n in MS.build()}
+    seats = [k for k in nodes if k.startswith("Briefing_Seat_")]
+    assert len(seats) >= 6, seats
+    for k in ["Spawn_Briefing", "Briefing_Board", "Spot_Coffee", "Spot_Lockers"] + seats:
+        x, y, z = nodes[k][3]
+        m = 0.05 if k == "Briefing_Board" else 0.2          # het bord hangt tegen de achterwand
+        assert MS.XI0 + 0.3 < x < MS.XI1 - 0.3 and MS.ZI0 + m < z < MS.ZI1 - 0.2, f"{k} buiten de ruimte: {x, z}"
+        assert MS.FL - 0.01 <= y <= MS.FL + 3.5, f"{k} op hoogte {y:.2f}"
+    for k in ("Door_L", "Door_R"):
+        assert "Col_" + k in nodes and nodes["Col_" + k][2] == k, f"{k}: botsvorm hangt niet aan de deur"
+    print(f"PASS hoofdstation: deur {door_w:.2f}x{door_h:.2f} m, {len(seats)} zitplaatsen, "
+          f"ruimte {MS.XI1 - MS.XI0:.1f}x{MS.ZI1 - MS.ZI0:.1f} m")
+
+
 if __name__ == "__main__":
     test_train_clearance()
     test_platform_modules()
@@ -205,3 +235,4 @@ if __name__ == "__main__":
     test_no_double_faces()
     test_layout_no_double_faces()
     test_leanto_furniture_free()
+    test_main_station()
