@@ -120,6 +120,11 @@ namespace ConductorChaos.UI
             return rt;
         }
 
+        public static RectTransform MenuPanel(Transform parent, string name, Vector2 min, Vector2 max)
+        {
+            return Panel(parent, name, min, max, Navy, 3, Color.Lerp(Gold, Dark, 0.42f));
+        }
+
         public static RectTransform PanelInset(Transform parent, Color color, float margin)
         {
             RectTransform rt = Rect(parent, "Inner", Vector2.zero, Vector2.one,

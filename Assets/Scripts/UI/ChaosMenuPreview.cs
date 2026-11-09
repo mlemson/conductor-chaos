@@ -34,29 +34,24 @@ namespace ConductorChaos.UI
             Canvas canvas = ChaosUI.MakeCanvas(transform, "Conductor Chaos | Menu Preview", true);
             RectTransform root = (RectTransform)canvas.transform;
 
-            Color softScrim = ChaosUI.Dark; softScrim.a = 0.16f;
-            Color skyScrim = ChaosUI.Navy; skyScrim.a = 0.22f;
-            ChaosUI.Panel(root, "Light screen scrim", V(0, 0), V(1, 1), softScrim);
-            ChaosUI.Panel(root, "Muted background ribbon", V(0.32f, 0.76f), V(1, 1), skyScrim);
-            ChaosUI.Panel(root, "Subtle horizon strip", V(0.32f, 0.74f), V(1, 0.755f), ChaosUI.TrainRedDark);
-            ChaosUI.Label(root, "Scene status", "UI STYLE PREVIEW  ·  Not an online lobby", 15, ChaosUI.Muted,
-                TextAnchor.MiddleRight, FontStyle.Bold, V(0.55f, 0.92f), V(0.97f, 0.97f));
+            Color softScrim = ChaosUI.Dark;
+            softScrim.a = 0.20f;
+            ChaosUI.Panel(root, "Background", V(0, 0), V(1, 1), softScrim);
+            ChaosUI.Label(root, "Scene status", "UI-VOORBEELD", 15, ChaosUI.Muted,
+                TextAnchor.MiddleRight, FontStyle.Bold, V(0.55f, 0.92f), V(0.96f, 0.975f));
 
-            RectTransform left = ChaosUI.Panel(root, "Left menu", V(0.035f, 0.13f), V(0.31f, 0.9f),
-                ChaosUI.Slate, 2, ChaosUI.Muted);
-            ChaosUI.MenuLogo(left, V(0.045f, 0.73f), V(0.955f, 0.975f));
-            ChaosUI.Label(left, "Tagline", "The train will probably be fine.", 15, ChaosUI.Muted,
-                TextAnchor.MiddleCenter, FontStyle.Normal, V(0.05f, 0.665f), V(0.95f, 0.72f));
+            RectTransform left = ChaosUI.MenuPanel(root, "Left menu", V(0.04f, 0.105f), V(0.31f, 0.745f));
+            ChaosUI.MenuLogo(root, V(0.055f, 0.709f), V(0.295f, 0.98f));
 
-            ChaosUI.Action(left, "Play trial", "PLAY LOCAL TRIAL", V(0.08f, 0.53f), V(0.92f, 0.64f),
+            ChaosUI.Action(left, "Play trial", "PLAY LOCAL TRIAL", V(0.085f, 0.73f), V(0.915f, 0.91f),
                 ChaosUI.Gold, ChaosUI.Ink, StartLocalTrial, 22, iconKey: "play");
-            ChaosUI.Action(left, "Lobby tab", "LOBBY PREVIEW", V(0.08f, 0.405f), V(0.92f, 0.515f),
+            ChaosUI.Action(left, "Lobby tab", "LOBBY PREVIEW", V(0.085f, 0.565f), V(0.915f, 0.70f),
                 ChaosUI.Paper, ChaosUI.Ink, ShowLobby, 21, iconKey: "player-group");
-            ChaosUI.Action(left, "Settings tab", "SETTINGS", V(0.08f, 0.28f), V(0.92f, 0.39f),
+            ChaosUI.Action(left, "Settings tab", "SETTINGS", V(0.085f, 0.40f), V(0.915f, 0.535f),
                 ChaosUI.Paper, ChaosUI.Ink, ShowSettings, 21, iconKey: "options");
-            ChaosUI.Action(left, "HUD preview tab", "HUD PREVIEW", V(0.08f, 0.155f), V(0.92f, 0.265f),
+            ChaosUI.Action(left, "HUD preview tab", "HUD PREVIEW", V(0.085f, 0.235f), V(0.915f, 0.37f),
                 ChaosUI.Paper, ChaosUI.Ink, ShowHud, 21, iconKey: "controls");
-            ChaosUI.Action(left, "Quit", "QUIT", V(0.08f, 0.035f), V(0.92f, 0.14f),
+            ChaosUI.Action(left, "Quit", "QUIT", V(0.085f, 0.07f), V(0.915f, 0.205f),
                 ChaosUI.TrainRed, ChaosUI.Paper, QuitGame, 20, iconKey: "quit");
 
             // Action() now places the approved artwork inside each button once.
@@ -70,12 +65,11 @@ namespace ConductorChaos.UI
 
         private void BuildLobby(RectTransform root)
         {
-            lobby = ChaosUI.Panel(root, "Lobby (concept only)", V(0.575f, 0.13f), V(0.965f, 0.9f),
-                ChaosUI.Slate, 2, ChaosUI.Muted);
-            ChaosUI.Label(lobby, "Lobby title", "MULTIPLAYER LOBBY", 31, ChaosUI.Paper,
-                TextAnchor.MiddleLeft, FontStyle.Bold, V(0.035f, 0.88f), V(0.75f, 0.975f));
-            ChaosUI.Label(lobby, "Lobby context", "0 connected  /  1–6 planned", 16, ChaosUI.GoldLight,
-                TextAnchor.MiddleRight, FontStyle.Normal, V(0.69f, 0.895f), V(0.97f, 0.96f));
+            lobby = ChaosUI.MenuPanel(root, "Lobby (concept only)", V(0.595f, 0.105f), V(0.96f, 0.91f));
+            RectTransform heading = ChaosUI.Panel(lobby, "Heading paper", V(0.045f, 0.855f), V(0.72f, 0.96f), ChaosUI.Paper);
+            ChaosUI.Label(heading, "Lobby title", "Samen op reis", 30, ChaosUI.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            RectTransform badge = ChaosUI.Panel(lobby, "Preview badge", V(0.75f, 0.88f), V(0.955f, 0.935f), ChaosUI.Dark);
+            ChaosUI.Label(badge, "Lobby context", "VOORBEELD", 14, ChaosUI.Muted, TextAnchor.MiddleCenter, FontStyle.Bold);
 
             Row(lobby, "Host", 0.75f, "LOCAL HOST", "Not started · play trial to host", "player");
             Row(lobby, "Friend 1", 0.645f, "PLAYER SLOT 2", "Empty · inviting friends not implemented", "invite");
@@ -109,8 +103,7 @@ namespace ConductorChaos.UI
 
         private void BuildSettings(RectTransform root)
         {
-            settings = ChaosUI.Panel(root, "Settings", V(0.575f, 0.13f), V(0.965f, 0.9f),
-                ChaosUI.Slate, 2, ChaosUI.Muted);
+            settings = ChaosUI.MenuPanel(root, "Settings", V(0.595f, 0.105f), V(0.96f, 0.91f));
             ChaosUISpriteCatalog.Add(settings, "Settings sprite", "options",
                 V(0.035f, 0.87f), V(0.12f, 0.97f), ChaosUI.Paper);
             ChaosUI.Label(settings, "Heading", "SETTINGS", 32, ChaosUI.Paper,
