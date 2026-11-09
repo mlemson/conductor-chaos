@@ -55,10 +55,11 @@ LPOST_X = LX + 0.28
 def _furniture():
     """Losse spullen onder de luifel: (naam, (mesh, collider), rotatie, plek). Ook gebruikt door de test."""
     x_in = -HW
-    return [("bench", props.bench(1.7), mk.rot_y(-math.pi / 2), (x_in - 0.62, FL, -1.75)),
-            ("barrel", props.barrel(), mk.rot_y(0.4), (x_in - 0.60, FL, -0.45)),
-            ("barrel_small", props.barrel(0.70, 0.29), mk.rot_y(1.1), (LX + 0.95, FL, -D + 0.62)),
-            ("crates", props.crate_stack(), mk.rot_y(0.5 * math.pi + 0.15), (LX + 1.05, FL, -D + 1.75))]
+    return [("Bench_Canopy", props.bench(1.7, split_colliders=True), mk.rot_y(-math.pi / 2), (x_in - 0.62, FL, -1.75)),
+            ("Barrel_Canopy", props.barrel(), mk.rot_y(0.4), (x_in - 0.60, FL, -0.45)),
+            ("Barrel_Small", props.barrel(0.70, 0.29), mk.rot_y(1.1), (LX + 0.95, FL, -D + 0.62)),
+            ("CrateStack_Canopy", props.crate_stack(split_colliders=True), mk.rot_y(0.5 * math.pi + 0.15),
+             (LX + 1.05, FL, -D + 1.75))]
 L_PITCH = 14 * DEG
 L_TOP_AT_GUTTER = 3.36            # bovenkant luifeldak waar het onder de hoofddakgoot doorloopt (x = -3.85)
 
@@ -371,11 +372,6 @@ def lean_to(rng):
             if -D + 0.2 < z + dz < -0.2:
                 parts.append(capsule((LPOST_X, beam_bot - 0.55, z + dz * 0.1), (LPOST_X, beam_bot + 0.06, z + dz),
                                      0.065, mat="M_Stn_Timber", seg=6, rings=1))
-    # inrichting: bank met de rug naar de muur (vrij van de plint), ton ernaast, kratten en tweede ton achterin,
-    # allemaal los van elkaar, van de palen en van de plint (test_station_kit controleert dat)
-    for name, (m, c), R, t in _furniture():
-        parts.append(m.transform(R=R, t=t))
-        cols.append(c.transform(R=R, t=t))
     sign, _s = props.hanging_sign(0.62, 0.48, 0.28)
     xs = -4.65                                           # aan de voorste dwarsbalk, naar het perron gericht
     y_wall = top_at(x_in) - ROOF_THICK / math.cos(L_PITCH) - 0.26
@@ -386,7 +382,7 @@ def lean_to(rng):
 
 # ------------------------------------------------------------------ interieur
 def interior():
-    parts, cols = [], []
+    parts, cols, loose = [], [], []
     xi0, xi1 = -HW + T, HW - T
     zi0, zi1 = -D + T, -T
     # lambrisering (houten lambrisering onderaan de binnenwanden), met onderbrekingen voor deuren
@@ -414,15 +410,12 @@ def interior():
         a = 2 * math.pi * k / 3
         stool.append(capsule((0.13 * math.cos(a), 0.0, 0.13 * math.sin(a)), (0.07 * math.cos(a), 0.53, 0.07 * math.sin(a)),
                              0.025, mat="M_Stn_Timber", seg=6, rings=1))
-    parts.append(mk.merge(*stool).transform(t=(-1.55, FL, -0.85)))
+    loose += props.loose_prop("Stool_TicketOffice", mk.merge(*stool),
+                              col_box(-0.19, 0.19, 0, 0.58, -0.19, 0.19), (-1.55, FL, -0.85))
     # wachtruimte: twee banken, vertrekbord, plant, koffer
-    b, bc = props.bench(1.8)
-    parts.append(b.transform(t=(1.40, FL, zi0 + 0.42)))
-    cols.append(bc.transform(t=(1.40, FL, zi0 + 0.42)))
-    b2, bc2 = props.bench(1.6)
-    R = mk.rot_y(-math.pi / 2)
-    parts.append(b2.transform(R=R, t=(xi1 - 0.42, FL, -3.20)))
-    cols.append(bc2.transform(R=R, t=(xi1 - 0.42, FL, -3.20)))
+    loose += props.loose_prop("Bench_Back", *props.bench(1.8, split_colliders=True), (1.40, FL, zi0 + 0.42))
+    loose += props.loose_prop("Bench_Side", *props.bench(1.6, split_colliders=True),
+                              (xi1 - 0.42, FL, -3.20), mk.rot_y(-math.pi / 2))
     board, _ = props.timetable()
     # alleen het bord + klokje (zonder poten) aan de achterwand
     keep = [i for i, f in enumerate(board.F) if board.V[list(f), 1].min() > 0.86]
@@ -432,9 +425,11 @@ def interior():
                    mk.lathe([(0.0, 0.36), (0.22, 0.36), (0.22, 0.38), (0.0, 0.38)], 12, mat="M_Stn_Soil"),
                    props.bush_mass(np.random.default_rng(7), 0.35, 0.35, 0.45, 3).transform(t=(0, 0.30, 0)),
                    props.bush_mass(np.random.default_rng(9), 0.30, 0.30, 0.40, 3).transform(R=mk.rot_y(1.3), t=(0, 0.52, 0)))
-    parts.append(pot.transform(t=(xi1 - 0.38, FL, zi0 + 0.38)))
+    loose += props.loose_prop("PottedPlant_WaitingRoom", pot,
+                              col_box(-0.25, 0.25, 0, 0.88, -0.25, 0.25), (xi1 - 0.38, FL, zi0 + 0.38))
     case = props.suitcase(0.56, 0.42, 0.22, "M_Stn_Red", strap="M_Stn_TimberDark")
-    parts.append(case.transform(R=mk.rot_y(0.3), t=(0.25, FL, zi0 + 0.55)))
+    loose += props.loose_prop("Suitcase_WaitingRoom", case,
+                              col_box(-0.28, 0.28, 0, 0.49, -0.12, 0.12), (0.15, FL, zi0 + 0.55), mk.rot_y(0.3))
     # bindbalken met makelaars naar de nokbalk, en twee hanglampen (eigen knoop 'RoofFrame')
     truss = []
     for z in (-1.80, -3.60):
@@ -448,7 +443,7 @@ def interior():
     # nokbalk eindigt 2 cm binnen de topgevels (kopse kant niet in het muurvlak)
     truss.append(rbox(-0.12, 0.12, roof_y_under(0.0) - 0.22, roof_y_under(0.0) + 0.04, -D + 0.02, -0.02, 0.03,
                       "M_Stn_TimberDark"))
-    return mk.merge(*parts), mk.merge(*truss), cols
+    return mk.merge(*parts), mk.merge(*truss), cols, loose
 
 
 # ------------------------------------------------------------------ gevel-details
@@ -504,7 +499,9 @@ def build(rng):
     df = door_frame()
     roof, roof_col = main_roof()
     lean, lean_col = lean_to(rng)
-    inter, truss, inter_cols = interior()
+    inter, truss, inter_cols, loose = interior()
+    for name, (mesh, colliders), rotation, position in _furniture():
+        loose += props.loose_prop(name, mesh, colliders, position, rotation)
     fac, sign = facade()
     leaf, leaf_col = door_leaf()
 
@@ -538,5 +535,5 @@ def build(rng):
         ("Light_Hall_1", None, None, (0.65, EAVE - 0.85, -1.80), None, True),
         ("Light_Hall_2", None, None, (0.65, EAVE - 0.85, -3.60), None, True),
         ("Spawn_Ticket", None, None, (-1.40, FL, -0.75), None, True),
-    ] + sign
+    ] + sign + loose
     return nodes

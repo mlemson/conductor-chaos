@@ -13,6 +13,16 @@ from station_common import (DEG, arch_loop, ball, capsule, circle_loop, clock, c
 
 
 # ------------------------------------------------------------------ zitten & opslag
+def loose_prop(name, mesh, colliders, position, rotation=None):
+    """A movable model node with its own compound collider, separate from the building."""
+    root = f"Loose_{name}"
+    shapes = colliders if isinstance(colliders, tuple) else (colliders,)
+    return [(root, mesh, None, position, rotation, True)] + [
+        (f"Col_{name}_{i}", shape, root, (0, 0, 0), None, False)
+        for i, shape in enumerate(shapes, 1)
+    ]
+
+
 def bench(length=1.8, *, split_colliders=False):
     """Parkbank: drie dikke zittinglatten, twee rugleuninglatten, marine gietijzeren zijframes."""
     L = length

@@ -190,7 +190,7 @@ def test_leanto_furniture_free():
     """Bank, tonnen en kratten onder de luifel: geen overlap met elkaar, de palen of de plint van het gebouw."""
     boxes = []
     for name, (m, c), R, t in B._furniture():
-        V = c.transform(R=R, t=t).V
+        V = np.vstack([shape.transform(R=R, t=t).V for shape in (c if isinstance(c, tuple) else (c,))])
         boxes.append((name, V.min(0), V.max(0)))
     for z in (-0.30, -B.D / 2, -B.D + 0.30):
         boxes.append((f"paal z={z:.2f}", np.array([B.LPOST_X - 0.2, 0, z - 0.2]), np.array([B.LPOST_X + 0.2, 9, z + 0.2])))
@@ -203,6 +203,32 @@ def test_leanto_furniture_free():
             gap = np.max(np.maximum(b0 - a1, a0 - b1))
             assert gap > 0.02, f"{na} en {nb} staan in elkaar (speling {gap * 100:.1f} cm)"
     print(f"PASS luifel: {len(B._furniture())} spullen staan vrij")
+
+
+def test_loose_station_props():
+    expected = {
+        "Station_Building": {"Bench": 3, "Barrel": 2, "CrateStack": 1, "Stool": 1, "PottedPlant": 1, "Suitcase": 1},
+        "Station_Main": {"Bench": 6, "LuggageCart": 1, "CrateStack": 1, "PottedPlant": 3, "Bell": 1, "Mug": 2},
+    }
+    for name, nodes in (("Station_Building", B.build(np.random.default_rng([2026, 1821]))), ("Station_Main", MS.build())):
+        counts = {}
+        bounds = {}
+        for node, mesh, parent, position, rotation, visible in nodes:
+            if not node.startswith("Loose_"):
+                continue
+            kind = node.split("_")[1]
+            counts[kind] = counts.get(kind, 0) + 1
+            assert node in KIT["assets"][name]["nodes"], f"{node}: ontbreekt in export"
+            assert parent is None and mesh is not None and visible, node
+            colliders = [n for n in nodes if n[0].startswith("Col_") and n[2] == node]
+            assert colliders and all(n[1] is not None and not n[5] for n in colliders), node
+            vertices = np.vstack([n[1].transform(R=rotation, t=position).V for n in colliders])
+            lo, hi = vertices.min(0), vertices.max(0)
+            for other, (other_lo, other_hi) in bounds.items():
+                assert np.max(np.maximum(other_lo - hi, lo - other_hi)) >= -0.001, (node, other)
+            bounds[node] = lo, hi
+        assert counts == expected[name], (name, counts)
+    print("PASS losse stationsprops: eigen zichtbare mesh en botsvorm in beide stations")
 
 
 def test_main_station():
@@ -219,7 +245,11 @@ def test_main_station():
     seats = [k for k in nodes if k.startswith("Briefing_Seat_")]
     assert len(seats) >= 6, seats
     for k in ["Spawn_Briefing", "Briefing_Board", "Spot_Coffee", "Spot_Lockers"] + seats:
-        x, y, z = nodes[k][3]
+        _, _, parent, position, _, _ = nodes[k]
+        if k in seats:
+            assert parent.startswith("Loose_Bench_"), k
+            position = nodes[parent][4] @ position + nodes[parent][3]
+        x, y, z = position
         m = 0.05 if k == "Briefing_Board" else 0.2          # het bord hangt tegen de achterwand
         assert MS.XI0 + 0.3 < x < MS.XI1 - 0.3 and MS.ZI0 + m < z < MS.ZI1 - 0.2, f"{k} buiten de ruimte: {x, z}"
         assert MS.FL - 0.01 <= y <= MS.FL + 3.5, f"{k} op hoogte {y:.2f}"
@@ -284,5 +314,6 @@ if __name__ == "__main__":
     test_no_double_faces()
     test_layout_no_double_faces()
     test_leanto_furniture_free()
+    test_loose_station_props()
     test_main_station()
     test_station_signs()

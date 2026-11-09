@@ -183,7 +183,17 @@ def counter_screen():
                     rbox(-0.19, 0.19, 0.15, 0.39, 0.015, 0.026, 0.004, "M_Stn_NavyLight"))
 
 
-def coffee_counter(L=2.6, d=0.62, h=0.92):
+def coffee_counter_items(L, h):
+    return [
+        ("Bell_Counter", counter_bell(), col_box(-0.075, 0.075, 0, 0.105, -0.075, 0.075),
+         (L / 2 - 0.30, h, 0.12), mk.rot_y(0)),
+        *[(f"Mug_Counter{k + 1}", mug(mat), col_box(-0.045, 0.085, 0, 0.10, -0.045, 0.045),
+           (x, h, 0.15), mk.rot_y(0.6 * k))
+          for k, (x, mat) in enumerate(((0.05, "M_Stn_Cream"), (0.22, "M_Stn_Red")))],
+    ]
+
+
+def coffee_counter(L=2.6, d=0.62, h=0.92, *, include_loose=True):
     """Koffiebar/balie: houten kast met panelen, licht houten werkblad met overstek naar voren (+Z), bel,
     kassaschermpje en mokken. Pivot midden-onder."""
     parts = [rbox(-L / 2, L / 2, 0.06, h - 0.05, -d / 2, d / 2 - 0.06, 0.03, "M_Stn_Timber"),
@@ -197,10 +207,9 @@ def coffee_counter(L=2.6, d=0.62, h=0.92):
         parts.append(slab(rounded_rect_loop(x0 + 0.05, x0 + pw - 0.05, 0.18, h - 0.17, 0.03, 2),
                           [rounded_rect_loop(x0 + 0.10, x0 + pw - 0.10, 0.23, h - 0.22, 0.02, 2)],
                           zf - 0.004, zf + 0.010, 0.004, "M_Stn_TimberDark"))
-    parts.append(counter_bell().transform(t=(L / 2 - 0.30, h, 0.12)))
+    if include_loose:
+        parts.extend(mesh.transform(R=rot, t=pos) for _, mesh, _, pos, rot in coffee_counter_items(L, h))
     parts.append(counter_screen().transform(R=mk.rot_y(math.pi + 0.35), t=(-L / 2 + 0.45, h, -0.02)))
-    for k, x in enumerate((0.05, 0.22)):
-        parts.append(mug(("M_Stn_Cream", "M_Stn_Red")[k]).transform(R=mk.rot_y(0.6 * k), t=(x, h, 0.15)))
     col = col_box(-L / 2 - 0.05, L / 2 + 0.05, 0.0, h, -d / 2 - 0.03, d / 2 + 0.04)
     return mk.merge(*parts), col
 

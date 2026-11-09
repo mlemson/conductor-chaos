@@ -527,23 +527,19 @@ def canopy():
         parts.append(rbox(x - 0.09, x + 0.09, beam_top - 0.03, under(-D / 2) + 0.02, -D / 2 - 0.09, -D / 2 + 0.09, 0.03,
                           "M_Stn_TimberDark"))
     # inrichting: twee banken met de rug naar achteren, bagagekar, hangbord en lantaarn
-    b, bc = props.bench(1.7)
-    for x in (LX + 1.50, x_in - 1.55):
-        parts.append(b.transform(t=(x, FL, -D + 0.75)))
-        cols.append(bc.transform(t=(x, FL, -D + 0.75)))
-    cart, cc = props.luggage_cart()
-    cc = mk.merge(*cc) if isinstance(cc, tuple) else cc     # losse botsvormen (beweegbare prop) -> één vorm hier
-    R = mk.rot_y(0.35)
+    bench = props.bench(1.7, split_colliders=True)
+    loose = []
+    for i, x in enumerate((LX + 1.50, x_in - 1.55), 1):
+        loose += props.loose_prop(f"Bench_Canopy{i}", *bench, (x, FL, -D + 0.75))
     xc = (LX + x_in) / 2
-    parts.append(cart.transform(R=R, t=(xc, FL, -D + 1.05)))
-    cols.append(cc.transform(R=R, t=(xc, FL, -D + 1.05)))
+    loose += props.loose_prop("LuggageCart_Canopy", *props.luggage_cart(), (xc, FL, -D + 1.05), mk.rot_y(0.35))
     sign, _ = props.hanging_sign(0.62, 0.48, 0.28)
     parts.append(sign.transform(t=(xc, beam_bot + 0.01, post_z[0])))
     parts.append(capsule((post_x[2] + 0.6, beam_top - 0.22, -D / 2), (post_x[2] + 0.6, beam_top - 0.55, -D / 2), 0.012,
                          mat="M_Stn_Dark", seg=5, rings=1))
     parts.append(props.lantern(1.0).transform(t=(post_x[2] + 0.6, beam_top - 1.05, -D / 2)))
     light = (post_x[2] + 0.6, beam_top - 0.85, -D / 2)
-    return mk.merge(*parts), mk.merge(*cols), light
+    return mk.merge(*parts), mk.merge(*cols), light, loose
 
 
 # ------------------------------------------------------------------ gevel-details
@@ -571,21 +567,23 @@ def _wall_timetable():
 
 
 def benches():
-    """Twee rijen banken met het gezicht naar het routebord (-Z). Geeft ook de zitplekken terug."""
-    parts, cols, seats = [], [], []
-    b, bc = props.bench(1.9)
+    """Twee rijen banken met zitankers die met de bank meebewegen."""
+    nodes = []
+    bench = props.bench(1.9, split_colliders=True)
     R = mk.rot_y(math.pi)
+    i = 0
     for z in (-4.90, -6.20):
         for x in (-1.25, 1.25):
-            parts.append(b.transform(R=R, t=(x, FL, z)))
-            cols.append(bc.transform(R=R, t=(x, FL, z)))
-            for dx in (-0.45, 0.45):
-                seats.append((x + dx, FL + 0.48, z + 0.02))
-    return mk.merge(*parts), cols, seats
+            name = f"Bench_Briefing{i // 2 + 1}"
+            nodes += props.loose_prop(name, *bench, (x, FL, z), R)
+            for dx in (0.45, -0.45):
+                i += 1
+                nodes.append((f"Briefing_Seat_{i}", None, f"Loose_{name}", (dx, 0.48, -0.02), None, True))
+    return nodes
 
 
 def interior():
-    parts, cols = [], []
+    parts, cols, loose = [], [], []
     # lambrisering langs de binnenwanden (onderbroken bij de deur)
     for (a, b) in ((XI0, DOOR[0] - 0.10), (DOOR[1] + 0.10, XI1)):
         parts.append(rbox(a, b, FL, FL + 0.90, ZI1 - 0.04, ZI1, 0.015, "M_Stn_TimberDark"))
@@ -606,9 +604,12 @@ def interior():
     xb = XI0 + 0.04 + 0.015 + 0.25
     parts.append(bc_m.transform(R=R, t=(xb, FL, -3.40)))
     cols.append(bc_c.transform(R=R, t=(xb, FL, -3.40)))
-    cc_m, cc_c = mp.coffee_counter(2.6)
-    parts.append(cc_m.transform(R=R, t=(-2.85, FL, -3.40)))
-    cols.append(cc_c.transform(R=R, t=(-2.85, FL, -3.40)))
+    counter_position = (-2.85, FL, -3.40)
+    cc_m, cc_c = mp.coffee_counter(include_loose=False)
+    parts.append(cc_m.transform(R=R, t=counter_position))
+    cols.append(cc_c.transform(R=R, t=counter_position))
+    for name, mesh, collider, position, rotation in mp.coffee_counter_items(2.6, 0.92):
+        loose += props.loose_prop(name, mesh, collider, tuple(R @ position + counter_position), R @ rotation)
     parts.append(mp.cup_shelf(1.4).transform(R=R, t=(XI0, FL + 1.55, -3.40)))
     parts.append(mp.coffee_sign(0.70, 0.56).transform(R=R, t=(XI0 + 0.04, FL + 2.30, -3.40)))
     # rechterwand: kluisjes, kapstok, kratten
@@ -618,19 +619,13 @@ def interior():
     parts.append(lk.transform(R=R2, t=(xl, FL, -4.60)))
     cols.append(lkc.transform(R=R2, t=(xl, FL, -4.60)))
     parts.append(mp.coat_rack_wall(1.25).transform(R=R2, t=(XI1, FL + 1.62, -1.85)))
-    cs, csc = props.crate_stack()
-    parts.append(cs.transform(R=mk.rot_y(0.2), t=(3.75, FL, -6.65)))
-    cols.append(csc.transform(R=mk.rot_y(0.2), t=(3.75, FL, -6.65)))
+    loose += props.loose_prop("CrateStack_Briefing", *props.crate_stack(split_colliders=True),
+                              (3.75, FL, -6.65), mk.rot_y(0.2))
     # planten, kleed, banken
     for (x, z, seed) in ((-3.95, -6.95, 7), (3.95, -0.90, 3), (-3.95, -0.90, 5)):
-        pm, pc = mp.potted_plant(seed)
-        parts.append(pm.transform(t=(x, FL, z)))
-        cols.append(pc.transform(t=(x, FL, z)))
+        loose += props.loose_prop(f"PottedPlant_{seed}", *mp.potted_plant(seed), (x, FL, z))
     parts.append(mp.round_rug(1.25).transform(t=(0.0, FL, -2.95)))
-    bm, bcols, seats = benches()
-    parts.append(bm)
-    cols += bcols
-    return mk.merge(*parts), cols, seats, hub_sign
+    return mk.merge(*parts), cols, hub_sign, loose + benches()
 
 
 def roof_frame():
@@ -669,9 +664,9 @@ def build(rng=None):
     fl = floor()
     hroof, hcol = hall_roof()
     wroof, wcol = wing_roof()
-    can, can_col, can_light = canopy()
+    can, can_col, can_light, canopy_props = canopy()
     fac, name_sign = facade()
-    inter, inter_cols, seats, hub_sign = interior()
+    inter, inter_cols, hub_sign, indoor_props = interior()
     frame, lamp_lights = roof_frame()
     leaf_l, col_l = door_leaf(-1)
     leaf_r, col_r = door_leaf(1)
@@ -715,6 +710,4 @@ def build(rng=None):
     ]
     for k, p in enumerate(lamp_lights):
         nodes.append((f"Light_Pendant_{k + 1}", None, None, p, None, True))
-    for k, p in enumerate(seats):
-        nodes.append((f"Briefing_Seat_{k + 1}", None, None, p, None, True))
-    return nodes + name_sign + hub_sign
+    return nodes + name_sign + hub_sign + canopy_props + indoor_props
