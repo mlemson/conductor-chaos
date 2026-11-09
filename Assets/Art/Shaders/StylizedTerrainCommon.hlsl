@@ -3,6 +3,10 @@
 // (StylizedRamp.shader + M_Env_Grass): zelfde lichtband, zelfde kleurvlakken (cellen), zelfde rim en spec.
 // Grastexels worden herkend aan hun kleur (geelgroen); bloemetjes, aarde, stenen en zand houden hun textuur
 // en krijgen alleen dezelfde gestileerde belichting (geen grijze schaduw, koel in de schaduw).
+// Rustig op afstand (issue #213): aarde/steen worden net als het gras een egale kleur met dezelfde kleurcellen.
+// Van dichtbij blijft een deel van het textuurcontrast over (_DetailNear), verder weg vervaagt het naar de
+// gemiddelde kleur van de laag, zodat het herhalende patroon verdwijnt. Per laag: Smoothness van de TerrainLayer
+// = hoeveel detail blijft (1 = paden en bloemen houden hun volle textuur).
 #ifndef CC_STYLIZED_TERRAIN_COMMON
 #define CC_STYLIZED_TERRAIN_COMMON
 
@@ -23,6 +27,8 @@ CBUFFER_START(UnityPerMaterial)
     half4 _RimColor;
     half4 _ShadowTint;
     half _RampShift, _Cells, _CellSize, _Rim, _Spec, _GrassDetect, _ReceiveShadowsF;
+    half _DetailNear, _DetailFadeStart, _DetailFadeEnd;
+    half _Smoothness0, _Smoothness1, _Smoothness2, _Smoothness3;     // door Terrain gezet uit de TerrainLayers
 CBUFFER_END
 
 struct TerrainAttributes
@@ -93,7 +99,7 @@ float4 CC_Cell3(float3 p)
 }
 
 // Gras precies zoals een StylizedRamp-materiaal zonder gebakken vertexkleur (ao = 1, randlicht = 0).
-half3 CC_GrassColor(float3 positionWS, float3 N, float3 V, Light light, half shadow, out half band)
+half3 CC_GrassColor(float3 positionWS, float3 N, float3 V, Light light, half shadow, out half band, out half cell)
 {
     half lit = saturate(dot(N, light.direction)) * shadow;
     band = smoothstep(0.0, 0.5, lit);
@@ -102,6 +108,7 @@ half3 CC_GrassColor(float3 positionWS, float3 N, float3 V, Light light, half sha
     half tLit = lerp(0.56, 0.93, up);
     half t = lerp(tShadow, tLit, band);
     float4 cl = CC_Cell3(positionWS / max(_CellSize, 0.01));
+    cell = cl.x;
     half cellT = (cl.x - 0.5) * 0.10 * _Cells;
     half spec = pow(saturate(dot(N, normalize(light.direction + V))), 18.0) * band;
     t += spec * 0.30 * _Spec;
@@ -123,12 +130,22 @@ half CC_GrassMask(half3 albedo)
     return saturate((rg - 1.05) * 8.0) * saturate((bg - 1.8) * 3.0) * _GrassDetect;
 }
 
-half3 CC_LayerColor(half3 albedo, half3 grass, half band, half up)
+// detail: 0 = egale laagkleur (zoals gras), 1 = volle textuur
+half3 CC_LayerColor(half3 albedo, half3 average, half detail, half3 grass, half band, half up, half cell)
 {
-    // niet-gras: textuur met dezelfde gestileerde belichting (lichter naar boven, koele schaduw, nooit grijs)
+    half mask = CC_GrassMask(albedo);
+    // niet-gras: contrast rond de gemiddelde kleur terugschalen, dan dezelfde kleurcellen als het gras
+    half3 calm = average + (albedo - average) * detail;
+    calm *= 1.0 + (cell - 0.5) * 0.09 * _Cells;
+    // gestileerde belichting (lichter naar boven, koele schaduw, nooit grijs)
     half k = lerp(0.62, 1.0, band) * lerp(0.92, 1.04, up);
-    half3 other = albedo * k * lerp(_ShadowTint.rgb, 1.0, band);
-    return lerp(other, grass, CC_GrassMask(albedo));
+    half3 other = calm * k * lerp(_ShadowTint.rgb, 1.0, band);
+    return lerp(other, grass, mask);
+}
+
+half3 CC_Average(TEXTURE2D_PARAM(tex, smp), float2 uv)
+{
+    return SAMPLE_TEXTURE2D_LOD(tex, smp, uv, 14.0).rgb;   // kleinste mip = gemiddelde kleur van de laag
 }
 
 half3 CC_TerrainShade(TerrainVaryings i)
@@ -138,18 +155,29 @@ half3 CC_TerrainShade(TerrainVaryings i)
     float4 shadowCoord = TransformWorldToShadowCoord(i.positionWS);
     Light light = GetMainLight(shadowCoord);
     half shadow = lerp(1.0, light.shadowAttenuation, _ReceiveShadowsF);
-    half band;
-    half3 grass = CC_GrassColor(i.positionWS, N, V, light, shadow, band);
+    half band, cell;
+    half3 grass = CC_GrassColor(i.positionWS, N, V, light, shadow, band, cell);
     half up = N.y * 0.5 + 0.5;
+    // textuurdetail: deel van dichtbij, niets meer op afstand
+    half fade = 1.0 - smoothstep(_DetailFadeStart, max(_DetailFadeEnd, _DetailFadeStart + 0.01),
+                                 distance(_WorldSpaceCameraPos.xyz, i.positionWS));
+    half4 keep = saturate(half4(_Smoothness0, _Smoothness1, _Smoothness2, _Smoothness3));
+    half4 detail = lerp(_DetailNear * fade, 1.0, keep);
 
     float2 cuv = (i.uv * (_Control_TexelSize.zw - 1.0) + 0.5) * _Control_TexelSize.xy;
     half4 w = SAMPLE_TEXTURE2D(_Control, sampler_Control, cuv);
-    half3 c0 = SAMPLE_TEXTURE2D(_Splat0, sampler_Splat0, i.uv * _Splat0_ST.xy + _Splat0_ST.zw).rgb;
-    half3 c1 = SAMPLE_TEXTURE2D(_Splat1, sampler_Splat0, i.uv * _Splat1_ST.xy + _Splat1_ST.zw).rgb;
-    half3 c2 = SAMPLE_TEXTURE2D(_Splat2, sampler_Splat0, i.uv * _Splat2_ST.xy + _Splat2_ST.zw).rgb;
-    half3 c3 = SAMPLE_TEXTURE2D(_Splat3, sampler_Splat0, i.uv * _Splat3_ST.xy + _Splat3_ST.zw).rgb;
-    return w.r * CC_LayerColor(c0, grass, band, up) + w.g * CC_LayerColor(c1, grass, band, up)
-         + w.b * CC_LayerColor(c2, grass, band, up) + w.a * CC_LayerColor(c3, grass, band, up);
+    float2 uv0 = i.uv * _Splat0_ST.xy + _Splat0_ST.zw, uv1 = i.uv * _Splat1_ST.xy + _Splat1_ST.zw;
+    float2 uv2 = i.uv * _Splat2_ST.xy + _Splat2_ST.zw, uv3 = i.uv * _Splat3_ST.xy + _Splat3_ST.zw;
+    half3 c0 = SAMPLE_TEXTURE2D(_Splat0, sampler_Splat0, uv0).rgb;
+    half3 c1 = SAMPLE_TEXTURE2D(_Splat1, sampler_Splat0, uv1).rgb;
+    half3 c2 = SAMPLE_TEXTURE2D(_Splat2, sampler_Splat0, uv2).rgb;
+    half3 c3 = SAMPLE_TEXTURE2D(_Splat3, sampler_Splat0, uv3).rgb;
+    half3 a0 = CC_Average(TEXTURE2D_ARGS(_Splat0, sampler_Splat0), uv0);
+    half3 a1 = CC_Average(TEXTURE2D_ARGS(_Splat1, sampler_Splat0), uv1);
+    half3 a2 = CC_Average(TEXTURE2D_ARGS(_Splat2, sampler_Splat0), uv2);
+    half3 a3 = CC_Average(TEXTURE2D_ARGS(_Splat3, sampler_Splat0), uv3);
+    return w.r * CC_LayerColor(c0, a0, detail.x, grass, band, up, cell) + w.g * CC_LayerColor(c1, a1, detail.y, grass, band, up, cell)
+         + w.b * CC_LayerColor(c2, a2, detail.z, grass, band, up, cell) + w.a * CC_LayerColor(c3, a3, detail.w, grass, band, up, cell);
 }
 
 #endif
