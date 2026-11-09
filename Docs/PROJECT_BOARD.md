@@ -6,7 +6,7 @@
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 71 | 29 | 0 | 0 | 3 |
+| 70 | 30 | 0 | 0 | 3 |
 
 ## 🗺️ Mijlpalen
 
@@ -44,7 +44,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 📋 Taken per status
 
-### 📝 Te doen (71)
+### 📝 Te doen (70)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -113,14 +113,13 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P1 | [#187 Nieuwe terreindelen met het lichte gras](https://github.com/mlemson/conductor-chaos/issues/187) | Overig | — | — |
 | P1 | [#188 Rookdeeltjes met leesbaar mesh in builds](https://github.com/mlemson/conductor-chaos/issues/188) | Overig | — | — |
 | P1 | [#189 Voorkom uitgerekte ledematen van passagiers op clients](https://github.com/mlemson/conductor-chaos/issues/189) | Overig | — | — |
-| P1 | [#206 Losse stationsprops kunnen duwen, trekken en grijpen](https://github.com/mlemson/conductor-chaos/issues/206) | Overig | — | — |
 | P2 | [#86 Rotsval: één vallende rots als treinincident](https://github.com/mlemson/conductor-chaos/issues/86) | Gameplay | — | — |
 | P2 | [#89 Één ontsporing synchroniseren tussen host en client](https://github.com/mlemson/conductor-chaos/issues/89) | Multiplayer | — | — |
 | P2 | [#90 Koppeling kan breken bij hoge impact](https://github.com/mlemson/conductor-chaos/issues/90) | Physics | — | — |
 | P2 | [#92 Optionele mijlpaalcheck: sessie met vier en later zes spelers](https://github.com/mlemson/conductor-chaos/issues/92) | QA | — | — |
 | P2 | [#197 Subtiele zwevende stofdeeltjes in de speelwereld](https://github.com/mlemson/conductor-chaos/issues/197) | Overig | — | — |
 
-### 🔧 Bezig (29)
+### 🔧 Bezig (30)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -147,6 +146,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P1 | [#163 Verlichte startknop met bewuste indruk](https://github.com/mlemson/conductor-chaos/issues/163) | Overig | @mlemson | — |
 | P1 | [#170 Art: personagevarianten oudere passagier, toerist en spoormonteur](https://github.com/mlemson/conductor-chaos/issues/170) | Overig | @mlemson | — |
 | P1 | [#182 Art: stationsgebouw (begaanbaar) + perronkit en props](https://github.com/mlemson/conductor-chaos/issues/182) | Overig | @mlemson | — |
+| P1 | [#206 Losse stationsprops kunnen duwen, trekken en grijpen](https://github.com/mlemson/conductor-chaos/issues/206) | Overig | @mlemson | — |
 | P2 | [#149 Herstel preset voor stenen kliffen op hersteltak](https://github.com/mlemson/conductor-chaos/issues/149) | Overig | @mlemson | — |
 | P2 | [#164 Verberg playground-HUD na tien seconden](https://github.com/mlemson/conductor-chaos/issues/164) | Overig | @mlemson | — |
 | P2 | [#208 Gebruik het nieuwe logo in het hoofdmenu](https://github.com/mlemson/conductor-chaos/issues/208) | Overig | @mlemson | — |
