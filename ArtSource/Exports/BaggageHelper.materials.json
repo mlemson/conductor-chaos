@@ -2,9 +2,9 @@
   "model": "BaggageHelper",
   "height_m": 1.25,
   "stats": {
-    "parts": 25,
-    "tris": 38066,
-    "verts": 19115,
+    "parts": 27,
+    "tris": 40018,
+    "verts": 20099,
     "materials": 15
   },
   "materials": {

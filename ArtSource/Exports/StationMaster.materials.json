@@ -2,9 +2,9 @@
   "model": "StationMaster",
   "height_m": 1.33,
   "stats": {
-    "parts": 29,
-    "tris": 60087,
-    "verts": 30256,
+    "parts": 31,
+    "tris": 62039,
+    "verts": 31240,
     "materials": 19
   },
   "materials": {

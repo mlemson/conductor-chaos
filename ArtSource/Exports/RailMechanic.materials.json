@@ -2,9 +2,9 @@
   "model": "RailMechanic",
   "height_m": 1.21,
   "stats": {
-    "parts": 25,
-    "tris": 45785,
-    "verts": 23081,
+    "parts": 27,
+    "tris": 47737,
+    "verts": 24065,
     "materials": 22
   },
   "materials": {

@@ -230,7 +230,8 @@ def character_sheet(asset, cfg):
     tech = [
         f"Hoogte {mats['height_m']:.2f} m · {st['tris']:,} driehoeken (incl. verborgen expressies) · "
         f"{st['materials']} materialen · geen textures".replace(",", "."),
-        "Hiërarchie: Body › Eye_L/R › Pupil, Lid_*, EyeClosed_*, Mouth_*, Arm_L/R › Hand › Prop_*",
+        "Hiërarchie: Body › Eye_L/R › Pupil, Lid_*, EyeClosed_*, Blink_*, Mouth_*, Arm_L/R › Hand › Prop_*",
+        "CharacterFace: oogstand (open/ooglid/dicht) en mond kiezen, knippert af en toe vanzelf (Blink_L/R)",
         "Wisselbaar in Unity: " + " · ".join(cfg["swaps"]),
         "Starre poppen-rig zoals de conducteur; vertexkleur R occlusie · G randlicht",
         f"Bron: ArtSource/Characters/{asset}/ → Assets/Art/Models/Characters/{asset}/{asset}.fbx",

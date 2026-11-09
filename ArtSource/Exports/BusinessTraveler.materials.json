@@ -2,9 +2,9 @@
   "model": "BusinessTraveler",
   "height_m": 1.22,
   "stats": {
-    "parts": 29,
-    "tris": 63278,
-    "verts": 31811,
+    "parts": 31,
+    "tris": 65230,
+    "verts": 32795,
     "materials": 26
   },
   "materials": {

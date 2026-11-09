@@ -423,6 +423,35 @@ def build_lid(prefix, side, drop=0.36):
     return m
 
 
+def build_blink(prefix, side):
+    """Knipperoog: huidkleurig ooglid dat het hele oog afdekt, met een donkere wimperlijn die zacht
+    omlaag buigt. Lokaal in het oogframe (zelfde koepel als Lid_*, maar niet afgesneden)."""
+    rx, ry, rz = bc.EYE_R * 1.07, bc.EYE_R * 1.08 * 1.07, bc.EYE_R * bc.EYE_DEPTH * 1.35
+    dome = mk.ellipsoid(rx, ry, rz, 24, 14, mat=prefix + "Skin")
+    pts = []
+    for k in range(9):
+        x = -0.062 + 0.124 * k / 8
+        y = -0.010 - 0.010 * (1.0 - (x / 0.062) ** 2)
+        z = rz * math.sqrt(max(0.0, 1.0 - (x / rx) ** 2 - (y / ry) ** 2)) + 0.001
+        pts.append((x, y, z))
+    return mk.merge(dome, tube(pts, 0.0085, prefix + "Pupil", n=16, seg=8))
+
+
+def add_eye_states(sc, prefix, lids=False, lid_drop=0.36):
+    """Wisselbare oogstanden naast Eye_L/R: EyeClosed (blij dicht), Lid (half dicht) en Blink (knipperen).
+    Alleen Lid kan standaard zichtbaar zijn; de rest schakelt CharacterFace in Unity."""
+    for side, nm in ((1, "L"), (-1, "R")):
+        pos, Rf = eye_frame(side)
+        z, _ = bc.body_surface(side * bc.EYE_X, bc.EYE_Y)
+        cpos = np.array([side * bc.EYE_X, bc.EYE_Y - 0.004, z + 0.006])
+        sc.add(mk.Part("EyeClosed_" + nm, build_closed_eye(prefix, side), tuple(cpos - HIP), "Body", Rf,
+                       visible=False, ao_group="eyes", gradient=0.0))
+        sc.add(mk.Part("Lid_" + nm, build_lid(prefix, side, lid_drop), tuple(pos - HIP), "Body", Rf,
+                       visible=lids, ao_group="lids", gradient=0.0))
+        sc.add(mk.Part("Blink_" + nm, build_blink(prefix, side), tuple(pos - HIP), "Body", Rf,
+                       visible=False, ao_group="lids", gradient=0.0))
+
+
 def build_flat_mouth(prefix, kind):
     if kind == "Flat":         # klein, vastberaden streepje
         return mk.ellipsoid(0.034, 0.010, 0.010, 14, 6, mat=prefix + "Mouth")
@@ -444,7 +473,7 @@ def build_flat_mouth(prefix, kind):
 
 
 def add_face(sc, prefix, extra_mouths=("Flat", "Hmm", "Smile"), lids=False, lid_drop=0.36, default_mouth="Neutral"):
-    """Ogen + pupillen (conducteur), dichte ogen, optionele oogleden en monden.
+    """Ogen + pupillen (conducteur), dichte ogen, oogleden, knipperoogleden en monden.
     Alleen Mouth_Neutral (en de open ogen) zijn standaard zichtbaar."""
     mp = conductor_map(prefix)
     for side, nm in ((1, "L"), (-1, "R")):
@@ -453,12 +482,7 @@ def add_face(sc, prefix, extra_mouths=("Flat", "Hmm", "Smile"), lids=False, lid_
                        gradient=0.0))
         sc.add(mk.Part("Pupil_" + nm, remap(bc.build_pupil(side), mp), (0, 0, 0), "Eye_" + nm, ao_group="eyes",
                        gradient=0.0))
-        z, _ = bc.body_surface(side * bc.EYE_X, bc.EYE_Y)
-        cpos = np.array([side * bc.EYE_X, bc.EYE_Y - 0.004, z + 0.006])
-        sc.add(mk.Part("EyeClosed_" + nm, build_closed_eye(prefix, side), tuple(cpos - HIP), "Body", Rf,
-                       visible=False, ao_group="eyes", gradient=0.0))
-        sc.add(mk.Part("Lid_" + nm, build_lid(prefix, side, lid_drop), tuple(pos - HIP), "Body", Rf,
-                       visible=lids, ao_group="lids", gradient=0.0))
+    add_eye_states(sc, prefix, lids, lid_drop)
     zm, nm_ = bc.body_surface(0.0, bc.MOUTH_Y)
     for kind in ("Neutral", "Surprised", "Happy") + tuple(extra_mouths):
         mesh = remap(bc.build_mouth(kind), mp) if kind in ("Neutral", "Surprised", "Happy") \

@@ -6,7 +6,8 @@
 * precies één mond en één oogset standaard zichtbaar
 * elke materiaalramp komt letterlijk uit Docs/References/palette.json (geen verzonnen tinten)
 * niets steekt door de grond, budget per personage < 70k driehoeken
-* geen dubbele vlakken (z-fighting) in de nieuwe personages en de bagagekar (ArtSource/Tools/zfight.py)
+* knipperoogleden (Blink_L/R) bij elk personage, ook de conducteur; standaard verborgen
+* geen dubbele vlakken (z-fighting) in alle personages en de bagagekar (ArtSource/Tools/zfight.py)
 """
 import json
 import os
@@ -33,7 +34,8 @@ import zfight as Z  # noqa: E402
 
 PALETTE = json.load(open(os.path.join(ROOT, "Docs", "References", "palette.json"), encoding="utf-8"))
 RAMPS = [v["ramp"] for g in PALETTE["groups"].values() for v in g.values()]
-COMMON = ["Body", "Eye_L", "Eye_R", "Pupil_L", "Pupil_R", "EyeClosed_L", "EyeClosed_R", "Lid_L", "Lid_R",
+EYES = ["Eye_L", "Eye_R", "Pupil_L", "Pupil_R", "EyeClosed_L", "EyeClosed_R", "Lid_L", "Lid_R", "Blink_L", "Blink_R"]
+COMMON = ["Body"] + EYES + [
           "Mouth_Neutral", "Mouth_Surprised", "Mouth_Happy", "Mouth_Flat", "Mouth_Hmm", "Mouth_Smile",
           "Arm_L", "Arm_R", "Hand_L", "Hand_R", "Leg_L", "Leg_R"]
 CASES = {
@@ -48,8 +50,8 @@ CASES = {
                                                "Prop_Plane", "Mouth_Grin"], "Grin", True),
     "BaggageHelper": (build_baggage_helper, ["Workwear", "Cap", "Prop_Sweat"], "Happy", False),
 }
-# Personages die al zonder dubbele vlakken zijn opgeleverd (de oudere drie volgen apart).
-ZFIGHT_CLEAN = ["RailMechanic", "StationMaster", "BusinessTraveler", "ChildPassenger", "BaggageHelper",
+# Alle personages en de bagagekar: geen dubbele vlakken (ook niet in de standaard zichtbare stand).
+ZFIGHT_CLEAN = ["Conductor", "ElderlyPassenger", "Tourist", "RailMechanic", "StationMaster", "BusinessTraveler", "ChildPassenger", "BaggageHelper",
                 "BaggageTrolley"]
 EXP = os.path.join(ROOT, "ArtSource", "Exports")
 
@@ -63,6 +65,7 @@ def check(asset, module, extra, mouth, lids):
     mouths = [n for n in names if n.startswith("Mouth_") and vis[n]]
     assert mouths == ["Mouth_" + mouth], f"{asset}: zichtbare monden {mouths}"
     assert vis["Eye_L"] and vis["Eye_R"] and not vis["EyeClosed_L"] and not vis["EyeClosed_R"]
+    assert not vis["Blink_L"] and not vis["Blink_R"], f"{asset}: knipperoogleden horen verborgen te zijn"
     assert vis["Lid_L"] == lids and vis["Lid_R"] == lids, f"{asset}: oogleden"
     for p in sc.parts:
         if p.name.startswith("Prop_") and p.name != "Prop_Sweat":
@@ -102,6 +105,17 @@ def check_trolley():
     print(f"PASS BaggageTrolley: {tris} tris, duwbeugel {hy:.2f} m, hand {gy:.2f} m")
 
 
+def check_conductor_eyes():
+    """De conducteur heeft dezelfde wisselbare oogstanden als de varianten (CharacterFace in Unity)."""
+    import build_conductor
+    sc = build_conductor.build_scene()
+    vis = {p.name: p.visible for p in sc.parts}
+    missing = [n for n in EYES if n not in vis]
+    assert not missing, f"Conductor: ontbrekende oogknopen {missing}"
+    assert vis["Eye_L"] and not any(vis[n] for n in EYES if n.startswith(("EyeClosed_", "Lid_", "Blink_")))
+    print("PASS Conductor: oogstanden EyeClosed/Lid/Blink aanwezig en verborgen")
+
+
 def check_zfight(asset):
     res = Z.find(Z.glb_triangles(os.path.join(EXP, asset + ".glb")))
     assert not res, f"{asset}: {len(res)} dubbele vlakken, bv. {res[0][:2]}"
@@ -112,5 +126,6 @@ if __name__ == "__main__":
     for asset, (module, extra, mouth, lids) in CASES.items():
         check(asset, module, extra, mouth, lids)
     check_trolley()
+    check_conductor_eyes()
     for asset in ZFIGHT_CLEAN:
         check_zfight(asset)

@@ -213,8 +213,8 @@ def build_map():
         rng = np.random.default_rng(3 + k)
         for _ in range(2):
             pw, ph = rng.uniform(0.04, 0.07), rng.uniform(0.035, 0.06)
-            pos = np.array([rng.uniform(-0.02, 0.02), rng.uniform(-0.07, 0.07), t / 2 + 0.0015])
-            prints.append(mk.rounded_box(pw, ph, 0.003, 0.012, 2, mat=P + "MapGreen").transform(t=pos)
+            pos = np.array([rng.uniform(-0.02, 0.02), rng.uniform(-0.07, 0.07), t / 2])
+            prints.append(mk.ellipsoid(pw / 2, ph / 2, 0.0026, 18, 8, mat=P + "MapGreen", n=2.6).transform(t=pos)
                           .transform(R=R, t=off))
         for j in range(5):                         # stippelpad
             yy = -0.08 + 0.04 * j + 0.012 * k
@@ -227,22 +227,23 @@ def build_map():
     pin = mk.merge(mk.ellipsoid(0.014, 0.014, 0.008, 12, 6, mat=P + "MapPin").transform(t=(0, 0.012, 0)),
                    mk.capsule_between((0, -0.010, 0), (0, 0.006, 0), 0.002, 0.009, 10, 3, mat=P + "MapPin"))
     prints.append(pin.transform(t=(0.020, 0.060, t / 2 + 0.008)).transform(R=R2, t=off2))
-    station = mk.merge(mk.rounded_box(0.042, 0.026, 0.004, 0.004, 1, mat=P + "MapIcon"),
-                       mk.rounded_box(0.050, 0.010, 0.004, 0.003, 1, mat=P + "MapIcon").transform(t=(0, 0.017, 0)))
-    prints.append(station.transform(t=(-0.012, -0.050, t / 2 + 0.004)).transform(R=mk.rot_y(-14 * DEG),
+    station = mk.merge(mk.ellipsoid(0.021, 0.013, 0.0030, 14, 6, mat=P + "MapIcon", n=3.0),
+                       mk.ellipsoid(0.025, 0.006, 0.0034, 14, 6, mat=P + "MapIcon", n=3.0).transform(t=(0, 0.018, 0)))
+    prints.append(station.transform(t=(-0.012, -0.050, t / 2 + 0.002)).transform(R=mk.rot_y(-14 * DEG),
                                                                                   t=(0, 0, 0.012)))
     return mk.merge(*panels, *prints)
 
 
 def build_ticket():
     t = 0.006
-    card = mk.rounded_box(0.125, 0.068, t, 0.008, 2, mat=P + "Ticket")
+    card = mk.rounded_box(0.125, 0.068, t, 0.0028, 2, mat=P + "Ticket")
     scale = 1.18
-    ink = [mk.rounded_box(0.040, 0.020, 0.003, 0.004, 1, mat=P + "TicketInk").transform(t=(0.012, 0.004, t / 2)),
-           mk.rounded_box(0.018, 0.026, 0.003, 0.004, 1, mat=P + "TicketInk").transform(t=(-0.012, 0.008, t / 2)),
-           mk.rounded_box(0.006, 0.012, 0.003, 0.002, 1, mat=P + "TicketInk").transform(t=(-0.006, 0.026, t / 2))]
+    # inkt als lage koepeltjes half in het kaartje: geen plat vlakje vlak boven het papier (z-fighting)
+    def dab(w, h, x, y, d=0.0020):
+        return mk.ellipsoid(w / 2, h / 2, d, 14, 6, mat=P + "TicketInk", n=2.8).transform(t=(x, y, t / 2))
+    ink = [dab(0.040, 0.020, 0.012, 0.004), dab(0.018, 0.026, -0.012, 0.008), dab(0.006, 0.012, -0.006, 0.026)]
     for x in (-0.014, 0.004, 0.024):
-        ink.append(mk.cylinder(0.006, 0.003, 10, 0.0, mat=P + "TicketInk", axis="z").transform(t=(x, -0.012, t / 2)))
+        ink.append(dab(0.012, 0.012, x, -0.012))
     for k in range(6):                                   # perforatie
         ink.append(mk.ellipsoid(0.0028, 0.0028, 0.0018, 6, 3, mat=P + "TicketInk").transform(
             t=(-0.040, -0.026 + 0.0105 * k, t / 2)))

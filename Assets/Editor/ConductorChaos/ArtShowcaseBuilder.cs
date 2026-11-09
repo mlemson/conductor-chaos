@@ -71,6 +71,9 @@ namespace ConductorChaos.EditorTools
                 if (it.scale != null && it.scale.Length == 3) go.transform.localScale = new Vector3(it.scale[0], it.scale[1], it.scale[2]);
                 if (it.hide != null) foreach (var n in it.hide) { var t = FindDeep(go.transform, n); if (t) t.gameObject.SetActive(false); }
                 if (it.show != null) foreach (var n in it.show) { var t = FindDeep(go.transform, n); if (t) t.gameObject.SetActive(true); }
+                // personages: wisselbare oogstanden/monden en af en toe knipperen (CharacterFace, issue #205)
+                var eye = FindDeep(go.transform, "Eye_L");
+                if (eye) { var model = CharacterFaceTools.ModelRoot(eye); if (model) CharacterFaceTools.Ensure(model.gameObject, undo: false); }
                 placed++;
             }
 

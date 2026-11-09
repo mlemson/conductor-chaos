@@ -2,9 +2,9 @@
   "model": "ChildPassenger",
   "height_m": 0.94,
   "stats": {
-    "parts": 30,
-    "tris": 63826,
-    "verts": 32035,
+    "parts": 32,
+    "tris": 65778,
+    "verts": 33019,
     "materials": 29
   },
   "materials": {

@@ -108,6 +108,7 @@ Richtlijn:
   - oogrichting en pupilgrootte
   - mondvorm (dicht, open, O-vorm)
   - hele lichaamshouding en hoofdkanteling
+- **elk personage heeft dezelfde wisselbare oogstanden** (ook de conducteur): `Eye_L/R` (open), `Lid_L/R` (half dicht ooglid), `EyeClosed_L/R` (blij dichtgeknepen) en `Blink_L/R` (knipperooglid met wimperlijn). In Unity regelt `CharacterFace` (Assets/Scripts/Characters) de oogstand en mond en laat het personage om de 2–5,5 s knipperen (soms dubbel); puur cosmetisch, geen netwerkstate
 
 ## Basismodel conducteur (P0 art proof, issue #9)
 Maatvoering, gemeten in het concept en vastgelegd in het [ontwerpblad](Art/Conductor_DesignSheet.png) en het [art-check-beeld](Art/ArtCheck_Wagon.png):
