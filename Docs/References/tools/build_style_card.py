@@ -62,6 +62,14 @@ P = {
     ("leather", "Leer: bretels, gordel, tasjes", ["#693B2E", "#774332", "#804936", "#8F5039", "#B46D4B"], (380, 520, 770, 730), "Characters/rail-mechanic-concept.png"),
     ("boot_brown", "Werkhandschoen & laarzen", ["#3E2C2A", "#47322F", "#503936", "#563F3E", "#886B66"], (250, 560, 360, 680), "Characters/rail-mechanic-concept.png"),
   ],
+  # Stationnetje + perronkit: gemeten met Docs/References/tools/measure_station_ramps.py.
+  # Pleisterwerk = parchment, geel = accent_yellow, overweg = train_red, lampgloed = headlight.
+  "Station & perron": [
+    ("station_navy", "Dak, deur, borden (marine)", ["#2F3E73", "#424E86", "#45528E", "#445495", "#545F9C"], (380, 150, 1040, 320), "Environment/station-concept.png"),
+    ("station_timber", "Vakwerk, palen, bank", ["#A36037", "#B76C45", "#BD7244", "#C17842", "#D38949"], (130, 330, 900, 560), "Environment/station-concept.png"),
+    ("plinth_stone", "Plint & schoorsteen", ["#6E6172", "#89798C", "#948393", "#A8949D", "#B9A4A4"], (420, 480, 880, 560), "Environment/station-concept.png"),
+    ("platform_stone", "Perrontegels", ["#6B5C67", "#937A7C", "#B1979B", "#C9B0B5", "#DEC6C4"], (0, 400, 1122, 520), "Environment/platform-kit-concept.png"),
+  ],
   "UI & logo": [
     ("ui_bg", "Achtergrond (pruim-grafiet)", ["#2A2730", "#302629", "#33303B", "#403E4B", "#4A4852"], (0, 780, 420, 1010)),
     ("parchment", "Perkament-labels", ["#9C8978", "#CAA791", "#F2D8BB", "#F4DCC0", "#FAECDC"], (10, 285, 390, 405)),

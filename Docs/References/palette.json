@@ -405,6 +405,48 @@
         ]
       }
     },
+    "Station & perron": {
+      "station_navy": {
+        "name": "Dak, deur, borden (marine)",
+        "ramp": [
+          "#2F3E73",
+          "#424E86",
+          "#45528E",
+          "#445495",
+          "#545F9C"
+        ]
+      },
+      "station_timber": {
+        "name": "Vakwerk, palen, bank",
+        "ramp": [
+          "#A36037",
+          "#B76C45",
+          "#BD7244",
+          "#C17842",
+          "#D38949"
+        ]
+      },
+      "plinth_stone": {
+        "name": "Plint & schoorsteen",
+        "ramp": [
+          "#6E6172",
+          "#89798C",
+          "#948393",
+          "#A8949D",
+          "#B9A4A4"
+        ]
+      },
+      "platform_stone": {
+        "name": "Perrontegels",
+        "ramp": [
+          "#6B5C67",
+          "#937A7C",
+          "#B1979B",
+          "#C9B0B5",
+          "#DEC6C4"
+        ]
+      }
+    },
     "UI & logo": {
       "ui_bg": {
         "name": "Achtergrond (pruim-grafiet)",

@@ -1,0 +1,667 @@
+{
+ "camera": {
+  "target": [
+   -0.5,
+   2.2,
+   3.0
+  ],
+  "yaw": -198,
+  "pitch": 16,
+  "dist": 34,
+  "fov": 36,
+  "far": 400
+ },
+ "light": {
+  "az": -40,
+  "el": 48,
+  "intensity": 1.15,
+  "color": "#FFE3BC"
+ },
+ "fog": {
+  "color": "#91A8E6",
+  "near": 40,
+  "far": 260
+ },
+ "sky": "#85A4EC",
+ "items": [
+  {
+   "path": "Assets/Art/Prefabs/Track/Track_Straight_12m.prefab",
+   "pos": [
+    -12,
+    0,
+    0
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Track/Track_Straight_12m.prefab",
+   "pos": [
+    0,
+    0,
+    0
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Track/Track_Straight_12m.prefab",
+   "pos": [
+    12,
+    0,
+    0
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Platform/Platform_Stairs_Start.prefab",
+   "pos": [
+    -11.1,
+    0,
+    0
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Platform/Platform_Straight_6m.prefab",
+   "pos": [
+    -9.0,
+    0,
+    0
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Platform/Platform_Straight_6m.prefab",
+   "pos": [
+    -3.0,
+    0,
+    0
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Platform/Platform_Straight_3m.prefab",
+   "pos": [
+    3.0,
+    0,
+    0
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Platform/Platform_Straight_3m.prefab",
+   "pos": [
+    6.0,
+    0,
+    0
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Platform/Platform_EndCap_End.prefab",
+   "pos": [
+    9.0,
+    0,
+    0
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Station_Building.prefab",
+   "pos": [
+    -1.2,
+    0,
+    5.3
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Props/Prop_LampPost.prefab",
+   "pos": [
+    -8.2,
+    1.05,
+    4.6
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Props/Prop_LampPost.prefab",
+   "pos": [
+    6.6,
+    1.05,
+    4.6
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Props/Prop_Bench.prefab",
+   "pos": [
+    4.6,
+    1.05,
+    4.55
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Props/Prop_TrashBin.prefab",
+   "pos": [
+    3.3,
+    1.05,
+    4.75
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Props/Prop_Timetable.prefab",
+   "pos": [
+    8.4,
+    1.05,
+    4.65
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Props/Prop_TicketMachine.prefab",
+   "pos": [
+    -6.6,
+    1.05,
+    4.75
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Props/Prop_LuggageCart.prefab",
+   "pos": [
+    -4.9,
+    1.05,
+    3.6
+   ],
+   "rotY": 70,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Props/Prop_StationSign.prefab",
+   "pos": [
+    -9.3,
+    1.05,
+    4.75
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Props/Prop_Planter.prefab",
+   "pos": [
+    1.6,
+    1.05,
+    4.8
+   ],
+   "rotY": 180,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Props/Prop_Fence_2m.prefab",
+   "pos": [
+    10.6,
+    0,
+    6.3
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Props/Prop_Fence_2m.prefab",
+   "pos": [
+    12.6,
+    0,
+    6.3
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Props/Prop_LevelCrossing.prefab",
+   "pos": [
+    13.5,
+    0,
+    -2.5
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Prefabs/Station/Props/Prop_CrateStack.prefab",
+   "pos": [
+    11.5,
+    0,
+    4.2
+   ],
+   "rotY": 15,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Train/Locomotive/Locomotive_Blockout.fbx",
+   "pos": [
+    0.6,
+    1.05,
+    1.35
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Train/Tender/Tender_Blockout.fbx",
+   "pos": [
+    -4.3,
+    1.05,
+    1.35
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Train/RegionalWagon/RegionalWagon_Blockout.fbx",
+   "pos": [
+    -10.6,
+    1.05,
+    1.4
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Characters/Conductor/Conductor.fbx",
+   "pos": [
+    -2.6,
+    1.05,
+    3.0
+   ],
+   "rotY": 200,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Characters/ElderlyPassenger/ElderlyPassenger.fbx",
+   "pos": [
+    -0.2,
+    1.05,
+    3.9
+   ],
+   "rotY": 160,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [
+    "Mouth_Surprised",
+    "Mouth_Happy",
+    "Mouth_Flat",
+    "Mouth_Hmm",
+    "Mouth_Smile",
+    "EyeClosed_L",
+    "EyeClosed_R",
+    "Prop_Sweat",
+    "Lid_L",
+    "Lid_R"
+   ],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Characters/Tourist/Tourist.fbx",
+   "pos": [
+    2.4,
+    1.05,
+    3.5
+   ],
+   "rotY": 210,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [
+    "Mouth_Surprised",
+    "Mouth_Happy",
+    "Mouth_Flat",
+    "Mouth_Hmm",
+    "Mouth_Smile",
+    "EyeClosed_L",
+    "EyeClosed_R",
+    "Prop_Sweat",
+    "Lid_L",
+    "Lid_R"
+   ],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Characters/RailMechanic/RailMechanic.fbx",
+   "pos": [
+    6.2,
+    1.05,
+    2.6
+   ],
+   "rotY": 230,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [
+    "Mouth_Neutral",
+    "Mouth_Surprised",
+    "Mouth_Happy",
+    "Mouth_Hmm",
+    "Mouth_Smile",
+    "EyeClosed_L",
+    "EyeClosed_R",
+    "Prop_Sweat"
+   ],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Large_01.fbx",
+   "pos": [
+    -14,
+    0,
+    12
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Medium_01.fbx",
+   "pos": [
+    -9.5,
+    0,
+    11.5
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Large_01.fbx",
+   "pos": [
+    9.0,
+    0,
+    12.5
+   ],
+   "rotY": 40,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Tree_Pine_Medium_01.fbx",
+   "pos": [
+    14.5,
+    0,
+    9.0
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Bush_01.fbx",
+   "pos": [
+    -12.6,
+    0,
+    5.4
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Trees/Bush_01.fbx",
+   "pos": [
+    11.8,
+    0,
+    7.6
+   ],
+   "rotY": 60,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Plants/Flower_Patch_01.fbx",
+   "pos": [
+    -13.2,
+    0,
+    3.6
+   ],
+   "rotY": 0.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Environment/Rocks/Rock_Medium_01.fbx",
+   "pos": [
+    15.5,
+    0,
+    4.0
+   ],
+   "rotY": 30,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
+   "show": []
+  }
+ ]
+}
