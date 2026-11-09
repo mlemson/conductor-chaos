@@ -59,17 +59,20 @@ def build_props(manifest):
         export(name, "Props", nodes, density=900, radius=0.12, manifest=manifest)
 
 
-def build_platform(manifest):
+def build_platform(manifest, *, tactile=True):
     rng = np.random.default_rng([2026, 182])
-    mods = {"Platform_Straight_3m": platform.straight(3.0, rng), "Platform_Straight_6m": platform.straight(6.0, rng)}
+    mods = {f"Platform_Straight_{length}m": platform.straight(length, rng, tactile=tactile) for length in (3, 6)}
     # eindstukken in twee varianten: _End (aan het eind van een perron, uitlopend naar +X) en _Start
     # (gespiegeld, aan het begin). Beide liggen tussen x = 0 en x = lengte, dus ze klikken op hetzelfde raster.
-    for name, (m, c) in (("EndCap", platform.end_cap(rng)), ("Corner", platform.corner(rng)),
-                         ("Ramp", platform.ramp(rng)), ("Stairs", platform.stairs(rng))):
+    for name, build in (("EndCap", platform.end_cap), ("Corner", platform.corner),
+                        ("Ramp", platform.ramp), ("Stairs", platform.stairs)):
+        m, c = build(rng, tactile=tactile)
         L = round(float(c.V[:, 0].max()), 3)
         mods[f"Platform_{name}_End"] = (m, c)
         mods[f"Platform_{name}_Start"] = (m.transform(s=(-1, 1, 1), t=(L, 0, 0)), c.transform(s=(-1, 1, 1), t=(L, 0, 0)))
     for name, (m, c) in mods.items():
+        if not tactile:
+            name += "_NoStripe"
         export(name, "Platform", simple(name, m, c), density=260, radius=0.22, manifest=manifest,
                extra={"pivot": "hart spoor, maaiveld", "platformTop": platform.TOP, "edge": platform.E,
                       "depth": platform.DEPTH})
@@ -87,6 +90,8 @@ def main(which=("props", "platform", "building")):
         build_props(manifest)
     if "platform" in which:
         build_platform(manifest)
+    if "platform" in which or "platform-no-stripe" in which:
+        build_platform(manifest, tactile=False)
     if "building" in which:
         build_building(manifest)
     write_manifest(manifest)

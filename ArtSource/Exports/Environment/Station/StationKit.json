@@ -602,6 +602,246 @@
       "platformTop": 1.05,
       "edge": 1.65,
       "depth": 3.5
+    },
+    "Platform_Straight_3m_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Straight_3m_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 640,
+      "min": [
+        0.0,
+        -0.0,
+        1.65
+      ],
+      "max": [
+        3.0,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Straight_3m_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Straight_6m_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Straight_6m_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1200,
+      "min": [
+        0.0,
+        -0.0,
+        1.65
+      ],
+      "max": [
+        6.0,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Straight_6m_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_EndCap_End_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_EndCap_End_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1068,
+      "min": [
+        0.0,
+        -0.0,
+        1.65
+      ],
+      "max": [
+        2.345,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_EndCap_End_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_EndCap_Start_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_EndCap_Start_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1068,
+      "min": [
+        -0.0,
+        -0.0,
+        1.65
+      ],
+      "max": [
+        2.345,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_EndCap_Start_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Corner_End_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Corner_End_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1024,
+      "min": [
+        0.0,
+        -0.0,
+        1.65
+      ],
+      "max": [
+        3.5,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Corner_End_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Corner_Start_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Corner_Start_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1024,
+      "min": [
+        0.0,
+        -0.0,
+        1.65
+      ],
+      "max": [
+        3.5,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Corner_Start_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Ramp_End_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Ramp_End_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1040,
+      "min": [
+        0.0,
+        0.0,
+        1.65
+      ],
+      "max": [
+        5.0,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Ramp_End_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Ramp_Start_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Ramp_Start_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 1040,
+      "min": [
+        0.0,
+        0.0,
+        1.65
+      ],
+      "max": [
+        5.0,
+        1.05,
+        5.15
+      ],
+      "nodes": [
+        "Platform_Ramp_Start_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Stairs_End_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Stairs_End_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 312,
+      "min": [
+        0.0,
+        0.0,
+        1.63
+      ],
+      "max": [
+        2.1,
+        1.15,
+        5.17
+      ],
+      "nodes": [
+        "Platform_Stairs_End_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
+    },
+    "Platform_Stairs_Start_NoStripe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Platform/Platform_Stairs_Start_NoStripe.fbx",
+      "category": "Platform",
+      "tris": 312,
+      "min": [
+        0.0,
+        0.0,
+        1.63
+      ],
+      "max": [
+        2.1,
+        1.15,
+        5.17
+      ],
+      "nodes": [
+        "Platform_Stairs_Start_NoStripe",
+        "Mesh",
+        "Col_Main"
+      ],
+      "pivot": "hart spoor, maaiveld",
+      "platformTop": 1.05,
+      "edge": 1.65,
+      "depth": 3.5
     }
   },
   "station": {

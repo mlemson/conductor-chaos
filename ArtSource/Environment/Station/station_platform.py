@@ -258,15 +258,15 @@ def rect(x0, x1, z0, z1):
     return [(x0, z0), (x1, z0), (x1, z1), (x0, z1)]
 
 
-def straight(L, rng):
-    return build_module(rect(0.0, L, E, B), ["front", "joint", "edge", "joint"], rng)
+def straight(L, rng, *, tactile=True):
+    return build_module(rect(0.0, L, E, B), ["front", "joint", "edge", "joint"], rng, tactile=tactile)
 
 
 def _arc_pts(cx, cz, r, a0, a1, n):
     return [(cx + r * math.cos(math.radians(a)), cz + r * math.sin(math.radians(a))) for a in np.linspace(a0, a1, n)]
 
 
-def end_cap(rng, L=2.4, r=1.6):
+def end_cap(rng, L=2.4, r=1.6, *, tactile=True):
     """Kopeinde: afgeronde hoeken aan de +X-kant; rand en geleidelijn lopen met de bocht mee."""
     xc = L - r
     pts = [(0.0, E)] + _arc_pts(xc, E + r, r, -90, 0, 7)[:-1] + _arc_pts(xc, B - r, r, 0, 90, 7)[1:] + [(0.0, B)]
@@ -279,10 +279,10 @@ def end_cap(rng, L=2.4, r=1.6):
             kinds.append("edge")
         else:
             kinds.append("front")                   # spoorkant + de hele boog: geleidelijn loopt mee om de kop
-    return build_module(pts, kinds, rng)
+    return build_module(pts, kinds, rng, tactile=tactile)
 
 
-def corner(rng, r=0.9):
+def corner(rng, r=0.9, *, tactile=True):
     """Hoekstuk: het perron maakt een slag van 90 graden weg van het spoor.
     Aansluitingen aan de -X-kant (recht stuk langs het spoor) en aan de +Z-kant (recht stuk, 90 graden gedraaid);
     rand + geleidelijn aan de spoorkant en de +X-kant, met een afgeronde buitenhoek."""
@@ -295,12 +295,13 @@ def corner(rng, r=0.9):
             kinds.append("joint")
         else:
             kinds.append("front")
-    return build_module(pts, kinds, rng)
+    return build_module(pts, kinds, rng, tactile=tactile)
 
 
-def ramp(rng, L=5.0):
+def ramp(rng, L=5.0, *, tactile=True):
     """Helling van perronhoogte (x = 0) naar maaiveld (x = L), volle perronbreedte, gele lijn langs de spoorkant."""
     parts = []
+    cope_w = COPING if tactile else INSET
 
     def ytop(x):
         return TOP * (1.0 - x / L)
@@ -312,11 +313,12 @@ def ramp(rng, L=5.0):
     for (z0, z1) in ((E + WALL_IN, E + WALL_T), (B - WALL_T, B - WALL_IN)):    # wigvormige zijwanden uit één stuk
         parts.append(slab(wedge, (), z0, z1, 0.02, "M_Stn_Stone"))
     parts.append(slab(wedge, (), E + WALL_T, B - WALL_T, 0.0, "M_Stn_StoneDark"))
-    parts.append(slab([(0.0, TOP - COPE_T), (x_c, 0.0), (x_t, 0.0), (0.0, TOP - TILE_T)], (), E + COPING, B - INSET, 0.0,
+    parts.append(slab([(0.0, TOP - COPE_T), (x_c, 0.0), (x_t, 0.0), (0.0, TOP - TILE_T)], (), E + cope_w, B - INSET, 0.0,
                       "M_Stn_StoneDark"))
     # randstenen en tegels als schuine platen (parallellogram-profiel per stuk)
-    bands = [((E, E + COPING), "M_Stn_PavingLight", COPE_T), ((B - INSET, B), "M_Stn_PavingLight", COPE_T),
-             ((E + COPING, E + INSET), "M_Stn_Yellow", TILE_T)]
+    bands = [((E, E + cope_w), "M_Stn_PavingLight", COPE_T), ((B - INSET, B), "M_Stn_PavingLight", COPE_T)]
+    if tactile:
+        bands.append(((E + COPING, E + INSET), "M_Stn_Yellow", TILE_T))
     zz = np.arange(E + INSET, B - INSET - 1e-6, TILE)
     for k, z0 in enumerate(zz):
         z1 = min(z0 + TILE, B - INSET)
@@ -333,7 +335,7 @@ def ramp(rng, L=5.0):
     return mk.merge(*parts), col
 
 
-def stairs(rng, steps=6):
+def stairs(rng, steps=6, *, tactile=True):
     """Trap van perronhoogte (x = 0) naar maaiveld langs +X, gele neuzen op elke trede, stenen trapwangen."""
     rise = TOP / steps
     tread = 0.36
@@ -343,7 +345,8 @@ def stairs(rng, steps=6):
         x0, x1 = k * tread, (k + 1) * tread
         ytop = TOP - (k + 1) * rise
         parts.append(rbox(x0 + 0.01, x1 + 0.04, ytop - 0.16, ytop, E + 0.24, B - 0.24, 0.03, "M_Stn_Paving"))
-        parts.append(rbox(x1 - 0.08, x1 + 0.05, ytop - 0.005, ytop + 0.012, E + 0.30, B - 0.30, 0.008, "M_Stn_Yellow"))
+        if tactile:
+            parts.append(rbox(x1 - 0.08, x1 + 0.05, ytop - 0.005, ytop + 0.012, E + 0.30, B - 0.30, 0.008, "M_Stn_Yellow"))
         parts.append(rbox(x0, x1, 0.0, ytop - 0.15, E + 0.30, B - 0.30, 0.0, "M_Stn_StoneDark"))
     # trapwangen: getrapt profiel met een schuine afdeklijst
     for (z0, z1) in ((E, E + 0.24), (B - 0.24, B)):
@@ -352,7 +355,8 @@ def stairs(rng, steps=6):
         cap = [(0.0, TOP - 0.02), (L, 0.16), (L, 0.28), (0.0, TOP + 0.10)]          # ligt op de trapwang
         parts.append(slab(cap, (), z0 - 0.02, z1 + 0.02, 0.03, "M_Stn_PavingLight"))
     # bovenste rand: gele neus op de perronrand
-    parts.append(rbox(0.0, 0.10, TOP - 0.004, TOP + 0.012, E + 0.30, B - 0.30, 0.008, "M_Stn_Yellow"))  # niet over de naad
+    if tactile:
+        parts.append(rbox(0.0, 0.10, TOP - 0.004, TOP + 0.012, E + 0.30, B - 0.30, 0.008, "M_Stn_Yellow"))  # niet over de naad
     col = mk.merge(slab([(0.0, 0.0), (L, 0.0), (L, 0.02), (0.0, TOP)], (), E + 0.24, B - 0.24, 0.0, "M_Stn_Collider"),
                    slab([(0.0, 0.0), (L, 0.0), (L, 0.28), (0.0, TOP + 0.10)], (), E - 0.02, E + 0.24, 0.0, "M_Stn_Collider"),
                    slab([(0.0, 0.0), (L, 0.0), (L, 0.28), (0.0, TOP + 0.10)], (), B - 0.24, B + 0.02, 0.0, "M_Stn_Collider"))

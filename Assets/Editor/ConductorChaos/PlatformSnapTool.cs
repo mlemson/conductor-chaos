@@ -197,6 +197,9 @@ namespace ConductorChaos.EditorTools
         {
             var name = PlatformName(root);
             if (name == null) return System.Array.Empty<Edge>();
+            const string noStripeSuffix = "_NoStripe";
+            if (name.EndsWith(noStripeSuffix, System.StringComparison.Ordinal))
+                name = name.Substring(0, name.Length - noStripeSuffix.Length);
             var scale = root.lossyScale;
             if (scale.x <= 0f || !Mathf.Approximately(scale.x, scale.y) || !Mathf.Approximately(scale.x, scale.z))
                 return System.Array.Empty<Edge>();
