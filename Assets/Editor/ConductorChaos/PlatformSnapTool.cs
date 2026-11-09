@@ -16,11 +16,13 @@ namespace ConductorChaos.EditorTools
         const float PlatformDepth = 3.5f;
         const float SeamTolerance = 0.02f;
 
-        static readonly GUIContent Icon = new GUIContent("Perron", "Sleep een perronstuk naar een vrije aansluiting");
+        static readonly GUIContent Icon = new GUIContent("Perron", "Klik op een vrije aansluiting of sleep het stuk ernaartoe");
         static readonly Quaternion Opposite = Quaternion.Euler(0f, 180f, 0f);
         readonly List<Edge> neighbours = new List<Edge>();
         Transform moving;
         Edge[] movingEdges;
+        bool dragging;
+        bool refreshNeighbours;
 
         public override GUIContent toolbarIcon => Icon;
 
@@ -41,30 +43,49 @@ namespace ConductorChaos.EditorTools
             return root != null && PlatformName(root.transform) != null ? root.transform : null;
         }
 
-        public override void OnWillBeDeactivated() => EndDrag();
+        public override void OnActivated() => EditorApplication.hierarchyChanged += InvalidateNeighbours;
+
+        public override void OnWillBeDeactivated()
+        {
+            EditorApplication.hierarchyChanged -= InvalidateNeighbours;
+            moving = null;
+            dragging = false;
+        }
+
+        void InvalidateNeighbours() => refreshNeighbours = true;
 
         public override void OnToolGUI(EditorWindow window)
         {
             if (!(window is SceneView)) return;
             var platform = SelectedPlatform();
-            if (platform == null || (moving != null && moving != platform)) EndDrag();
             if (platform == null) return;
+            if (moving != platform)
+            {
+                moving = platform;
+                dragging = false;
+                refreshNeighbours = true;
+            }
+            if (refreshNeighbours) CollectEdges(platform);
 
             var input = Event.current.rawType;
             var position = Handles.PositionHandle(platform.position, Tools.pivotRotation == PivotRotation.Local
                 ? platform.rotation : Quaternion.identity);
             if (position != platform.position)
             {
-                if (moving == null)
+                if (!dragging)
                 {
                     Undo.RegisterCompleteObjectUndo(platform, "Perron plaatsen");
-                    BeginDrag(platform);
+                    dragging = true;
                 }
                 platform.position = position;
                 PrefabUtility.RecordPrefabInstancePropertyModifications(platform);
             }
 
-            if (moving == null) return;
+            if (!dragging)
+            {
+                DrawFreeConnections();
+                return;
+            }
             if (input == EventType.MouseUp)
             {
                 if (TrySnap(out var point, out var rotation, out _))
@@ -72,7 +93,8 @@ namespace ConductorChaos.EditorTools
                     platform.SetPositionAndRotation(point, rotation);
                     PrefabUtility.RecordPrefabInstancePropertyModifications(platform);
                 }
-                EndDrag();
+                dragging = false;
+                SceneView.RepaintAll();
             }
             else if (input == EventType.Repaint && TrySnap(out _, out _, out var seam))
             {
@@ -85,9 +107,9 @@ namespace ConductorChaos.EditorTools
             }
         }
 
-        void BeginDrag(Transform platform)
+        void CollectEdges(Transform platform)
         {
-            moving = platform;
+            refreshNeighbours = false;
             movingEdges = Edges(platform);
             neighbours.Clear();
             foreach (var candidate in Object.FindObjectsByType<Transform>())
@@ -98,11 +120,32 @@ namespace ConductorChaos.EditorTools
             }
         }
 
-        void EndDrag()
+        void DrawFreeConnections()
         {
-            moving = null;
-            movingEdges = null;
-            neighbours.Clear();
+            using (new Handles.DrawingScope(new Color(0.25f, 0.9f, 0.65f)))
+            {
+                foreach (var target in neighbours)
+                {
+                    foreach (var source in movingEdges)
+                    {
+                        if (!source.Matches(target)) continue;
+                        if (IsOccupied(target)) break;
+
+                        float size = HandleUtility.GetHandleSize(target.Position) * 0.075f;
+                        if (Handles.Button(target.Position, target.Rotation, size, size * 1.5f, Handles.DotHandleCap))
+                        {
+                            Undo.RegisterCompleteObjectUndo(moving, "Perron vastklikken");
+                            var pose = source.PoseAt(target);
+                            moving.SetPositionAndRotation(pose.position, pose.rotation);
+                            PrefabUtility.RecordPrefabInstancePropertyModifications(moving);
+                            SceneView.RepaintAll();
+                            return;
+                        }
+                        Handles.Label(target.Position + Vector3.up * size * 1.5f, "Klik om aan te sluiten");
+                        break;
+                    }
+                }
+            }
         }
 
         bool TrySnap(out Vector3 position, out Quaternion rotation, out Edge seam)
@@ -114,18 +157,18 @@ namespace ConductorChaos.EditorTools
             foreach (var source in movingEdges)
             {
                 var sourcePosition = source.Position;
-                var offset = sourcePosition - moving.position;
                 foreach (var target in neighbours)
                 {
                     if (!source.Matches(target)) continue;
-                    var distance = (target.Position - sourcePosition).sqrMagnitude;
+                    var pose = source.PoseAt(target);
+                    var distance = Mathf.Min((target.Position - sourcePosition).sqrMagnitude,
+                        (pose.position - moving.position).sqrMagnitude);
                     if (distance >= best) continue;
-                    var turn = target.Rotation * Opposite * Quaternion.Inverse(source.Rotation);
-                    if (Quaternion.Angle(Quaternion.identity, turn) > 100f || IsOccupied(target)) continue;
+                    if (Quaternion.Angle(moving.rotation, pose.rotation) > 100f || IsOccupied(target)) continue;
                     best = distance;
                     seam = target;
-                    position = target.Position - turn * offset;
-                    rotation = turn * moving.rotation;
+                    position = pose.position;
+                    rotation = pose.rotation;
                 }
             }
             return best < SnapDistance * SnapDistance;
@@ -219,6 +262,12 @@ namespace ConductorChaos.EditorTools
 
             public Vector3 Position => Root.TransformPoint(localPoint);
             public Quaternion Rotation => Root.rotation * localRotation;
+
+            public Pose PoseAt(Edge target)
+            {
+                var turn = target.Rotation * Opposite * Quaternion.Inverse(Rotation);
+                return new Pose(target.Position - turn * (Position - Root.position), turn * Root.rotation);
+            }
 
             // Pair opposite seam types to keep the tactile strips on the same side.
             public bool Matches(Edge other) => start != other.start && Mathf.Approximately(Scale, other.Scale);
