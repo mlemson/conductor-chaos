@@ -368,7 +368,7 @@ namespace ConductorChaos.Playground
             private readonly Quaternion rest;
             private readonly CapsuleCollider collider;
             private readonly ConfigurableJoint shoulder;
-            private SpringJoint grip;
+            private Joint grip;
             private Collider gripSurface;
             private Vector3 gripNormal;
             private readonly Collider[] leverOverlaps = new Collider[12];
@@ -418,7 +418,7 @@ namespace ConductorChaos.Playground
             {
                 if (!rigid) return;
                 Quaternion localTarget = rest * Quaternion.Euler(held ? -65f + pitch * 0.65f : 0f, 0, 0);
-                if (held && pitch > 28f && grip && gripSurface && (!grip.connectedBody || grip.connectedBody.isKinematic))
+                if (held && grip && gripSurface && grip is ConfigurableJoint)
                 {
                     var support = grip.connectedBody;
                     Vector3 anchor = support ? support.transform.TransformPoint(grip.connectedAnchor) : grip.connectedAnchor;
@@ -438,10 +438,21 @@ namespace ConductorChaos.Playground
                 nextAttempt = Time.time + 0.1f;
                 Vector3 hand = arm.TransformPoint(new Vector3(0, -0.205f, 0));
                 if (TryGripNearbyLever(hand, reach)) return;
-                int count = Physics.SphereCastNonAlloc(hand, 0.13f, aim * Vector3.forward, buffer, 0.38f, ~0, QueryTriggerInteraction.Ignore);
+                Vector3 direction = aim * Vector3.forward;
+                if (TryGripCast(hand, buffer, player, reach,
+                    Physics.SphereCastNonAlloc(hand, 0.13f, direction, buffer, 0.38f, ~0, QueryTriggerInteraction.Ignore))) return;
+                // A sphere cast can miss a wall the palm is already touching.
+                TryGripCast(hand, buffer, player, reach,
+                    Physics.RaycastNonAlloc(hand, direction, buffer, 0.17f, ~0, QueryTriggerInteraction.Ignore));
+            }
+
+            private bool TryGripCast(Vector3 hand, RaycastHit[] buffer, Transform player, float reach, int count)
+            {
                 float closest = float.PositiveInfinity;
                 RaycastHit chosen = default;
                 bool found = false;
+                bool leverGrip = false;
+                bool plantedGrip = false;
                 for (int i = 0; i < count; i++)
                 {
                     RaycastHit hit = buffer[i];
@@ -452,25 +463,38 @@ namespace ConductorChaos.Playground
                         NetworkObject target = hit.rigidbody.GetComponentInParent<NetworkObject>();
                         if (!target || !target.IsSpawned || !target.IsOwnedByServer) continue;
                     }
+                    var train = hit.rigidbody ? hit.rigidbody.GetComponentInParent<TrainDrive>() : null;
+                    bool lever = train && train.IsSpawned && train.IsOwnedByServer && train.IsLeverCollider(hit.collider);
+                    bool planted = !lever && (!hit.rigidbody || hit.rigidbody.isKinematic);
+                    if (planted && (hit.distance <= 0f || !PlaygroundControls.CanPlantHand(hand, hit.point, hit.normal))) continue;
                     closest = hit.distance;
                     chosen = hit;
                     found = true;
+                    leverGrip = lever;
+                    plantedGrip = planted;
                 }
-                if (!found) return;
-                grip = arm.gameObject.AddComponent<SpringJoint>();
-                grip.autoConfigureConnectedAnchor = false;
-                grip.connectedBody = chosen.rigidbody;
-                grip.connectedAnchor = chosen.rigidbody ? chosen.rigidbody.transform.InverseTransformPoint(chosen.point) : chosen.point;
-                grip.anchor = new Vector3(0, -0.205f, 0);
-                var train = chosen.rigidbody ? chosen.rigidbody.GetComponentInParent<TrainDrive>() : null;
-                bool leverGrip = train && train.IsSpawned && train.IsOwnedByServer && train.IsLeverCollider(chosen.collider);
+                if (!found) return false;
                 gripSurface = leverGrip ? null : chosen.collider;
                 gripNormal = leverGrip ? Vector3.zero : chosen.collider.transform.InverseTransformDirection(chosen.normal);
-                grip.spring = leverGrip ? 450f : 180f;
-                grip.damper = leverGrip ? 40f : 18f;
-                grip.minDistance = 0f;
-                grip.maxDistance = 0.03f;
-                grip.breakForce = leverGrip ? 1000f : 300f;
+                Vector3 handAnchor = new Vector3(0, -0.205f, 0);
+                if (plantedGrip)
+                {
+                    grip = PlaygroundControls.PlantHand(arm.gameObject, chosen.rigidbody, handAnchor, chosen.point, chosen.normal, 1100f);
+                    return true;
+                }
+
+                var spring = arm.gameObject.AddComponent<SpringJoint>();
+                spring.autoConfigureConnectedAnchor = false;
+                spring.connectedBody = chosen.rigidbody;
+                spring.connectedAnchor = chosen.rigidbody ? chosen.rigidbody.transform.InverseTransformPoint(chosen.point) : chosen.point;
+                spring.anchor = handAnchor;
+                spring.spring = leverGrip ? 450f : 180f;
+                spring.damper = leverGrip ? 40f : 18f;
+                spring.minDistance = 0f;
+                spring.maxDistance = 0.03f;
+                spring.breakForce = leverGrip ? 1000f : 300f;
+                grip = spring;
+                return true;
             }
 
             private bool TryGripNearbyLever(Vector3 hand, float reach)
@@ -484,16 +508,17 @@ namespace ConductorChaos.Playground
                     if (!train || !train.IsSpawned || !train.IsOwnedByServer || !train.IsLeverCollider(surface)) continue;
                     Vector3 point = surface.ClosestPoint(hand);
                     if ((point - parent.position).sqrMagnitude > reach * reach) continue;
-                    grip = arm.gameObject.AddComponent<SpringJoint>();
-                    grip.autoConfigureConnectedAnchor = false;
-                    grip.connectedBody = target;
-                    grip.connectedAnchor = target.transform.InverseTransformPoint(point);
-                    grip.anchor = new Vector3(0, -0.205f, 0);
-                    grip.spring = 450f;
-                    grip.damper = 40f;
-                    grip.minDistance = 0f;
-                    grip.maxDistance = 0.03f;
-                    grip.breakForce = 1000f;
+                    var spring = arm.gameObject.AddComponent<SpringJoint>();
+                    spring.autoConfigureConnectedAnchor = false;
+                    spring.connectedBody = target;
+                    spring.connectedAnchor = target.transform.InverseTransformPoint(point);
+                    spring.anchor = new Vector3(0, -0.205f, 0);
+                    spring.spring = 450f;
+                    spring.damper = 40f;
+                    spring.minDistance = 0f;
+                    spring.maxDistance = 0.03f;
+                    spring.breakForce = 1000f;
+                    grip = spring;
                     return true;
                 }
                 return false;
@@ -507,8 +532,7 @@ namespace ConductorChaos.Playground
             public void Release()
             {
                 gripSurface = null;
-                if (!grip) return;
-                Object.Destroy(grip);
+                PlaygroundControls.ReleaseGrip(grip);
                 grip = null;
             }
 
