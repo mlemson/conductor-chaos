@@ -37,8 +37,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Track_SleeperLight
+    second: {fileID: 2100000, guid: 49fb2d30a77085c6bb559ae8ccb01a16, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Track_SleeperOld
     second: {fileID: 2100000, guid: a0ed28a1c33e2b2f40781f3eb2a7742c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Track_Warn
+    second: {fileID: 2100000, guid: 9423e197aaa8064df52ff4f38ca0d824, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
