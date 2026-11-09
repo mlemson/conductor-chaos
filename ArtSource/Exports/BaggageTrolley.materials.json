@@ -1,0 +1,216 @@
+{
+  "model": "BaggageTrolley",
+  "height_m": 0.93,
+  "stats": {
+    "parts": 3,
+    "tris": 15920,
+    "verts": 8086,
+    "materials": 10
+  },
+  "materials": {
+    "M_BaggageTrolley_Frame": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1,
+        "cells": 0.4,
+        "cellSize": 0.6
+      }
+    },
+    "M_BaggageTrolley_FrameDark": {
+      "base": "#C68C2C",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": -0.4,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "cells": 0.4,
+        "cellSize": 0.6
+      }
+    },
+    "M_BaggageTrolley_Wheel": {
+      "base": "#33303B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "cells": 0.4,
+        "cellSize": 0.6
+      }
+    },
+    "M_BaggageTrolley_Hub": {
+      "base": "#8E8796",
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.35,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "cells": 0.4,
+        "cellSize": 0.6
+      }
+    },
+    "M_BaggageTrolley_Grip": {
+      "base": "#403E4B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.25,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "cells": 0.4,
+        "cellSize": 0.6
+      }
+    },
+    "M_BaggageTrolley_Blue": {
+      "base": "#4E5980",
+      "ramp": [
+        "#434667",
+        "#4A5377",
+        "#4E5980",
+        "#4F5C83",
+        "#6D7AA8"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2,
+        "cells": 0.4,
+        "cellSize": 0.6
+      }
+    },
+    "M_BaggageTrolley_Red": {
+      "base": "#9F404B",
+      "ramp": [
+        "#84353E",
+        "#983E49",
+        "#9F404B",
+        "#A3434D",
+        "#E1696E"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2,
+        "cells": 0.4,
+        "cellSize": 0.6
+      }
+    },
+    "M_BaggageTrolley_Brown": {
+      "base": "#8F5039",
+      "ramp": [
+        "#693B2E",
+        "#774332",
+        "#804936",
+        "#8F5039",
+        "#B46D4B"
+      ],
+      "rampShift": 0.15,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2,
+        "cells": 0.4,
+        "cellSize": 0.6
+      }
+    },
+    "M_BaggageTrolley_Trim": {
+      "base": "#EFBF86",
+      "ramp": [
+        "#C2925E",
+        "#DDAC73",
+        "#EFBF86",
+        "#F4C892",
+        "#FCD8A4"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "cells": 0.4,
+        "cellSize": 0.6
+      }
+    },
+    "M_BaggageTrolley_Buckle": {
+      "base": "#DA993A",
+      "ramp": [
+        "#9D662F",
+        "#AD7031",
+        "#DA993A",
+        "#FBBA39",
+        "#FCCF53"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.35,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "cells": 0.4,
+        "cellSize": 0.6
+      }
+    }
+  }
+}

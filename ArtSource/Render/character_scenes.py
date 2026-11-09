@@ -25,12 +25,12 @@ def face(asset, name, pose, yaw=-14, aim=None):
                    "aim": aim or {}}]}}
 
 
-def hero(asset, pose=None, yaw=-24):
+def hero(asset, pose=None, yaw=-24, extra=None, target="0,0.60,0", dist=3.7):
     return {"name": f"{asset}_hero", "params": {
-        "w": 900, "h": 1100, "yaw": yaw, "pitch": 6, "dist": 3.7, "fov": 22, "target": "0,0.60,0",
+        "w": 900, "h": 1100, "yaw": yaw, "pitch": 6, "dist": dist, "fov": 22, "target": target,
         "lightRel": 1, "groundShadowOnly": 1,
         "items": [{"url": f"../Exports/{asset}.glb", "mats": f"../Exports/{asset}.materials.json",
-                   "pose": pose or {}}]}}
+                   "pose": pose or {}}] + list(extra or [])}}
 
 
 HIDE = {"visible": False}
@@ -45,7 +45,7 @@ def closed_eyes(pose):
 
 def mouth(kind, pose=None):
     pose = dict(pose or {})
-    for other in ("Neutral", "Surprised", "Happy", "Flat", "Hmm", "Smile"):
+    for other in ("Neutral", "Surprised", "Happy", "Flat", "Hmm", "Smile", "Grin"):
         pose["Mouth_" + other] = HIDE
     pose["Mouth_" + kind] = SHOW
     return pose
@@ -80,6 +80,46 @@ SHEETS = {
         ],
         "hero": look(0.006, 0.026, mouth("Happy")),
     },
+    "StationMaster": {
+        "expr": [
+            ("proud", look(0.0, 0.012)),
+            ("kind", closed_eyes(mouth("Happy"))),
+            ("thinking", look(-0.022, 0.026, mouth("Hmm"))),
+            ("surprised", look(0.0, 0.0, mouth("Surprised", {"Lid_L": HIDE, "Lid_R": HIDE}), 0.8)),
+        ],
+        "hero": look(-0.010, 0.014, mouth("Happy")),
+    },
+    "BusinessTraveler": {
+        "expr": [
+            ("rushed", look(0.012, 0.020, mouth("Surprised", {"Prop_Sweat": SHOW}), 0.8)),
+            ("focused", look(0.0, 0.0, mouth("Flat", {"Lid_L": SHOW, "Lid_R": SHOW}))),
+            ("relieved", closed_eyes(mouth("Smile"))),
+            ("exhausted", look(-0.010, -0.022, mouth("Hmm", {"Lid_L": SHOW, "Lid_R": SHOW, "Prop_Sweat": SHOW}))),
+        ],
+        "hero": look(0.010, 0.022, mouth("Surprised", {"Prop_Sweat": SHOW}), 0.85),
+    },
+    "ChildPassenger": {
+        "expr": [
+            ("mischievous", {}),
+            ("excited", look(0.0, 0.020, mouth("Happy", {"Lid_L": HIDE, "Lid_R": HIDE}), 1.05)),
+            ("caught", look(0.0, 0.0, mouth("Surprised", {"Lid_L": HIDE, "Lid_R": HIDE}), 0.75)),
+            ("sly", look(0.026, 0.0, mouth("Smile"))),
+        ],
+        "hero": look(0.012, 0.016),
+        "scale": 0.80,
+    },
+    "BaggageHelper": {
+        "expr": [
+            ("helpful", {}),
+            ("focused", look(0.0, -0.006, mouth("Flat", {"Lid_L": SHOW, "Lid_R": SHOW}))),
+            ("cheerful", closed_eyes(mouth("Happy"))),
+            ("surprised", look(0.0, 0.020, mouth("Surprised", {"Prop_Sweat": SHOW}), 0.8)),
+        ],
+        "hero": look(0.010, 0.016),
+        "extra": [{"url": "../Exports/BaggageTrolley.glb", "mats": "../Exports/BaggageTrolley.materials.json",
+                   "pos": [1.06, 0, -0.01], "rotY": 0}],
+        "hero_target": "0.55,0.52,0", "hero_dist": 5.6, "hero_yaw": -30, "hero_w": 1300,
+    },
     "RailMechanic": {
         "expr": [
             ("determined", {}),
@@ -97,21 +137,36 @@ def scenes(asset):
     out = [turn(asset, "front", 0), turn(asset, "34", -38), turn(asset, "side", -90), turn(asset, "back", 180),
            turn(asset, "side_r", 90)]
     out += [face(asset, e[0], e[1], aim=e[2] if len(e) > 2 else None) for e in cfg["expr"]]
-    out.append(hero(asset, cfg["hero"]))
+    k = cfg.get("scale", 1.0)                           # kleinere personages: camera mee laten zakken
+    if k != 1.0:
+        for sc in out[5:]:
+            sc["params"].update({"target": f"0,{0.80 * k:.3f},0", "dist": 2.5 * k})
+    out.append(hero(asset, cfg["hero"], yaw=cfg.get("hero_yaw", -24), extra=cfg.get("extra"),
+                    target=cfg.get("hero_target", "0,0.60,0"), dist=cfg.get("hero_dist", 3.7)))
+    out[-1]["params"]["w"] = cfg.get("hero_w", 900)
+    if asset == "BaggageHelper":                        # de bagagekar los, voor het ontwerpblad
+        t = turn("BaggageTrolley", "34", -38)
+        t["params"].update({"ortho": 0.78, "target": "0,0.50,0", "w": 760})
+        out.append(t)
     return out
 
 
+IN_SCENE = (("Tourist", [-5.0, -0.68, 2.0], 35), ("ElderlyPassenger", [-3.2, -0.68, 2.2], 20),
+            ("RailMechanic", [-1.4, -0.68, 2.4], 5), ("StationMaster", [0.65, -0.68, 2.3], -5),
+            ("BusinessTraveler", [2.0, -0.68, 2.6], -15), ("ChildPassenger", [-0.45, -0.68, 3.0], 10),
+            ("BaggageHelper", [3.6, -0.68, 2.5], -25), ("BaggageTrolley", [4.56, -0.68, 2.95], -25))
+
+
 def in_scene():
-    """De drie varianten naast het spoor in de bestaande voorbeeldscène (zelfde plekken als de Unity-showcase)."""
+    """De varianten naast het spoor in de bestaande voorbeeldscène (zelfde plekken als de Unity-showcase)."""
     import copy
     env = json.load(open(os.path.join(HERE, "scenes", "env_sheet.json"), encoding="utf-8"))
     ex = copy.deepcopy(next(x for x in env if x["name"] == "env_example"))
     ex["name"] = "characters_in_scene"
-    for asset, pos, rot in (("Tourist", [-5.0, -0.68, 2.0], 35), ("ElderlyPassenger", [-3.2, -0.68, 2.2], 20),
-                            ("RailMechanic", [-1.4, -0.68, 2.4], 5)):
+    for asset, pos, rot in IN_SCENE:
         ex["params"]["items"].append({"url": f"../Exports/{asset}.glb", "mats": f"../Exports/{asset}.materials.json",
                                       "pos": pos, "rotY": rot})
-    ex["params"].update({"target": "-3.2,0.05,2.2", "dist": 7, "fov": 35})
+    ex["params"].update({"target": "0.1,0.05,2.6", "dist": 11.5, "fov": 35})
     return [ex]
 
 

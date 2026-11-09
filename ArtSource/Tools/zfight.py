@@ -287,21 +287,28 @@ def find(groups, gap=GAP, min_area=MIN_AREA, same_group=True, ground=None):
                         continue
                     if lo[ja, 0] >= hi[jb, 0] or lo[jb, 0] >= hi[ja, 0] or lo[ja, 1] >= hi[jb, 1] or lo[jb, 1] >= hi[ja, 1]:
                         continue
-                    poly = _overlap(uv[ja], uv[jb])
+                    # nauwkeurig in het eigen vlak van het paar (gemiddelde normaal), niet dat van de emmer
+                    npair = N[ia] + N[ib]
+                    npair /= np.linalg.norm(npair)
+                    pu = np.cross(npair, [0, 1, 0] if abs(npair[1]) < 0.9 else [1, 0, 0])
+                    pu /= np.linalg.norm(pu)
+                    pv = np.cross(npair, pu)
+                    poly = _overlap(np.stack([T[ia] @ pu, T[ia] @ pv], -1), np.stack([T[ib] @ pu, T[ib] @ pv], -1))
                     ar = abs(_area(poly)) if poly else 0.0
                     if ar <= 1e-7:
                         continue
+
                     # werkelijke afstand tussen de twee vlakken boven het overlapgebied (niet precies evenwijdig)
                     def height(i, q):
-                        base = u * q[0] + v * q[1]
-                        return (N[i] @ T[i, 0] - N[i] @ base) / (N[i] @ n0)
+                        base = pu * q[0] + pv * q[1]
+                        return (N[i] @ T[i, 0] - N[i] @ base) / (N[i] @ npair)
                     sep = max(abs(height(ia, q) - height(ib, q)) for q in poly)
                     if sep > gap:
                         continue
                     cx, cy = _centroid(poly)
                     top = max(height(ia, (cx, cy)), height(ib, (cx, cy)))
-                    pt = u * cx + v * cy + n0 * (top + 0.002)
-                    if inside.covered(pt) or pressed(u * cx + v * cy + n0 * top, n0):
+                    pt = pu * cx + pv * cy + npair * (top + 0.002)
+                    if inside.covered(pt) or pressed(pu * cx + pv * cy + npair * top, npair):
                         continue
                     la, lb = sorted((lab[ia], lab[ib]))
                     h = hits[(la, lb, tuple(np.round(n0, 1)), tuple(np.round(pt / 0.5).astype(int)))]

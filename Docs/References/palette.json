@@ -405,6 +405,88 @@
         ]
       }
     },
+    "Stationspersoneel & reizigers": {
+      "cap_maroon": {
+        "name": "Pet & gilet (bordeaux)",
+        "ramp": [
+          "#511621",
+          "#5E1A28",
+          "#681E2D",
+          "#752434",
+          "#873142"
+        ]
+      },
+      "master_navy": {
+        "name": "Jas stationschef (paars-marine)",
+        "ramp": [
+          "#221B2C",
+          "#2F253C",
+          "#372B47",
+          "#3C2D4C",
+          "#574E6C"
+        ]
+      },
+      "mustache_cream": {
+        "name": "Snor & zijhaar",
+        "ramp": [
+          "#DABDAE",
+          "#E1C5B5",
+          "#E4C9B8",
+          "#E7CCBD",
+          "#EBD1C1"
+        ]
+      },
+      "hair_brown": {
+        "name": "Bruin haar",
+        "ramp": [
+          "#392828",
+          "#583430",
+          "#603935",
+          "#643C39",
+          "#714644"
+        ]
+      },
+      "hoodie_red": {
+        "name": "Hoodie & das (rood)",
+        "ramp": [
+          "#872B2B",
+          "#AF3A38",
+          "#B83F3C",
+          "#BE443F",
+          "#D76552"
+        ]
+      },
+      "luggage_blue": {
+        "name": "Koffer (blauw)",
+        "ramp": [
+          "#434667",
+          "#4A5377",
+          "#4E5980",
+          "#4F5C83",
+          "#6D7AA8"
+        ]
+      },
+      "luggage_red": {
+        "name": "Koffer (rood)",
+        "ramp": [
+          "#84353E",
+          "#983E49",
+          "#9F404B",
+          "#A3434D",
+          "#E1696E"
+        ]
+      },
+      "dino_green": {
+        "name": "Dinoknuffel",
+        "ramp": [
+          "#6F8C35",
+          "#7A9B3C",
+          "#82A740",
+          "#92BC4B",
+          "#A3D25B"
+        ]
+      }
+    },
     "Station & perron": {
       "station_navy": {
         "name": "Dak, deur, borden (marine)",

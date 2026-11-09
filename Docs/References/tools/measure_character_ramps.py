@@ -32,6 +32,15 @@ SPECS = {
     # Spoormonteur (Docs/References/Characters/rail-mechanic-concept.png); overall = gemeten #353859..#42426A = uniform_navy
     "leather": ("Characters/rail-mechanic-concept.png", (380, 520, 770, 730), "#7A4A2C", 12),
     "boot_brown": ("Characters/rail-mechanic-concept.png", (250, 560, 360, 680), "#4A2E28", 12),
+    # Stationschef, zakenreiziger, kind, bagagedrager (issue #204)
+    "cap_maroon": ("Characters/station-master-concept.png", (320, 30, 540, 110), "#6D2432", 12),
+    "master_navy": ("Characters/station-master-concept.png", (270, 360, 340, 470), "#382B49", 10),
+    "mustache_cream": ("Characters/station-master-concept.png", (380, 230, 460, 270), "#E3C7B7", 6),
+    "hair_brown": ("Characters/business-traveler-concept.png", (320, 110, 560, 190), "#603A38", 10),
+    "hoodie_red": ("Characters/child-passenger-concept.png", (380, 460, 520, 560), "#AD3E3F", 12),
+    "luggage_blue": ("Characters/baggage-helper-concept.png", (780, 385, 1000, 440), "#4F5B7D", 10),
+    "luggage_red": ("Characters/baggage-helper-concept.png", (790, 300, 1000, 350), "#A0434D", 12),
+    "dino_green": ("Characters/child-passenger-concept.png", (950, 1150, 1090, 1290), "#6FA83A", 16),
 }
 
 

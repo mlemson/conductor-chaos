@@ -253,7 +253,7 @@ def door_leaf():
         parts.append(ball(0.055, "M_Stn_Yellow", 12, 8).transform(t=(-w + 0.13, 1.00, sgn * 0.075)))
         parts.append(capsule((-w + 0.13, 1.0, sgn * 0.03), (-w + 0.13, 1.0, sgn * 0.07), 0.018, mat="M_Stn_Yellow", seg=6, rings=1))
     for y in (0.30, spring - 0.10):
-        parts.append(rbox(-0.22, 0.02, y - 0.04, y + 0.04, -0.045, 0.045, 0.012, "M_Stn_Dark"))
+        parts.append(rbox(-0.15, 0.02, y - 0.04, y + 0.04, -0.045, 0.045, 0.012, "M_Stn_Dark"))   # naast het paneel
     col = slab(arch_loop(-w, 0.0, 0.0, spring, 8), [], -0.05, 0.05, 0.0, "M_Stn_Collider")
     return mk.merge(*parts), col
 

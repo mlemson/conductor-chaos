@@ -1269,6 +1269,7 @@
     "Mouth_Flat",
     "Mouth_Hmm",
     "Mouth_Smile",
+    "Mouth_Grin",
     "EyeClosed_L",
     "EyeClosed_R",
     "Prop_Sweat",
@@ -1296,6 +1297,7 @@
     "Mouth_Flat",
     "Mouth_Hmm",
     "Mouth_Smile",
+    "Mouth_Grin",
     "EyeClosed_L",
     "EyeClosed_R",
     "Prop_Sweat",
@@ -1323,10 +1325,135 @@
     "Mouth_Happy",
     "Mouth_Hmm",
     "Mouth_Smile",
+    "Mouth_Grin",
     "EyeClosed_L",
     "EyeClosed_R",
     "Prop_Sweat"
    ],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Characters/StationMaster/StationMaster.fbx",
+   "pos": [
+    0.65,
+    -0.68,
+    2.3
+   ],
+   "rotY": -5.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [
+    "Mouth_Neutral",
+    "Mouth_Surprised",
+    "Mouth_Happy",
+    "Mouth_Flat",
+    "Mouth_Hmm",
+    "Mouth_Grin",
+    "EyeClosed_L",
+    "EyeClosed_R",
+    "Prop_Sweat"
+   ],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Characters/BusinessTraveler/BusinessTraveler.fbx",
+   "pos": [
+    2.0,
+    -0.68,
+    2.6
+   ],
+   "rotY": -15.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [
+    "Mouth_Surprised",
+    "Mouth_Happy",
+    "Mouth_Flat",
+    "Mouth_Hmm",
+    "Mouth_Smile",
+    "Mouth_Grin",
+    "EyeClosed_L",
+    "EyeClosed_R",
+    "Prop_Sweat",
+    "Lid_L",
+    "Lid_R"
+   ],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Characters/ChildPassenger/ChildPassenger.fbx",
+   "pos": [
+    -0.45,
+    -0.68,
+    3.0
+   ],
+   "rotY": 10.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [
+    "Mouth_Neutral",
+    "Mouth_Surprised",
+    "Mouth_Happy",
+    "Mouth_Flat",
+    "Mouth_Hmm",
+    "Mouth_Smile",
+    "EyeClosed_L",
+    "EyeClosed_R",
+    "Prop_Sweat"
+   ],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Characters/BaggageHelper/BaggageHelper.fbx",
+   "pos": [
+    3.6,
+    -0.68,
+    2.5
+   ],
+   "rotY": -25.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [
+    "Mouth_Neutral",
+    "Mouth_Surprised",
+    "Mouth_Flat",
+    "Mouth_Hmm",
+    "Mouth_Smile",
+    "Mouth_Grin",
+    "EyeClosed_L",
+    "EyeClosed_R",
+    "Prop_Sweat",
+    "Lid_L",
+    "Lid_R"
+   ],
+   "show": []
+  },
+  {
+   "path": "Assets/Art/Models/Characters/BaggageTrolley/BaggageTrolley.fbx",
+   "pos": [
+    4.56,
+    -0.68,
+    2.95
+   ],
+   "rotY": -25.0,
+   "scale": [
+    1,
+    1,
+    1
+   ],
+   "hide": [],
    "show": []
   }
  ]

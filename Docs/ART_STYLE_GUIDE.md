@@ -131,6 +131,10 @@ Uitgewerkt (zelfde basismodel, eigen silhouet, zie [crew-lineup](Art/Characters_
 - [oudere passagier](Art/ElderlyPassenger_DesignSheet.png): wolk grijze krullen, baret met bloem, rond brilletje, dikke sjaal, draagtas
 - [toerist](Art/Tourist_DesignSheet.png): safarihoed met zonnebril, hawaïhemd, korte broek, grote rugzak met slaapmatje, kaart + kaartje
 - [spoormonteur](Art/RailMechanic_DesignSheet.png): bouwhelm met lamp, vastberaden oogleden (geen wenkbrauwen), bretels, gereedschapsgordel, handschoenen
+- [stationschef](Art/StationMaster_DesignSheet.png): hoge bordeauxrode pet met locomotief-embleem, witte krulsnor, uniformjasje met gouden biezen, gilet met zakhorloge. **Uitzondering op 'geen wenkbrauwen'**: zijn witte wenkbrauwen (knoop `Brows`) horen bij zijn silhouet, zoals op het conceptblad
+- [zakenreiziger](Art/BusinessTraveler_DesignSheet.png): blauw colbert met rode das, kuif met brilletje erop, schoudertas met papieren, rolkoffer met label, zweetdruppels
+- [ondeugend kind](Art/ChildPassenger_DesignSheet.png): 80% schaal, achterstevoren pet, rode hoodie met gele kraag, rugzak met dinootje, papieren vliegtuigje, pleister, scheve grijns (`Mouth_Grin`)
+- [bagagehelper](Art/BaggageHelper_DesignSheet.png): bordeauxrode pet, marineblauwe tuinbroek met koffer-badge, handschoenen; losse gele bagagekar met koffers (`BaggageTrolley`, anker `Handle` op handhoogte)
 
 ## Silhouette-regel
 Elk type character moet herkenbaar zijn aan zijn vorm, niet alleen aan kleur.

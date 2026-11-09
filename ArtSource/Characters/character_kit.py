@@ -433,6 +433,13 @@ def build_flat_mouth(prefix, kind):
         pts = [(0.050 * math.cos(a), 0.024 * math.sin(a) + 0.012, 0.0)
                for a in np.linspace(math.radians(200), math.radians(340), 8)]
         return tube(pts, 0.010, prefix + "Mouth", n=16, seg=8)
+    if kind == "Grin":         # scheve, ondeugende D-grijns: platte bovenkant, één mondhoek hoger
+        inner = mk.ellipsoid(0.074, 0.052, 0.020, 22, 12, mat=prefix + "Mouth")
+        V = inner.V.copy()
+        V[:, 1] = np.minimum(V[:, 1], 0.010)
+        inner.V = V
+        tongue = mk.ellipsoid(0.036, 0.016, 0.011, 14, 6, mat=prefix + "Tongue").transform(t=(0.010, -0.030, 0.012))
+        return mk.merge(inner, tongue).transform(R=mk.rot_z(math.radians(9)), t=(0.006, -0.004, 0))
     raise ValueError(kind)
 
 
@@ -527,3 +534,101 @@ def finish(sc, asset, height=None, bake=None):
     print(asset, "stats", sc.stats())
     print(asset, "bbox min", P.min(0).round(3), "max", P.max(0).round(3))
     return sc
+
+
+# ------------------------------------------------- set 2 (issue #204): gedeelde extra's
+def front_point(x, y, lift=0.0):
+    """Punt op de voorkant van het lijf (bc.body_surface) + normaal; voor biezen en kettinkjes over de borst."""
+    z, n = bc.body_surface(x, y)
+    return np.array([x, y, z]) + n * lift, n
+
+
+def front_tube(xy, radius, mat, lift=0.0, n=None, seg=8):
+    """Buis (bies, ketting, koord) die de bolling van de voorkant volgt."""
+    pts = [front_point(x, y, lift + radius)[0] for x, y in xy]
+    return tube(pts, radius, mat, n=n or max(12, 6 * len(xy)), seg=seg)
+
+
+def flat_icon(kind, w, depth, mat):
+    """Plat, geschilderd pictogram (lokaal XY, dikte langs +Z vanaf 0): 'loco' (treintje) of 'case' (koffertje).
+    Alle stukjes liggen naast elkaar of steken duidelijk uit (geen samenvallende vlakken)."""
+    s = w
+
+    def rb(sx, sy, r):                                   # afronding nooit groter dan de halve dikte (anders vouwt het)
+        return mk.rounded_box(sx, sy, depth, min(r, depth * 0.45), 1, mat=mat)
+    if kind == "loco":
+        parts = [rb(0.56 * s, 0.30 * s, 0.05 * s).transform(t=(-0.08 * s, 0.02 * s, depth / 2)),
+                 rb(0.26 * s, 0.42 * s, 0.04 * s).transform(t=(0.30 * s, 0.08 * s, depth / 2)),
+                 rb(0.34 * s, 0.07 * s, 0.03 * s).transform(t=(0.30 * s, 0.31 * s, depth / 2)),
+                 rb(0.10 * s, 0.20 * s, 0.03 * s).transform(t=(-0.22 * s, 0.25 * s, depth / 2))]
+        for x in (-0.26, 0.0, 0.27):
+            parts.append(mk.cylinder(0.105 * s, depth * 1.5, 12, 0.0, mat=mat, axis="z").transform(
+                t=(x * s, -0.20 * s, depth * 0.75)))
+        return mk.merge(*parts)
+    if kind == "case":
+        body = rb(0.80 * s, 0.56 * s, 0.10 * s).transform(t=(0, -0.05 * s, depth / 2))
+        handle = tube([(-0.17 * s, 0.22 * s, depth / 2), (-0.15 * s, 0.34 * s, depth / 2), (0.15 * s, 0.34 * s, depth / 2),
+                       (0.17 * s, 0.22 * s, depth / 2)], 0.045 * s, mat, n=14, seg=8)
+        return mk.merge(body, handle)
+    raise ValueError(kind)
+
+
+def peaked_cap(crown_mat, band_mat, visor_mat, emblem=None, emblem_mat=None, emblem_ink=None, crown_k=1.28,
+               crown_h=0.17, visor_reach=0.155, under_mat=None):
+    """Uniformpet zoals die van de conducteur (bolle kroon, band, klep), met eigen materialen en een plat ovaal
+    embleem met pictogram op de band. Lokaal: oorsprong = onderkant band, midden van het hoofd."""
+    band_a = bc.BODY_R + 0.012
+    band_b = band_a * bc.BODY_DEPTH + 0.02
+    BH = 0.066
+    band = mk.lathe([(0.0, 0.0), (0.96, 0.0), (1.0, 0.009), (1.0, BH - 0.009), (0.96, BH), (0.0, BH)],
+                    bc.SEG, band_a, band_b, 2.3, mat=band_mat)
+    prof = [(0.0, BH + 0.001), (0.97, BH + 0.001)]
+    for k in range(1, 9):
+        t = k / 8
+        prof.append((0.97 + (crown_k - 0.97) * math.sin(t * math.pi / 2) ** 0.9, BH + 0.11 * t))
+    for k in range(1, 4):
+        prof.append((crown_k + 0.01 * math.sin(k / 3 * math.pi), BH + 0.11 + (crown_h - 0.11) * k / 3))
+    for k in range(1, 9):
+        th = math.pi / 2 * k / 8
+        prof.append((crown_k * math.cos(th) ** 0.5 if k < 8 else 0.0, BH + crown_h + 0.085 * math.sin(th)))
+    crown = mk.lathe(prof, bc.SEG, band_a, band_b * 1.04, 2.2, mat=crown_mat)
+    under = mk.lathe([(0.0, -0.012), (1.02, -0.012), (1.03, 0.0), (0.0, 0.0)], bc.SEG, band_a, band_b, 2.3,
+                     mat=under_mat or visor_mat)
+    brim = remap(bc.build_brim(band_a, band_b), {"M_Conductor_UniformDark": visor_mat})
+    if visor_reach != 0.155:
+        V = brim.V.copy()
+        fwd = np.clip(V[:, 2] - band_b * 0.9, 0, None)
+        V[:, 2] += fwd * (visor_reach / 0.155 - 1)
+        brim.V = V
+    parts = [band, crown, under, brim]
+    if emblem:
+        R = mk.rot_x(math.radians(-10))
+        ov = [(0.062 * math.cos(a), 0.046 * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 28, endpoint=False)]
+        plate_ = mk.prism(ov, 0.0, 0.016, c=0.005, mat=emblem_mat)
+        plate_.sharp = False
+        plate_.FS = None
+        icon = flat_icon(emblem, 0.085, 0.006, emblem_ink).transform(t=(0, 0.002, 0.016))
+        badge = mk.merge(plate_, icon).transform(R=R, t=(0, BH * 0.62, band_b - 0.002))
+        parts.append(badge)
+    return mk.merge(*parts)
+
+
+def scale_scene(sc, s):
+    """Hele personage uniform schalen (kind): alle meshes en knoopposities, rotaties blijven gelijk."""
+    for p in sc.parts:
+        if p.mesh is not None:
+            p.mesh = p.mesh.transform(s=(s, s, s))
+        p.pivot = tuple(np.asarray(p.pivot, float) * s)
+    return sc
+
+
+def tufts(spheres, mat, seg=14, rings=8, squash=0.90, seed=0):
+    """Plukjes haar uit lage-poly bolletjes, elk willekeurig gedraaid (anders vallen facetten van even grote,
+    overlappende bollen samen: z-fighting). Veel lichter dan blob()."""
+    rng = np.random.default_rng(seed)
+    parts = []
+    for c, r in spheres:
+        R = mk.rot_y(rng.uniform(0, 2 * math.pi)) @ mk.rot_x(rng.uniform(-0.4, 0.4)) @ mk.rot_z(rng.uniform(-0.4, 0.4))
+        parts.append(mk.ellipsoid(r, r * squash, r, seg, rings, mat=mat).transform(R=R, t=np.asarray(c, float)))
+    m = mk.merge(*parts)
+    return m

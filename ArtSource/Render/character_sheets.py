@@ -1,4 +1,4 @@
-"""Ontwerpbladen voor de personagevarianten (oudere passagier, toerist, spoormonteur) -> Docs/Art/.
+"""Ontwerpbladen voor de personagevarianten (passagiers, stationspersoneel, monteur) -> Docs/Art/.
 
 Zelfde opbouw als het conducteur-ontwerpblad: held-pose, turnaround met maatlijnen, expressies,
 materiaalramps, kenmerken en Unity-opbouw, met het conceptblad als bron rechtsboven.
@@ -8,6 +8,7 @@ materiaalramps, kenmerken en Unity-opbouw, met het conceptblad als bron rechtsbo
 import json
 import os
 
+import numpy as np
 from PIL import Image, ImageDraw
 
 from make_sheets import (BG, DOCS, MUTED, OUT, PANEL, PARCH, ROOT, SUB, TXT, YEL, crop_alpha, fit, font, label,
@@ -53,6 +54,81 @@ SHEETS = {
             "Olijf korte broek met beenzakken, blote beentjes en bruine wandelschoenen",
             "Kaart in de linkerhand, treinkaartje in de rechterhand: de eerste passagier-props",
             "Waterfles in de zijzak, schouderbanden met gouden gespen over de 'schouders'",
+        ],
+    },
+    "StationMaster": {
+        "title": "Stationschef",
+        "concept": "station-master-concept.png",
+        "hero": "Pose: 'Welkom op mijn station!'",
+        "expr": [("proud", "Trots"), ("kind", "Vriendelijk"), ("thinking", "Nadenken"), ("surprised", "Verbaasd")],
+        "swaps": ["Mouth_Smile (standaard) / Happy / Hmm / Surprised / Flat", "Lid_L/R (rustige blik, standaard aan)",
+                  "EyeClosed_L/R (vriendelijke ogen)", "Pupil_L/R (kijkrichting)", "Cap (kanteling)"],
+        "ramps": [("Uniform", "master_navy"), ("Pet & vest", "cap_maroon"), ("Goud", "gold_trim"),
+                  ("Snor & haar", "mustache_cream"), ("Overhemd", "parchment"), ("Huid", "skin"),
+                  ("Klep", "ink")],
+        "traits": [
+            "Silhouet: hoge bordeauxrode stationspet met gouden band, klep en locomotief-embleem",
+            "Grote witte krulsnor + witte wenkbrauwen en bakkebaarden (bewuste uitzondering: concept toont ze)",
+            "Donker marineblauw uniformjasje met gouden biezen, revers, knoopjes en locomotief-speld",
+            "Bordeauxrood gilet met gouden knoopjes en stropdas over een crème overhemd",
+            "Gouden zakhorloge aan een ketting op het gilet; gouden manchetbanden aan de mouwen",
+            "Zwaaiende linkerhand: leest op afstand als 'de baas van het station'",
+        ],
+    },
+    "BusinessTraveler": {
+        "title": "Zakenreiziger",
+        "concept": "business-traveler-concept.png",
+        "hero": "Pose: 'Ik ben te laat!'",
+        "expr": [("rushed", "Gehaast"), ("focused", "Gefocust"), ("relieved", "Opgelucht"), ("exhausted", "Uitgeput")],
+        "swaps": ["Mouth_Neutral (standaard) / Surprised / Flat / Smile / Hmm", "Lid_L/R, Prop_Sweat (zweetdruppels)",
+                  "EyeClosed_L/R (opgelucht)", "Pupil_L/R (kijkrichting)", "Prop_Suitcase aan Hand_L"],
+        "ramps": [("Colbert", "uniform_navy"), ("Koffer", "luggage_blue"), ("Haar", "hair_brown"),
+                  ("Tas & riem", "leather"), ("Stropdas", "hoodie_red"), ("Overhemd", "parchment"),
+                  ("Kofferlabel", "accent_yellow")],
+        "traits": [
+            "Silhouet: rolkoffer met uitgeschoven greep + schoudertas met papieren die eruit steken",
+            "Strak blauw colbert met revers, gouden knoop en klepzakken; wit overhemd met rode stropdas",
+            "Kort bruin haar met een kuif naar opzij, brilletje omhooggeschoven bovenop het hoofd",
+            "Schuine tasriem over de borst (voor- en achteraanzicht), bruine tas op de heup",
+            "Gele kofferlabel met locomotief-icoon, ribbels en wieltjes aan de koffer",
+            "Zweetdruppels als losse knoop: de 'gehaaste reiziger' in één oogopslag",
+        ],
+    },
+    "ChildPassenger": {
+        "title": "Ondeugend kind",
+        "concept": "child-passenger-concept.png",
+        "hero": "Pose: 'Kijk eens wat ik kan!'",
+        "expr": [("mischievous", "Ondeugend"), ("excited", "Opgewonden"), ("caught", "Betrapt"), ("sly", "Stiekem")],
+        "swaps": ["Mouth_Grin (scheve grijns, standaard) / Happy / Surprised / Smile", "Lid_L/R (ondeugend, standaard aan)",
+                  "EyeClosed_L/R", "Pupil_L/R (kijkrichting)", "Prop_Plane aan Hand_L", "Cap (kanteling)"],
+        "ramps": [("Hoodie", "hoodie_red"), ("Kraag & mouw", "accent_yellow"), ("Broek & pet", "uniform_navy"),
+                  ("Haar", "hair_brown"), ("Dino", "dino_green"), ("Pleister", "scarf_cream"), ("Huid", "skin")],
+        "traits": [
+            "Kleiner model (80% van het basismodel) met dezelfde ogen en monden: leest direct als kind",
+            "Achterstevoren gedragen pet met rode klep naar achteren en sluitbandje op het voorhoofd",
+            "Rode hoodie met gele kraag, capuchon, koordjes, buidelzak en gele mouwen",
+            "Rugzak met gele ster en een groen dinootje dat over de schouder meekijkt",
+            "Papieren vliegtuigje in de opgestoken hand; pleister op de wang",
+            "Marineblauwe korte broek, sokjes en sneakers met witte zool",
+        ],
+    },
+    "BaggageHelper": {
+        "title": "Bagagehelper",
+        "concept": "baggage-helper-concept.png",
+        "hero": "Pose: 'Ik breng het wel even weg!'",
+        "expr": [("helpful", "Behulpzaam"), ("focused", "Gefocust"), ("cheerful", "Vrolijk"), ("surprised", "Verbaasd")],
+        "swaps": ["Mouth_Happy (standaard) / Flat / Surprised", "Lid_L/R, Prop_Sweat", "EyeClosed_L/R (vrolijk)",
+                  "Pupil_L/R (kijkrichting)", "Cap (kanteling)", "BaggageTrolley: los prop met 'Handle'-anker"],
+        "ramps": [("Werkkleding", "uniform_navy"), ("Pet", "cap_maroon"), ("Overhemd", "parchment"),
+                  ("Handschoenen", "boot_brown"), ("Bagagekar", "accent_yellow"), ("Koffers", "luggage_red"),
+                  ("Huid", "skin")],
+        "traits": [
+            "Marineblauwe tuinbroek met borststuk, bretels, gouden knopen en een koffer-badge",
+            "Bordeauxrode pet met gouden band en koffer-embleem; korte mouwen en dikke handschoenen",
+            "Losse gele bagagekar (BaggageTrolley.fbx) met vier wielen, duwbeugel en drie gestapelde koffers",
+            "Duwbeugel op handhoogte: het anker 'Handle' van de kar valt in de linkerhand",
+            "Koffers met hoekbeschermers, riemen, gespen en handvatten (rood, blauw, leer)",
+            "Vrolijke open mond als standaard: de behulpzame kracht van het station",
         ],
     },
     "RailMechanic": {
@@ -178,18 +254,22 @@ def character_sheet(asset, cfg):
 
 
 def crew_lineup():
-    """Alle vier personages naast elkaar (zelfde schaal) — de crew van Conductor Chaos."""
-    names = [("turn_front", "Conducteur"), ("ElderlyPassenger_front", "Oudere passagier"),
-             ("Tourist_front", "Toerist"), ("RailMechanic_front", "Spoormonteur")]
+    """Alle personages naast elkaar (zelfde schaal) — de crew van Conductor Chaos."""
+    names = [("turn_front", "Conducteur"), ("StationMaster_front", "Stationschef"),
+             ("ElderlyPassenger_front", "Oudere passagier"), ("Tourist_front", "Toerist"),
+             ("BusinessTraveler_front", "Zakenreiziger"), ("ChildPassenger_front", "Kind"),
+             ("BaggageHelper_front", "Bagagehelper"), ("RailMechanic_front", "Spoormonteur")]
     if not all(os.path.exists(os.path.join(OUT, n + ".png")) for n, _ in names):
         return None
-    W, H = 2600, 1200
+    W, H = 3400, 1200
     sheet = Image.new("RGBA", (W, H), BG + (255,))
     d = ImageDraw.Draw(sheet)
     label(d, (60, 44), "De crew · zelfde basismodel, eigen silhouet", 50)
-    cw = (W - 120) // 4
+    cw = (W - 120) // len(names)
     for i, (n, cap) in enumerate(names):
-        im = load(n)
+        im = load(n)                                    # zelfde ortho-frame: echte hoogteverschillen blijven
+        xs = np.where(np.array(im)[:, :, 3].max(axis=0) > 8)[0]
+        im = im.crop((max(0, xs.min() - 8), 0, min(im.width, xs.max() + 8), im.height))
         s = 900 / im.height
         im = im.resize((int(im.width * s), 900), Image.LANCZOS)
         x = 60 + i * cw + (cw - im.width) // 2
@@ -201,7 +281,7 @@ def crew_lineup():
 
 
 def in_scene():
-    """Render van de drie varianten bij de trein, op de lucht van de stijlkaart."""
+    """Render van de varianten bij de trein, op de lucht van de stijlkaart."""
     if not os.path.exists(os.path.join(OUT, "characters_in_scene.png")):
         return None
     im = load("characters_in_scene")

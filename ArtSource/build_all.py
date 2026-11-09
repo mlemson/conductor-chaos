@@ -26,7 +26,9 @@ def run(*args, **kw):
 def main():
     run(PY, os.path.join(HERE, "Characters", "Conductor", "build_conductor.py"))
     for script in ("ElderlyPassenger/build_elderly_passenger.py", "Tourist/build_tourist.py",
-                   "RailMechanic/build_rail_mechanic.py"):
+                   "RailMechanic/build_rail_mechanic.py", "StationMaster/build_station_master.py",
+                   "BusinessTraveler/build_business_traveler.py", "ChildPassenger/build_child_passenger.py",
+                   "BaggageHelper/build_baggage_helper.py"):
         run(PY, os.path.join(HERE, "Characters", *script.split("/")))
     run(PY, os.path.join(HERE, "Train", "RegionalWagon", "build_regional_wagon.py"))
     run(PY, os.path.join(HERE, "Train", "Locomotive", "build_locomotive.py"))
@@ -52,6 +54,8 @@ def main():
     run(PY, os.path.join(HERE, "Render", "station_scenes.py"))
     for scenes in ("conductor_sheet.json", "art_check.json", "loco_sheet.json", "cattle_sheet.json", "env_sheet.json",
                    "ElderlyPassenger_sheet.json", "Tourist_sheet.json", "RailMechanic_sheet.json",
+                   "StationMaster_sheet.json", "BusinessTraveler_sheet.json", "ChildPassenger_sheet.json",
+                   "BaggageHelper_sheet.json",
                    "characters_in_scene.json", "station_sheet.json"):
         run("node", os.path.join(HERE, "Render", "render.cjs"), os.path.join(HERE, "Render", "scenes", scenes), out, base)
     srv.shutdown()

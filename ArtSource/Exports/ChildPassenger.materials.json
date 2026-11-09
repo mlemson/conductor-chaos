@@ -1,0 +1,542 @@
+{
+  "model": "ChildPassenger",
+  "height_m": 0.94,
+  "stats": {
+    "parts": 30,
+    "tris": 63826,
+    "verts": 32035,
+    "materials": 29
+  },
+  "materials": {
+    "M_ChildPassenger_Skin": {
+      "base": "#DB9966",
+      "ramp": [
+        "#BA7756",
+        "#D28658",
+        "#DB9966",
+        "#E7A773",
+        "#EFB27C"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1
+      }
+    },
+    "M_ChildPassenger_EyeWhite": {
+      "base": "#FDEEDC",
+      "ramp": [
+        "#352F3C",
+        "#BDABC1",
+        "#DCC7C5",
+        "#FDEEDC",
+        "#FDF6E8"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.35,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.45,
+        "noShadow": true
+      }
+    },
+    "M_ChildPassenger_Pupil": {
+      "base": "#0D0B0C",
+      "ramp": [
+        "#1C0F0E",
+        "#291D1B",
+        "#351B13",
+        "#382520",
+        "#5A4038"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.45,
+      "opts": {
+        "spec": 0.25,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "noShadow": true
+      }
+    },
+    "M_ChildPassenger_Mouth": {
+      "base": "#662C23",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": -0.55,
+      "smoothness": 0.2,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_Tongue": {
+      "base": "#B84A3C",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_Hoodie": {
+      "base": "#B83F3C",
+      "ramp": [
+        "#872B2B",
+        "#AF3A38",
+        "#B83F3C",
+        "#BE443F",
+        "#D76552"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.3
+      }
+    },
+    "M_ChildPassenger_HoodieLight": {
+      "base": "#BE443F",
+      "ramp": [
+        "#872B2B",
+        "#AF3A38",
+        "#B83F3C",
+        "#BE443F",
+        "#D76552"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_HoodieDark": {
+      "base": "#AF3A38",
+      "ramp": [
+        "#872B2B",
+        "#AF3A38",
+        "#B83F3C",
+        "#BE443F",
+        "#D76552"
+      ],
+      "rampShift": -0.25,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_Hood": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2
+      }
+    },
+    "M_ChildPassenger_String": {
+      "base": "#FAECDC",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.4,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_Shorts": {
+      "base": "#3E3D70",
+      "ramp": [
+        "#1D1C2D",
+        "#34335B",
+        "#3E3D70",
+        "#454377",
+        "#565191"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2
+      }
+    },
+    "M_ChildPassenger_Sock": {
+      "base": "#F4DCC0",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.15,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_Shoe": {
+      "base": "#503936",
+      "ramp": [
+        "#3E2C2A",
+        "#47322F",
+        "#503936",
+        "#563F3E",
+        "#886B66"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_Cap": {
+      "base": "#3E3D70",
+      "ramp": [
+        "#1D1C2D",
+        "#34335B",
+        "#3E3D70",
+        "#454377",
+        "#565191"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_CapCream": {
+      "base": "#F4DCC0",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_CapRed": {
+      "base": "#B83F3C",
+      "ramp": [
+        "#872B2B",
+        "#AF3A38",
+        "#B83F3C",
+        "#BE443F",
+        "#D76552"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_Hole": {
+      "base": "#351B13",
+      "ramp": [
+        "#1C0F0E",
+        "#291D1B",
+        "#351B13",
+        "#382520",
+        "#5A4038"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_Hair": {
+      "base": "#643C39",
+      "ramp": [
+        "#392828",
+        "#583430",
+        "#603935",
+        "#643C39",
+        "#714644"
+      ],
+      "rampShift": 0.15,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.14,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_Bandaid": {
+      "base": "#EBC69D",
+      "ramp": [
+        "#D3AA81",
+        "#E7C198",
+        "#EBC69D",
+        "#EECAA1",
+        "#FCDBB4"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_BandaidDot": {
+      "base": "#D3AA81",
+      "ramp": [
+        "#D3AA81",
+        "#E7C198",
+        "#EBC69D",
+        "#EECAA1",
+        "#FCDBB4"
+      ],
+      "rampShift": -0.45,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_Backpack": {
+      "base": "#3E3D70",
+      "ramp": [
+        "#1D1C2D",
+        "#34335B",
+        "#3E3D70",
+        "#454377",
+        "#565191"
+      ],
+      "rampShift": -0.08,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2
+      }
+    },
+    "M_ChildPassenger_BackpackDark": {
+      "base": "#34335B",
+      "ramp": [
+        "#1D1C2D",
+        "#34335B",
+        "#3E3D70",
+        "#454377",
+        "#565191"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_Star": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_Dino": {
+      "base": "#82A740",
+      "ramp": [
+        "#6F8C35",
+        "#7A9B3C",
+        "#82A740",
+        "#92BC4B",
+        "#A3D25B"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1
+      }
+    },
+    "M_ChildPassenger_DinoLight": {
+      "base": "#92BC4B",
+      "ramp": [
+        "#6F8C35",
+        "#7A9B3C",
+        "#82A740",
+        "#92BC4B",
+        "#A3D25B"
+      ],
+      "rampShift": 0.35,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_DinoBelly": {
+      "base": "#EBC69D",
+      "ramp": [
+        "#D3AA81",
+        "#E7C198",
+        "#EBC69D",
+        "#EECAA1",
+        "#FCDBB4"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_DinoEye": {
+      "base": "#351B13",
+      "ramp": [
+        "#1C0F0E",
+        "#291D1B",
+        "#351B13",
+        "#382520",
+        "#5A4038"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_Paper": {
+      "base": "#FDEEDC",
+      "ramp": [
+        "#352F3C",
+        "#BDABC1",
+        "#DCC7C5",
+        "#FDEEDC",
+        "#FDF6E8"
+      ],
+      "rampShift": 0.35,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_ChildPassenger_PaperFold": {
+      "base": "#DCC7C5",
+      "ramp": [
+        "#352F3C",
+        "#BDABC1",
+        "#DCC7C5",
+        "#FDEEDC",
+        "#FDF6E8"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    }
+  }
+}
