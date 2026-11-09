@@ -32,6 +32,7 @@ namespace ConductorChaos.Playground
         private Vector2 requestedMove;
         private float requestedYaw;
         private float requestedPitch;
+        private float requestedHandFocus;
         private bool leftHeld, rightHeld, jumpQueued;
         private bool lastLeft, lastRight;
         private float nextInput, nextPose, lastJump;
@@ -46,6 +47,7 @@ namespace ConductorChaos.Playground
         private bool[] cameraBodyRenderingOff;
         private bool cameraHidesBody;
         private float cameraDistance, cameraZoomVelocity;
+        private float cameraHandFocus;
         private float desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
         private readonly RaycastHit[] hits = new RaycastHit[32];
 #if DEVELOPMENT_BUILD
@@ -68,6 +70,7 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkSpawn()
         {
+            cameraHandFocus = requestedHandFocus = 0f;
             trainVelocity = Vector3.zero;
             airborneTrain = null;
             body.isKinematic = !IsServer;
@@ -153,7 +156,7 @@ namespace ConductorChaos.Playground
             if (active && keyboard.spaceKey.wasPressedThisFrame) JumpServerRpc();
             if (Time.unscaledTime >= nextInput || l != lastLeft || r != lastRight)
             {
-                SendInputServerRpc(Vector2.ClampMagnitude(move, 1f), yaw, pitch, l, r);
+                SendInputServerRpc(Vector2.ClampMagnitude(move, 1f), yaw, pitch, l, r, cameraHandFocus);
                 nextInput = Time.unscaledTime + 0.05f;
                 lastLeft = l;
                 lastRight = r;
@@ -161,12 +164,14 @@ namespace ConductorChaos.Playground
         }
 
         [ServerRpc]
-        private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r)
+        private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r, float handFocus = 0f)
         {
-            if (!float.IsFinite(move.x) || !float.IsFinite(move.y) || !float.IsFinite(direction) || !float.IsFinite(lookPitch)) return;
+            if (!float.IsFinite(move.x) || !float.IsFinite(move.y) || !float.IsFinite(direction) || !float.IsFinite(lookPitch) ||
+                !float.IsFinite(handFocus)) return;
             requestedMove = Vector2.ClampMagnitude(move, 1f);
             requestedYaw = Mathf.Repeat(direction, 360f);
             requestedPitch = Mathf.Clamp(lookPitch, -60f, 65f);
+            requestedHandFocus = Mathf.Clamp01(handFocus);
             lastServerInput = Time.unscaledTime;
             leftHeld = l;
             rightHeld = r;
@@ -221,6 +226,7 @@ namespace ConductorChaos.Playground
             if (Time.unscaledTime - lastServerInput > 0.35f)
             {
                 requestedMove = Vector2.zero;
+                requestedHandFocus = 0f;
                 leftHeld = rightHeld = false;
                 left.Release();
                 right.Release();
@@ -272,8 +278,8 @@ namespace ConductorChaos.Playground
                 }
             }
             Quaternion aim = Quaternion.Euler(requestedPitch, requestedYaw, 0f);
-            left.Step(leftHeld, requestedPitch, aim, hits, transform, reach);
-            right.Step(rightHeld, requestedPitch, aim, hits, transform, reach);
+            left.Step(leftHeld, requestedPitch, aim, hits, transform, reach, requestedHandFocus);
+            right.Step(rightHeld, requestedPitch, aim, hits, transform, reach, requestedHandFocus);
             float handPush = 0f;
             if (Time.time - lastJump > 0.18f)
             {
@@ -323,7 +329,7 @@ namespace ConductorChaos.Playground
             Vector3 focus = transform.position + Vector3.up * 0.9f;
             Vector3 direction = -(orbit * Vector3.forward);
             cameraDistance = PlaygroundControls.EaseCameraDistance(cameraDistance, desiredCameraDistance, ref cameraZoomVelocity);
-            float eyeBlend = 1f - Mathf.SmoothStep(0f, 1f, cameraDistance / PlaygroundControls.FirstPersonDistance);
+            float eyeBlend = PlaygroundControls.FirstPersonBlend(cameraDistance);
             focus += PlaygroundControls.FirstPersonEyeOffset(yaw) * eyeBlend;
             float distance = cameraDistance;
             int count = Physics.SphereCastNonAlloc(focus, 0.16f, direction, hits, distance, ~0, QueryTriggerInteraction.Ignore);
@@ -334,6 +340,8 @@ namespace ConductorChaos.Playground
                 cameraDistance = distance;
                 cameraZoomVelocity = 0f;
             }
+            cameraHandFocus = Mathf.MoveTowards(cameraHandFocus,
+                PlaygroundControls.FirstPersonBlend(distance), 6f * Time.unscaledDeltaTime);
             SetCameraBodyHidden(distance < PlaygroundControls.FirstPersonDistance);
             float targetFov = desiredCameraDistance >= 1.5f && distance < 1.5f
                 ? PlaygroundControls.ZoomFieldOfView(originalCameraFieldOfView, desiredCameraDistance)
@@ -400,6 +408,7 @@ namespace ConductorChaos.Playground
             private Vector3 gripNormal;
             private readonly Collider[] leverOverlaps = new Collider[12];
             private float nextAttempt;
+            private float poseHandFocus;
 
             public Quaternion LocalRotation => arm ? arm.localRotation : Quaternion.identity;
             public Collider Collider => collider;
@@ -441,17 +450,27 @@ namespace ConductorChaos.Playground
                 shoulder.enableCollision = true;
             }
 
-            public void Step(bool held, float pitch, Quaternion aim, RaycastHit[] buffer, Transform player, float reach)
+            public void Step(bool held, float pitch, Quaternion aim, RaycastHit[] buffer, Transform player, float reach, float handFocus)
             {
                 if (!rigid) return;
                 Quaternion localTarget = rest * Quaternion.Euler(held ? -65f + pitch * 0.65f : 0f, 0, 0);
+                Vector3 restDirection = rest * Vector3.down;
+                float handSide = Mathf.Sign(restDirection.x);
+                if (!held || !grip) poseHandFocus = handFocus;
+                if (poseHandFocus > 0f)
+                {
+                    Vector3 closeDirection = arm.parent.InverseTransformDirection(aim * Vector3.forward);
+                    closeDirection -= Vector3.right * (handSide * 0.35f);
+                    Quaternion closeTarget = Quaternion.FromToRotation(restDirection, closeDirection.normalized) * rest;
+                    localTarget = Quaternion.Slerp(localTarget, closeTarget, poseHandFocus * (held ? 1f : 0.8f));
+                }
                 if (held && grip && gripSurface && grip is ConfigurableJoint)
                 {
                     var support = grip.connectedBody;
                     Vector3 anchor = support ? support.transform.TransformPoint(grip.connectedAnchor) : grip.connectedAnchor;
                     Vector3 towardGrip = arm.parent.InverseTransformDirection(anchor - rigid.position);
                     if (towardGrip.sqrMagnitude > 0.001f)
-                        localTarget = Quaternion.FromToRotation(rest * Vector3.down, towardGrip.normalized) * rest;
+                        localTarget = Quaternion.FromToRotation(restDirection, towardGrip.normalized) * rest;
                 }
                 Quaternion desired = arm.parent.rotation * localTarget;
                 Quaternion error = desired * Quaternion.Inverse(rigid.rotation);
@@ -465,7 +484,7 @@ namespace ConductorChaos.Playground
                 nextAttempt = Time.time + 0.1f;
                 Vector3 hand = arm.TransformPoint(new Vector3(0, -0.205f, 0));
                 if (TryGripNearbyLever(hand, reach)) return;
-                Vector3 direction = aim * Vector3.forward;
+                Vector3 direction = PlaygroundControls.HandGripAim(aim, handSide, handFocus) * Vector3.forward;
                 if (TryGripCast(hand, buffer, player, reach,
                     Physics.SphereCastNonAlloc(hand, 0.13f, direction, buffer, 0.38f, ~0, QueryTriggerInteraction.Ignore))) return;
                 // A sphere cast can miss a wall the palm is already touching.
