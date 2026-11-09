@@ -377,7 +377,7 @@
    "yaw": -30,
    "pitch": 26,
    "dist": 10.77,
-   "target": "1.50,0.54,3.40",
+   "target": "1.50,0.53,3.40",
    "lightRel": 1,
    "groundShadowOnly": 1,
    "groundR": 5.91,
@@ -400,7 +400,7 @@
    "yaw": -30,
    "pitch": 26,
    "dist": 16.0,
-   "target": "3.00,0.54,3.40",
+   "target": "3.00,0.53,3.40",
    "lightRel": 1,
    "groundShadowOnly": 1,
    "groundR": 8.78,
@@ -423,11 +423,11 @@
    "yaw": -30,
    "pitch": 26,
    "dist": 9.89,
-   "target": "1.17,0.54,3.40",
+   "target": "1.17,0.53,3.40",
    "lightRel": 1,
    "groundShadowOnly": 1,
    "groundR": 5.43,
-   "shadowSize": 3.47,
+   "shadowSize": 3.48,
    "far": 89.6,
    "items": [
     {
@@ -446,11 +446,11 @@
    "yaw": -30,
    "pitch": 26,
    "dist": 9.89,
-   "target": "1.17,0.54,3.40",
+   "target": "1.17,0.53,3.40",
    "lightRel": 1,
    "groundShadowOnly": 1,
    "groundR": 5.43,
-   "shadowSize": 3.47,
+   "shadowSize": 3.48,
    "far": 89.6,
    "items": [
     {
@@ -469,7 +469,7 @@
    "yaw": -30,
    "pitch": 26,
    "dist": 11.52,
-   "target": "1.75,0.54,3.40",
+   "target": "1.75,0.53,3.40",
    "lightRel": 1,
    "groundShadowOnly": 1,
    "groundR": 6.33,
@@ -492,7 +492,7 @@
    "yaw": -30,
    "pitch": 26,
    "dist": 11.52,
-   "target": "1.75,0.54,3.40",
+   "target": "1.75,0.53,3.40",
    "lightRel": 1,
    "groundShadowOnly": 1,
    "groundR": 6.33,
@@ -519,7 +519,7 @@
    "lightRel": 1,
    "groundShadowOnly": 1,
    "groundR": 7.74,
-   "shadowSize": 4.96,
+   "shadowSize": 4.95,
    "far": 106.4,
    "items": [
     {
@@ -542,7 +542,7 @@
    "lightRel": 1,
    "groundShadowOnly": 1,
    "groundR": 7.74,
-   "shadowSize": 4.96,
+   "shadowSize": 4.95,
    "far": 106.4,
    "items": [
     {

@@ -17,11 +17,6 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Stn_PavingDark
-    second: {fileID: 2100000, guid: 3a64966334d8fd3ff833262e58303b5e, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
       name: M_Stn_PavingLight
     second: {fileID: 2100000, guid: 4e55df9e49149578febbec44e48acf73, type: 2}
   - first:
