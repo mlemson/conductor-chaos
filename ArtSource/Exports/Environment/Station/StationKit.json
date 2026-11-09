@@ -1133,6 +1133,68 @@
           "textDepth": 0.035
         }
       ]
+    },
+    "Prop_Wrench": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_Wrench.fbx",
+      "category": "Props",
+      "tris": 624,
+      "min": [
+        -0.33,
+        -0.075,
+        -0.032
+      ],
+      "max": [
+        0.303,
+        0.075,
+        0.032
+      ],
+      "nodes": [
+        "Prop_Wrench",
+        "Mesh",
+        "Col_Main",
+        "Wrench_Head"
+      ]
+    },
+    "Prop_TicketPunch": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_TicketPunch.fbx",
+      "category": "Props",
+      "tris": 1000,
+      "min": [
+        -0.187,
+        -0.067,
+        -0.018
+      ],
+      "max": [
+        0.155,
+        0.067,
+        0.018
+      ],
+      "nodes": [
+        "Prop_TicketPunch",
+        "Mesh",
+        "Col_Main",
+        "Punch_Jaw"
+      ]
+    },
+    "Prop_Ticket": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_Ticket.fbx",
+      "category": "Props",
+      "tris": 68,
+      "min": [
+        -0.07,
+        -0.038,
+        -0.003
+      ],
+      "max": [
+        0.07,
+        0.038,
+        0.003
+      ],
+      "nodes": [
+        "Prop_Ticket",
+        "Mesh",
+        "Ticket_Hole"
+      ]
     }
   },
   "station": {

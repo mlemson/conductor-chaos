@@ -28,6 +28,7 @@ import main_station_props as mprops  # noqa: E402
 import station_building as building  # noqa: E402
 import station_platform as platform  # noqa: E402
 import station_props as props  # noqa: E402
+import tool_props as tools  # noqa: E402
 from station_common import GLYPHS, ROOT, mk, text_mesh, write_manifest  # noqa: E402
 from station_common import export as _export  # noqa: E402
 
@@ -124,6 +125,15 @@ def build_briefing_props(manifest):
         export(name, "Props", nodes, density=900, radius=0.12, manifest=manifest)
 
 
+def build_tools(manifest):
+    """Gereedschap van de conducteur (issues #215, #216): moersleutel en kaartjestang (beweegbaar) en het kaartje."""
+    P = {"Prop_Wrench": simple("Prop_Wrench", *tools.wrench()),
+         "Prop_TicketPunch": simple("Prop_TicketPunch", *tools.ticket_punch()),
+         "Prop_Ticket": simple("Prop_Ticket", *tools.ticket())}
+    for name, nodes in P.items():
+        export(name, "Props", nodes, density=3000, radius=0.03, manifest=manifest)
+
+
 def build_main(manifest):
     export("Station_Main", None, main_station.build(), density=170, radius=0.30, manifest=manifest,
            extra={"floor": main_station.FL, "footprint": [main_station.CX0, main_station.WX1, -main_station.HD, 0.0],
@@ -155,7 +165,7 @@ def build_building(manifest):
            extra={"floor": building.FL, "footprint": [building.LX, building.HW, -building.D, 0.0]})
 
 
-ALL = ("props", "briefing", "platform", "building", "main", "glyphs")
+ALL = ("props", "briefing", "tools", "platform", "building", "main", "glyphs")
 
 
 def main(which=ALL):
@@ -164,6 +174,8 @@ def main(which=ALL):
         build_props(manifest)
     if "briefing" in which:
         build_briefing_props(manifest)
+    if "tools" in which:
+        build_tools(manifest)
     if "platform" in which:
         build_platform(manifest)
     if "platform" in which or "platform-no-stripe" in which:
