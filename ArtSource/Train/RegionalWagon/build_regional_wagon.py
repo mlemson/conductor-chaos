@@ -63,8 +63,11 @@ def box(x0, x1, y0, y1, z0, z1, r, mat, div=1, sharp=True):
 
 
 def frame(x0, x1, y0, y1, w, z0, z1, r, mat, open_bottom=False):
-    """Dik, afgeschuind kader rond een opening, uit één stuk (verstekhoeken; geen losse latten)."""
-    return mk.frame_ring(x0, x1, y0, y1, w, z0, z1, min(r, w * 0.4), mat=mat, open_bottom=open_bottom)
+    """Dik, afgeschuind kader rond een opening, uit één stuk (verstekhoeken; geen losse latten).
+    Het kader steekt 1 cm in de opening, zodat zijn binnenkant niet samenvalt met de dagkant van de wand."""
+    k = 0.01
+    return mk.frame_ring(x0 + k, x1 - k, y0 if open_bottom else y0 + k, y1 - k, w, z0, z1, min(r, w * 0.4), mat=mat,
+                         open_bottom=open_bottom)
 
 
 def mirror_far(m):
@@ -88,7 +91,7 @@ def glass(x0, x1, y0, y1, z):
     # schuine reflectieband over de bovenhoek
     pts = np.array([[x0 + 0.08 * w, y1 - 0.02 * h], [x0 + 0.48 * w, y1 - 0.02 * h],
                     [x0 + 0.20 * w, y0 + 0.30 * h], [x0 + 0.02 * w, y0 + 0.48 * h]])
-    V = np.array([[x, y, z + 0.003] for x, y in pts])
+    V = np.array([[x, y, z + 0.012] for x, y in pts])            # 1,2 cm voor het glas (niet erop)
     shine = mk.Mesh(V, [(0, 3, 2, 1)], ["M_Train_GlassShine"])
     shine.sharp = True
     return mk.merge(g, shine)
@@ -117,7 +120,8 @@ def build_body():
 
 def bench(x, facing, z0, z1):
     """Bank (zitting + rugleuning) uit één stuk; 'facing' = +1/-1 kijkrichting langs X."""
-    prof = [(-0.12, Y0 + FLOOR), (0.46, Y0 + FLOOR), (0.46, 0.50), (0.04, 0.50), (0.0, 1.04), (-0.12, 1.04)]
+    # zitting 0,38 diep: tegenover elkaar staande banken raken elkaar precies, in plaats van in elkaar te steken
+    prof = [(-0.12, Y0 + FLOOR), (0.38, Y0 + FLOOR), (0.38, 0.50), (0.04, 0.50), (0.0, 1.04), (-0.12, 1.04)]
     m = mk.prism(mk.chamfer_poly(prof, 0.035), z0, z1, 0.03, mat="M_Train_Seat")
     if facing < 0:
         m = m.transform(s=(-1, 1, 1))

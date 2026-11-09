@@ -53,6 +53,7 @@ SLEEPER_TOP = 0.28
 RAIL_TOP = SLEEPER_TOP + RAIL_H  # 0,43
 SLEEPER = (0.50, 0.17, 3.50)  # breedte (langs spoor), hoogte, lengte (dwars): dicht op elkaar, zoals het concept
 SPACING = 0.75
+RAIL_COL_BASE = 0.24         # halve breedte van de railbotsvorm onderaan: over plaatjes en bouten heen (schuin)
 BED_TOP = 0.20
 TRAIN_PIVOT_ABOVE_TRACK = RAIL_TOP + 0.62
 
@@ -146,11 +147,13 @@ def stations(length, spacing=SPACING):
 
 
 def rail_profile():
-    """Chunky rail: brede voet, smallere lijf, ronde kop (doorsnede z, y; tegen de klok in)."""
+    """Chunky rail: schuin uitlopende voet, smaller lijf, ronde kop (doorsnede z, y; tegen de klok in).
+    Geen dunne platte voetflens meer: die lag een paar mm boven de onderlegplaatjes en gaf een dun, flikkerend
+    randje langs de rail. De voet loopt nu schuin vanuit de plaat omhoog naar het lijf."""
     w, h = RAIL_W, RAIL_H
-    return [(-w * 0.75, 0.0), (w * 0.75, 0.0), (w * 0.75, 0.025), (w * 0.30, 0.045), (w * 0.30, h * 0.62),
+    return [(-w * 0.42, -0.01), (w * 0.42, -0.01), (w * 0.30, 0.06), (w * 0.30, h * 0.62),
             (w * 0.50, h * 0.68), (w * 0.50, h - 0.02), (w * 0.38, h), (-w * 0.38, h), (-w * 0.50, h - 0.02),
-            (-w * 0.50, h * 0.68), (-w * 0.30, h * 0.62), (-w * 0.30, 0.045), (-w * 0.75, 0.025)]
+            (-w * 0.50, h * 0.68), (-w * 0.30, h * 0.62), (-w * 0.30, 0.06)]
 
 
 def rail(path, z, s0=0.0, s1=None, mat="M_Track_Rail"):
@@ -235,9 +238,11 @@ def collider_track(path, with_bed=True, deck_half=SLEEPER[2] / 2 - 0.05, deck_y0
     h, c = deck_half, 0.06
     parts.append(_col_extrude(path, [(-h, deck_y0), (h, deck_y0), (h, SLEEPER_TOP - c), (h - c, SLEEPER_TOP),
                                      (-h + c, SLEEPER_TOP), (-h, SLEEPER_TOP - c)]))
-    hw = RAIL_W * 0.5
+    # rails als schuine ribben: onderaan zo breed als de onderlegplaatjes met bouten (± RAIL_COL_BASE), bovenaan
+    # de railkop. Je voeten glijden er zo overheen in plaats van te blijven haken achter een rechte rand of bout.
+    hw, hb = RAIL_W * 0.5, RAIL_COL_BASE
     for z, s0, s1 in (rails or ((-RAIL_Z, 0.0, None), (RAIL_Z, 0.0, None))):
-        parts.append(_col_extrude(path, [(z - hw, SLEEPER_TOP - 0.01), (z + hw, SLEEPER_TOP - 0.01), (z + hw, RAIL_TOP),
+        parts.append(_col_extrude(path, [(z - hb, SLEEPER_TOP - 0.01), (z + hb, SLEEPER_TOP - 0.01), (z + hw, RAIL_TOP),
                                          (z - hw, RAIL_TOP)], s0, s1))
     return mk.merge(*parts, *extra)
 
@@ -286,8 +291,9 @@ def bent(cap_top, bottom):
         zb_ = np.interp(yb, [bottom, cap_top], [2.6, 1.55])
         parts.append(rbox(-0.12, 0.12, yb - 0.10, yb + 0.10, -zb_ - 0.2, zb_ + 0.2, 0.04, "M_Track_BeamDark"))
         for sgn in (1, -1):
-            br = mk.capsule_between((0.22 * sgn, ya, -za), (0.22 * sgn, yb, zb_), 0.08, 0.08, 5, 1, mat="M_Track_BeamDark")
-            br2 = mk.capsule_between((0.22 * sgn, ya, za), (0.22 * sgn, yb, -zb_), 0.08, 0.08, 5, 1, mat="M_Track_BeamDark")
+            # de twee schoren van het kruis liggen 4 cm uit elkaar (anders vallen hun zijvlakken op de kruising samen)
+            br = mk.capsule_between((0.20 * sgn, ya, -za), (0.20 * sgn, yb, zb_), 0.08, 0.08, 5, 1, mat="M_Track_BeamDark")
+            br2 = mk.capsule_between((0.24 * sgn, ya, za), (0.24 * sgn, yb, -zb_), 0.08, 0.08, 5, 1, mat="M_Track_BeamDark")
             br.sharp = br2.sharp = True
             parts += [br, br2]
     return mk.merge(*parts)
@@ -417,8 +423,8 @@ def trestle(rng, length=6.0, leg=10.0):
         zb_ = np.interp(yb, [bottom, cap_top], [2.6, 1.55])
         parts.append(rbox(xc - 0.12, xc + 0.12, yb - 0.10, yb + 0.10, -zb_ - 0.2, zb_ + 0.2, 0.04, "M_Track_BeamDark"))
         for sgn in (1, -1):
-            br = mk.capsule_between((xc + 0.22 * sgn, ya, -za), (xc + 0.22 * sgn, yb, zb_), 0.08, 0.08, 5, 1, mat="M_Track_BeamDark")
-            br2 = mk.capsule_between((xc + 0.22 * sgn, ya, za), (xc + 0.22 * sgn, yb, -zb_), 0.08, 0.08, 5, 1, mat="M_Track_BeamDark")
+            br = mk.capsule_between((xc + 0.20 * sgn, ya, -za), (xc + 0.20 * sgn, yb, zb_), 0.08, 0.08, 5, 1, mat="M_Track_BeamDark")
+            br2 = mk.capsule_between((xc + 0.24 * sgn, ya, za), (xc + 0.24 * sgn, yb, -zb_), 0.08, 0.08, 5, 1, mat="M_Track_BeamDark")
             br.sharp = br2.sharp = True
             parts += [br, br2]
     # langsschoren tussen deze schraag en de volgende (laag, zodat stukken aansluiten)

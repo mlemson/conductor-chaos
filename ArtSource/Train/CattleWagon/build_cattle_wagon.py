@@ -138,8 +138,8 @@ def build_interior():
         for k in range(stack):
             rot = rng.uniform(-0.15, 0.15)
             b = box(-0.42, 0.42, 0.0, 0.40, -0.26, 0.26, 0.06, "M_Cattle_Straw", div=1)
-            band = mk.merge(box(-0.24, -0.18, -0.005, 0.405, -0.265, 0.265, 0.01, "M_Cattle_Trim"),
-                            box(0.18, 0.24, -0.005, 0.405, -0.265, 0.265, 0.01, "M_Cattle_Trim"))
+            band = mk.merge(box(-0.24, -0.18, -0.005, 0.41, -0.272, 0.272, 0.01, "M_Cattle_Trim"),    # 1 cm boven de baal
+                            box(0.18, 0.24, -0.005, 0.41, -0.272, 0.272, 0.01, "M_Cattle_Trim"))
             parts.append(mk.merge(b, band).transform(R=mk.rot_y(rot), t=(x, FLOOR + 0.03 + k * 0.40, z)))
     # voerbak (één stuk: U-profiel) tegen de overkant
     trough = mk.prism(mk.chamfer_poly([(-0.32, 0.0), (0.32, 0.0), (0.32, 0.36), (0.24, 0.36), (0.24, 0.10), (-0.24, 0.10),

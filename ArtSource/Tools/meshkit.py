@@ -1101,6 +1101,59 @@ class Scene:
 
 
 # ------------------------------------------------------------------ extrusie
+def _inset_profile(P, N2, d):
+    """Doorsnede d naar binnen verschuiven (langs de vertexnormalen). Is d groter dan een afronding of een korte
+    zijde, dan klapt de randjes om en vouwt de kap over zichzelf (dubbele vlakken). Alleen dan, en alleen voor een
+    bolle doorsnede: elk punt schuift langs zijn normaal tot het precies binnen alle d verschoven zijden ligt; punten
+    die 'verdwijnen' vallen samen in plaats van om te klappen."""
+    Q = P - N2 * d
+    if d <= 0:
+        return Q
+    n = len(P)
+    E, EQ = np.roll(P, -1, 0) - P, np.roll(Q, -1, 0) - Q
+    if np.all((E * EQ).sum(1) > -1e-12):
+        return Q                                               # niets omgeklapt: ongewijzigd
+    area = 0.5 * np.sum(P[:, 0] * np.roll(P[:, 1], -1) - np.roll(P[:, 0], -1) * P[:, 1])
+    cross = E[:, 0] * np.roll(E, -1, 0)[:, 1] - E[:, 1] * np.roll(E, -1, 0)[:, 0]
+    if np.any(cross * np.sign(area) < -1e-9):
+        return Q                                               # niet bol: oude gedrag
+    # bolle doorsnede d naar binnen: snijden met alle verschoven zijden (halfvlakken)
+    sgn = np.sign(area)
+    poly = [tuple(p) for p in P]
+    for e in range(n):
+        a_, b_ = P[e], P[(e + 1) % n]
+        L = np.linalg.norm(b_ - a_)
+        if L < 1e-12:
+            continue
+        nin = np.array([-(b_ - a_)[1], (b_ - a_)[0]]) * sgn / L
+        res = []
+        for k in range(len(poly)):
+            p_, q_ = np.array(poly[k]), np.array(poly[(k + 1) % len(poly)])
+            sp, sq = nin @ (p_ - a_) - d, nin @ (q_ - a_) - d
+            if sp >= 0:
+                res.append(tuple(p_))
+            if (sp >= 0) != (sq >= 0):
+                res.append(tuple(p_ + (q_ - p_) * (sp / (sp - sq))))
+        poly = res
+        if len(poly) < 3:
+            return np.repeat(P.mean(0)[None], n, 0)
+    R = np.array(poly)
+    # elk punt naar het dichtstbijzijnde punt op die rand: behoudt de volgorde, niets klapt om
+    out = np.empty_like(Q)
+    for i in range(n):
+        best, bd = None, np.inf
+        for k in range(len(R)):
+            a_, b_ = R[k], R[(k + 1) % len(R)]
+            ab = b_ - a_
+            t = np.clip((P[i] - a_) @ ab / max(ab @ ab, 1e-18), 0, 1)
+            c_ = a_ + ab * t
+            dd = np.sum((P[i] - c_) ** 2)
+            if dd < bd:
+                best, bd = c_, dd
+        out[i] = best
+    return out
+
+
 def extrude_profile(profile, x0, x1, nx=12, round0=0.0, round1=0.0, rings=4, mat_fn=None, mat="Default"):
     """Trek een gesloten 2D-doorsnede [(z, y), ...] (tegen de klok in) langs X van x0 naar x1.
 
@@ -1140,7 +1193,7 @@ def extrude_profile(profile, x0, x1, nx=12, round0=0.0, round1=0.0, rings=4, mat
             clean.append(s)
     V, F, M = [], [], []
     for (x, inset) in clean:
-        Q = P - N2 * inset
+        Q = _inset_profile(P, N2, inset)
         for (z, y) in Q:
             V.append((x, y, z))
     for r in range(len(clean) - 1):
@@ -1153,7 +1206,7 @@ def extrude_profile(profile, x0, x1, nx=12, round0=0.0, round1=0.0, rings=4, mat
     for r, sgn in ((0, -1), (len(clean) - 1, 1)):
         x, inset = clean[r]
         ci = len(V)
-        cc = (P - N2 * inset).mean(axis=0)
+        cc = _inset_profile(P, N2, inset).mean(axis=0)
         V.append((x, cc[1], cc[0]))
         for i in range(n):
             j = (i + 1) % n

@@ -380,12 +380,15 @@ def waterfall(H, W, rng, strips=None):
     sheet.sharp = True
     parts.append(mk._orient_closed(sheet))
     # dunne lichtstrepen vóór het vel (het water 'glanst' in banen)
-    for _ in range(max(2, int(W / 0.5))):
+    for si in range(max(2, int(W / 0.5))):
         x = rng.uniform(-W / 2 + 0.15, W / 2 - 0.15)
         y0, y1 = rng.uniform(0.3, H * 0.35), rng.uniform(H * 0.55, H - lip_r - 0.1)
         w = rng.uniform(0.025, 0.045)
         u = lip_r + drift * math.sqrt(max(0.0, (H - lip_r - (y0 + y1) / 2) / (H - lip_r))) + 0.06
-        streak = mk.rounded_box(w * 2, y1 - y0, 0.02, w * 0.9, 1, mat="M_Env_WaterLight").transform(t=(x, (y0 + y1) / 2, u))
+        u += 0.012 * (si % 3)               # strepen die elkaar raken liggen niet in hetzelfde vlak (geen z-fighting)
+        # afronding niet groter dan de halve dikte, anders vouwt de streep over zichzelf (dubbele vlakken)
+        streak = mk.rounded_box(w * 2, y1 - y0, 0.02, min(w * 0.9, 0.0095), 1, mat="M_Env_WaterLight").transform(
+            t=(x, (y0 + y1) / 2, u))
         parts.append(streak)
     # poel aan de voet met een lichte ring
     pr = W * 0.75 + 0.5
@@ -399,12 +402,16 @@ def waterfall(H, W, rng, strips=None):
     # schuim: twee rijen puffen + spetters, en een doorzichtige mistwolk
     zf = lip_r + drift + 0.05
     n = max(4, int(W / 0.35))
+    fi = 0
     for row, (zo, sc, yo) in enumerate(((0.0, 1.0, 0.0), (0.35, 0.75, -0.05))):
         for k in range(n + row):
             x = -W / 2 - 0.1 + (W + 0.2) * (k + 0.5) / (n + row) + rng.uniform(-0.08, 0.08)
             r = rng.uniform(0.26, 0.40) * sc * (0.8 + 0.3 * min(1.0, W / 2.0))
             puff = mk.ellipsoid(r * 1.15, r * 0.85, r * 0.95, 12, 7, mat="M_Env_Foam")
-            puff.V[:, 1] = np.maximum(puff.V[:, 1], -r * 0.15)
+            # platte onderkant onder het wateroppervlak, per puf een andere hoogte (anders vallen ze samen)
+            yb = -0.015 - 0.012 * (fi % 4)
+            fi += 1
+            puff.V[:, 1] = np.maximum(puff.V[:, 1], yb - (r * 0.25 + yo))
             parts.append(puff.transform(t=(x, r * 0.25 + yo, zf + zo + rng.uniform(-0.05, 0.08))))
     for k in range(max(3, n)):
         r = rng.uniform(0.06, 0.12)
@@ -563,7 +570,8 @@ def cloud(rng, n=5, w=6.0):
         x = (k - (n - 1) / 2) * w / n + rng.uniform(-0.3, 0.3)
         r = w / n * rng.uniform(0.75, 1.1) * (1.25 if abs(k - (n - 1) / 2) < 1 else 0.95)
         b = mk.ellipsoid(r, r * 0.80, r * 0.75, 12, 7, mat="M_Env_Cloud")
-        b.V[:, 1] = np.maximum(b.V[:, 1], -r * 0.25)        # vlakke onderkant
+        # vlakke onderkant; elke bol een paar cm anders, anders vallen de onderkanten samen (z-fighting van onderaf)
+        b.V[:, 1] = np.maximum(b.V[:, 1], -r * 0.25 + 0.03 * k)
         puffs.append(b.transform(t=(x, r * 0.25 + (0.35 if abs(k - (n - 1) / 2) < 1 else 0.0), rng.uniform(-0.2, 0.2))))
     m = mk.merge(*puffs)
     m.sharp = False

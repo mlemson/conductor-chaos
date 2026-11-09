@@ -124,7 +124,7 @@ def build_headlight():
                     8, mat="M_Loco_Trim", closed=True, phase=math.pi / 8)
     ring = to_x(ring)
     ring.sharp = False
-    back = to_x(mk.lathe([(0.0, 0.02), (ri + 0.02, 0.02), (ri + 0.02, 0.06), (0.0, 0.06)], 8, mat="M_Loco_Trim",
+    back = to_x(mk.lathe([(0.0, 0.02), (ri + 0.02, 0.02), (ri + 0.02, 0.08), (0.0, 0.08)], 8, mat="M_Loco_Trim",
                          phase=math.pi / 8))
     lens = to_x(mk.lathe([(0.0, 0.17), (0.18, 0.155), (0.30, 0.11), (ri - 0.005, 0.05), (ri - 0.005, 0.02), (0.0, 0.02)],
                          8, mat="M_Loco_Lamp", phase=math.pi / 8))
@@ -158,9 +158,12 @@ def build_cab():
              (0, -1, CAB_FLOOR, REAR_DOOR_TOP, ZC - REAR_DOOR, ZC + REAR_DOOR)]                   # achterdeur
     parts = [mk.hollow_box(outer, inner, holes, radius=r, step=0.25, div=2, mat="M_Loco_Red", inner_mat="M_Loco_Interior")]
     # gouden kaders uit één stuk rond de zijopeningen en de achterdoorgang
-    side = mk.frame_ring(*win, 0.06, -0.012, 0.04, 0.02, mat="M_Loco_Gold")
+    # kaders steken 1 cm in de opening: hun binnenkant valt dan niet samen met de dagkant van de wand
+    wi = (win[0] + 0.01, win[1] - 0.01, win[2] + 0.01, win[3] - 0.01)
+    side = mk.frame_ring(*wi, 0.06, -0.012, 0.04, 0.02, mat="M_Loco_Gold")
     parts += [side.transform(t=(0, 0, z_out)), side.transform(s=(1, 1, -1), t=(0, 0, z_in))]
-    rear = mk.frame_ring(ZC - REAR_DOOR, ZC + REAR_DOOR, CAB_FLOOR - 0.05, REAR_DOOR_TOP, 0.06, -0.012, 0.04, 0.02,
+    rear = mk.frame_ring(ZC - REAR_DOOR + 0.01, ZC + REAR_DOOR - 0.01, CAB_FLOOR - 0.05, REAR_DOOR_TOP - 0.01, 0.06,
+                         -0.012, 0.04, 0.02,
                          mat="M_Loco_Gold", open_bottom=True)
     parts.append(rear.transform(R=mk.rot_y(-math.pi / 2), t=(x0, 0, 0)))
     # geschilderde panelen ('vierkantjes', concept): dun, bijna vlak op de cabinewanden, doffer rood
@@ -197,7 +200,7 @@ def build_frame():
         bx0, bx1 = (xe - 0.02, xe + 0.15) if sgn > 0 else (xe - 0.15, xe + 0.02)
         parts.append(rbox(bx0, bx1, -0.04, 0.38, ZC - beam_half, ZC + beam_half, 0.07, "M_Loco_Red", div=2))
         for zs in (ZC - beam_half - 0.02, ZC + beam_half - 0.15):
-            parts.append(rbox(bx0 - 0.01, bx1 + 0.02, -0.03, 0.37, zs, zs + 0.17, 0.07, "M_Loco_Gold", div=2))  # ronde hoekkussens
+            parts.append(rbox(bx0 - 0.02, bx1 + 0.03, -0.06, 0.40, zs, zs + 0.17, 0.07, "M_Loco_Gold", div=2))  # ronde hoekkussens
         for dz in (-0.62, 0.62):
             xs = xe + sgn * 0.22
             parts.append(mk.cylinder(0.065, 0.16, 12, 0.02, mat="M_Loco_Frame").transform(t=(xs, 0.17, ZC + dz)))
@@ -211,8 +214,8 @@ def build_frame():
             za, zb = (zf - 0.06, zf + d) if sgn > 0 else (zf - d, zf + 0.06)
             parts.append(rbox(-1.95, -1.33, y0s, y1s, za, zb, 0.025, "M_Loco_Frame"))
         for xs in (-1.93, -1.41):
-            za, zb = (zf - 0.06, zf + 0.13) if sgn > 0 else (zf - 0.13, zf + 0.06)
-            parts.append(rbox(xs, xs + 0.06, -0.30, 0.10, za, zb, 0.02, "M_Loco_Frame"))
+            za, zb = (zf - 0.05, zf + 0.13) if sgn > 0 else (zf - 0.13, zf + 0.05)      # wangen net anders dan de treden
+            parts.append(rbox(xs, xs + 0.06, -0.32, 0.10, za, zb, 0.02, "M_Loco_Frame"))
     return mk.merge(*parts)
 
 
@@ -252,7 +255,7 @@ def build_firebox():
     gauge = mk.merge(
         mk.cylinder(0.11, 0.05, 20, 0.015, mat="M_Loco_Gold", axis="x").transform(t=(fx0 - 0.02, CAB_FLOOR + 1.10, ZC - 0.20)),
         mk.cylinder(0.085, 0.02, 20, 0.005, mat="M_Loco_Dial", axis="x").transform(t=(fx0 - 0.045, CAB_FLOOR + 1.10, ZC - 0.20)),
-        rbox(fx0 - 0.06, fx0 - 0.045, CAB_FLOOR + 1.09, CAB_FLOOR + 1.17, ZC - 0.21, ZC - 0.19, 0.004, "M_Loco_Trim"),
+        rbox(fx0 - 0.068, fx0 - 0.05, CAB_FLOOR + 1.09, CAB_FLOOR + 1.17, ZC - 0.21, ZC - 0.19, 0.004, "M_Loco_Trim"),  # wijzer
         mk.capsule_between((fx0 + 0.05, CAB_FLOOR + 0.92, ZC - 0.20), (fx0 - 0.01, CAB_FLOOR + 1.05, ZC - 0.20), 0.025, 0.025, 8, 1,
                            mat="M_Loco_Gold"))
     rng = np.random.default_rng(3)

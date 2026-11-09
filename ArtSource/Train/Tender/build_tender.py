@@ -74,7 +74,7 @@ def build_body():
     # gouden hoekstrips (eindigen onzichtbaar in de rand) en gouden onderrand
     for xs in (b0 - 0.03, b1 - 0.09):
         for zs in (z0 - 0.03, z1 - 0.09):
-            parts.append(rbox(xs, xs + 0.12, STEP - 0.02, BODY_TOP + 0.02, zs, zs + 0.12, 0.035, "M_Tender_Gold"))
+            parts.append(rbox(xs, xs + 0.12, STEP - 0.02, BODY_TOP - 0.04, zs, zs + 0.12, 0.035, "M_Tender_Gold"))  # tot onder de rand
     for (za, zb) in ((z0 - 0.025, z0 + 0.05), (z1 - 0.05, z1 + 0.025)):
         parts.append(rbox(-L / 2 + 0.04, L / 2 - 0.04, BASE - 0.03, BASE + 0.08, za, zb, 0.03, "M_Tender_Gold"))
     # geschilderde panelen met klinknagels: twee per bunkerzijde
@@ -186,7 +186,7 @@ def build_taillights():
 def build_fallplate():
     """Loopplaat (scharnier aan de voorkant van het voordek) die over de koppeling naar de cabinevloer reikt."""
     plate = rbox(0.0, 0.62, -0.035, 0.012, ZC - 0.46, ZC + 0.46, 0.012, "M_Tender_Frame", div=1)
-    stripe = rbox(0.48, 0.60, 0.006, 0.016, ZC - 0.44, ZC + 0.44, 0.004, "M_Tender_Interact", div=1)
+    stripe = rbox(0.48, 0.60, 0.006, 0.022, ZC - 0.44, ZC + 0.44, 0.004, "M_Tender_Interact", div=1)   # 1 cm boven de plaat
     return mk.merge(plate, stripe)
 
 
