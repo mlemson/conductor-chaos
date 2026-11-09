@@ -278,8 +278,10 @@ namespace ConductorChaos.Playground
                 }
             }
             Quaternion aim = Quaternion.Euler(requestedPitch, requestedYaw, 0f);
-            left.Step(leftHeld, requestedPitch, aim, hits, transform, reach, requestedHandFocus);
-            right.Step(rightHeld, requestedPitch, aim, hits, transform, reach, requestedHandFocus);
+            bool leftHasGrip = left.HasGrip;
+            bool rightHasGrip = right.HasGrip;
+            left.Step(leftHeld, requestedPitch, aim, hits, transform, reach, requestedHandFocus, rightHasGrip);
+            right.Step(rightHeld, requestedPitch, aim, hits, transform, reach, requestedHandFocus, leftHasGrip);
             float handPush = 0f;
             if (Time.time - lastJump > 0.18f)
             {
@@ -409,6 +411,7 @@ namespace ConductorChaos.Playground
             private readonly Collider[] leverOverlaps = new Collider[12];
             private float nextAttempt;
             private float poseHandFocus;
+            private bool wideShoulderLimits;
 
             public Quaternion LocalRotation => arm ? arm.localRotation : Quaternion.identity;
             public Collider Collider => collider;
@@ -450,14 +453,29 @@ namespace ConductorChaos.Playground
                 shoulder.enableCollision = true;
             }
 
-            public void Step(bool held, float pitch, Quaternion aim, RaycastHit[] buffer, Transform player, float reach, float handFocus)
+            public void Step(bool held, float pitch, Quaternion aim, RaycastHit[] buffer, Transform player, float reach, float handFocus, bool otherHandHasGrip)
             {
                 if (!rigid) return;
                 Quaternion localTarget = rest * Quaternion.Euler(held ? -65f + pitch * 0.65f : 0f, 0, 0);
                 Vector3 restDirection = rest * Vector3.down;
                 float handSide = Mathf.Sign(restDirection.x);
+                Quaternion gripAim = PlaygroundControls.HandGripAim(aim, handSide, handFocus);
+                bool followsCamera = otherHandHasGrip && !grip;
+                // Keep the extra shoulder travel after acquiring a grip so the joint does not pull away from its anchor.
+                bool needsWideLimits = followsCamera || (grip && wideShoulderLimits);
+                if (needsWideLimits != wideShoulderLimits)
+                {
+                    wideShoulderLimits = needsWideLimits;
+                    shoulder.lowAngularXLimit = new SoftJointLimit { limit = wideShoulderLimits ? -170f : -110f };
+                    shoulder.angularYLimit = shoulder.angularZLimit = new SoftJointLimit { limit = wideShoulderLimits ? 85f : 45f };
+                }
                 if (!held || !grip) poseHandFocus = handFocus;
-                if (poseHandFocus > 0f)
+                if (followsCamera)
+                {
+                    Vector3 aimInParent = arm.parent.InverseTransformDirection(gripAim * Vector3.forward);
+                    localTarget = Quaternion.FromToRotation(restDirection, aimInParent) * rest;
+                }
+                else if (poseHandFocus > 0f)
                 {
                     Vector3 closeDirection = arm.parent.InverseTransformDirection(aim * Vector3.forward);
                     closeDirection -= Vector3.right * (handSide * 0.35f);
@@ -477,14 +495,20 @@ namespace ConductorChaos.Playground
                 error.ToAngleAxis(out float angle, out Vector3 axis);
                 if (angle > 180f) angle -= 360f;
                 if (float.IsFinite(axis.x) && axis.sqrMagnitude > 0.01f)
-                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * 32f) - rigid.angularVelocity * 5f, 55f), ForceMode.Acceleration);
+                {
+                    float strength = followsCamera ? 180f : 32f;
+                    float damping = followsCamera ? 14f : 5f;
+                    float maxAcceleration = followsCamera ? 420f : 55f;
+                    Vector3 acceleration = axis * (angle * Mathf.Deg2Rad * strength) - rigid.angularVelocity * damping;
+                    rigid.AddTorque(Vector3.ClampMagnitude(acceleration, maxAcceleration), ForceMode.Acceleration);
+                }
 
                 if (!held) Release();
                 if (!held || grip || Time.time < nextAttempt) return;
                 nextAttempt = Time.time + 0.1f;
                 Vector3 hand = arm.TransformPoint(new Vector3(0, -0.205f, 0));
                 if (TryGripNearbyLever(hand, reach)) return;
-                Vector3 direction = PlaygroundControls.HandGripAim(aim, handSide, handFocus) * Vector3.forward;
+                Vector3 direction = gripAim * Vector3.forward;
                 if (TryGripCast(hand, buffer, player, reach,
                     Physics.SphereCastNonAlloc(hand, 0.13f, direction, buffer, 0.38f, ~0, QueryTriggerInteraction.Ignore))) return;
                 // A sphere cast can miss a wall the palm is already touching.
