@@ -143,7 +143,7 @@ def main_sheet():
     d.rounded_rectangle([1530, by, 2420, H - 50], 22, fill=PANEL)
     label(d, (1554, by + 18), "Kenmerken", 30)
     traits = [
-        "Klokgevel met waaierraam en klok, MAIN STATION-bord, gele nokbol",
+        "Klokgevel met waaierraam en klok, naambord WHISTLETON (in Unity aan te passen), gele nokbol",
         "Rondboog-dubbeldeur: knopen Door_L / Door_R met scharnier en botsvorm",
         "Vleugels met dakkapellen en schoorsteen (dicht, niet begaanbaar)",
         "Rode pannendaken (eigen ramp), vakwerk met korbelen, stenen plint",
@@ -174,7 +174,7 @@ def briefing_sheet():
     label(d, (60, 46), "Briefingruimte · Training Hub", 58)
     d.text((64, 156), "De hal van het hoofdstation als speelbare ruimte: routebord, prikbord, vertrekbord, koffiebar, kluisjes, "
                       "kapstok, 4 banken (8 zitplaatsen), hanglampen", font=font(25, False), fill=SUB)
-    _panel(sheet, d, "stn_main_brief_back", "Achterwand: routebord + TRAINING HUB", 60, 210, 1560, 1000, interior=True)
+    _panel(sheet, d, "stn_main_brief_back", "Achterwand: routebord + ROUTE-bord", 60, 210, 1560, 1000, interior=True)
     _panel(sheet, d, "stn_main_brief_door", "Naar de deur", 1660, 210, 1480, 1000, interior=True)
     _panel(sheet, d, "stn_main_brief_coffee", "Koffiebar (links)", 60, 1250, 1060, 900, interior=True)
     _panel(sheet, d, "stn_main_brief_lockers", "Kluisjes + kapstok (rechts)", 1150, 1250, 1060, 900, interior=True)

@@ -127,7 +127,7 @@ def route_board_prop():
     return board_on_legs(route_board(1.6, 1.0), 1.6, 1.0, 1.15)
 
 
-def hub_sign(text="TRAINING HUB", width=2.6, height=0.56):
+def hub_sign(text="ROUTE", width=2.6, height=0.56):
     """Marine bord met gele rand, treinpictogram en tekst (zelfde stijl als het STATION-bord)."""
     return props.station_board(text=text, width=width, height=height, depth=0.10)
 

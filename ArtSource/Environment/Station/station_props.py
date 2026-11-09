@@ -222,37 +222,66 @@ def hanging_sign(w=0.62, h=0.48, rod=0.32):
     return mk.merge(sign, *rods, *rings), None
 
 
-def station_board(text="STATION", width=2.4, height=0.62, depth=0.10):
-    """Marine bord met gele rand, crème treinpictogram en tekst (voorkant +Z), gecentreerd in de oorsprong."""
+SIGN_TEXT_DEPTH = 0.035
+SIGN_INFO = {}      # id(Sign_*-knoop) -> (knoop, maten) voor de Unity-component StationSign (issue #209)
+
+
+def station_board_parts(text="STATION", width=2.4, height=0.62, depth=0.10):
+    """Bord in drie delen: (frame, pictogram, tekst, maten). Pictogram en tekst staan op hun plek voor het bord;
+    `maten` beschrijft de indeling (lettergrootte, vrije breedte) zodat Unity de tekst opnieuw kan opbouwen."""
     w, h = width, height
-    parts = [slab(rounded_rect_loop(-w / 2, w / 2, -h / 2, h / 2, h * 0.48, 6), [], -depth / 2, depth / 2, 0.025, "M_Stn_Yellow"),
+    frame = [slab(rounded_rect_loop(-w / 2, w / 2, -h / 2, h / 2, h * 0.48, 6), [], -depth / 2, depth / 2, 0.025, "M_Stn_Yellow"),
              slab(rounded_rect_loop(-w / 2 + 0.07, w / 2 - 0.07, -h / 2 + 0.07, h / 2 - 0.07,
                                     min(h * 0.38, h / 2 - 0.075), 6), [],
                   -depth / 2 - 0.01, depth / 2 + 0.012, 0.02, "M_Stn_Navy")]
-    th = h * 0.40
-    txt, tw = text_mesh(text, th, 0.035, "M_Stn_Cream")
-    icon_w = th * 1.30
-    gap = th * 0.45
+    for x in (-w / 2 + h * 0.30, w / 2 - h * 0.30):                         # gele 'klinknagels' links en rechts
+        frame.append(ball(0.032, "M_Stn_Yellow", 10, 6, sy=0.7).transform(t=(x, 0.0, depth / 2 + 0.012)))
+    th0 = th = h * 0.40
+    txt, tw = text_mesh(text, th, SIGN_TEXT_DEPTH, "M_Stn_Cream")
+    icon_w0 = icon_w = th * 1.30
+    gap0 = gap = th * 0.45
     total = icon_w + gap + tw
     room = w - 2 * (h * 0.30 + 0.09)                       # vrij tussen de klinknagels
+    k = 1.0
     if total > room:                                        # te lang: tekst en pictogram schalen mee
         k = room / total
         th *= k
-        txt, tw = text_mesh(text, th, 0.035, "M_Stn_Cream")
+        txt, tw = text_mesh(text, th, SIGN_TEXT_DEPTH, "M_Stn_Cream")
         icon_w, gap = icon_w * k, gap * k
         total = icon_w + gap + tw
     x0 = -total / 2
-    parts.append(train_icon(icon_w, 0.03, "M_Stn_Cream").transform(t=(x0 + icon_w / 2, 0.0, depth / 2 + 0.006)))
-    parts.append(txt.transform(t=(x0 + icon_w + gap + tw / 2, 0.0, depth / 2 + 0.006)))
-    for x in (-w / 2 + h * 0.30, w / 2 - h * 0.30):                         # gele 'klinknagels' links en rechts
-        parts.append(ball(0.032, "M_Stn_Yellow", 10, 6, sy=0.7).transform(t=(x, 0.0, depth / 2 + 0.012)))
-    return mk.merge(*parts)
+    z = depth / 2 + 0.006
+    info = {"text": text, "letterHeight": round(th0, 5), "room": round(room, 5), "iconWidth": round(icon_w0, 5),
+            "iconGap": round(gap0, 5), "textZ": round(z, 5), "textDepth": SIGN_TEXT_DEPTH, "fit": k,
+            "iconX": x0 + icon_w / 2, "textX": x0 + icon_w + gap + tw / 2}
+    return mk.merge(*frame), train_icon(icon_w, 0.03, "M_Stn_Cream"), txt, info
+
+
+def station_board(text="STATION", width=2.4, height=0.62, depth=0.10):
+    """Marine bord met gele rand, crème treinpictogram en tekst (voorkant +Z), gecentreerd in de oorsprong."""
+    frame, icon, txt, i = station_board_parts(text, width, height, depth)
+    return mk.merge(frame, icon.transform(t=(i["iconX"], 0.0, i["textZ"])), txt.transform(t=(i["textX"], 0.0, i["textZ"])))
+
+
+def sign_nodes(name, text, width, height, depth, pivot, R=None, parent=None):
+    """Bord met aanpasbare tekst: geeft het frame (in de ruimte van `parent`, om mee te voegen in een vaste mesh)
+    en de knopen <name> (midden van het bord), <name>_Icon en <name>_Text. Unity (StationSign) bouwt de tekst
+    opnieuw op uit de bordletters; de maten komen in StationKit.json onder "signs"."""
+    frame, icon, txt, i = station_board_parts(text, width, height, depth)
+    R3 = np.eye(3) if R is None else np.asarray(R)
+    nodes = [(name, None, parent, tuple(pivot), R, True),
+             (name + "_Icon", icon, name, (i["iconX"], 0.0, i["textZ"]), None, True),
+             (name + "_Text", txt.transform(t=(i["textX"], 0.0, i["textZ"])), name, (0.0, 0.0, 0.0), None, True)]
+    SIGN_INFO[id(nodes[0])] = (nodes[0], {"node": name, "iconScale": round(i["fit"], 5),   # pictogram = iconWidth × fit
+                                          **{k: v for k, v in i.items() if k not in ("fit", "iconX", "textX")}})
+    return frame.transform(R=R3, t=tuple(pivot)), nodes
 
 
 def station_sign():
     """Vrijstaand stationsbord: twee marine palen met gele bollen op stenen voeten, bord ertussen."""
     W = 2.6
-    parts = [station_board(width=W - 0.30, height=0.66).transform(t=(0, 1.48, 0))]
+    frame, sign = sign_nodes("Sign_Name", "STATION", W - 0.30, 0.66, 0.10, (0.0, 1.48, 0.0))
+    parts = [frame]
     for x in (-W / 2, W / 2):
         parts += [rbox(x - 0.17, x + 0.17, 0.0, 0.30, -0.17, 0.17, 0.05, "M_Stn_Stone"),
                   rbox(x - 0.07, x + 0.07, 0.25, 1.95, -0.07, 0.07, 0.03, "M_Stn_Navy"),
@@ -262,7 +291,7 @@ def station_sign():
                           "M_Stn_Navy"))
     col = mk.merge(col_box(-W / 2 - 0.17, W / 2 + 0.17, 0.0, 0.30, -0.17, 0.17),
                    col_box(-W / 2 - 0.07, W / 2 + 0.07, 0.25, 2.2, -0.10, 0.10))
-    return mk.merge(*parts), col
+    return mk.merge(*parts), col, sign
 
 
 def timetable():

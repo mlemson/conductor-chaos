@@ -3,7 +3,8 @@
 //    Assets/Art/Prefabs/Station/... met:
 //      - een MeshCollider op elke verborgen botsvorm Col_* (renderer uit), zoals de spoorkit;
 //      - een warm puntlicht op elk anker Light_* (lantaarns, hanglampen in de hal);
-//      - static flags op alles behalve bewegende delen (Door/Door_L/Door_R van de gebouwen, Boom van de overweg).
+//      - static flags op alles behalve bewegende delen (Door/Door_L/Door_R van de gebouwen, Boom van de overweg);
+//      - StationSign op elk naambord Sign_* (naam in te typen, letters uit SignGlyphs; issue #209).
 //    Gebeurt automatisch als prefabs ontbreken of na het (her)importeren van de modellen;
 //    opnieuw via Conductor Chaos > Art > Station > Rebuild Station Prefabs.
 // 2) Conductor Chaos > Art > Station > Build Station Example Scene: perron langs drie spoorstukken, het gebouw,
@@ -73,6 +74,7 @@ namespace ConductorChaos.EditorTools
         {
             EnsureFolder(PrefabDir);
             int made = 0;
+            var signFont = movableOnly ? null : StationSignTools.GetFont();
             foreach (var guid in AssetDatabase.FindAssets("t:Model", new[] { ModelDir }))
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
@@ -137,6 +139,7 @@ namespace ConductorChaos.EditorTools
                         go.AddComponent<NetworkTransform>();
                         go.AddComponent<NetworkRigidbody>();
                     }
+                    if (signFont) StationSignTools.Attach(go, name, signFont);      // Sign_*: aanpasbare naam (#209)
                     go.name = name;
                     PrefabUtility.SaveAsPrefabAsset(go, $"{outDir}/{name}.prefab");
                     made++;
@@ -172,7 +175,10 @@ namespace ConductorChaos.EditorTools
     {
         static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
         {
-            if (!imported.Any(p => p.StartsWith(StationKitPrefabs.ModelDir) && p.EndsWith(".fbx"))) return;
+            bool letters = imported.Any(p => p.StartsWith(StationSignTools.GlyphDir + "/") &&
+                                             (p.EndsWith(".fbx") || p.EndsWith(".json")));      // niet het .asset zelf
+            if (letters) EditorApplication.delayCall += () => StationSignTools.BuildFont();
+            if (!letters && !imported.Any(p => p.StartsWith(StationKitPrefabs.ModelDir + "/") && p.EndsWith(".fbx"))) return;
             EditorApplication.delayCall -= StationKitPrefabs.BuildDeferred;
             EditorApplication.delayCall += StationKitPrefabs.BuildDeferred;
         }

@@ -250,8 +250,9 @@ Material:
     return guid_for(rel_path)
 
 
-def model_meta(root, rel_path, material_guids):
-    """ModelImporter-meta die de FBX-materialen op de externe .mat-bestanden mapt."""
+def model_meta(root, rel_path, material_guids, readable=False):
+    """ModelImporter-meta die de FBX-materialen op de externe .mat-bestanden mapt. readable: meshes blijven in de
+    speler leesbaar (nodig als een script ze samenvoegt, zoals de bordletters)."""
     ext = "".join(
         "  - first:\n      type: UnityEngine:Material\n      assembly: UnityEngine.CoreModule\n      name: %s\n"
         "    second: {fileID: 2100000, guid: %s, type: 2}\n" % (n, g) for n, g in material_guids.items())
@@ -273,7 +274,7 @@ ModelImporter:
     useFileUnits: 1
     useFileScale: 1
     importBlendShapes: 0
-    importVisibility: 1
+{{readable_line}}    importVisibility: 1
     importCameras: 0
     importLights: 0
     generateSecondaryUV: 0
@@ -286,6 +287,7 @@ ModelImporter:
   assetBundleName: 
   assetBundleVariant: 
 """
+    text = text.replace("{readable_line}", "    isReadable: 1\n" if readable else "")
     write(os.path.join(root, rel_path + ".meta"), text)
 
 

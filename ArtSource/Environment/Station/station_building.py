@@ -455,7 +455,8 @@ def interior():
 def facade():
     parts = []
     # STATION-bord op de bindbalk en de klok in de topgevel
-    parts.append(props.station_board(width=3.10, height=0.70, depth=0.12).transform(t=(0.0, EAVE + 0.02, 0.24)))
+    board, sign = props.sign_nodes("Sign_Name", "STATION", 3.10, 0.70, 0.12, (0.0, EAVE + 0.02, 0.24))
+    parts.append(board)
     parts.append(disc(0.68, 0.0, 0.06, "M_Stn_Timber", 28, 0.02).transform(t=(0.0, EAVE + 1.42, 0.0)))
     parts.append(props.clock(0.56, 0.12).transform(t=(0.0, EAVE + 1.42, 0.05)))
     # wandlantaarns naast loket en deur
@@ -483,7 +484,7 @@ def facade():
     u0, u1, us = SIDE_DOOR
     fr = slab(arch_band(u0, u1, FL - 0.01, us, 0.14, 14), [], -0.02, 0.08, 0.025, "M_Stn_Timber")
     parts.append(fr.transform(s=(1, 1, -1)).transform(R=mk.rot_y(math.pi / 2), t=(-HW, 0, 0)))
-    return mk.merge(*parts)
+    return mk.merge(*parts), sign
 
 
 def _side_window(win, x0, x1):
@@ -504,7 +505,7 @@ def build(rng):
     roof, roof_col = main_roof()
     lean, lean_col = lean_to(rng)
     inter, truss, inter_cols = interior()
-    fac = facade()
+    fac, sign = facade()
     leaf, leaf_col = door_leaf()
 
     cols = [col_box(-HW, HW, 0.0, FL, -D, 0.0)]
@@ -537,5 +538,5 @@ def build(rng):
         ("Light_Hall_1", None, None, (0.65, EAVE - 0.85, -1.80), None, True),
         ("Light_Hall_2", None, None, (0.65, EAVE - 0.85, -3.60), None, True),
         ("Spawn_Ticket", None, None, (-1.40, FL, -0.75), None, True),
-    ]
+    ] + sign
     return nodes

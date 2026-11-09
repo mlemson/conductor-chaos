@@ -10,6 +10,8 @@
   en aan elkaar geklikte hekken/perronstukken vallen niet samen (ArtSource/Tools/zfight.py)
 * spullen onder de luifel staan los van elkaar, van de palen en van de plint
 * hoofdstation: dubbele deur ruim genoeg, briefingruimte met ankers op de vloer en binnen de muren
+* aanpasbare borden (#209): letterset dekt de voorbeeldnamen, de Unity-indeling (StationSign) geeft precies de
+  gebakken tekst, bordletters zonder dubbele vlakken
 """
 import json
 import os
@@ -227,6 +229,53 @@ def test_main_station():
           f"ruimte {MS.XI1 - MS.XI0:.1f}x{MS.ZI1 - MS.ZI0:.1f} m")
 
 
+def test_station_signs():
+    """StationSign in Unity bouwt de tekst op zoals de generator; alle voorbeeldnamen zijn te zetten."""
+    import station_props as P
+    from station_common import GLYPHS, text_mesh
+    data = json.load(open(os.path.join(ROOT, "Assets", "Art", "Models", "Environment", "SignGlyphs", "StationGlyphs.json"),
+                          encoding="utf-8"))
+    adv = {g["c"]: g["advance"] for g in data["glyphs"]}
+    cs = open(os.path.join(ROOT, "Assets", "Scripts", "Stations", "StationSign.cs"), encoding="utf-8").read()
+    names = cs[cs.index("ExampleNames ="):cs.index("};", cs.index("ExampleNames ="))]
+    import re as _re
+    for name in _re.findall(r'"([^"]+)"', names):
+        missing = {c for c in name.upper() if c != " " and c not in adv}
+        assert not missing, f"{name}: geen letter voor {missing}"
+    want = {("Station_Main", "Sign_Name"): "WHISTLETON", ("Station_Main", "Sign_Route"): "ROUTE",
+            ("Station_Building", "Sign_Name"): "STATION", ("Prop_StationSign", "Sign_Name"): "STATION"}
+    got = {(s["asset"], s["node"]): s for s in data["signs"]}
+    assert set(want) <= set(got), set(want) - set(got)
+    sizes = {("Station_Main", "Sign_Name"): (5.0, 0.92, 0.14), ("Station_Main", "Sign_Route"): (2.2, 0.56, 0.10),
+             ("Station_Building", "Sign_Name"): (3.10, 0.70, 0.12), ("Prop_StationSign", "Sign_Name"): (2.3, 0.66, 0.10)}
+    glyph = {c: text_mesh(c, 1.0, 1.0, "M_Stn_Cream")[0].transform(t=(GLYPHS[c][0] / 2, 0.5, 0.0)) for c in adv}
+    for key, text in want.items():
+        s = got[key]
+        assert s["text"] == text, (key, s["text"])
+        # zelfde rekensom als StationSign.Rebuild (X niet gespiegeld)
+        x, placed = 0.0, []
+        for c in text:
+            if c == " ":
+                x += data["space"]
+                continue
+            placed.append((c, x))
+            x += adv[c] + data["spacing"]
+        units = x - data["spacing"]
+        th, iw, gap = s["letterHeight"], s["iconWidth"], s["iconGap"]
+        total = iw + gap + units * th
+        k = s["room"] / total if total > s["room"] else 1.0
+        th, iw, gap, total = th * k, iw * k, gap * k, total * k
+        start = -total / 2 + iw + gap
+        V = np.vstack([glyph[c].V * [th, th, s["textDepth"]] + [start + px * th, -0.5 * th, s["textZ"]] for c, px in placed])
+        _, _, txt, i = P.station_board_parts(text, *sizes[key])
+        B = txt.transform(t=(i["textX"], 0.0, i["textZ"])).V
+        assert np.abs(np.sort(V, 0) - np.sort(B, 0)).max() < 1e-4, f"{key}: Unity-indeling wijkt af"
+        assert abs(i["fit"] - s["iconScale"]) < 1e-4
+    res = Z.find(Z.glb_triangles(os.path.join(EXP, "Environment", "Station", "StationGlyphs.glb")))
+    assert not res, f"bordletters: {len(res)} dubbele vlakken"
+    print(f"PASS borden: {len(got)} aanpasbare borden, {len(adv)} letters, indeling gelijk aan de generator")
+
+
 if __name__ == "__main__":
     test_train_clearance()
     test_platform_modules()
@@ -236,3 +285,4 @@ if __name__ == "__main__":
     test_layout_no_double_faces()
     test_leanto_furniture_free()
     test_main_station()
+    test_station_signs()

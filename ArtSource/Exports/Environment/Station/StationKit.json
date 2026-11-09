@@ -31,7 +31,10 @@
         "Light_Lantern_R",
         "Light_Hall_1",
         "Light_Hall_2",
-        "Spawn_Ticket"
+        "Spawn_Ticket",
+        "Sign_Name",
+        "Sign_Name_Icon",
+        "Sign_Name_Text"
       ],
       "floor": 1.05,
       "footprint": [
@@ -39,6 +42,19 @@
         3.2,
         -5.4,
         0.0
+      ],
+      "signs": [
+        {
+          "node": "Sign_Name",
+          "iconScale": 1.0,
+          "text": "STATION",
+          "letterHeight": 0.28,
+          "room": 2.5,
+          "iconWidth": 0.364,
+          "iconGap": 0.126,
+          "textZ": 0.066,
+          "textDepth": 0.035
+        }
       ]
     },
     "Prop_Bench": {
@@ -241,7 +257,23 @@
       "nodes": [
         "Prop_StationSign",
         "Mesh",
-        "Col_Main"
+        "Col_Main",
+        "Sign_Name",
+        "Sign_Name_Icon",
+        "Sign_Name_Text"
+      ],
+      "signs": [
+        {
+          "node": "Sign_Name",
+          "iconScale": 0.84919,
+          "text": "STATION",
+          "letterHeight": 0.264,
+          "room": 1.724,
+          "iconWidth": 0.3432,
+          "iconGap": 0.1188,
+          "textZ": 0.056,
+          "textDepth": 0.035
+        }
       ]
     },
     "Prop_Timetable": {
@@ -1009,7 +1041,7 @@
     "Station_Main": {
       "fbx": "Assets/Art/Models/Environment/Station/Station_Main.fbx",
       "category": "Building",
-      "tris": 121376,
+      "tris": 119526,
       "min": [
         -18.28,
         -0.0,
@@ -1056,7 +1088,13 @@
         "Briefing_Seat_5",
         "Briefing_Seat_6",
         "Briefing_Seat_7",
-        "Briefing_Seat_8"
+        "Briefing_Seat_8",
+        "Sign_Name",
+        "Sign_Name_Icon",
+        "Sign_Name_Text",
+        "Sign_Route",
+        "Sign_Route_Icon",
+        "Sign_Route_Text"
       ],
       "floor": 1.05,
       "footprint": [
@@ -1070,6 +1108,30 @@
         4.54,
         -8.74,
         -0.26
+      ],
+      "signs": [
+        {
+          "node": "Sign_Name",
+          "iconScale": 1.0,
+          "text": "WHISTLETON",
+          "letterHeight": 0.368,
+          "room": 4.268,
+          "iconWidth": 0.4784,
+          "iconGap": 0.1656,
+          "textZ": 0.076,
+          "textDepth": 0.035
+        },
+        {
+          "node": "Sign_Route",
+          "iconScale": 1.0,
+          "text": "ROUTE",
+          "letterHeight": 0.224,
+          "room": 1.684,
+          "iconWidth": 0.2912,
+          "iconGap": 0.1008,
+          "textZ": 0.056,
+          "textDepth": 0.035
+        }
       ]
     }
   },

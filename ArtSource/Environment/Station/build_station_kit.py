@@ -7,6 +7,7 @@ en conventies.
 Uitvoer:
   Assets/Art/Models/Environment/Station/Station_Building.fbx
   Assets/Art/Models/Environment/Station/Station_Main.fbx             (hoofdstation met briefingruimte)
+  Assets/Art/Models/Environment/SignGlyphs/StationGlyphs.fbx + .json   (bordletters voor aanpasbare namen, #209)
   Assets/Art/Models/Environment/Station/Platform/Platform_*.fbx      (zelfde pivot als een spoorstuk)
   Assets/Art/Models/Environment/Station/Props/Prop_*.fbx             (pivot midden-onder, voorkant +Z)
   Assets/Art/Materials/Environment/Station/M_Stn_*.mat
@@ -15,6 +16,7 @@ Col_*-knopen zijn verborgen botsvormen; de prefabbouwer in Unity (Conductor Chao
 MeshColliders van. Light_*-knopen zijn ankers voor lampen, Door (Door_L/Door_R) draait om zijn scharnier (Y-as).
 Spawn_*, Briefing_* en Spot_* zijn lege ankers voor gameplay (briefingruimte).
 """
+import json
 import os
 import sys
 
@@ -26,7 +28,44 @@ import main_station_props as mprops  # noqa: E402
 import station_building as building  # noqa: E402
 import station_platform as platform  # noqa: E402
 import station_props as props  # noqa: E402
-from station_common import export, mk, write_manifest  # noqa: E402
+from station_common import GLYPHS, ROOT, mk, text_mesh, write_manifest  # noqa: E402
+from station_common import export as _export  # noqa: E402
+
+GLYPH_DIR = "Assets/Art/Models/Environment/SignGlyphs"     # geen prefabs: alleen letters voor StationSign
+
+
+def export(name, sub, nodes, **kw):
+    """export() + de maten van aanpasbare borden (Sign_*) in het manifest, voor StationSign in Unity."""
+    signs = [props.SIGN_INFO[id(n)][1] for n in nodes if props.SIGN_INFO.get(id(n), (None,))[0] is n]
+    if signs:
+        kw["extra"] = dict(kw.get("extra") or {}, signs=signs)
+    return _export(name, sub, nodes, **kw)
+
+
+def build_glyphs(manifest):
+    """Bordletters (kaphoogte 1, diepte 1) als losse knopen G_<code>: StationSign zet er tekst mee in elkaar."""
+    nodes = []
+    for k, ch in enumerate(sorted(GLYPHS)):
+        w = GLYPHS[ch][0]
+        m, _ = text_mesh(ch, 1.0, 1.0, "M_Stn_Cream")
+        nodes.append((f"G_{ord(ch)}", m.transform(t=(w / 2, 0.5, 0.0)), None, (k * 1.6, 0.0, 0.0), None, True))
+    _export("StationGlyphs", None, nodes, density=900, radius=0.05, model_dir=GLYPH_DIR, readable=True)
+
+
+def write_sign_data():
+    """StationGlyphs.json naast de letters: letterbreedtes + alle borden uit StationKit.json."""
+    from station_common import EXP_DIR
+    import unity_assets
+    kit = json.load(open(os.path.join(EXP_DIR, "StationKit.json"), encoding="utf-8"))["assets"]
+    data = {"spacing": 0.30, "space": 0.50,
+            "glyphs": [{"c": ch, "advance": GLYPHS[ch][0]} for ch in sorted(GLYPHS)],
+            "signs": [dict(asset=name, **s) for name, a in sorted(kit.items()) for s in a.get("signs", [])]}
+    rel = GLYPH_DIR + "/StationGlyphs.json"
+    unity_assets.folder_meta(ROOT, GLYPH_DIR)
+    json.dump(data, open(os.path.join(ROOT, rel), "w", encoding="utf-8", newline="\n"), indent=1)
+    unity_assets.write(os.path.join(ROOT, rel + ".meta"), "fileFormatVersion: 2\nguid: %s\nTextScriptImporter:\n"
+                       "  externalObjects: {}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n"
+                       % unity_assets.guid_for(rel))
 
 
 def simple(name, mesh, col, extra_nodes=()):
@@ -116,7 +155,7 @@ def build_building(manifest):
            extra={"floor": building.FL, "footprint": [building.LX, building.HW, -building.D, 0.0]})
 
 
-ALL = ("props", "briefing", "platform", "building", "main")
+ALL = ("props", "briefing", "platform", "building", "main", "glyphs")
 
 
 def main(which=ALL):
@@ -133,7 +172,10 @@ def main(which=ALL):
         build_building(manifest)
     if "main" in which:
         build_main(manifest)
+    if "glyphs" in which:
+        build_glyphs(manifest)
     write_manifest(manifest)
+    write_sign_data()
 
 
 if __name__ == "__main__":

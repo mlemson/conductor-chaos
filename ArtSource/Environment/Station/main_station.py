@@ -2,12 +2,12 @@
 
 Zelfde stijl en conventies als het stationnetje (station_building.py), maar groter en met een pannendak:
   * middenhal 9,6 x 9,0 m, wanden 5,6 m, steile topgevel (42 graden) naar het spoor met een halfrond
-    lichtvenster, klok en MAIN STATION-bord; dubbele boogdeur (open, knopen Door_L/Door_R met scharnier)
+    lichtvenster, klok en naambord (WHISTLETON, aanpasbaar); dubbele boogdeur (open, knopen Door_L/Door_R met scharnier)
   * twee zijvleugels (5,4 x 6,5 m, 0,5 m terugliggend) met lager zadeldak, dakkapel en schoorsteen;
     de vleugels zijn dicht (niet begaanbaar), hun ramen tonen een verlichte binnenwand
   * links een perronoverkapping (7,6 x 3,4 m) op palen met stenen voeten, banken, bagagekar en hangbord
   * binnen: de briefingruimte ('Training Hub') — koffiebar met espressomachine, prikbord, groen routebord met
-    TRAINING HUB-bord, vertrekbord met klok, twee rijen banken naar het bord, blauwe kluisjes, kapstok met pet
+    ROUTE-bord, vertrekbord met klok, twee rijen banken naar het bord, blauwe kluisjes, kapstok met pet
     en jasje, kratten, planten, rond kleed met treinicoon, hanglampen aan de bindbalken, open kap
 Pivot: midden van de voorgevel op maaiveld (y = 0); voorkant kijkt naar +Z. Vloer op perronhoogte (1,05 m),
 dus de voorgevel komt tegen de achterrand van het perron (5,15 m uit het hart van het spoor).
@@ -261,7 +261,7 @@ def hall_timber():
             x0, x1 = xs * HW - 0.18 + 0.05 * xs, xs * HW + 0.18 + 0.05 * xs
             parts.append(rbox(min(x0, x1), max(x0, x1), PLINTH - 0.02, H_EAVE, zc - 0.18 + zo, zc + 0.18 + zo, 0.05,
                               "M_Stn_Timber"))
-    # bindbalk voor (draagt het MAIN STATION-bord) en achter, muurplaten opzij
+    # bindbalk voor (draagt het naambord) en achter, muurplaten opzij
     parts.append(rbox(-HW - 0.30, HW + 0.30, H_EAVE - 0.32, H_EAVE + 0.02, -0.06, 0.16, 0.05, "M_Stn_Timber"))
     parts.append(rbox(-HW - 0.30, HW + 0.30, H_EAVE - 0.32, H_EAVE + 0.02, -HD - 0.16, -HD + 0.06, 0.05, "M_Stn_Timber"))
     for xs in (-1, 1):
@@ -549,8 +549,8 @@ def canopy():
 # ------------------------------------------------------------------ gevel-details
 def facade():
     parts = []
-    board = props.station_board(text="MAIN STATION", width=5.0, height=0.92, depth=0.14)
-    parts.append(board.transform(t=(0.0, FL + 4.58, 0.20)))
+    board, sign = props.sign_nodes("Sign_Name", "WHISTLETON", 5.0, 0.92, 0.14, (0.0, FL + 4.58, 0.20))
+    parts.append(board)
     for x in (-1.6, 1.6):                                  # ophangstangen naar de bindbalk
         parts.append(capsule((x, FL + 5.04, 0.20), (x, H_EAVE - 0.30, 0.20), 0.02, mat="M_Stn_Dark", seg=6, rings=1))
     wl, _ = props.wall_lantern()
@@ -560,7 +560,7 @@ def facade():
     for s in (-1, 1):
         x = s * (W_WINS[0][1] + W_WINS[1][0]) / 2
         parts.append(ban.transform(t=(x, W_EAVE - 0.42, WZ0 + 0.10)))
-    return mk.merge(*parts)
+    return mk.merge(*parts), sign
 
 
 # ------------------------------------------------------------------ interieur: de briefingruimte
@@ -592,10 +592,11 @@ def interior():
     parts.append(rbox(XI0, XI1, FL, FL + 0.90, ZI0, ZI0 + 0.04, 0.015, "M_Stn_TimberDark"))
     for x0, x1 in ((XI0, XI0 + 0.04), (XI1 - 0.04, XI1)):
         parts.append(rbox(x0, x1, FL, FL + 0.90, ZI0 + 0.04, ZI1 - 0.04, 0.015, "M_Stn_TimberDark"))
-    # achterwand: prikbord, routebord met TRAINING HUB-bord, vertrekbord met klok
+    # achterwand: prikbord, routebord met ROUTE-bord, vertrekbord met klok
     zb = ZI0 + 0.04                                         # voorkant lambrisering / wand
     parts.append(mp.route_board(3.2, 1.60).transform(t=(0.0, FL + 1.88, zb + 0.06)))
-    parts.append(mp.hub_sign(width=2.8, height=0.56).transform(t=(0.0, FL + 3.12, ZI0 + 0.08)))
+    hub, hub_sign = props.sign_nodes("Sign_Route", "ROUTE", 2.2, 0.56, 0.10, (0.0, FL + 3.12, ZI0 + 0.08))
+    parts.append(hub)
     parts.append(mp.notice_board(1.30, 1.05).transform(t=(-3.05, FL + 1.78, zb + 0.05)))
     parts.append(_wall_timetable().transform(t=(3.05, FL + 0.62, ZI0 + 0.10)))
     cols.append(col_box(-1.62, 1.62, FL + 1.0, FL + 2.7, ZI0, zb + 0.16))
@@ -629,7 +630,7 @@ def interior():
     bm, bcols, seats = benches()
     parts.append(bm)
     cols += bcols
-    return mk.merge(*parts), cols, seats
+    return mk.merge(*parts), cols, seats, hub_sign
 
 
 def roof_frame():
@@ -651,7 +652,7 @@ def roof_frame():
         for x in (-1.75, 1.75):
             parts.append(mp.pendant_lamp(1.25).transform(t=(x, TIE_Y - 0.13, z)))
             lights.append((x, TIE_Y - 1.35, z))
-    for x in (-3.05, 3.05):                               # boven prikbord en vertrekbord, vrij van het TRAINING HUB-bord
+    for x in (-3.05, 3.05):                               # boven prikbord en vertrekbord, vrij van het ROUTE-bord
         parts.append(mp.pendant_lamp(1.05).transform(t=(x, TIE_Y - 0.13, TIE_Z[2])))
         lights.append((x, TIE_Y - 1.15, TIE_Z[2]))
     return mk.merge(*parts), lights
@@ -669,8 +670,8 @@ def build(rng=None):
     hroof, hcol = hall_roof()
     wroof, wcol = wing_roof()
     can, can_col, can_light = canopy()
-    fac = facade()
-    inter, inter_cols, seats = interior()
+    fac, name_sign = facade()
+    inter, inter_cols, seats, hub_sign = interior()
     frame, lamp_lights = roof_frame()
     leaf_l, col_l = door_leaf(-1)
     leaf_r, col_r = door_leaf(1)
@@ -716,4 +717,4 @@ def build(rng=None):
         nodes.append((f"Light_Pendant_{k + 1}", None, None, p, None, True))
     for k, p in enumerate(seats):
         nodes.append((f"Briefing_Seat_{k + 1}", None, None, p, None, True))
-    return nodes
+    return nodes + name_sign + hub_sign
