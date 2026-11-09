@@ -19,7 +19,10 @@ namespace ConductorChaos.Playground
         private bool muted;
         private Button playButton, resumeButton, settingsBack;
         private Button hostButton, joinButton, beginButton, leaveButton, copyButton;
-        private Text lobbyStatus, lobbyCode;
+        private Text lobbyStatus, lobbyAvailability, lobbyCode;
+        private RectTransform lobbySeats, lobbyShare;
+        private readonly Text[] lobbySeatLabels = new Text[PlaygroundHost.Capacity];
+        private int displayedLobbyCount = -1;
         private InputField joinCodeInput;
         private PlaygroundHost networkHost;
         private PlaygroundHost.SessionPhase previousPhase;
@@ -52,7 +55,7 @@ namespace ConductorChaos.Playground
         {
             canvas = ChaosUI.MakeCanvas(transform, "Conductor Chaos menu", true);
             RectTransform root = (RectTransform)canvas.transform;
-            Color scrim = ChaosUI.Dark; scrim.a = 0.34f;
+            Color scrim = ChaosUI.Dark; scrim.a = 0.20f;
             ChaosUI.Panel(root, "Background", V(0, 0), V(1, 1), scrim);
             RectTransform stage = ChaosUI.Rect(root, "Menu composition", V(0, 0), V(1, 1), V(0, 0), V(0, 0));
             var fit = stage.gameObject.AddComponent<AspectRatioFitter>();
@@ -60,47 +63,17 @@ namespace ConductorChaos.Playground
             fit.aspectRatio = 16f / 9f;
             root = stage;
 
-            mainPanel = ChaosUI.Panel(root, "Main menu", V(.047f, .16f), V(.275f, .74f),
-                ChaosUI.Slate, 5, ChaosUI.Dark);
-            playButton = MenuAction("Play", "Spelen", .755f, .945f, ChaosUI.Gold, "play", StartLocalPlay, 28);
-            hostButton = MenuAction("Host", "Online hosten", .579f, .724f, ChaosUI.Paper, "player-group", () => networkHost?.HostLobby(), 23);
-            joinButton = MenuAction("Join", "Deelnemen", .405f, .55f, ChaosUI.Paper, "key", JoinLobby, 23);
-            MenuAction("Settings", "Instellingen", .23f, .375f, ChaosUI.Paper, "options", ShowSettings, 23);
-            MenuAction("Quit", "Afsluiten", .055f, .20f, ChaosUI.TrainRed, "quit", Application.Quit, 23);
+            mainPanel = ChaosUI.MenuPanel(root, "Main menu", V(.04f, .105f), V(.31f, .745f));
+            playButton = MenuAction("Play", "Spelen", .73f, .91f, ChaosUI.Gold, "play", StartLocalPlay, 34);
+            hostButton = MenuAction("Host", "Online hosten", .565f, .70f, ChaosUI.Paper, "player-group", () => networkHost?.HostLobby(), 27);
+            joinButton = MenuAction("Join", "Deelnemen", .40f, .535f, ChaosUI.Paper, "key", JoinLobby, 27);
+            MenuAction("Settings", "Instellingen", .235f, .37f, ChaosUI.Paper, "options", ShowSettings, 27);
+            MenuAction("Quit", "Afsluiten", .07f, .205f, ChaosUI.TrainRed, "quit", Application.Quit, 27);
+            logoPanel = ChaosUI.MenuLogo(root, V(.055f, .709f), V(.295f, .98f));
 
-            logoPanel = ChaosUI.Rect(root, "Title badge", V(.045f, .715f), V(.28f, .965f), V(0, 0), V(0, 0));
-            ChaosUI.Panel(logoPanel, "Badge", V(.055f, .12f), V(.945f, .96f), ChaosUI.Paper, 2, ChaosUI.Dark);
-            Text conductor = ChaosUI.Label(logoPanel, "Conductor", "Conductor", 40, ChaosUI.Ink, TextAnchor.MiddleCenter, FontStyle.Bold, V(.055f, .53f), V(.945f, .91f));
-            Text chaos = ChaosUI.Label(logoPanel, "Chaos", "Chaos", 56, ChaosUI.TrainRed, TextAnchor.MiddleCenter, FontStyle.Bold, V(.055f, .18f), V(.945f, .60f));
-            conductor.font = chaos.font = ChaosUI.Font;
-            conductor.resizeTextForBestFit = chaos.resizeTextForBestFit = true;
-            conductor.resizeTextMinSize = chaos.resizeTextMinSize = 25;
-            conductor.resizeTextMaxSize = 40;
-            chaos.resizeTextMaxSize = 56;
+            BuildLobby(root);
 
-            lobbyPanel = ChaosUI.Panel(root, "Lobby", V(.597f, .16f), V(.978f, .94f), ChaosUI.Slate, 5, ChaosUI.Dark);
-            RectTransform heading = ChaosUI.Panel(lobbyPanel, "Heading paper", V(.035f, .875f), V(.61f, .97f), ChaosUI.Paper);
-            ChaosUI.Label(heading, "Heading", "Samen op reis", 26, ChaosUI.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
-            ChaosUI.Label(lobbyPanel, "Availability", "ONLINE", 15, ChaosUI.GoldLight, TextAnchor.MiddleRight, FontStyle.Bold, V(.62f, .89f), V(.96f, .955f));
-            lobbyStatus = ChaosUI.Label(lobbyPanel, "Status", "", 21, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Normal, V(.055f, .66f), V(.945f, .83f));
-            RectTransform codeBox = ChaosUI.Panel(lobbyPanel, "Join code field", V(.055f, .50f), V(.945f, .63f), ChaosUI.Paper);
-            Image codeBackground = codeBox.GetComponent<Image>();
-            codeBackground.raycastTarget = true;
-            joinCodeInput = codeBox.gameObject.AddComponent<InputField>();
-            joinCodeInput.targetGraphic = codeBackground;
-            joinCodeInput.textComponent = ChaosUI.Label(codeBox, "Code", "", 24, ChaosUI.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
-            joinCodeInput.placeholder = ChaosUI.Label(codeBox, "Placeholder", "Voer lobbycode in", 20, ChaosUI.Ink, TextAnchor.MiddleCenter);
-            joinCodeInput.contentType = InputField.ContentType.Alphanumeric;
-            joinCodeInput.characterLimit = 12;
-            lobbyCode = ChaosUI.Label(lobbyPanel, "Share code", "", 30, ChaosUI.GoldLight, TextAnchor.MiddleCenter, FontStyle.Bold, V(.055f, .50f), V(.945f, .63f));
-            copyButton = ChaosUI.Action(lobbyPanel, "Copy code", "Kopieer code", V(.055f, .35f), V(.945f, .46f), ChaosUI.Paper, ChaosUI.Ink,
-                () => GUIUtility.systemCopyBuffer = networkHost.JoinCode, 20, iconKey: "key");
-            beginButton = ChaosUI.Action(lobbyPanel, "Begin", "Start samen", V(.055f, .19f), V(.945f, .30f), ChaosUI.Gold, ChaosUI.Ink,
-                () => networkHost?.BeginGame(), 21, iconKey: "play");
-            leaveButton = ChaosUI.Action(lobbyPanel, "Leave", "Verlaat sessie", V(.055f, .045f), V(.945f, .155f), ChaosUI.Paper, ChaosUI.Ink,
-                () => networkHost?.Leave(), 20, iconKey: "back");
-
-            settingsPanel = ChaosUI.Panel(root, "Settings", V(.34f, .18f), V(.965f, .75f), ChaosUI.Slate, 3, ChaosUI.Dark);
+            settingsPanel = ChaosUI.MenuPanel(root, "Settings", V(.36f, .18f), V(.96f, .78f));
             RectTransform settingsHeading = ChaosUI.Panel(settingsPanel, "Heading paper", V(.035f, .86f), V(.32f, .98f), ChaosUI.Paper);
             ChaosUI.Label(settingsHeading, "Heading", "INSTELLINGEN", 24, ChaosUI.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
             RectTransform audioTab = ChaosUI.Panel(settingsPanel, "Selected audio tab", V(.035f, .73f), V(.25f, .84f), ChaosUI.Gold);
@@ -123,13 +96,63 @@ namespace ConductorChaos.Playground
             cameraBobText = cameraBobSwitch.GetComponentInChildren<Text>();
             settingsBack = ChaosUI.Action(settingsPanel, "Back", "Terug", V(.69f, .035f), V(.96f, .125f), ChaosUI.Paper, ChaosUI.Ink, ShowLobby, 18, iconKey: "back");
 
-            pausePanel = ChaosUI.Panel(root, "Pause", V(.36f, .19f), V(.64f, .81f), ChaosUI.Slate, 2, ChaosUI.Muted);
+            pausePanel = ChaosUI.MenuPanel(root, "Pause", V(.35f, .19f), V(.65f, .81f));
             ChaosUI.Label(pausePanel, "Heading", "GEPAUZEERD", 32, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.05f, .8f), V(.95f, .95f));
             resumeButton = ChaosUI.Action(pausePanel, "Resume", "Verder spelen", V(.08f, .62f), V(.92f, .74f), ChaosUI.Gold, ChaosUI.Ink, () => SetScreen(Screen.Game), 22, iconKey: "play");
             ChaosUI.Action(pausePanel, "Unstuck", "Terug op de trein", V(.08f, .47f), V(.92f, .59f), ChaosUI.Paper, ChaosUI.Ink, Unstuck, 20);
             ChaosUI.Action(pausePanel, "Settings", "INSTELLINGEN", V(.08f, .32f), V(.92f, .44f), ChaosUI.Paper, ChaosUI.Ink, ShowSettings, 20, iconKey: "options");
             ChaosUI.Action(pausePanel, "Main", "HOOFDMENU", V(.08f, .17f), V(.92f, .29f), ChaosUI.Paper, ChaosUI.Ink, () => SetScreen(Screen.Main), 20, iconKey: "back");
             ChaosUI.Label(pausePanel, "Notice", "De wereld blijft actief terwijl dit menu open is.", 15, ChaosUI.Muted, TextAnchor.MiddleCenter, FontStyle.Normal, V(.05f, .02f), V(.95f, .13f));
+        }
+
+        private void BuildLobby(RectTransform root)
+        {
+            lobbyPanel = ChaosUI.MenuPanel(root, "Lobby", V(.595f, .105f), V(.96f, .91f));
+            RectTransform heading = ChaosUI.Panel(lobbyPanel, "Heading paper", V(.045f, .855f), V(.72f, .96f), ChaosUI.Paper);
+            ChaosUI.Label(heading, "Heading", "Samen op reis", 31, ChaosUI.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            RectTransform badge = ChaosUI.Panel(lobbyPanel, "Connection badge", V(.75f, .88f), V(.955f, .935f), ChaosUI.Dark);
+            lobbyAvailability = ChaosUI.Label(badge, "Availability", "OFFLINE", 14, ChaosUI.Muted, TextAnchor.MiddleCenter, FontStyle.Bold);
+
+            Color recess = Color.Lerp(ChaosUI.Navy, ChaosUI.Dark, .55f);
+            RectTransform body = ChaosUI.Panel(lobbyPanel, "Session details", V(.045f, .265f), V(.955f, .82f), recess);
+            ChaosUISpriteCatalog.Add(body, "Crew icon", "player-group", V(.04f, .76f), V(.145f, .95f), ChaosUI.Paper);
+            lobbyStatus = ChaosUI.Label(body, "Status", "Maak een online lobby of doe mee met de lobbycode van een vriend.",
+                21, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Normal, V(.15f, .73f), V(.965f, .97f));
+
+            lobbySeats = ChaosUI.Rect(body, "Player slots", V(0, 0), V(1, 1), V(0, 0), V(0, 0));
+            lobbySeats.gameObject.SetActive(false);
+            Color seatFace = Color.Lerp(ChaosUI.Navy, ChaosUI.Paper, .10f);
+            for (int i = 0; i < lobbySeatLabels.Length; i++)
+            {
+                float y = .61f - i * .105f;
+                RectTransform seat = ChaosUI.Panel(lobbySeats, "Player slot", V(.065f, y), V(.935f, y + .087f), seatFace);
+                lobbySeatLabels[i] = ChaosUI.Label(seat, "Slot status", "Vrije plek", 17, ChaosUI.Muted,
+                    TextAnchor.MiddleLeft, FontStyle.Normal, V(.03f, 0), V(.97f, 1));
+            }
+
+            RectTransform codeBox = ChaosUI.Panel(body, "Join code field", V(.065f, .36f), V(.935f, .54f), ChaosUI.Paper);
+            Image codeBackground = codeBox.GetComponent<Image>();
+            codeBackground.raycastTarget = true;
+            joinCodeInput = codeBox.gameObject.AddComponent<InputField>();
+            joinCodeInput.targetGraphic = codeBackground;
+            joinCodeInput.textComponent = ChaosUI.Label(codeBox, "Code", "", 24, ChaosUI.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            joinCodeInput.placeholder = ChaosUI.Label(codeBox, "Placeholder", "Voer lobbycode in", 20, ChaosUI.Ink, TextAnchor.MiddleCenter);
+            joinCodeInput.contentType = InputField.ContentType.Alphanumeric;
+            joinCodeInput.characterLimit = 12;
+
+            lobbyShare = ChaosUI.Panel(lobbyPanel, "Share code field", V(.045f, .153f), V(.52f, .235f), recess);
+            lobbyCode = ChaosUI.Label(lobbyShare, "Share code", "", 26, ChaosUI.GoldLight, TextAnchor.MiddleCenter, FontStyle.Bold);
+            copyButton = ChaosUI.Action(lobbyPanel, "Copy code", "Kopieer code", V(.55f, .153f), V(.955f, .235f), ChaosUI.Paper, ChaosUI.Ink,
+                () => GUIUtility.systemCopyBuffer = networkHost.JoinCode, 20, iconKey: "key");
+            beginButton = ChaosUI.Action(lobbyPanel, "Begin", "Start samen", V(.045f, .045f), V(.52f, .125f), ChaosUI.Gold, ChaosUI.Ink,
+                () => networkHost?.BeginGame(), 21, iconKey: "play");
+            leaveButton = ChaosUI.Action(lobbyPanel, "Leave", "Verlaat sessie", V(.55f, .045f), V(.955f, .125f), ChaosUI.Paper, ChaosUI.Ink,
+                () => networkHost?.Leave(), 20, iconKey: "back");
+
+            lobbyShare.gameObject.SetActive(false);
+            copyButton.gameObject.SetActive(false);
+            beginButton.gameObject.SetActive(false);
+            leaveButton.gameObject.SetActive(false);
         }
 
         private Button MenuAction(string name, string caption, float bottom, float top, Color color,
@@ -192,14 +215,28 @@ namespace ConductorChaos.Playground
             playButton.interactable = networkHost.CanStart || playing;
             joinCodeInput.gameObject.SetActive(offline);
             bool showCode = !string.IsNullOrEmpty(networkHost.JoinCode);
-            lobbyCode.gameObject.SetActive(showCode);
+            lobbyShare.gameObject.SetActive(showCode);
             lobbyCode.text = networkHost.JoinCode;
             copyButton.gameObject.SetActive(showCode);
             beginButton.gameObject.SetActive(inLobby && networkHost.IsHost);
             leaveButton.gameObject.SetActive(!offline);
+            lobbyAvailability.text = inLobby ? "ONLINE" : offline ? "OFFLINE" : playing ? "IN SPEL" : "VERBINDEN";
+            lobbyAvailability.color = inLobby ? ChaosUI.Green : ChaosUI.Muted;
+            lobbySeats.gameObject.SetActive(inLobby);
+            int count = networkHost.PlayerCount;
+            if (inLobby && displayedLobbyCount != count)
+            {
+                displayedLobbyCount = count;
+                for (int i = 0; i < lobbySeatLabels.Length; i++)
+                {
+                    bool occupied = i < count;
+                    lobbySeatLabels[i].text = occupied ? $"Speler {i + 1} · verbonden" : "Vrije plek";
+                    lobbySeatLabels[i].color = occupied ? ChaosUI.Paper : ChaosUI.Muted;
+                }
+            }
             lobbyStatus.text = networkHost.Message ?? (offline
                 ? "Maak een online lobby of doe mee met de lobbycode van een vriend."
-                : $"{networkHost.PlayerCount} / 6 spelers verbonden" +
+                : $"{count} / {PlaygroundHost.Capacity} spelers verbonden" +
                   (inLobby && !networkHost.IsHost ? "\nWachten tot de host start." : ""));
         }
         private void SetVolume(float value) { AudioListener.volume = value; PlayerPrefs.SetFloat("ChaosUI.Volume", value); if (volumeText) volumeText.text = Mathf.RoundToInt(value * 100) + "%"; }

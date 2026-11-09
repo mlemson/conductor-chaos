@@ -52,6 +52,7 @@ namespace ConductorChaos.Playground
         private Vector2 requestedMove;
         private float requestedYaw;
         private float requestedPitch;
+        private float requestedHandFocus;
         private bool leftHeld, rightHeld, jumpQueued, sprinting, crouching;
         private bool lastLeft, lastRight;
         private float nextInput, nextPose, lastJump;
@@ -68,6 +69,7 @@ namespace ConductorChaos.Playground
         private bool cameraHidesBody;
         private float cameraDistance = 4f;
         private float cameraZoomVelocity;
+        private float cameraHandFocus;
         private float desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
         private float smoothFocusY, smoothFocusVelocity;
         private bool hasSmoothFocus;
@@ -110,6 +112,7 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkSpawn()
         {
+            cameraHandFocus = requestedHandFocus = 0f;
             sessionHost = NetworkManager.GetComponent<PlaygroundHost>();
             cameraDistance = desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
             cameraZoomVelocity = 0f;
@@ -219,7 +222,7 @@ namespace ConductorChaos.Playground
             if (Time.unscaledTime >= nextInput || l != lastLeft || r != lastRight)
             {
                 SendInputServerRpc(Vector2.ClampMagnitude(move, 1f), yaw, pitch, l, r, active && keyboard.leftShiftKey.isPressed,
-                    active && (keyboard.leftCtrlKey.isPressed || keyboard.cKey.isPressed));
+                    active && (keyboard.leftCtrlKey.isPressed || keyboard.cKey.isPressed), cameraHandFocus);
                 nextInput = Time.unscaledTime + 0.05f;
                 lastLeft = l;
                 lastRight = r;
@@ -227,17 +230,19 @@ namespace ConductorChaos.Playground
         }
 
         [ServerRpc]
-        private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r, bool sprint, bool crouch)
+        private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r, bool sprint, bool crouch, float handFocus = 0f)
         {
             if (!l) { leftHeld = false; left?.Release(); }
             if (!r) { rightHeld = false; right?.Release(); }
             if (sessionHost && sessionHost.Phase != PlaygroundHost.SessionPhase.Playing) return;
-            if (!float.IsFinite(move.x) || !float.IsFinite(move.y) || !float.IsFinite(direction) || !float.IsFinite(lookPitch)) return;
+            if (!float.IsFinite(move.x) || !float.IsFinite(move.y) || !float.IsFinite(direction) || !float.IsFinite(lookPitch) ||
+                !float.IsFinite(handFocus)) return;
             if ((l || r) && (move.sqrMagnitude > 0.01f || Mathf.Abs(Mathf.DeltaAngle(requestedYaw, direction)) > 0.02f || Mathf.Abs(requestedPitch - lookPitch) > 0.02f))
                 lastLeverInputAt = Time.unscaledTime + 0.12f;
             requestedMove = Vector2.ClampMagnitude(move, 1f);
             requestedYaw = Mathf.Repeat(direction, 360f);
             requestedPitch = Mathf.Clamp(lookPitch, -80f, 65f);
+            requestedHandFocus = Mathf.Clamp01(handFocus);
             lastServerInput = Time.unscaledTime;
             leftHeld = l;
             rightHeld = r;
@@ -330,6 +335,7 @@ namespace ConductorChaos.Playground
             if (Time.unscaledTime - lastServerInput > 0.35f)
             {
                 requestedMove = Vector2.zero;
+                requestedHandFocus = 0f;
                 leftHeld = rightHeld = false;
                 sprinting = crouching = false;
                 left.Release();
@@ -348,8 +354,10 @@ namespace ConductorChaos.Playground
             Rigidbody trainSupport = grounded && trainDrive ? trainDrive.GuidedSupport(groundHit.rigidbody) : null;
             Vector3 trainVelocity = trainSupport ? trainDrive.GuidedPointVelocity(trainSupport, body.position) : Vector3.zero;
             bool cabinView = trainDrive && trainDrive.TryGetCabin(transform.position, -0.06f, out _);
-            left.Step(leftHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView);
-            right.Step(rightHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView);
+            bool leftHasGrip = left.HasGrip;
+            bool rightHasGrip = right.HasGrip;
+            left.Step(leftHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView, requestedHandFocus, rightHasGrip);
+            right.Step(rightHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView, requestedHandFocus, leftHasGrip);
             bool climbing = ApplyClimbAssist(pulling && !jumpQueued && (leftHeld || rightHeld));
             float handPush = 0f;
             if (!climbing && !jumpQueued && Time.time - lastJump > 0.18f)
@@ -749,7 +757,7 @@ namespace ConductorChaos.Playground
             usingCabinCamera = trainDrive && trainDrive.TryGetCabin(transform.position, usingCabinCamera ? 0.04f : -0.06f, out cabinFrame);
             float zoomTarget = usingCabinCamera ? 0f : Mathf.SmoothStep(desiredCameraDistance, 0f, Mathf.InverseLerp(44f, 58f, pitch));
             cameraDistance = PlaygroundControls.EaseCameraDistance(cameraDistance, zoomTarget, ref cameraZoomVelocity);
-            float eyeBlend = 1f - Mathf.SmoothStep(0f, 1f, cameraDistance / PlaygroundControls.FirstPersonDistance);
+            float eyeBlend = PlaygroundControls.FirstPersonBlend(cameraDistance);
             Vector3 eyeOffset = PlaygroundControls.FirstPersonEyeOffset(yaw) * eyeBlend;
             if (usingCabinCamera)
             {
@@ -820,6 +828,8 @@ namespace ConductorChaos.Playground
             Vector3 viewDirection = offset.sqrMagnitude > 0.0001f ? offset.normalized : direction;
             Vector3 axis = new(Mathf.Abs(viewDirection.x), Mathf.Abs(viewDirection.y), Mathf.Abs(viewDirection.z));
             float modelEdge = Vector3.Dot(modelBounds.center - focus, viewDirection) + Vector3.Dot(modelBounds.extents, axis);
+            cameraHandFocus = Mathf.MoveTowards(cameraHandFocus,
+                PlaygroundControls.FirstPersonBlend(offset.magnitude), 6f * Time.unscaledDeltaTime);
             SetCameraBodyHidden(offset.magnitude < Mathf.Max(PlaygroundControls.FirstPersonDistance,
                 modelEdge + radius + (cameraHidesBody ? 0.15f : 0.03f)));
             UpdateCameraFieldOfView(usingCabinCamera || usingLookDownCamera ||
@@ -921,6 +931,7 @@ namespace ConductorChaos.Playground
             private TrainDrive cabGripTrain;
             private readonly Collider[] leverOverlaps = new Collider[32];
             private float nextAttempt;
+            private float poseHandFocus;
             private float handYield;
             private bool releasedAtCrest;
 
@@ -984,12 +995,15 @@ namespace ConductorChaos.Playground
                 shoulder.enableCollision = true;
             }
 
-            public void Step(bool held, bool stretch, Quaternion aim, RaycastHit[] buffer, Transform player, float reach, bool pulling, bool firmLedgeGrip, Vector3 move, bool cabinView)
+            public void Step(bool held, bool stretch, Quaternion aim, RaycastHit[] buffer, Transform player, float reach, bool pulling, bool firmLedgeGrip, Vector3 move, bool cabinView, float handFocus, bool otherHandHasGrip)
             {
                 if (!rigid) return;
                 if (!held) releasedAtCrest = false;
                 if (!held || (grip && (!gripSurface || !gripSurface.enabled || !gripSurface.gameObject.activeInHierarchy)) ||
                     (!grip && gripSurface)) Release();
+                bool followsCamera = otherHandHasGrip && !grip;
+                bool activelyAiming = held || followsCamera;
+                if (!grip) poseHandFocus = handFocus;
                 bool holdingShovel = HoldingShovel;
                 float upwardReach = Mathf.InverseLerp(cabinView ? -0.18f : 0.25f, cabinView ? 0.65f : 0.9f, (aim * Vector3.forward).y);
                 float cabinReach = cabinView ? Mathf.Sqrt(upwardReach) : upwardReach;
@@ -1003,10 +1017,14 @@ namespace ConductorChaos.Playground
                 float upwardAim = Mathf.Clamp01(lookDirection.y);
                 Vector3 raisedAim = Vector3.Slerp(lookDirection, Vector3.up, 0.35f * upwardAim);
                 if (!held) raisedAim = (raisedAim + Vector3.up * 0.20f).normalized;
-                Vector3 aimInParent = arm.parent.InverseTransformDirection(raisedAim);
                 Vector3 restDirection = rest * Vector3.down;
                 float outwardAim = Mathf.Lerp(0.55f, cabinView ? -0.25f : 0.30f, cabinView ? cabinReach : upwardAim);
-                aimInParent = (aimInParent + Vector3.right * Mathf.Sign(restDirection.x) * outwardAim).normalized;
+                float handSide = Mathf.Sign(restDirection.x);
+                outwardAim = Mathf.Lerp(outwardAim, -0.35f, poseHandFocus);
+                Quaternion gripAim = PlaygroundControls.HandGripAim(aim, handSide, handFocus);
+                Vector3 aimInParent = arm.parent.InverseTransformDirection(followsCamera ? gripAim * Vector3.forward : raisedAim);
+                if (!followsCamera)
+                    aimInParent = (aimInParent + Vector3.right * handSide * outwardAim).normalized;
                 if (grip && gripSurface && grip is ConfigurableJoint)
                 {
                     var support = grip.connectedBody;
@@ -1018,9 +1036,9 @@ namespace ConductorChaos.Playground
                 AimedHandPosition = arm.position + arm.parent.TransformVector(aiming * Vector3.Scale(arm.localScale, HandOffset));
                 // Keep both arms aimed even when their grip buttons are released.
                 Quaternion localTarget = holdingShovel ? Quaternion.FromToRotation(restDirection, Vector3.Slerp(Vector3.down, aimInParent, 0.35f)) * rest
-                    : Quaternion.Slerp(rest, aiming, held ? 1f : Mathf.Lerp(0.75f, 0.95f, upwardAim));
+                    : Quaternion.Slerp(rest, aiming, activelyAiming ? 1f : Mathf.Lerp(0.75f, 0.95f, upwardAim));
                 bool blocked = false;
-                if (!held && collider && collider.enabled && move.sqrMagnitude > 0.01f)
+                if (!activelyAiming && collider && collider.enabled && move.sqrMagnitude > 0.01f)
                 {
                     Vector3 handPoint = arm.TransformPoint(HandOffset);
                     int count = Physics.OverlapSphereNonAlloc(handPoint + move.normalized * 0.04f, 0.075f,
@@ -1037,24 +1055,24 @@ namespace ConductorChaos.Playground
                     }
                 }
                 handYield = Mathf.MoveTowards(handYield, blocked ? 1f : 0f, Time.fixedDeltaTime * (blocked ? 9f : 4f));
-                if (!held) localTarget = Quaternion.Slerp(localTarget, rest, handYield);
+                if (!activelyAiming) localTarget = Quaternion.Slerp(localTarget, rest, handYield);
                 Quaternion desired = arm.parent.rotation * localTarget;
                 Quaternion error = desired * Quaternion.Inverse(rigid.rotation);
                 error.ToAngleAxis(out float angle, out Vector3 axis);
                 if (angle > 180f) angle -= 360f;
                 bool looseGrip = grip && !grip.connectedBody && !firmLedgeGrip;
                 if (float.IsFinite(axis.x) && axis.sqrMagnitude > 0.01f)
-                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * (looseGrip ? 85f : held ? 180f : Mathf.Lerp(32f, 8f, handYield)))
-                        - rigid.angularVelocity * (looseGrip ? 7f : held ? 14f : 5f), looseGrip ? 150f : held ? 420f : Mathf.Lerp(55f, 20f, handYield)), ForceMode.Acceleration);
+                    rigid.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * (looseGrip ? 85f : activelyAiming ? 180f : Mathf.Lerp(32f, 8f, handYield)))
+                        - rigid.angularVelocity * (looseGrip ? 7f : activelyAiming ? 14f : 5f), looseGrip ? 150f : activelyAiming ? 420f : Mathf.Lerp(55f, 20f, handYield)), ForceMode.Acceleration);
 
                 if (!held || grip || releasedAtCrest || Time.time < nextAttempt) return;
                 nextAttempt = Time.time + 0.04f;
                 Vector3 hand = arm.TransformPoint(HandOffset);
-                Vector3 direction = aim * Vector3.forward;
-                if (TryGripNearbyCabControl(hand, direction, buffer, player, reach)) return;
+                if (TryGripNearbyCabControl(hand, aim * Vector3.forward, buffer, player, reach)) return;
+                Vector3 direction = gripAim * Vector3.forward;
                 if (!TryGripCast(hand, direction, 0.13f, 0.38f, buffer, player, reach, false, out RaycastHit chosen) &&
-                    !TryGripAssist(hand, aim, buffer, player, reach, out chosen) &&
-                    (!pulling || !TryGripCast(hand, Vector3.ProjectOnPlane(direction, Vector3.up).normalized,
+                    !TryGripAssist(hand, gripAim, buffer, player, reach, out chosen) &&
+                    (followsCamera || !pulling || !TryGripCast(hand, Vector3.ProjectOnPlane(direction, Vector3.up).normalized,
                         0.09f, 0.18f, buffer, player, reach, true, out chosen))) return;
 
                 var train = TrainDrive.FindControlOwner(chosen.rigidbody);

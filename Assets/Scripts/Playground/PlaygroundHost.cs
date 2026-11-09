@@ -17,7 +17,7 @@ namespace ConductorChaos.Playground
     {
         [SerializeField] private GameObject remotePlayerPrefab;
         private const ushort SoloPort = 7777;
-        private const int Capacity = 6;
+        internal const int Capacity = 6;
         private const string RelayProtocol = "dtls";
         private const string LobbyStateMessage = "Playground.LobbyState";
         private NetworkManager manager;
