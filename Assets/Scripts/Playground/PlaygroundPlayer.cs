@@ -875,7 +875,7 @@ namespace ConductorChaos.Playground
             private readonly Vector3 restScale;
             private readonly CapsuleCollider collider;
             private readonly ConfigurableJoint shoulder;
-            private SpringJoint grip;
+            private Joint grip;
             private Collider gripSurface;
             private Vector3 gripNormal;
             private TrainDrive cabGripTrain;
@@ -901,8 +901,11 @@ namespace ConductorChaos.Playground
             {
                 anchor = default;
                 if (!grip || !gripSurface || grip.connectedBody) return false;
+                if ((grip.connectedAnchor - HandPosition).sqrMagnitude > 0.30f * 0.30f) return false;
                 anchor = grip.connectedAnchor;
-                return (anchor - arm.TransformPoint(HandOffset)).sqrMagnitude <= 0.30f * 0.30f;
+                if (grip is ConfigurableJoint)
+                    anchor -= gripSurface.transform.TransformDirection(gripNormal) * PlaygroundControls.GripPalmOffset;
+                return true;
             }
 
             public ArmPhysics(Transform transform, Rigidbody body, bool server)
@@ -952,7 +955,7 @@ namespace ConductorChaos.Playground
                 float cabinReach = cabinView ? Mathf.Sqrt(upwardReach) : upwardReach;
                 float targetStretch = holdingShovel ? 0.75f : stretch ? GripStretch : 1f;
                 if (!grip) targetStretch = Mathf.Max(targetStretch, Mathf.Lerp(1f, cabinView ? 2.6f : 1.9f, cabinReach));
-                StretchToward(targetStretch, Time.fixedDeltaTime);
+                if (!(grip is ConfigurableJoint)) StretchToward(targetStretch, Time.fixedDeltaTime);
                 // The model's arms are angled outward at rest. Rotate the actual
                 // shoulder-to-hand direction toward the camera aim, rather than
                 // rotating around the arm's already-tilted local X axis.
@@ -964,9 +967,11 @@ namespace ConductorChaos.Playground
                 Vector3 restDirection = rest * Vector3.down;
                 float outwardAim = Mathf.Lerp(0.55f, cabinView ? -0.25f : 0.30f, cabinView ? cabinReach : upwardAim);
                 aimInParent = (aimInParent + Vector3.right * Mathf.Sign(restDirection.x) * outwardAim).normalized;
-                if (grip && !grip.connectedBody)
+                if (grip && gripSurface && grip is ConfigurableJoint)
                 {
-                    Vector3 towardAnchor = arm.parent.InverseTransformDirection(grip.connectedAnchor - rigid.position);
+                    var support = grip.connectedBody;
+                    Vector3 anchor = support ? support.transform.TransformPoint(grip.connectedAnchor) : grip.connectedAnchor;
+                    Vector3 towardAnchor = arm.parent.InverseTransformDirection(anchor - rigid.position);
                     if (towardAnchor.sqrMagnitude > 0.001f) aimInParent = towardAnchor.normalized;
                 }
                 Quaternion aiming = Quaternion.FromToRotation(restDirection, aimInParent) * rest;
@@ -1019,6 +1024,15 @@ namespace ConductorChaos.Playground
 
             private bool AttachGrip(Collider surface, Rigidbody target, Vector3 point, bool climbingGrip, bool cabGrip, Vector3 normal = default)
             {
+                if (!cabGrip && (!target || target.isKinematic && !TrainDrive.IsCoalBody(target)) && normal.sqrMagnitude > 0.5f)
+                {
+                    if (!PlaygroundControls.CanPlantHand(HandPosition, point, normal)) return false;
+                    gripSurface = surface;
+                    gripNormal = surface.transform.InverseTransformDirection(normal);
+                    grip = PlaygroundControls.PlantHand(arm.gameObject, target, HandOffset, point, normal, 1100f);
+                    return true;
+                }
+
                 if (cabGrip)
                 {
                     var train = TrainDrive.FindControlOwner(target);
@@ -1030,16 +1044,17 @@ namespace ConductorChaos.Playground
                 }
                 gripSurface = surface;
                 gripNormal = cabGrip ? Vector3.zero : surface.transform.InverseTransformDirection(normal);
-                grip = arm.gameObject.AddComponent<SpringJoint>();
-                grip.autoConfigureConnectedAnchor = false;
-                grip.connectedBody = target;
-                grip.connectedAnchor = target ? target.transform.InverseTransformPoint(point) : point;
-                grip.anchor = HandOffset;
-                grip.spring = cabGrip ? 450f : climbingGrip ? 380f : 320f;
-                grip.damper = cabGrip ? 40f : climbingGrip ? 36f : 32f;
-                grip.minDistance = 0f;
-                grip.maxDistance = 0.03f;
-                grip.breakForce = cabGrip ? 1000f : climbingGrip ? 725f : 550f;
+                var spring = arm.gameObject.AddComponent<SpringJoint>();
+                spring.autoConfigureConnectedAnchor = false;
+                spring.connectedBody = target;
+                spring.connectedAnchor = target ? target.transform.InverseTransformPoint(point) : point;
+                spring.anchor = HandOffset;
+                spring.spring = cabGrip ? 450f : climbingGrip ? 380f : 320f;
+                spring.damper = cabGrip ? 40f : climbingGrip ? 36f : 32f;
+                spring.minDistance = 0f;
+                spring.maxDistance = 0.03f;
+                spring.breakForce = cabGrip ? 1000f : climbingGrip ? 725f : 550f;
+                grip = spring;
                 return true;
             }
 
@@ -1092,6 +1107,12 @@ namespace ConductorChaos.Playground
                         NetworkObject target = hit.rigidbody.GetComponentInParent<NetworkObject>();
                         if ((!target || !target.IsSpawned || !target.IsOwnedByServer) && !TrainDrive.IsCoalBody(hit.rigidbody)) continue;
                     }
+                    if (!hit.rigidbody || hit.rigidbody.isKinematic && !TrainDrive.IsCoalBody(hit.rigidbody))
+                    {
+                        var train = TrainDrive.FindControlOwner(hit.rigidbody);
+                        bool control = train && train.IsCabControlCollider(hit.collider);
+                        if (!control && !PlaygroundControls.CanPlantHand(hand, hit.point, hit.normal)) continue;
+                    }
                     closest = hit.distance;
                     chosen = hit;
                 }
@@ -1125,6 +1146,7 @@ namespace ConductorChaos.Playground
                     var train = TrainDrive.FindControlOwner(surface.rigidbody);
                     bool cabControl = train && train.IsSpawned && train.IsOwnedByServer && train.IsCabControlCollider(surface.collider);
                     if (!IsClimbSurface(surface) && !cabControl) continue;
+                    if (!cabControl && !PlaygroundControls.CanPlantHand(hand, surface.point, surface.normal)) continue;
                     Vector3 offset = surface.point - hand;
                     float distance = offset.sqrMagnitude;
                     if (distance >= closest || Vector3.Dot(offset, forward) < -0.06f ||
@@ -1166,12 +1188,7 @@ namespace ConductorChaos.Playground
                     if (collider && gripSurface) Physics.IgnoreCollision(collider, gripSurface, false);
                     cabGripTrain = null;
                 }
-                if (grip)
-                {
-                    grip.spring = 0f;
-                    grip.damper = 0f;
-                    Object.Destroy(grip);
-                }
+                PlaygroundControls.ReleaseGrip(grip);
                 grip = null;
                 gripSurface = null;
                 nextAttempt = 0f;

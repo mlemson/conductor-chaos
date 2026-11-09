@@ -7,6 +7,8 @@ namespace ConductorChaos.Playground
     {
         public const float DefaultCameraDistance = 4f;
         public const float FirstPersonDistance = 0.8f;
+        public const float GripPalmOffset = 0.05f;
+        public const float PlantingReach = 0.12f;
 
         public static float ZoomDistance(float distance, float scroll)
         {
@@ -35,7 +37,43 @@ namespace ConductorChaos.Playground
             return Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, -0.18f, -0.16f);
         }
 
-        public static void SlideWallGrip(SpringJoint grip, Collider surface, ref Vector3 surfaceNormal)
+        public static bool CanPlantHand(Vector3 palm, Vector3 point, Vector3 normal)
+        {
+            return (point + normal * GripPalmOffset - palm).sqrMagnitude <= PlantingReach * PlantingReach;
+        }
+
+        public static ConfigurableJoint PlantHand(GameObject hand, Rigidbody support, Vector3 handAnchor,
+            Vector3 point, Vector3 normal, float breakForce)
+        {
+            // A planted palm has one position on the surface, with free wrist rotation.
+            Vector3 palm = point + normal * GripPalmOffset;
+            var grip = hand.AddComponent<ConfigurableJoint>();
+            grip.autoConfigureConnectedAnchor = false;
+            grip.connectedBody = support;
+            grip.anchor = handAnchor;
+            grip.connectedAnchor = support ? support.transform.InverseTransformPoint(palm) : palm;
+            grip.xMotion = grip.yMotion = grip.zMotion = ConfigurableJointMotion.Locked;
+            grip.angularXMotion = grip.angularYMotion = grip.angularZMotion = ConfigurableJointMotion.Free;
+            grip.breakForce = breakForce;
+            return grip;
+        }
+
+        public static void ReleaseGrip(Joint grip)
+        {
+            if (!grip) return;
+            if (grip is SpringJoint spring)
+            {
+                spring.spring = 0f;
+                spring.damper = 0f;
+            }
+            else if (grip is ConfigurableJoint planted)
+            {
+                planted.xMotion = planted.yMotion = planted.zMotion = ConfigurableJointMotion.Free;
+            }
+            Object.Destroy(grip);
+        }
+
+        public static void SlideWallGrip(Joint grip, Collider surface, ref Vector3 surfaceNormal)
         {
             if (!grip || !surface || !surface.enabled || !surface.gameObject.activeInHierarchy
                 || surfaceNormal.sqrMagnitude < 0.5f) return;
@@ -48,16 +86,18 @@ namespace ConductorChaos.Playground
             Vector3 anchor = support ? support.transform.TransformPoint(grip.connectedAnchor) : grip.connectedAnchor;
             if ((grip.transform.TransformPoint(grip.anchor) - anchor).sqrMagnitude > 0.30f * 0.30f) return;
             Vector3 step = Vector3.ProjectOnPlane(Vector3.down, normal).normalized * (0.25f * Time.fixedDeltaTime);
-            var probe = new Ray(anchor + step + normal * 0.10f, -normal);
+            Vector3 point = grip is ConfigurableJoint ? anchor - normal * GripPalmOffset : anchor;
+            var probe = new Ray(point + step + normal * 0.10f, -normal);
             // Stay on the same wall and do not carry the grip around a sharp edge or across a gap.
             if (!surface.Raycast(probe, out RaycastHit hit, 0.20f) || Mathf.Abs(hit.normal.y) > 0.35f
-                || Vector3.Dot(normal, hit.normal) < 0.75f || hit.point.y >= anchor.y) return;
+                || Vector3.Dot(normal, hit.normal) < 0.75f || hit.point.y >= point.y) return;
 
-            grip.connectedAnchor = support ? support.transform.InverseTransformPoint(hit.point) : hit.point;
+            Vector3 palm = grip is ConfigurableJoint ? hit.point + hit.normal * GripPalmOffset : hit.point;
+            grip.connectedAnchor = support ? support.transform.InverseTransformPoint(palm) : palm;
             surfaceNormal = surface.transform.InverseTransformDirection(hit.normal);
         }
 
-        public static float HandPushAcceleration(SpringJoint grip, Collider surface, float press, float upSpeed)
+        public static float HandPushAcceleration(Joint grip, Collider surface, float press, float upSpeed)
         {
             if (press <= 0f || !grip || !surface || !surface.enabled || !surface.gameObject.activeInHierarchy)
                 return 0f;
