@@ -61,12 +61,13 @@ namespace ConductorChaos.Playground
         private Vector3 smoothedLean;
         private float yaw, pitch = 18f;
         private Camera playerCamera;
+        private float originalCameraFieldOfView;
         private float originalCameraNearClip;
         private Renderer[] cameraBodyRenderers;
         private bool[] cameraBodyRenderingOff;
         private bool cameraHidesBody;
         private float cameraDistance = 4f;
-        private float desiredCameraDistance = 4f;
+        private float desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
         private float smoothFocusY, smoothFocusVelocity;
         private bool hasSmoothFocus;
         private Vector3 lastClearCameraPosition;
@@ -108,7 +109,7 @@ namespace ConductorChaos.Playground
         public override void OnNetworkSpawn()
         {
             sessionHost = NetworkManager.GetComponent<PlaygroundHost>();
-            cameraDistance = 4f;
+            cameraDistance = desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
             hasClearCameraPosition = false;
             usingCabinCamera = false;
             usingLookDownCamera = false;
@@ -143,6 +144,7 @@ namespace ConductorChaos.Playground
                 if (playerCamera)
                 {
                     originalCameraNearClip = playerCamera.nearClipPlane;
+                    originalCameraFieldOfView = playerCamera.fieldOfView;
                     playerCamera.nearClipPlane = Mathf.Min(originalCameraNearClip, 0.08f);
                     cameraBodyRenderers = visual ? visual.GetComponentsInChildren<Renderer>(true) : System.Array.Empty<Renderer>();
                     cameraBodyRenderingOff = new bool[cameraBodyRenderers.Length];
@@ -201,7 +203,7 @@ namespace ConductorChaos.Playground
                 Vector2 delta = mouse.delta.ReadValue();
                 yaw += delta.x * 0.12f;
                 pitch = Mathf.Clamp(pitch - delta.y * 0.12f, -80f, 65f);
-                desiredCameraDistance = Mathf.Clamp(desiredCameraDistance - mouse.scroll.ReadValue().y * 0.002f, 1.5f, 6f);
+                desiredCameraDistance = PlaygroundControls.ZoomDistance(desiredCameraDistance, mouse.scroll.ReadValue().y);
             }
             Vector2 move = active ? new Vector2((keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f),
                                (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f)) : Vector2.zero;
@@ -341,6 +343,13 @@ namespace ConductorChaos.Playground
             left.Step(leftHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView);
             right.Step(rightHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView);
             bool climbing = ApplyClimbAssist(pulling && !jumpQueued && (leftHeld || rightHeld));
+            float handPush = 0f;
+            if (!climbing && !jumpQueued && Time.time - lastJump > 0.18f)
+            {
+                float press = Mathf.InverseLerp(28f, 60f, requestedPitch);
+                handPush = Mathf.Max(left.PushUp(press, current.y), right.PushUp(press, current.y));
+            }
+            bool bracing = handPush > 0f;
             int hangingHands = StaticGripCenter(out Vector3 gripCenter);
             bool hanging = !climbing && hangingHands > 0;
             wagonPushDirection = grounded && !hanging && !climbing && !jumpQueued ? moveDirection * uprightControl : Vector3.zero;
@@ -352,7 +361,8 @@ namespace ConductorChaos.Playground
             float walkSpeed = Mathf.Min(sprinting ? sprintSpeed : speed, sprinting ? 3.8f : 1.5f);
             bool stepped = false;
             if (climbing) legs?.BraceForClimb(mantling);
-            bool supported = !climbing && legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting && !hanging, out stepped);
+            if (bracing) legs?.ReleaseSupport();
+            bool supported = !climbing && !bracing && legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting && !hanging, out stepped);
             Vector3 groundVelocity = supported ? legs.SupportVelocity : grounded && groundHit.rigidbody && groundHit.rigidbody.isKinematic
                 ? groundHit.rigidbody.GetPointVelocity(groundHit.point) : Vector3.zero;
             if (grounded || supported) airborneSupportVelocity = groundVelocity;
@@ -364,7 +374,8 @@ namespace ConductorChaos.Playground
             Vector3 change = Vector3.ClampMagnitude(new Vector3(target.x - current.x, 0f, target.z - current.z), movementAcceleration * Time.fixedDeltaTime);
             if (climbing || hanging) change = Vector3.zero;
             else body.AddForce(change, ForceMode.VelocityChange);
-            if (hanging) MoveWhileGripping(gripCenter, moveDirection, hangingHands, pulling && !jumpQueued);
+            if (hanging) MoveWhileGripping(gripCenter, moveDirection, hangingHands, pulling && !jumpQueued && !bracing);
+            if (bracing) body.AddForce(Vector3.up * handPush, ForceMode.Acceleration);
 
             // A small push on alternating planted steps makes running a hop, not a repeated full jump.
             Vector3 relativeVelocity = current - groundVelocity;
@@ -699,6 +710,7 @@ namespace ConductorChaos.Playground
                 cameraDistance = 0f;
                 hasClearCameraPosition = false;
                 SetCameraBodyHidden(true);
+                UpdateCameraFieldOfView(true);
                 playerCamera.transform.SetPositionAndRotation(cabinFrame.TransformPoint(cabinEye), look);
                 return;
             }
@@ -762,7 +774,16 @@ namespace ConductorChaos.Playground
             Vector3 axis = new(Mathf.Abs(viewDirection.x), Mathf.Abs(viewDirection.y), Mathf.Abs(viewDirection.z));
             float modelEdge = Vector3.Dot(modelBounds.center - focus, viewDirection) + Vector3.Dot(modelBounds.extents, axis);
             SetCameraBodyHidden(usingLookDownCamera || offset.magnitude < modelEdge + radius + (cameraHidesBody ? 0.15f : 0.03f));
+            UpdateCameraFieldOfView(usingLookDownCamera || offset.sqrMagnitude < 1.5f * 1.5f);
             playerCamera.transform.SetPositionAndRotation(cameraPosition, look);
+        }
+
+        private void UpdateCameraFieldOfView(bool fixedPosition)
+        {
+            float target = fixedPosition
+                ? PlaygroundControls.ZoomFieldOfView(originalCameraFieldOfView, desiredCameraDistance)
+                : originalCameraFieldOfView;
+            playerCamera.fieldOfView = Mathf.MoveTowards(playerCamera.fieldOfView, target, 100f * Time.unscaledDeltaTime);
         }
 
         private bool CameraPositionClear(Vector3 position, float radius)
@@ -810,7 +831,11 @@ namespace ConductorChaos.Playground
         public override void OnNetworkDespawn()
         {
             SetCameraBodyHidden(false);
-            if (playerCamera) playerCamera.nearClipPlane = originalCameraNearClip;
+            if (playerCamera)
+            {
+                playerCamera.nearClipPlane = originalCameraNearClip;
+                playerCamera.fieldOfView = originalCameraFieldOfView;
+            }
             left?.Dispose();
             right?.Dispose();
             legs?.Dispose();
@@ -858,6 +883,9 @@ namespace ConductorChaos.Playground
             public bool IsHoldingBody(Rigidbody candidate) => grip && grip.connectedBody == candidate;
             public bool HoldingShovel => cabGripTrain && cabGripTrain.IsShovelGrip(gripSurface);
             public bool HasGrip => grip;
+            public float PushUp(float press, float upSpeed) => cabGripTrain ? 0f
+                : PlaygroundControls.HandPushAcceleration(grip, gripSurface, press, upSpeed);
+
             public bool TryStaticAnchor(out Vector3 anchor)
             {
                 anchor = default;
