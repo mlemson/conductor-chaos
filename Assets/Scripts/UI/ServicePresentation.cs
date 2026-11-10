@@ -134,7 +134,7 @@ namespace ConductorChaos.UI
                 {
                     ServiceRun.Lesson.Walk => "WASD · Loop de hal uit naar het vertrekperron.",
                     ServiceRun.Lesson.Carry => "Houd een muisknop ingedrukt en draag de koffer naar het gemarkeerde vak.",
-                    ServiceRun.Lesson.Ticket => "Houd de tang vast met één hand. Druk met je vrije hand op het handvat terwijl de bek het kaartje raakt.",
+                    ServiceRun.Lesson.Ticket => "Houd één muisknop in om de tang vast te houden. Raak het kaartje met de bek en houd de andere muisknop in om te knippen.",
                     ServiceRun.Lesson.OpenDoor => "Grijp de handgreep van de wagon en schuif de deur open.",
                     ServiceRun.Lesson.CloseDoor => "Schuif de wagondeur weer helemaal dicht.",
                     ServiceRun.Lesson.Power => "Ga naar de cabine en druk met je hand op de startknop.",
@@ -150,14 +150,35 @@ namespace ConductorChaos.UI
             hudTitle.text = run.Objective?.Title ?? "Eerste dienst";
             if (objectiveIcon && run.Objective)
                 objectiveIcon.sprite = ChaosUISpriteCatalog.Find(run.Objective.Icon) ?? ChaosUISpriteCatalog.Find("route");
-            hudDetail.text = run.Phase switch
+            if (run.Objective is ServiceCargo)
             {
-                ServiceRun.RunPhase.Departure when !run.TimerRunning => "Loop naar het vertrekperron om de dienstklok te starten.",
-                ServiceRun.RunPhase.Departure when !run.BellRung => "Druk de gele belknop op het vertrekperron omlaag.",
-                ServiceRun.RunPhase.Departure => $"{run.Objective?.Instructions}\nDeuren {Mark(run.DoorsClosed)}   Stoom {Mark(run.PowerOn)}   Bel {Mark(run.BellRung)}",
-                ServiceRun.RunPhase.Arrival => $"{run.Arrival.StationName} · {run.Progress}/{run.Objective?.Target}\n{run.Objective?.Instructions}",
-                _ => $"{run.Arrival.StationName} · Rijd naar de groene stopmarkering.\n{run.Objective?.Instructions}"
-            };
+                string cargoStatus = run.Phase == ServiceRun.RunPhase.Arrival
+                    ? $"Gelost {run.Progress}/{run.Objective.Target}  ·  Vervoerd {run.CargoTravelled}/{run.Objective.Target}"
+                    : $"Geladen {run.CargoLoaded}/{run.Objective.Target}  ·  Vervoerd {run.CargoTravelled}/{run.Objective.Target}";
+                hudDetail.text = run.Phase switch
+                {
+                    ServiceRun.RunPhase.Departure when !run.TimerRunning =>
+                        $"{cargoStatus}\nLoop naar het vertrekperron om de dienstklok te starten.",
+                    ServiceRun.RunPhase.Departure when !run.BellRung =>
+                        $"{cargoStatus}\nDruk de gele belknop op het vertrekperron omlaag.",
+                    ServiceRun.RunPhase.Departure =>
+                        $"{cargoStatus}\nDeuren {Mark(run.DoorsClosed)}   Stoom {Mark(run.PowerOn)}   Bel {Mark(run.BellRung)}",
+                    ServiceRun.RunPhase.Arrival =>
+                        $"{run.Arrival.StationName} · {cargoStatus}\nZet de kratten in het gele vrachtvak.",
+                    _ => $"{run.Arrival.StationName} · {cargoStatus}\nRijd naar de groene stopmarkering."
+                };
+            }
+            else
+            {
+                hudDetail.text = run.Phase switch
+                {
+                    ServiceRun.RunPhase.Departure when !run.TimerRunning => "Loop naar het vertrekperron om de dienstklok te starten.",
+                    ServiceRun.RunPhase.Departure when !run.BellRung => "Druk de gele belknop op het vertrekperron omlaag.",
+                    ServiceRun.RunPhase.Departure => $"{run.Objective?.Instructions}\nDeuren {Mark(run.DoorsClosed)}   Stoom {Mark(run.PowerOn)}   Bel {Mark(run.BellRung)}",
+                    ServiceRun.RunPhase.Arrival => $"{run.Arrival.StationName} · {run.Progress}/{run.Objective?.Target}\n{run.Objective?.Instructions}",
+                    _ => $"{run.Arrival.StationName} · Rijd naar de groene stopmarkering.\n{run.Objective?.Instructions}"
+                };
+            }
             timerText.text = run.TimerRunning ? FormatTime(run.TimeLeft) : "Klaar?";
             timerText.color = run.TimerRunning && run.TimeLeft <= 30 ? ChaosUI.GoldLight : ChaosUI.Paper;
         }

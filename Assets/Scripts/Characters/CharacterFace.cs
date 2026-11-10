@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using ConductorChaos.Playground;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace ConductorChaos.Characters
@@ -44,10 +46,22 @@ namespace ConductorChaos.Characters
         bool pendingSecond;
         float timer;
         int blinksLeft;
+        Transform gazeRoot, gazeEye;
+        Transform leftPupil, rightPupil;
+        Quaternion leftPupilRest, rightPupilRest;
+        RaycastHit[] gazeHits;
+        PlaygroundPlayer gazeTarget;
+        float nextGazeCheck;
 
         public EyeState Eyes => eyes;
         public MouthShape Mouth => mouth;
         public bool IsBlinking => blinking;
+
+        internal static CharacterFace OnModel(Transform model)
+        {
+            var face = model.GetComponentInChildren<CharacterFace>(true);
+            return face ? face : model.gameObject.AddComponent<CharacterFace>();
+        }
 
         /// <summary>Knipperen aan of uit (bijvoorbeeld uit tijdens een tussenfilmpje).</summary>
         public bool BlinkEnabled
@@ -112,6 +126,21 @@ namespace ConductorChaos.Characters
             if (!captured) CaptureFromModel();          // ook bij AddComponent tijdens het spelen
             ScheduleNextBlink(first: true);
             Apply();
+            if (!GetComponentInParent<PlaygroundPlayer>())
+            {
+                leftPupil = Find("Pupil_L");
+                rightPupil = Find("Pupil_R");
+                if (leftPupil) leftPupilRest = leftPupil.localRotation;
+                if (rightPupil) rightPupilRest = rightPupil.localRotation;
+                gazeEye = Find("Eye_L");
+                if (!gazeEye) gazeEye = Find("Eye_R");
+                if (gazeEye && (leftPupil || rightPupil))
+                {
+                    var owner = GetComponentInParent<NetworkObject>();
+                    gazeRoot = owner ? owner.transform : transform;
+                    gazeHits = new RaycastHit[12];
+                }
+            }
         }
 
         void OnEnable()
@@ -122,7 +151,56 @@ namespace ConductorChaos.Characters
         void OnDisable()
         {
             if (blinking) EndBlink();
+            if (leftPupil) leftPupil.localRotation = leftPupilRest;
+            if (rightPupil) rightPupil.localRotation = rightPupilRest;
+            gazeTarget = null;
+            nextGazeCheck = 0f;
         }
+
+        void LateUpdate()
+        {
+            if (gazeHits == null || !gazeEye) return;
+            if (Time.time >= nextGazeCheck)
+            {
+                nextGazeCheck = Time.time + .16f;
+                gazeTarget = FindVisiblePlayer();
+            }
+
+            Vector3 direction = gazeTarget && gazeTarget.IsSpawned
+                ? transform.InverseTransformDirection((Head(gazeTarget) - gazeEye.position).normalized)
+                : Vector3.zero;
+            Quaternion turn = Quaternion.Euler(-direction.y * 16f, direction.x * 24f, 0f);
+            float blend = 1f - Mathf.Exp(-12f * Time.deltaTime);
+            if (leftPupil) leftPupil.localRotation = Quaternion.Slerp(leftPupil.localRotation, turn * leftPupilRest, blend);
+            if (rightPupil) rightPupil.localRotation = Quaternion.Slerp(rightPupil.localRotation, turn * rightPupilRest, blend);
+        }
+
+        PlaygroundPlayer FindVisiblePlayer()
+        {
+            PlaygroundPlayer closest = null;
+            float distanceLimit = 5f;
+            foreach (var player in PlaygroundPlayer.SpawnedPlayers)
+            {
+                if (!player || !player.IsSpawned || player.gameObject.scene != gameObject.scene) continue;
+                Vector3 offset = Head(player) - gazeEye.position;
+                float distance = offset.magnitude;
+                if (distance < .05f || distance >= distanceLimit || Vector3.Dot(transform.forward, offset) < distance * .5f)
+                    continue;
+                int hits = Physics.RaycastNonAlloc(gazeEye.position, offset / distance, gazeHits, distance, ~0, QueryTriggerInteraction.Ignore);
+                bool blocked = hits == gazeHits.Length;
+                for (int i = 0; i < hits && !blocked; i++)
+                {
+                    Transform hit = gazeHits[i].transform;
+                    blocked = !hit.IsChildOf(gazeRoot) && !hit.IsChildOf(player.transform);
+                }
+                if (blocked) continue;
+                closest = player;
+                distanceLimit = distance;
+            }
+            return closest;
+        }
+
+        static Vector3 Head(PlaygroundPlayer player) => player.transform.position + player.transform.up * .86f;
 
         void Update()
         {
@@ -211,7 +289,7 @@ namespace ConductorChaos.Characters
             foreach (var t in GetComponentsInChildren<Transform>(true))
             {
                 string n = t.name;
-                if (n.StartsWith("Eye_") || n.StartsWith("EyeClosed_") || n.StartsWith("Lid_") ||
+                if (n.StartsWith("Eye_") || n.StartsWith("Pupil_") || n.StartsWith("EyeClosed_") || n.StartsWith("Lid_") ||
                     n.StartsWith("Blink_") || n.StartsWith("Mouth_"))
                     if (!nodes.ContainsKey(n)) nodes.Add(n, t);
             }

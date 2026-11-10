@@ -135,7 +135,8 @@ def test_building_walkable():
 
 
 def test_assets():
-    decorative = {"Prop_WallLantern", "Prop_HangingSign", "Prop_Banner", "Prop_PendantLamp", "Prop_Ticket"}
+    decorative = {"Prop_WallLantern", "Prop_HangingSign", "Prop_Banner", "Prop_PendantLamp", "Prop_Ticket",
+                  "Service_Bell", "Service_BellPost"}      # botsvorm staat op de knopen in de scène
     budgets = {"Station_Building": 50000, "Station_Main": 130000}   # hoofdstation: gevel, vleugels én interieur
     for name, a in KIT["assets"].items():
         cols = [n for n in a["nodes"] if n.startswith("Col_")]

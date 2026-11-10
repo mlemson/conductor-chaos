@@ -27,6 +27,8 @@ namespace ConductorChaos.Stations
         private readonly NetworkVariable<Lesson> lesson = new();
         private readonly NetworkVariable<int> selected = new(-1);
         private readonly NetworkVariable<int> progress = new();
+        private readonly NetworkVariable<int> cargoLoaded = new();
+        private readonly NetworkVariable<int> cargoTravelled = new();
         private readonly NetworkVariable<double> deadline = new();
         private readonly NetworkVariable<int> resultTime = new();
         private readonly NetworkVariable<bool> bellRung = new();
@@ -48,6 +50,8 @@ namespace ConductorChaos.Stations
         public Lesson CurrentLesson => lesson.Value;
         public ServiceObjective Objective => selected.Value >= 0 && selected.Value < (objectives?.Length ?? 0) ? objectives[selected.Value] : null;
         public int Progress => progress.Value;
+        public int CargoLoaded => cargoLoaded.Value;
+        public int CargoTravelled => cargoTravelled.Value;
         public bool BellRung => bellRung.Value;
         public bool DoorsClosed => doorsClosed.Value;
         public bool PowerOn => powerOn.Value;
@@ -96,6 +100,8 @@ namespace ConductorChaos.Stations
                 var objective = eligible[Random.Range(0, eligible.Length)];
                 selected.Value = System.Array.IndexOf(objectives, objective);
                 objective.BeginOnServer();
+                cargoLoaded.Value = 0;
+                cargoTravelled.Value = 0;
             }
             initialTrainPosition = train.transform.position;
             phase.Value = RunPhase.Briefing;
@@ -188,6 +194,13 @@ namespace ConductorChaos.Stations
                 return;
             }
 
+            var cargo = Objective as ServiceCargo;
+            if (cargo != null)
+            {
+                cargo.ObserveLoadingOnServer();
+                cargoLoaded.Value = cargo.LoadedCount;
+            }
+
             if (!TimerRunning)
             {
                 if (CrewAt(departure.Platform))
@@ -208,6 +221,7 @@ namespace ConductorChaos.Stations
             if (Phase is RunPhase.Travelling or RunPhase.Arrival)
                 phase.Value = docked ? RunPhase.Arrival : RunPhase.Travelling;
             if (Phase == RunPhase.Travelling && train.ServiceSpeed >= .22f) Objective.ObserveTravelOnServer();
+            if (cargo != null) cargoTravelled.Value = cargo.TravelledCount;
             progress.Value = Mathf.Clamp(Objective.ReadProgress(docked), 0, Objective.Target);
             if (docked && progress.Value >= Objective.Target) Finish(true);
         }

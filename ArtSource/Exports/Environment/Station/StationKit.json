@@ -1510,42 +1510,292 @@
     "Farm_Wheelbarrow": {
       "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Wheelbarrow.fbx",
       "category": "Farm",
-      "tris": 828,
+      "tris": 1140,
       "min": [
-        -0.3,
-        0.0,
-        -1.106
+        -0.39,
+        -0.036,
+        -1.219
       ],
       "max": [
-        0.3,
-        0.862,
-        0.93
+        0.39,
+        0.72,
+        1.034
       ],
       "nodes": [
         "Farm_Wheelbarrow",
         "Mesh",
-        "Col_Main"
+        "Col_Main",
+        "Col_2",
+        "Col_3"
       ]
     },
     "Farm_Scarecrow": {
       "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Scarecrow.fbx",
       "category": "Farm",
-      "tris": 930,
+      "tris": 2588,
       "min": [
         -0.925,
         0.0,
-        -0.414
+        -0.427
       ],
       "max": [
-        0.929,
-        2.18,
-        0.414
+        0.925,
+        2.298,
+        0.428
       ],
       "nodes": [
         "Farm_Scarecrow",
         "Mesh",
         "Col_Main",
         "Col_2"
+      ]
+    },
+    "Farm_Wheelbarrow_Hay": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Wheelbarrow_Hay.fbx",
+      "category": "Farm",
+      "tris": 2040,
+      "min": [
+        -0.39,
+        -0.036,
+        -1.219
+      ],
+      "max": [
+        0.39,
+        0.788,
+        1.034
+      ],
+      "nodes": [
+        "Farm_Wheelbarrow_Hay",
+        "Mesh",
+        "Col_Main",
+        "Col_2",
+        "Col_3",
+        "Col_4"
+      ]
+    },
+    "Farm_Wheelbarrow_Grain": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Wheelbarrow_Grain.fbx",
+      "category": "Farm",
+      "tris": 2298,
+      "min": [
+        -0.39,
+        -0.036,
+        -1.219
+      ],
+      "max": [
+        0.39,
+        1.03,
+        1.034
+      ],
+      "nodes": [
+        "Farm_Wheelbarrow_Grain",
+        "Mesh",
+        "Col_Main",
+        "Col_2",
+        "Col_3",
+        "Col_4"
+      ]
+    },
+    "Farm_Wheat_Straight_3m": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Wheat_Straight_3m.fbx",
+      "category": "Farm",
+      "tris": 4380,
+      "min": [
+        -1.603,
+        -0.0,
+        -0.963
+      ],
+      "max": [
+        1.645,
+        1.242,
+        0.946
+      ],
+      "nodes": [
+        "Farm_Wheat_Straight_3m",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Farm_Wheat_Edge_3m": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Wheat_Edge_3m.fbx",
+      "category": "Farm",
+      "tris": 732,
+      "min": [
+        -1.561,
+        -0.0,
+        -0.322
+      ],
+      "max": [
+        1.5,
+        1.191,
+        0.262
+      ],
+      "nodes": [
+        "Farm_Wheat_Edge_3m",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Farm_Wheat_Corner": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Wheat_Corner.fbx",
+      "category": "Farm",
+      "tris": 6508,
+      "min": [
+        -1.515,
+        -0.0,
+        -1.664
+      ],
+      "max": [
+        1.707,
+        1.203,
+        1.666
+      ],
+      "nodes": [
+        "Farm_Wheat_Corner",
+        "Mesh",
+        "Col_Main",
+        "Col_2"
+      ]
+    },
+    "Farm_Wheat_Harvested_3m": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Wheat_Harvested_3m.fbx",
+      "category": "Farm",
+      "tris": 448,
+      "min": [
+        -1.5,
+        -0.0,
+        -0.75
+      ],
+      "max": [
+        1.5,
+        0.228,
+        0.75
+      ],
+      "nodes": [
+        "Farm_Wheat_Harvested_3m",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Farm_FieldPath_3m": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_FieldPath_3m.fbx",
+      "category": "Farm",
+      "tris": 264,
+      "min": [
+        -1.5,
+        -0.002,
+        -0.5
+      ],
+      "max": [
+        1.5,
+        0.072,
+        0.5
+      ],
+      "nodes": [
+        "Farm_FieldPath_3m",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Farm_WheatSheaf": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_WheatSheaf.fbx",
+      "category": "Farm",
+      "tris": 528,
+      "min": [
+        -0.185,
+        -0.06,
+        -0.198
+      ],
+      "max": [
+        0.895,
+        0.857,
+        0.472
+      ],
+      "nodes": [
+        "Farm_WheatSheaf",
+        "Mesh",
+        "Col_Main",
+        "Col_2"
+      ]
+    },
+    "Farm_GrainSacks": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_GrainSacks.fbx",
+      "category": "Farm",
+      "tris": 1868,
+      "min": [
+        -0.258,
+        -0.081,
+        -0.174
+      ],
+      "max": [
+        0.787,
+        0.74,
+        0.349
+      ],
+      "nodes": [
+        "Farm_GrainSacks",
+        "Mesh",
+        "Col_Main",
+        "Col_2"
+      ]
+    },
+    "Farm_FieldSign": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_FieldSign.fbx",
+      "category": "Farm",
+      "tris": 700,
+      "min": [
+        -0.48,
+        0.0,
+        -0.181
+      ],
+      "max": [
+        0.47,
+        1.18,
+        0.13
+      ],
+      "nodes": [
+        "Farm_FieldSign",
+        "Mesh",
+        "Col_Main",
+        "Col_2"
+      ]
+    },
+    "Service_Bell": {
+      "fbx": "Assets/Art/Models/Environment/Station/Service/Service_Bell.fbx",
+      "category": "Service",
+      "tris": 500,
+      "min": [
+        -0.136,
+        -0.248,
+        -0.136
+      ],
+      "max": [
+        0.136,
+        0.1,
+        0.136
+      ],
+      "nodes": [
+        "Service_Bell",
+        "Mesh"
+      ]
+    },
+    "Service_BellPost": {
+      "fbx": "Assets/Art/Models/Environment/Station/Service/Service_BellPost.fbx",
+      "category": "Service",
+      "tris": 780,
+      "min": [
+        -0.125,
+        -0.39,
+        -0.125
+      ],
+      "max": [
+        0.125,
+        0.36,
+        0.125
+      ],
+      "nodes": [
+        "Service_BellPost",
+        "Mesh"
       ]
     }
   },
@@ -2177,6 +2427,97 @@
         "cells": 0.3,
         "cellSize": 0.6,
         "grime": 0.0
+      }
+    },
+    "M_Stn_Wheat": {
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "smoothness": 0.05,
+      "rampShift": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.3
+      }
+    },
+    "M_Stn_WheatDark": {
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "smoothness": 0.05,
+      "rampShift": -0.4,
+      "opts": {
+        "cells": 0.3,
+        "cellSize": 0.3
+      }
+    },
+    "M_Stn_FieldSoil": {
+      "ramp": [
+        "#6C422A",
+        "#814C32",
+        "#8D543A",
+        "#A56945",
+        "#E59843"
+      ],
+      "smoothness": 0.05,
+      "rampShift": -0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.5,
+        "grime": 0.2
+      }
+    },
+    "M_Stn_Dirt": {
+      "ramp": [
+        "#885642",
+        "#9A6146",
+        "#DB945C",
+        "#EBA462",
+        "#F4B06C"
+      ],
+      "smoothness": 0.05,
+      "rampShift": -0.15,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.6,
+        "grime": 0.2
+      }
+    },
+    "M_Stn_Sack": {
+      "ramp": [
+        "#C2925E",
+        "#DDAC73",
+        "#EFBF86",
+        "#F4C892",
+        "#FCD8A4"
+      ],
+      "smoothness": 0.05,
+      "rampShift": 0.15,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.3
+      }
+    },
+    "M_Stn_SackDark": {
+      "ramp": [
+        "#C2925E",
+        "#DDAC73",
+        "#EFBF86",
+        "#F4C892",
+        "#FCD8A4"
+      ],
+      "smoothness": 0.05,
+      "rampShift": -0.5,
+      "opts": {
+        "cells": 0.2
       }
     }
   }

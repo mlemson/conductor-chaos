@@ -1,3 +1,4 @@
+using ConductorChaos.Characters;
 using UnityEngine;
 
 namespace ConductorChaos.Stations
@@ -12,11 +13,17 @@ namespace ConductorChaos.Stations
         private Stage stage;
 
         public override int Target => 2;
-        public override bool IsConfigured => passenger && passenger.isKinematic && outside && doorway && seat && destination && doorLeaf;
+        public override bool IsConfigured => passenger && outside && doorway && seat && destination && doorLeaf;
         public Transform DoorLeaf => doorLeaf;
         public override bool ReadyToDepart => stage is Stage.Riding or Stage.Done;
 
         public bool IsNear(Vector3 position) => passenger && (passenger.transform.position - position).sqrMagnitude <= 2.1f * 2.1f;
+
+        private void Start()
+        {
+            if (passenger && passenger.transform.childCount > 0)
+                CharacterFace.OnModel(passenger.transform.GetChild(0));
+        }
 
         public void AssistOnServer(bool arriving)
         {
@@ -26,6 +33,10 @@ namespace ConductorChaos.Stations
 
         public override int ReadProgress(bool trainStoppedAtDestination)
         {
+            // Oma is a physical passenger you can drag and push. Only while she walks to her seat, rides
+            // and walks off again does this script carry her.
+            bool scripted = stage is not (Stage.Waiting or Stage.Done);
+            if (passenger.isKinematic != scripted) passenger.isKinematic = scripted;
             switch (stage)
             {
                 case Stage.ToDoor when Step(outside.position): stage = Stage.Boarding; break;

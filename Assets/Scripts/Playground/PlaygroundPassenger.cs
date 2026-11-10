@@ -1,3 +1,4 @@
+using ConductorChaos.Characters;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -17,6 +18,8 @@ namespace ConductorChaos.Playground
         private CapsuleCollider leftCollider, rightCollider;
         private PlaygroundLegRig legs;
         private float nextPose;
+        private float fallenSince = -1f;
+        private const float GetUpDelay = 1.2f;
 
         public override void OnNetworkSpawn()
         {
@@ -30,6 +33,7 @@ namespace ConductorChaos.Playground
                     if (part.name == "Arm_R") right = part;
                 }
             if (!model || !left || !right) { Debug.LogError("Passenger model or arm anchors missing.", this); return; }
+            CharacterFace.OnModel(model);
             leftArmVisual = left;
             rightArmVisual = right;
             leftArm = MakeArm(left, out leftShoulder, out leftCollider);
@@ -38,6 +42,9 @@ namespace ConductorChaos.Playground
             legs = PlaygroundLegRig.Create(model, body, IsServer);
             if (IsServer)
             {
+                // Passengers stand on their own balance: they can be dragged, pushed over and get back up.
+                body.constraints = RigidbodyConstraints.None;
+                body.centerOfMass = new Vector3(0f, 0.35f, 0f);
                 leftArmPose.Value = left.localRotation;
                 rightArmPose.Value = right.localRotation;
                 if (legs != null) { leftLegPose.Value = legs.LeftRotation; rightLegPose.Value = legs.RightRotation; }
@@ -78,7 +85,8 @@ namespace ConductorChaos.Playground
                 groundHits, 0.34f, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
                 if (!groundHits[i].collider.transform.IsChildOf(transform) && groundHits[i].normal.y > 0.55f) { grounded = true; break; }
-            bool standing = grounded && Vector3.Dot(body.rotation * Vector3.up, Vector3.up) > 0.55f;
+            bool upright = Vector3.Dot(body.rotation * Vector3.up, Vector3.up) > 0.55f;
+            bool standing = grounded && upright;
             body.AddTorque(Vector3.up * (-body.angularVelocity.y * 4f), ForceMode.Acceleration);
             if (standing)
             {
@@ -87,6 +95,18 @@ namespace ConductorChaos.Playground
                 legs?.Step(body.linearVelocity, Vector2.zero, true, 0f, false, out _);
             }
             else legs?.ReleaseSupport();
+            // Knocked over and left alone: after a moment the passenger rolls back onto their feet.
+            if (upright || body.isKinematic) fallenSince = -1f;
+            else if (fallenSince < 0f)
+            {
+                if (body.linearVelocity.sqrMagnitude < 0.6f * 0.6f) fallenSince = Time.time;   // wait until they lie still
+            }
+            else if (Time.time - fallenSince >= GetUpDelay)
+            {
+                Vector3 tilt = Vector3.Cross(body.rotation * Vector3.up, Vector3.up);
+                if (tilt.sqrMagnitude < 0.0004f) tilt = body.rotation * Vector3.right * 0.2f;   // flat on the head: pick a side
+                body.AddTorque(tilt * 55f - new Vector3(body.angularVelocity.x, 0f, body.angularVelocity.z) * 5f, ForceMode.Acceleration);
+            }
             if (Time.time < nextPose) return;
             nextPose = Time.time + 0.05f;
             leftArmPose.Value = leftArm.transform.localRotation;

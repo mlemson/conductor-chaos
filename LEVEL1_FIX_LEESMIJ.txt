@@ -1,0 +1,28 @@
+CONDUCTOR CHAOS - LEVEL 1 & KRATTENOBJECTIVE (10-11-2026)
+
+Deze ZIP is een overlay, niet een volledig Unity-project.
+
+Zo toepassen:
+1. Sluit Unity.
+2. Pak alle bestanden uit in:
+   C:\Users\mauri\Documents\Codex\ConductorChaosGit\
+   Kies bestanden vervangen als Windows dit vraagt.
+3. Open het project met Unity 6000.6.8f1.
+4. Controleer Build Profiles: TrainPlayground, ServiceIntroduction, ServiceLevel01.
+5. Start de game vanuit TrainPlayground: introductie -> Level 1.
+6. Laad 3 kratten in de wagon. Controleer HUD 'Geladen 3/3'.
+7. Rijd en controleer HUD 'Vervoerd 3/3'.
+8. Parkeer in de groene stopzone en leg ze in Puddleford in het gele vrachtvak;
+   het moet dan 'Gelost 3/3' worden en het level afronden.
+9. Commit en push daarna de volledige lokale projectwijzigingen met GitHub Desktop.
+   Main op GitHub bevatte op het moment van controle nog niet de nieuwe
+   ServiceLevel01-scene en veel gameplaybestanden; commit ALLE relevante
+   Assets/, Packages/ en ProjectSettings/ wijzigingen, niet alleen deze ZIP.
+
+Techniek: De laadzone was gepositioneerd op x=-12.045 buiten de wagon.
+Dat is verplaatst naar het midden van de regionale wagon.
+De doelcode controleert nu overlap van de fysieke crate-collider met het
+gele aflevervak, en telt geloste kratten afzonderlijk van vertrek/docking.
+
+De bestanden zijn statisch gecontroleerd, maar Unity runtime/Netcode tests
+kunnen vanuit deze omgeving niet uitgevoerd worden.

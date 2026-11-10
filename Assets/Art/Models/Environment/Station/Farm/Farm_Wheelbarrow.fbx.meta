@@ -22,11 +22,6 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Stn_Straw
-    second: {fileID: 2100000, guid: ef4ef6276e47f6698029aed636a0649f, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
       name: M_Stn_Timber
     second: {fileID: 2100000, guid: 649095d9b374d32d067d51345ade6719, type: 2}
   - first:

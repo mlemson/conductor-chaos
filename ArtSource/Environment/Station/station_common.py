@@ -83,6 +83,12 @@ MATERIALS = {
     "M_Stn_BarnRed": (R["train_red"], 0.10, -0.15, WOOD),
     "M_Stn_BarnRedDark": (R["train_red"], 0.10, -0.50, WOOD),
     "M_Stn_Water": (R["water"], 0.50, 0.10, {"cells": 0.3, "cellSize": 0.6, "grime": 0.0}),
+    "M_Stn_Wheat": (R["accent_yellow"], 0.05, 0.05, {"cells": 0.5, "cellSize": 0.3}),
+    "M_Stn_WheatDark": (R["accent_yellow"], 0.05, -0.40, {"cells": 0.3, "cellSize": 0.3}),
+    "M_Stn_FieldSoil": (R["interior_wood"], 0.05, -0.05, {"cells": 0.6, "cellSize": 0.5, "grime": 0.2}),
+    "M_Stn_Dirt": (R["track_wood"], 0.05, -0.15, {"cells": 0.6, "cellSize": 0.6, "grime": 0.2}),
+    "M_Stn_Sack": (R["safari_hat"], 0.05, 0.15, {"cells": 0.5, "cellSize": 0.3}),
+    "M_Stn_SackDark": (R["safari_hat"], 0.05, -0.50, {"cells": 0.2}),
 }
 
 

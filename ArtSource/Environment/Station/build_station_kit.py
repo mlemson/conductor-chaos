@@ -27,6 +27,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import main_station as main_station  # noqa: E402
 import farm_props as farm  # noqa: E402
+import bell_props as bell  # noqa: E402
 import main_station_props as mprops  # noqa: E402
 import station_building as building  # noqa: E402
 import station_platform as platform  # noqa: E402
@@ -144,6 +145,12 @@ def build_farm(manifest):
         export(name, "Farm", make(), density=density, radius=radius, manifest=manifest)
 
 
+def build_service(manifest):
+    """Vertrekbel op het perron (bel + paal), voor de dienstregeling."""
+    for name, (make, density, radius) in bell.ASSETS.items():
+        export(name, "Service", make(), density=density, radius=radius, manifest=manifest)
+
+
 def build_main(manifest):
     export("Station_Main", None, main_station.build(), density=170, radius=0.30, manifest=manifest,
            extra={"floor": main_station.FL, "footprint": [main_station.CX0, main_station.WX1, -main_station.HD, 0.0],
@@ -175,7 +182,7 @@ def build_building(manifest):
            extra={"floor": building.FL, "footprint": [building.LX, building.HW, -building.D, 0.0]})
 
 
-ALL = ("props", "briefing", "tools", "farm", "platform", "building", "main", "glyphs")
+ALL = ("props", "briefing", "tools", "farm", "service", "platform", "building", "main", "glyphs")
 
 
 def main(which=ALL):
@@ -188,6 +195,8 @@ def main(which=ALL):
         build_tools(manifest)
     if "farm" in which:
         build_farm(manifest)
+    if "service" in which:
+        build_service(manifest)
     if "platform" in which:
         build_platform(manifest)
     if "platform" in which or "platform-no-stripe" in which:

@@ -21,7 +21,7 @@ namespace ConductorChaos.Playground
         private readonly NetworkVariable<float> throttle = new(0f);
         private readonly NetworkVariable<float> displayedSpeed = new(0f);
         private readonly NetworkVariable<float> doorAngle = new(0f);
-        private readonly NetworkVariable<Vector2> wagonDoorOffsets = new(Vector2.zero);
+        private readonly NetworkVariable<Vector4> wagonDoorOffsets = new(Vector4.zero);
         private const float FuelCapacity = 3f;
         private const float StartingFuel = FuelCapacity * 0.5f;
         private readonly NetworkVariable<float> fuel = new(StartingFuel);
@@ -40,7 +40,7 @@ namespace ConductorChaos.Playground
         // Trekhendel (cabine v3): schuift langs de verticale as van de loc door de sleuf in de lessenaar.
         // Boven = vooruit, midden = neutraal, onder = achteruit. Moet gelijk zijn aan LEVER_TRAVEL in build_locomotive.py.
         private const float LeverTravel = 0.19f;
-        private float leverOffset, previousHandHeight;
+        private float leverOffset, leverGripPitch, leverGripOffset;
         private Vector3 leverRestPosition, leverSlideAxis;
         private Vector3 leverPosition, leverScale;
         private Collider[] leverColliders;
@@ -92,7 +92,7 @@ namespace ConductorChaos.Playground
         private static readonly Dictionary<Rigidbody, TrainDrive> GrippableCoal = new();
         private readonly Dictionary<Rigidbody, (Pose From, Pose To)> guidedMotion = new();
         private static readonly Dictionary<Rigidbody, TrainDrive> ControlOwners = new();
-        private readonly WagonDoorPanel[] wagonDoors = new WagonDoorPanel[2];
+        private readonly WagonDoorPanel[] wagonDoors = new WagonDoorPanel[4];   // 0/1: platform side, 2/3: far side (DoorLeaf_*_Far)
         private const float WagonDoorTravel = 0.56f;
         private const float WagonDoorLeadIn = 0.08f;
         private const float WagonDoorInset = 0.05f;
@@ -109,6 +109,7 @@ namespace ConductorChaos.Playground
             public Vector3 RestPosition;
             public float PreviousHandX;
             public bool OpensNegative;
+            public float Inward = -1f;
         }
 
         // Positie/rotatie relatief aan het voertuig waar de kolen bij horen (coalSource), niet in wereldruimte.
@@ -220,10 +221,23 @@ namespace ConductorChaos.Playground
         internal Vector3 ServiceRailPosition => transform.TransformPoint(0f, -TrackPiece.RailToTrainPivot, railCenterOffset);
         internal bool ServiceDerailed => derailed;
         internal bool ServiceDoorsClosed => wagonDoorOffsets.Value.sqrMagnitude < .035f * .035f;
-        internal bool ServiceDoorOpened => Mathf.Max(Mathf.Abs(wagonDoorOffsets.Value.x), Mathf.Abs(wagonDoorOffsets.Value.y)) >= .38f;
-        internal bool IsServiceDoorOpen(Transform leaf) =>
-            (wagonDoors[0]?.Leaf == leaf && Mathf.Abs(wagonDoorOffsets.Value.x) >= .38f) ||
-            (wagonDoors[1]?.Leaf == leaf && Mathf.Abs(wagonDoorOffsets.Value.y) >= .38f);
+        internal bool ServiceDoorOpened
+        {
+            get
+            {
+                Vector4 offsets = wagonDoorOffsets.Value;
+                for (int i = 0; i < wagonDoors.Length; i++)
+                    if (Mathf.Abs(offsets[i]) >= .38f) return true;
+                return false;
+            }
+        }
+        internal bool IsServiceDoorOpen(Transform leaf)
+        {
+            Vector4 offsets = wagonDoorOffsets.Value;
+            for (int i = 0; i < wagonDoors.Length; i++)
+                if (wagonDoors[i]?.Leaf == leaf && Mathf.Abs(offsets[i]) >= .38f) return true;
+            return false;
+        }
         private Quaternion leverRest;
         private float railCenterOffset, rearwardRailSign;
         private const float CouplingRange = 1.05f;
@@ -272,12 +286,21 @@ namespace ConductorChaos.Playground
             candidate && (candidate == latchCollider || IsShovelGrip(candidate) || IsLeverHandle(candidate) ||
                 IsWagonDoorPanel(candidate) || IsWagonDoorHandle(candidate));
 
-        internal bool IsWagonDoorPanel(Collider candidate) =>
-            candidate && (candidate == wagonDoors[0]?.Panel || candidate == wagonDoors[1]?.Panel);
+        internal bool IsWagonDoorPanel(Collider candidate)
+        {
+            if (!candidate) return false;
+            foreach (var door in wagonDoors)
+                if (door != null && candidate == door.Panel) return true;
+            return false;
+        }
 
-        internal bool IsWagonDoorHandle(Collider candidate) =>
-            candidate && (candidate == wagonDoors[0]?.OutsideHandle || candidate == wagonDoors[0]?.InsideHandle ||
-                candidate == wagonDoors[1]?.OutsideHandle || candidate == wagonDoors[1]?.InsideHandle);
+        internal bool IsWagonDoorHandle(Collider candidate)
+        {
+            if (!candidate) return false;
+            foreach (var door in wagonDoors)
+                if (door != null && (candidate == door.OutsideHandle || candidate == door.InsideHandle)) return true;
+            return false;
+        }
 
         internal bool IsLeverHandle(Collider candidate) => leverPivot && candidate && candidate.transform == leverPivot;
         internal bool IsShovelGrip(Collider candidate) => candidate && (candidate == shovelGrip || candidate.transform == shovelLoad);
@@ -303,7 +326,7 @@ namespace ConductorChaos.Playground
             body.isKinematic = true;
             body.useGravity = false;
             body.interpolation = IsServer ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
-            if (IsServer) { powered.Value = false; throttle.Value = 0f; displayedSpeed.Value = 0f; doorAngle.Value = 0f; wagonDoorOffsets.Value = Vector2.zero; speed = 0f; buttonDown.Value = false; nextButtonPress = 0f; }
+            if (IsServer) { powered.Value = false; throttle.Value = 0f; displayedSpeed.Value = 0f; doorAngle.Value = 0f; wagonDoorOffsets.Value = Vector4.zero; speed = 0f; buttonDown.Value = false; nextButtonPress = 0f; }
             coalBin = coalScoopPoint = coalSource = null;
             coalSourceBody = null;
             foreach (var t in GetComponentsInChildren<Transform>(true))
@@ -998,23 +1021,22 @@ namespace ConductorChaos.Playground
             if (!leverPivot || !startButton) return;
             PlaygroundPlayer operatorPlayer = null;
             Transform hand = null;
-            Vector3 handPosition = Vector3.zero;
             foreach (var player in players)
-                if (player && player.IsSpawned && player.TryGetControlHand(leverBody, out hand, out handPosition, out _, useAim: true))
+                if (player && player.IsSpawned && player.TryGetControlHand(leverBody, out hand, out _, out _))
                 { operatorPlayer = player; break; }
             if (hand)
             {
-                // Omhoog/omlaag richten met de hand aan de greep schuift de hendel mee door de sleuf.
-                float handHeight = Vector3.Dot(leverParent.InverseTransformPoint(handPosition), leverSlideAxis);
-                if (leverHand == hand && operatorPlayer.HasCabControlInput)
-                    leverOffset = Mathf.Clamp(leverOffset + Mathf.Clamp((handHeight - previousHandHeight) * 1.2f, -0.04f, 0.04f),
-                        -LeverTravel, LeverTravel);
-                previousHandHeight = handHeight;
+                float pitch = operatorPlayer.CabAimPitch;
+                if (leverHand != hand)
+                {
+                    leverGripPitch = pitch;
+                    leverGripOffset = leverOffset;
+                }
+                leverOffset = MoveCabLever(leverGripOffset, leverGripPitch, pitch);
             }
             leverHand = hand;
             leverPivot.localPosition = leverRestPosition + leverSlideAxis * leverOffset;
             float input = derailed ? 0f : leverOffset / LeverTravel;
-            if (Mathf.Abs(input) < 0.06f) input = 0f;
             if (Mathf.Abs(input - throttle.Value) > 0.01f || (input == 0f && throttle.Value != 0f)) throttle.Value = input;
 
             bool touching = false, pressing = false;
@@ -1041,6 +1063,12 @@ namespace ConductorChaos.Playground
             if (buttonDown.Value != pressed) buttonDown.Value = pressed;
         }
 
+        private static float MoveCabLever(float startOffset, float startPitch, float pitch)
+        {
+            float offset = Mathf.Clamp(startOffset + (startPitch - pitch) * (LeverTravel / 22f), -LeverTravel, LeverTravel);
+            return Mathf.Abs(offset) <= LeverTravel * .10f ? 0f : offset;
+        }
+
         private void PrepareWagonDoors()
         {
             Debug.Assert(Mathf.Approximately(MoveWagonDoor(-WagonDoorTravel, -1f, true), -WagonDoorTravel));
@@ -1051,11 +1079,13 @@ namespace ConductorChaos.Playground
             foreach (var wagon in availableWagons)
             {
                 if (!wagon) continue;
-                Transform left = null, right = null;
+                Transform left = null, right = null, farLeft = null, farRight = null;
                 foreach (var part in wagon.GetComponentsInChildren<Transform>(true))
                 {
                     if (part.name == "DoorLeaf_L") left = part;
                     else if (part.name == "DoorLeaf_R") right = part;
+                    else if (part.name == "DoorLeaf_L_Far") farLeft = part;
+                    else if (part.name == "DoorLeaf_R_Far") farRight = part;
                 }
                 if (!left || !right) continue;
                 var leftMesh = left.GetComponent<MeshFilter>();
@@ -1075,14 +1105,23 @@ namespace ConductorChaos.Playground
                 }
                 wagonDoors[0] = CreateWagonDoor(left, leftMesh.sharedMesh.bounds, leftSide < 0f);
                 wagonDoors[1] = CreateWagonDoor(right, rightMesh.sharedMesh.bounds, rightSide < 0f);
+                // Same door on the far side of the wagon: slides the same way along X, but tucks in toward +Z.
+                var farLeftMesh = farLeft ? farLeft.GetComponent<MeshFilter>() : null;
+                var farRightMesh = farRight ? farRight.GetComponent<MeshFilter>() : null;
+                if (farLeftMesh && farLeftMesh.sharedMesh && farRightMesh && farRightMesh.sharedMesh &&
+                    !farLeft.GetComponent<Rigidbody>() && !farRight.GetComponent<Rigidbody>())
+                {
+                    wagonDoors[2] = CreateWagonDoor(farLeft, farLeftMesh.sharedMesh.bounds, leftSide < 0f, 1f);
+                    wagonDoors[3] = CreateWagonDoor(farRight, farRightMesh.sharedMesh.bounds, rightSide < 0f, 1f);
+                }
                 ApplyWagonDoors();
                 return;
             }
         }
 
-        private WagonDoorPanel CreateWagonDoor(Transform leaf, Bounds bounds, bool opensNegative)
+        private WagonDoorPanel CreateWagonDoor(Transform leaf, Bounds bounds, bool opensNegative, float inward = -1f)
         {
-            var panel = new WagonDoorPanel { Leaf = leaf, RestPosition = leaf.localPosition, OpensNegative = opensNegative };
+            var panel = new WagonDoorPanel { Leaf = leaf, RestPosition = leaf.localPosition, OpensNegative = opensNegative, Inward = inward };
             panel.OriginalColliders = leaf.GetComponentsInChildren<Collider>(true);
             panel.OriginalEnabled = new bool[panel.OriginalColliders.Length];
             for (int i = 0; i < panel.OriginalColliders.Length; i++)
@@ -1098,8 +1137,10 @@ namespace ConductorChaos.Playground
             panel.Panel.size = new Vector3(bounds.size.x, bounds.size.y, Mathf.Max(0.09f, bounds.size.z));
             float handleX = Mathf.Lerp(bounds.min.x, bounds.max.x, opensNegative ? .82f : .18f);
             float handleY = Mathf.Lerp(bounds.min.y, bounds.max.y, .45f);
-            panel.OutsideHandle = CreateWagonDoorHandle(leaf, "Outside", new Vector3(handleX, handleY, bounds.max.z + .03f));
-            panel.InsideHandle = CreateWagonDoorHandle(leaf, "Inside", new Vector3(handleX, handleY, bounds.min.z - .03f));
+            float outsideZ = inward < 0f ? bounds.max.z + .03f : bounds.min.z - .03f;
+            float insideZ = inward < 0f ? bounds.min.z - .03f : bounds.max.z + .03f;
+            panel.OutsideHandle = CreateWagonDoorHandle(leaf, "Outside", new Vector3(handleX, handleY, outsideZ));
+            panel.InsideHandle = CreateWagonDoorHandle(leaf, "Inside", new Vector3(handleX, handleY, insideZ));
             ControlOwners[panel.Body] = this;
             return panel;
         }
@@ -1117,7 +1158,7 @@ namespace ConductorChaos.Playground
 
         private void UpdateWagonDoors()
         {
-            Vector2 offsets = wagonDoorOffsets.Value;
+            Vector4 offsets = wagonDoorOffsets.Value;
             for (int i = 0; i < wagonDoors.Length; i++)
             {
                 var panel = wagonDoors[i];
@@ -1132,8 +1173,7 @@ namespace ConductorChaos.Playground
                     {
                         float delta = handX - panel.PreviousHandX;
                         float grip = surface == panel.Panel ? WagonDoorPanelGrip : 1f;
-                        if (i == 0) offsets.x = MoveWagonDoor(offsets.x, delta, panel.OpensNegative, grip);
-                        else offsets.y = MoveWagonDoor(offsets.y, delta, panel.OpensNegative, grip);
+                        offsets[i] = MoveWagonDoor(offsets[i], delta, panel.OpensNegative, grip);
                     }
                     panel.PreviousHandX = handX;
                     holdingHand = hand;
@@ -1157,10 +1197,14 @@ namespace ConductorChaos.Playground
 
         private void ApplyWagonDoors()
         {
-            Vector2 offsets = wagonDoorOffsets.Value;
+            Vector4 offsets = wagonDoorOffsets.Value;
             for (int i = 0; i < wagonDoors.Length; i++)
-                if (wagonDoors[i] != null && wagonDoors[i].Leaf)
-                    wagonDoors[i].Leaf.localPosition = wagonDoors[i].RestPosition + WagonDoorDisplacement(i == 0 ? offsets.x : offsets.y);
+            {
+                if (wagonDoors[i] == null || !wagonDoors[i].Leaf) continue;
+                Vector3 move = WagonDoorDisplacement(offsets[i]);
+                move.z *= -wagonDoors[i].Inward;      // platform side tucks in toward -Z, far side toward +Z
+                wagonDoors[i].Leaf.localPosition = wagonDoors[i].RestPosition + move;
+            }
         }
 
         private void UpdateFireboxDoor()
@@ -1571,7 +1615,7 @@ namespace ConductorChaos.Playground
             leverPivot.localRotation = leverRest;
             leverRestPosition = leverPivot.localPosition;
             leverSlideAxis = leverParent.InverseTransformDirection(transform.up).normalized;
-            leverOffset = previousHandHeight = 0f;
+            leverOffset = leverGripPitch = leverGripOffset = 0f;
             lever.SetParent(leverPivot, false);
             lever.localPosition = Vector3.zero;
             lever.localRotation = Quaternion.identity;
@@ -1703,7 +1747,7 @@ namespace ConductorChaos.Playground
             if (leverPivot) Destroy(leverPivot.gameObject);
             players = System.Array.Empty<PlaygroundPlayer>();
             leverHand = null;
-            leverOffset = previousHandHeight = 0f;
+            leverOffset = leverGripPitch = leverGripOffset = 0f;
             nextPlayerScan = 0f;
             previous.Clear();
             following.Clear();

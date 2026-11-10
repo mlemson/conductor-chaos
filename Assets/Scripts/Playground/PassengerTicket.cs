@@ -21,6 +21,7 @@ namespace ConductorChaos.Playground
         readonly NetworkVariable<bool> punched = new NetworkVariable<bool>(false);
 
         Transform arm, ticket, hole;
+        static readonly Vector3 TicketGrip = new(0f, -0.33f, 0.05f);
         BoxCollider ticketCollider;
         ConfigurableJoint shoulder;
         CharacterFace face;
@@ -41,14 +42,11 @@ namespace ConductorChaos.Playground
                     if (t.name == "Arm_R") arm = t;
             if (!arm || !ticketPrefab) { Debug.LogWarning("PassengerTicket: Arm_R of kaartjesmodel ontbreekt.", this); return; }
             armRest = arm.localRotation;                       // de stand waarin het schoudergewricht begint
-            face = GetComponentInChildren<CharacterFace>();
-            if (!face && model) face = model.gameObject.AddComponent<CharacterFace>();
+            face = CharacterFace.OnModel(model);
 
-            // kaartje in de hand: onderaan de arm, iets naar voren, kaartvlak naar voren gericht
             ticket = Instantiate(ticketPrefab, arm).transform;
             ticket.name = "Ticket";
-            ticket.localPosition = new Vector3(0f, -0.33f, 0.05f);
-            ticket.localRotation = Quaternion.Euler(0f, 90f, 90f);
+            LateUpdate();
             foreach (var c in ticket.GetComponentsInChildren<Collider>(true)) Destroy(c);
             hole = ConductorChaos.Track.RepairPoint.FindDeep(ticket, "Ticket_Hole");
             if (IsServer)
@@ -60,6 +58,14 @@ namespace ConductorChaos.Playground
             }
             punched.OnValueChanged += OnPunched;
             ShowPunched(punched.Value);
+        }
+
+        void LateUpdate()
+        {
+            if (!ticket || !arm) return;
+            // Keep the printed face visible even when the physical wrist twists.
+            ticket.SetPositionAndRotation(arm.TransformPoint(TicketGrip) + transform.forward * .055f,
+                Quaternion.LookRotation(transform.forward, transform.up));
         }
 
         public override void OnNetworkDespawn()
