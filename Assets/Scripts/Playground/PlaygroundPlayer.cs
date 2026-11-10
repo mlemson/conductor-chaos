@@ -38,12 +38,17 @@ namespace ConductorChaos.Playground
         private ArmPhysics right;
         internal bool IsHandCollider(Collider candidate) =>
             (left != null && left.Collider == candidate) || (right != null && right.Collider == candidate);
-        internal bool TryGetControlHand(Rigidbody candidate, out Transform hand, out Vector3 position, bool useAim = false)
+        internal bool SqueezesWithOtherHand(Collider candidate, Rigidbody tool) =>
+            leftHeld && rightHeld && left != null && right != null &&
+            ((left.Collider == candidate && right.IsHoldingBody(tool)) ||
+             (right.Collider == candidate && left.IsHoldingBody(tool)));
+        internal bool TryGetControlHand(Rigidbody candidate, out Transform hand, out Vector3 position, out Collider surface, bool useAim = false)
         {
             var holding = leftHeld && left != null && left.IsHoldingBody(candidate) ? left
                 : rightHeld && right != null && right.IsHoldingBody(candidate) ? right : null;
             hand = holding != null ? holding.Transform : null;
             position = holding != null ? (useAim ? holding.AimedHandPosition : holding.HandPosition) : Vector3.zero;
+            surface = holding?.GripSurface;
             return holding != null;
         }
         internal bool HasCabControlInput => Time.unscaledTime <= lastLeverInputAt;
@@ -356,8 +361,10 @@ namespace ConductorChaos.Playground
             bool cabinView = trainDrive && trainDrive.TryGetCabin(transform.position, -0.06f, out _);
             bool leftHasGrip = left.HasGrip;
             bool rightHasGrip = right.HasGrip;
-            left.Step(leftHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView, requestedHandFocus, rightHasGrip);
-            right.Step(rightHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView, requestedHandFocus, leftHasGrip);
+            var leftPunch = left.HeldPunch;
+            var rightPunch = right.HeldPunch;
+            left.Step(leftHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView, requestedHandFocus, rightHasGrip, rightPunch);
+            right.Step(rightHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView, requestedHandFocus, leftHasGrip, leftPunch);
             bool climbing = ApplyClimbAssist(pulling && !jumpQueued && (leftHeld || rightHeld));
             float handPush = 0f;
             if (!climbing && !jumpQueued && Time.time - lastJump > 0.18f)
@@ -929,6 +936,7 @@ namespace ConductorChaos.Playground
             private Collider gripSurface;
             private Vector3 gripNormal;
             private TrainDrive cabGripTrain;
+            private TicketPunch heldPunch;
             private readonly Collider[] leverOverlaps = new Collider[32];
             private float nextAttempt;
             private float poseHandFocus;
@@ -937,12 +945,14 @@ namespace ConductorChaos.Playground
 
             public Quaternion LocalRotation => arm ? arm.localRotation : Quaternion.identity;
             public Collider Collider => collider;
+            public Collider GripSurface => gripSurface;
             public Transform Transform => arm;
             public Vector3 HandPosition => arm ? arm.TransformPoint(HandOffset) : Vector3.zero;
             public Vector3 AimedHandPosition { get; private set; }
             public float Stretch { get; private set; } = 1f;
             public bool IsHoldingBody(Rigidbody candidate) => grip && grip.connectedBody == candidate;
             public bool HoldingShovel => cabGripTrain && cabGripTrain.IsShovelGrip(gripSurface);
+            public TicketPunch HeldPunch => grip && heldPunch && heldPunch.IsSpawned ? heldPunch : null;
             public bool HasGrip => grip;
             public float PushUp(float press, float upSpeed) => cabGripTrain ? 0f
                 : PlaygroundControls.HandPushAcceleration(grip, gripSurface, press, upSpeed);
@@ -995,36 +1005,52 @@ namespace ConductorChaos.Playground
                 shoulder.enableCollision = true;
             }
 
-            public void Step(bool held, bool stretch, Quaternion aim, RaycastHit[] buffer, Transform player, float reach, bool pulling, bool firmLedgeGrip, Vector3 move, bool cabinView, float handFocus, bool otherHandHasGrip)
+            public void Step(bool held, bool stretch, Quaternion aim, RaycastHit[] buffer, Transform player, float reach, bool pulling, bool firmLedgeGrip, Vector3 move, bool cabinView, float handFocus, bool otherHandHasGrip, TicketPunch otherHandPunch)
             {
                 if (!rigid) return;
                 if (!held) releasedAtCrest = false;
-                if (!held || (grip && (!gripSurface || !gripSurface.enabled || !gripSurface.gameObject.activeInHierarchy)) ||
+                if (!held || (heldPunch && !heldPunch.IsSpawned) ||
+                    (grip && (!gripSurface || !gripSurface.enabled || !gripSurface.gameObject.activeInHierarchy)) ||
                     (!grip && gripSurface)) Release();
                 bool followsCamera = otherHandHasGrip && !grip;
                 bool activelyAiming = held || followsCamera;
                 if (!grip) poseHandFocus = handFocus;
                 bool holdingShovel = HoldingShovel;
-                float upwardReach = Mathf.InverseLerp(cabinView ? -0.18f : 0.25f, cabinView ? 0.65f : 0.9f, (aim * Vector3.forward).y);
+                bool holdingPunch = HeldPunch;
+                Vector3 lookDirection = aim * Vector3.forward;
+                float upwardReach = Mathf.InverseLerp(cabinView ? -0.18f : 0.25f, cabinView ? 0.65f : 0.9f, lookDirection.y);
                 float cabinReach = cabinView ? Mathf.Sqrt(upwardReach) : upwardReach;
-                float targetStretch = holdingShovel ? 0.75f : stretch ? GripStretch : 1f;
+                float targetStretch = holdingShovel ? 0.75f : holdingPunch ? 1.45f : stretch ? GripStretch : 1f;
                 if (!grip) targetStretch = Mathf.Max(targetStretch, Mathf.Lerp(1f, cabinView ? 2.6f : 1.9f, cabinReach));
+                bool pressingPunch = false;
+                Vector3 pressDirection = Vector3.zero;
+                if (held && !grip && otherHandPunch && otherHandPunch.PressHandle)
+                {
+                    Vector3 towardHandle = otherHandPunch.PressHandle.position - arm.position;
+                    float armLength = arm.parent.TransformVector(rest * Vector3.Scale(restScale, HandOffset)).magnitude;
+                    float distance = towardHandle.magnitude;
+                    pressDirection = towardHandle.normalized;
+                    pressingPunch = distance <= armLength * 2.4f && Vector3.Dot(lookDirection, pressDirection) >= .45f;
+                    if (pressingPunch) targetStretch = Mathf.Clamp(distance / armLength, .75f, 2.4f);
+                }
                 if (!(grip is ConfigurableJoint)) StretchToward(targetStretch, Time.fixedDeltaTime);
                 // The model's arms are angled outward at rest. Rotate the actual
                 // shoulder-to-hand direction toward the camera aim, rather than
                 // rotating around the arm's already-tilted local X axis.
-                Vector3 lookDirection = aim * Vector3.forward;
                 float upwardAim = Mathf.Clamp01(lookDirection.y);
                 Vector3 raisedAim = Vector3.Slerp(lookDirection, Vector3.up, 0.35f * upwardAim);
+                if (holdingPunch) raisedAim = (raisedAim + Vector3.up * 0.28f).normalized;
                 if (!held) raisedAim = (raisedAim + Vector3.up * 0.20f).normalized;
                 Vector3 restDirection = rest * Vector3.down;
                 float outwardAim = Mathf.Lerp(0.55f, cabinView ? -0.25f : 0.30f, cabinView ? cabinReach : upwardAim);
                 float handSide = Mathf.Sign(restDirection.x);
-                outwardAim = Mathf.Lerp(outwardAim, -0.35f, poseHandFocus);
+                outwardAim = holdingPunch ? -0.55f : Mathf.Lerp(outwardAim, -0.35f, poseHandFocus);
                 Quaternion gripAim = PlaygroundControls.HandGripAim(aim, handSide, handFocus);
                 Vector3 aimInParent = arm.parent.InverseTransformDirection(followsCamera ? gripAim * Vector3.forward : raisedAim);
                 if (!followsCamera)
                     aimInParent = (aimInParent + Vector3.right * handSide * outwardAim).normalized;
+                if (pressingPunch)
+                    aimInParent = arm.parent.InverseTransformDirection(pressDirection);
                 if (grip && gripSurface && grip is ConfigurableJoint)
                 {
                     var support = grip.connectedBody;
@@ -1065,12 +1091,12 @@ namespace ConductorChaos.Playground
                     rigid.AddTorque(Vector3.ClampMagnitude(axis * (angle * Mathf.Deg2Rad * (looseGrip ? 85f : activelyAiming ? 180f : Mathf.Lerp(32f, 8f, handYield)))
                         - rigid.angularVelocity * (looseGrip ? 7f : activelyAiming ? 14f : 5f), looseGrip ? 150f : activelyAiming ? 420f : Mathf.Lerp(55f, 20f, handYield)), ForceMode.Acceleration);
 
-                if (!held || grip || releasedAtCrest || Time.time < nextAttempt) return;
+                if (!held || grip || pressingPunch || releasedAtCrest || Time.time < nextAttempt) return;
                 nextAttempt = Time.time + 0.04f;
                 Vector3 hand = arm.TransformPoint(HandOffset);
                 if (TryGripNearbyCabControl(hand, aim * Vector3.forward, buffer, player, reach)) return;
                 Vector3 direction = gripAim * Vector3.forward;
-                if (!TryGripCast(hand, direction, 0.13f, 0.38f, buffer, player, reach, false, out RaycastHit chosen) &&
+                if (!TryGripCast(hand, direction, 0.15f, 0.38f, buffer, player, reach, false, out RaycastHit chosen) &&
                     !TryGripAssist(hand, gripAim, buffer, player, reach, out chosen) &&
                     (followsCamera || !pulling || !TryGripCast(hand, Vector3.ProjectOnPlane(direction, Vector3.up).normalized,
                         0.09f, 0.18f, buffer, player, reach, true, out chosen))) return;
@@ -1100,6 +1126,11 @@ namespace ConductorChaos.Playground
                     else if (surface is SphereCollider handle) point = handle.transform.TransformPoint(handle.center);
                     if (collider) Physics.IgnoreCollision(collider, surface, true);
                 }
+                else if (target && target.TryGetComponent<TicketPunch>(out var punch))
+                {
+                    if (!punch.TryHold(parent.GetComponent<PlaygroundPlayer>(), arm, ref point)) return false;
+                    heldPunch = punch;
+                }
                 TrainDrive.WakeGrippedCoal(target);
                 gripSurface = surface;
                 gripNormal = cabGrip ? Vector3.zero : surface.transform.InverseTransformDirection(normal);
@@ -1108,8 +1139,8 @@ namespace ConductorChaos.Playground
                 spring.connectedBody = target;
                 spring.connectedAnchor = target ? target.transform.InverseTransformPoint(point) : point;
                 spring.anchor = HandOffset;
-                spring.spring = cabGrip ? 450f : climbingGrip ? 380f : 320f;
-                spring.damper = cabGrip ? 40f : climbingGrip ? 36f : 32f;
+                spring.spring = cabGrip || heldPunch ? 450f : climbingGrip ? 380f : 320f;
+                spring.damper = cabGrip || heldPunch ? 40f : climbingGrip ? 36f : 32f;
                 spring.minDistance = 0f;
                 spring.maxDistance = 0.03f;
                 spring.breakForce = cabGrip ? 1000f : climbingGrip ? 725f : 550f;
@@ -1130,16 +1161,31 @@ namespace ConductorChaos.Playground
                     var train = TrainDrive.FindControlOwner(target);
                     bool cabControl = train && train.IsSpawned && train.IsOwnedByServer && train.IsCabControlCollider(surface);
                     if (!cabControl && !TrainDrive.IsCoalBody(target)) continue;
+                    if (cabControl && train.IsWagonDoorPanel(surface)) continue;
                     Vector3 point = surface is SphereCollider handle ? handle.transform.TransformPoint(handle.center) : surface.ClosestPoint(hand);
+                    bool wagonHandle = cabControl && train.IsWagonDoorHandle(surface);
+                    if (wagonHandle && surface is CapsuleCollider bar)
+                    {
+                        Vector3 localHand = bar.transform.InverseTransformPoint(hand);
+                        if (localHand.z * bar.center.z < 0f) continue;
+                        Vector3 anchor = bar.center;
+                        float halfBar = bar.height * .5f - bar.radius;
+                        anchor.y = Mathf.Clamp(localHand.y, anchor.y - halfBar, anchor.y + halfBar);
+                        point = bar.transform.TransformPoint(anchor);
+                    }
                     if ((point - parent.position).sqrMagnitude > reach * reach) continue;
                     Vector3 offset = point - hand;
-                    if ((!train || !train.IsShovelGrip(surface)) && offset.sqrMagnitude > 0.20f * 0.20f) continue;
+                    bool cabLever = train && train.IsLeverHandle(surface) && train.TryGetCabin(player.position, .12f, out _);
+                    float maxOffset = cabLever ? .32f : wagonHandle ? .25f : .20f;
+                    if ((!train || !train.IsShovelGrip(surface)) && offset.sqrMagnitude > maxOffset * maxOffset) continue;
                     if (Vector3.Dot(offset, aim) < -0.08f || offset.sqrMagnitude >= closestDistance) continue;
                     bool blocked = false;
                     int obstacles = Physics.RaycastNonAlloc(hand, offset.normalized, buffer, Mathf.Max(0f, offset.magnitude - 0.025f),
                         ~0, QueryTriggerInteraction.Ignore);
                     for (int j = 0; j < obstacles && !blocked; j++)
-                        blocked = buffer[j].rigidbody != target && !buffer[j].collider.transform.IsChildOf(player);
+                        blocked = buffer[j].collider != surface && (buffer[j].rigidbody != target || wagonHandle) &&
+                            !buffer[j].collider.transform.IsChildOf(player) &&
+                            !(cabLever && buffer[j].collider.transform.IsChildOf(train.transform));
                     if (blocked) continue;
                     closest = surface;
                     closestPoint = point;
@@ -1169,7 +1215,7 @@ namespace ConductorChaos.Playground
                     if (!hit.rigidbody || hit.rigidbody.isKinematic && !TrainDrive.IsCoalBody(hit.rigidbody))
                     {
                         var train = TrainDrive.FindControlOwner(hit.rigidbody);
-                        bool control = train && train.IsCabControlCollider(hit.collider);
+                        bool control = train && train.IsCabControlCollider(hit.collider) && !train.IsWagonDoorPanel(hit.collider);
                         if (!control && !PlaygroundControls.CanPlantHand(hand, hit.point, hit.normal)) continue;
                     }
                     closest = hit.distance;
@@ -1205,7 +1251,8 @@ namespace ConductorChaos.Playground
                     var train = TrainDrive.FindControlOwner(surface.rigidbody);
                     bool cabControl = train && train.IsSpawned && train.IsOwnedByServer && train.IsCabControlCollider(surface.collider);
                     if (!IsClimbSurface(surface) && !cabControl) continue;
-                    if (!cabControl && !PlaygroundControls.CanPlantHand(hand, surface.point, surface.normal)) continue;
+                    if ((!cabControl || train.IsWagonDoorPanel(surface.collider)) &&
+                        !PlaygroundControls.CanPlantHand(hand, surface.point, surface.normal)) continue;
                     Vector3 offset = surface.point - hand;
                     float distance = offset.sqrMagnitude;
                     if (distance >= closest || Vector3.Dot(offset, forward) < -0.06f ||
@@ -1241,6 +1288,11 @@ namespace ConductorChaos.Playground
 
             public void Release()
             {
+                if (heldPunch)
+                {
+                    heldPunch.Release(arm);
+                    heldPunch = null;
+                }
                 if (cabGripTrain)
                 {
                     cabGripTrain.ReleaseCabControl(gripSurface, arm);

@@ -53,11 +53,9 @@ namespace ConductorChaos.Playground
             hole = ConductorChaos.Track.RepairPoint.FindDeep(ticket, "Ticket_Hole");
             if (IsServer)
             {
-                // botsvorm iets dikker dan het kaartje, zodat een klap met de tang niet door het kaartje heen glipt
                 ticketCollider = ticket.gameObject.AddComponent<BoxCollider>();
-                ticketCollider.size = new Vector3(0.16f, 0.09f, 0.04f);
-                var body = GetComponent<Collider>();
-                if (body) Physics.IgnoreCollision(ticketCollider, body);
+                ticketCollider.size = new Vector3(0.14f, 0.075f, 0.012f);
+                ticketCollider.isTrigger = true;
                 punched.Value = false;
             }
             punched.OnValueChanged += OnPunched;

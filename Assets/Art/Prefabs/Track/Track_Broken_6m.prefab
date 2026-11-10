@@ -63,6 +63,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bad4bd585d92c6dcdd9fed9b3b9ee9e0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7650025358007068890}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bad4bd585d92c6dcdd9fed9b3b9ee9e0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7597478378512604681}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bad4bd585d92c6dcdd9fed9b3b9ee9e0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2754613033551120682}
     - targetCorrespondingSourceObject: {fileID: -402985557508391360, guid: bad4bd585d92c6dcdd9fed9b3b9ee9e0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8898987738670830762}
@@ -100,6 +106,50 @@ MonoBehaviour:
   endForward: {fileID: 4504775756240350662}
   pathPoints: []
   next: {fileID: 0}
+--- !u!114 &7597478378512604681
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2209237716765768121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b4c60cef85ab92368b71622da1d5b21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.Track.RepairPoint
+  ShowTopMostFoldoutHeaderGroup: 1
+  startBroken: 1
+  requiredHits: 4
+  minImpactSpeed: 1.4
+  hitCooldown: 0.2
+--- !u!114 &2754613033551120682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2209237716765768121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 3378355129
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  m_InScenePlaced: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!4 &4040104494273146603 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3060465944089782787, guid: bad4bd585d92c6dcdd9fed9b3b9ee9e0, type: 3}

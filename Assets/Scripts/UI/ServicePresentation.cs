@@ -14,7 +14,6 @@ namespace ConductorChaos.UI
         private readonly Image modalBadge, objectiveIcon;
         private readonly Text kicker, heading, detail, route, actionText, waitText;
         private readonly Text hudTitle, hudDetail, timerText;
-        private readonly Text promptText;
         private readonly Button advance, leave;
         private float nextUpdate;
 
@@ -59,7 +58,7 @@ namespace ConductorChaos.UI
                 ChaosUI.Navy, 2, ChaosUI.Dark);
             timerText = ChaosUI.Label(timer, "Resterende tijd", "", 26, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold);
             var bell = ChaosUI.Panel(inGame.transform, "Interactietip", V(.405f, .07f), V(.595f, .126f), ChaosUI.Paper);
-            promptText = ChaosUI.Label(bell, "Bel", "[E]  Vertrekbel luiden", 18, ChaosUI.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            ChaosUI.Label(bell, "Passagier", "[E]  Help oma", 18, ChaosUI.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
             prompt = bell.gameObject;
             hud = inGame.gameObject;
             hud.SetActive(false);
@@ -81,15 +80,10 @@ namespace ConductorChaos.UI
             if (showHud)
             {
                 var player = NetworkManager.Singleton ? NetworkManager.Singleton.LocalClient?.PlayerObject : null;
-                bool canRing = player && run.CanRingFrom(player.transform.position);
                 bool canAssist = player && run.CanAssistFrom(player.transform.position);
-                if (prompt.activeSelf != (canRing || canAssist)) prompt.SetActive(canRing || canAssist);
-                if (canAssist || canRing) promptText.text = canAssist ? "[E]  Help oma" : "[E]  Vertrekbel luiden";
-                if (Cursor.lockState == CursorLockMode.Locked && Keyboard.current?.eKey.wasPressedThisFrame == true)
-                {
-                    if (canAssist) run.AssistPassenger();
-                    else if (canRing) run.RingBell();
-                }
+                if (prompt.activeSelf != canAssist) prompt.SetActive(canAssist);
+                if (canAssist && Cursor.lockState == CursorLockMode.Locked && Keyboard.current?.eKey.wasPressedThisFrame == true)
+                    run.AssistPassenger();
             }
             if (!modalChanged && !hudChanged && Time.unscaledTime < nextUpdate) return;
             nextUpdate = Time.unscaledTime + .10f;
@@ -140,12 +134,14 @@ namespace ConductorChaos.UI
                 {
                     ServiceRun.Lesson.Walk => "WASD · Loop de hal uit naar het vertrekperron.",
                     ServiceRun.Lesson.Carry => "Houd een muisknop ingedrukt en draag de koffer naar het gemarkeerde vak.",
-                    ServiceRun.Lesson.Ticket => "Pak de kaartjestang en knip het aangeboden proefkaartje.",
+                    ServiceRun.Lesson.Ticket => "Houd de tang vast met één hand. Druk met je vrije hand op het handvat terwijl de bek het kaartje raakt.",
                     ServiceRun.Lesson.OpenDoor => "Grijp de handgreep van de wagon en schuif de deur open.",
                     ServiceRun.Lesson.CloseDoor => "Schuif de wagondeur weer helemaal dicht.",
                     ServiceRun.Lesson.Power => "Ga naar de cabine en druk met je hand op de startknop.",
-                    ServiceRun.Lesson.Bell => "Ga naar de gouden vertrekbel op het perron en druk op E.",
-                    _ => "Trek de rijhendel omhoog. Rijd vijf meter en schuif de hendel naar neutraal."
+                    ServiceRun.Lesson.Bell => "Druk met je hand de gele belknop op het perron omlaag.",
+                    ServiceRun.Lesson.Drive when !run.DoorsClosed => "De wagondeur staat nog open. Schuif de deur dicht om te rijden.",
+                    ServiceRun.Lesson.Drive when !run.PowerOn => "De trein staat uit. Druk op de startknop in de cabine.",
+                    _ => $"{run.Progress}/5 meter · Houd de rijhendel vast en kijk omhoog. Zet hem daarna terug naar het midden."
                 };
                 timerText.text = "Vrije tijd";
                 return;
@@ -157,6 +153,7 @@ namespace ConductorChaos.UI
             hudDetail.text = run.Phase switch
             {
                 ServiceRun.RunPhase.Departure when !run.TimerRunning => "Loop naar het vertrekperron om de dienstklok te starten.",
+                ServiceRun.RunPhase.Departure when !run.BellRung => "Druk de gele belknop op het vertrekperron omlaag.",
                 ServiceRun.RunPhase.Departure => $"{run.Objective?.Instructions}\nDeuren {Mark(run.DoorsClosed)}   Stoom {Mark(run.PowerOn)}   Bel {Mark(run.BellRung)}",
                 ServiceRun.RunPhase.Arrival => $"{run.Arrival.StationName} · {run.Progress}/{run.Objective?.Target}\n{run.Objective?.Instructions}",
                 _ => $"{run.Arrival.StationName} · Rijd naar de groene stopmarkering.\n{run.Objective?.Instructions}"

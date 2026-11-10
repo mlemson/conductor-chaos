@@ -210,6 +210,7 @@ def build_wagon():
                                       open_bottom=True), (0, 0, 0), "RegionalWagon"))
     half = (DOOR[1] - DOOR[0]) / 2
     leaf_h = DOOR_TOP - SILL_Y + 0.08
+    door_handles = []
     for nm, cx, sgn in (("DoorLeaf_L", DOOR[0] + half / 2, -1), ("DoorLeaf_R", DOOR[1] - half / 2, 1)):
         hw = half / 2 - 0.008
         leaf = [mk.through_box((-hw, hw, 0.0, leaf_h, -0.03, 0.03), [(-hw + 0.13, hw - 0.13, 0.86, 1.42)], 0.022,
@@ -217,9 +218,14 @@ def build_wagon():
         leaf.append(frame(-hw + 0.13, hw - 0.13, 0.86, 1.42, 0.05, 0.0, 0.05, 0.015, "M_Train_Trim"))
         leaf.append(glass(-hw + 0.13, hw - 0.13, 0.86, 1.42, 0.015))
         leaf.append(box(-hw + 0.08, hw - 0.08, 0.14, 0.56, 0.02, 0.048, 0.015, "M_Train_RedPanel"))
-        gx = -sgn * (hw - 0.07)
-        leaf.append(mk.capsule_between((gx, 0.52, 0.065), (gx, 0.95, 0.065), 0.022, 0.022, 8, 1, mat="M_Train_Interact"))
         sc.add(mk.Part(nm, mk.merge(*leaf), (cx, SILL_Y - 0.04, -0.05), "RegionalWagon"))
+        gx = -sgn * (hw - 0.05)
+        for face, side in ((1, "Outside"), (-1, "Inside")):
+            z = face * 0.075
+            bar = mk.capsule_between((0, -0.215, 0), (0, 0.215, 0), 0.022, 0.022, 8, 1, mat="M_Train_Interact")
+            mounts = [box(-0.019, 0.019, y - 0.019, y + 0.019, min(-z, 0), max(-z, 0), 0.008, "M_Train_Interact")
+                      for y in (-0.195, 0.195)]
+            door_handles.append(mk.Part(f"{nm}_Handle{side}", mk.merge(bar, *mounts), (gx, 0.735, z), nm))
     sill = mk.merge(box(DOOR[0] - 0.10, DOOR[1] + 0.10, Y0 + 0.06, SILL_Y + 0.02, -0.14, 0.32, 0.025, "M_Train_Trim"),
                     box(DOOR[0], DOOR[1], SILL_Y + 0.01, SILL_Y + 0.03, 0.0, 0.31, 0.008, "M_Train_Interact"))
     sc.add(mk.Part("DoorSill", sill, (0, 0, 0), "RegionalWagon"))
@@ -269,6 +275,9 @@ def build_wagon():
             ends.append(plate.transform(t=(ex + sgn * 0.30, 0.17, ZC + dz)))
     sc.add(mk.Part("Ends", mk.merge(*ends), (0, 0, 0), "RegionalWagon"))
     add_couplers(sc, "RegionalWagon", RAIL_Y, ZC, XC - L / 2 - 0.12, XC + L / 2 + 0.12, "M_Train_Trim", "M_Train_Interact")
+    # Append the new handles so the existing model and geometry IDs stay stable.
+    for handle in door_handles:
+        sc.add(handle)
     for p in sc.parts:
         p.gradient = 0.25
     sc.facet_all()

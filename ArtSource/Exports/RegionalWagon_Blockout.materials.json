@@ -1,9 +1,9 @@
 {
   "model": "RegionalWagon_Blockout",
   "stats": {
-    "parts": 17,
-    "tris": 28162,
-    "verts": 15404,
+    "parts": 21,
+    "tris": 29186,
+    "verts": 15936,
     "materials": 14
   },
   "materials": {

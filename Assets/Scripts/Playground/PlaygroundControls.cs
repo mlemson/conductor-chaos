@@ -8,7 +8,7 @@ namespace ConductorChaos.Playground
         public const float DefaultCameraDistance = 4f;
         public const float FirstPersonDistance = 0.8f;
         public const float GripPalmOffset = 0.05f;
-        public const float PlantingReach = 0.12f;
+        public const float PlantingReach = 0.15f;
 
         public static float ZoomDistance(float distance, float scroll)
         {

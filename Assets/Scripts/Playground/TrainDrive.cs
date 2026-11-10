@@ -96,13 +96,14 @@ namespace ConductorChaos.Playground
         private const float WagonDoorTravel = 0.56f;
         private const float WagonDoorLeadIn = 0.08f;
         private const float WagonDoorInset = 0.05f;
+        private const float WagonDoorPanelGrip = 0.65f;
 
         private sealed class WagonDoorPanel
         {
             public Transform Leaf, Hand;
             public Rigidbody Body;
             public BoxCollider Panel;
-            public SphereCollider Handle;
+            public CapsuleCollider OutsideHandle, InsideHandle;
             public Collider[] OriginalColliders;
             public bool[] OriginalEnabled;
             public Vector3 RestPosition;
@@ -269,8 +270,14 @@ namespace ConductorChaos.Playground
         public void ConfigureWagons(Rigidbody[] wagons) => availableWagons = wagons;
         internal bool IsCabControlCollider(Collider candidate) =>
             candidate && (candidate == latchCollider || IsShovelGrip(candidate) || IsLeverHandle(candidate) ||
-                (wagonDoors[0] != null && candidate == wagonDoors[0].Handle) ||
-                (wagonDoors[1] != null && candidate == wagonDoors[1].Handle));
+                IsWagonDoorPanel(candidate) || IsWagonDoorHandle(candidate));
+
+        internal bool IsWagonDoorPanel(Collider candidate) =>
+            candidate && (candidate == wagonDoors[0]?.Panel || candidate == wagonDoors[1]?.Panel);
+
+        internal bool IsWagonDoorHandle(Collider candidate) =>
+            candidate && (candidate == wagonDoors[0]?.OutsideHandle || candidate == wagonDoors[0]?.InsideHandle ||
+                candidate == wagonDoors[1]?.OutsideHandle || candidate == wagonDoors[1]?.InsideHandle);
 
         internal bool IsLeverHandle(Collider candidate) => leverPivot && candidate && candidate.transform == leverPivot;
         internal bool IsShovelGrip(Collider candidate) => candidate && (candidate == shovelGrip || candidate.transform == shovelLoad);
@@ -458,8 +465,9 @@ namespace ConductorChaos.Playground
                 return;
             }
             var service = ServiceRun.Active;
-            bool canDrive = powered.Value && (!canStoke || fuel.Value > 0f) && (!service || service.AllowsMotion(this));
-            if (canDrive && canStoke)
+            bool needsFuel = canStoke && !(service && service.IsTrainingTrain(this));
+            bool canDrive = powered.Value && (!needsFuel || fuel.Value > 0f) && (!service || service.AllowsMotion(this));
+            if (canDrive && needsFuel)
                 fuel.Value = Mathf.Max(0f, fuel.Value - Mathf.Abs(throttle.Value) * Time.fixedDeltaTime / 35f);
             speed = Mathf.MoveTowards(speed, canDrive ? throttle.Value * maximumSpeed : 0f, acceleration * Time.fixedDeltaTime);
             var oldTrack = track;
@@ -992,7 +1000,7 @@ namespace ConductorChaos.Playground
             Transform hand = null;
             Vector3 handPosition = Vector3.zero;
             foreach (var player in players)
-                if (player && player.IsSpawned && player.TryGetControlHand(leverBody, out hand, out handPosition, useAim: true))
+                if (player && player.IsSpawned && player.TryGetControlHand(leverBody, out hand, out handPosition, out _, useAim: true))
                 { operatorPlayer = player; break; }
             if (hand)
             {
@@ -1037,6 +1045,7 @@ namespace ConductorChaos.Playground
         {
             Debug.Assert(Mathf.Approximately(MoveWagonDoor(-WagonDoorTravel, -1f, true), -WagonDoorTravel));
             Debug.Assert(Mathf.Approximately(MoveWagonDoor(WagonDoorTravel, 1f, false), WagonDoorTravel));
+            Debug.Assert(Mathf.Approximately(MoveWagonDoor(0f, -.04f, true, WagonDoorPanelGrip), -.026f));
             Debug.Assert(Mathf.Approximately(WagonDoorDisplacement(WagonDoorLeadIn * 0.5f).x, 0f));
             Debug.Assert(Mathf.Approximately(WagonDoorDisplacement(WagonDoorTravel).z, -WagonDoorInset));
             foreach (var wagon in availableWagons)
@@ -1074,7 +1083,7 @@ namespace ConductorChaos.Playground
         private WagonDoorPanel CreateWagonDoor(Transform leaf, Bounds bounds, bool opensNegative)
         {
             var panel = new WagonDoorPanel { Leaf = leaf, RestPosition = leaf.localPosition, OpensNegative = opensNegative };
-            panel.OriginalColliders = leaf.GetComponents<Collider>();
+            panel.OriginalColliders = leaf.GetComponentsInChildren<Collider>(true);
             panel.OriginalEnabled = new bool[panel.OriginalColliders.Length];
             for (int i = 0; i < panel.OriginalColliders.Length; i++)
             {
@@ -1087,12 +1096,23 @@ namespace ConductorChaos.Playground
             panel.Panel = leaf.gameObject.AddComponent<BoxCollider>();
             panel.Panel.center = bounds.center;
             panel.Panel.size = new Vector3(bounds.size.x, bounds.size.y, Mathf.Max(0.09f, bounds.size.z));
-            panel.Handle = leaf.gameObject.AddComponent<SphereCollider>();
-            panel.Handle.center = new Vector3(Mathf.Lerp(bounds.min.x, bounds.max.x, opensNegative ? 0.82f : 0.18f),
-                Mathf.Lerp(bounds.min.y, bounds.max.y, 0.45f), bounds.max.z + 0.03f);
-            panel.Handle.radius = 0.09f;
+            float handleX = Mathf.Lerp(bounds.min.x, bounds.max.x, opensNegative ? .82f : .18f);
+            float handleY = Mathf.Lerp(bounds.min.y, bounds.max.y, .45f);
+            panel.OutsideHandle = CreateWagonDoorHandle(leaf, "Outside", new Vector3(handleX, handleY, bounds.max.z + .03f));
+            panel.InsideHandle = CreateWagonDoorHandle(leaf, "Inside", new Vector3(handleX, handleY, bounds.min.z - .03f));
             ControlOwners[panel.Body] = this;
             return panel;
+        }
+
+        private static CapsuleCollider CreateWagonDoorHandle(Transform leaf, string side, Vector3 fallbackCenter)
+        {
+            var mesh = leaf.Find(leaf.name + "_Handle" + side);
+            var handle = leaf.gameObject.AddComponent<CapsuleCollider>();
+            handle.center = mesh ? mesh.localPosition : fallbackCenter;
+            handle.direction = 1;
+            handle.radius = .06f;
+            handle.height = .55f;
+            return handle;
         }
 
         private void UpdateWagonDoors()
@@ -1105,13 +1125,15 @@ namespace ConductorChaos.Playground
                 Transform holdingHand = null;
                 foreach (var player in players)
                 {
-                    if (!player || !player.IsSpawned || !player.TryGetControlHand(panel.Body, out var hand, out var position, useAim: true)) continue;
+                    if (!player || !player.IsSpawned ||
+                        !player.TryGetControlHand(panel.Body, out var hand, out var position, out var surface, useAim: true)) continue;
                     float handX = panel.Leaf.parent.InverseTransformPoint(position).x;
                     if (panel.Hand == hand)
                     {
                         float delta = handX - panel.PreviousHandX;
-                        if (i == 0) offsets.x = MoveWagonDoor(offsets.x, delta, panel.OpensNegative);
-                        else offsets.y = MoveWagonDoor(offsets.y, delta, panel.OpensNegative);
+                        float grip = surface == panel.Panel ? WagonDoorPanelGrip : 1f;
+                        if (i == 0) offsets.x = MoveWagonDoor(offsets.x, delta, panel.OpensNegative, grip);
+                        else offsets.y = MoveWagonDoor(offsets.y, delta, panel.OpensNegative, grip);
                     }
                     panel.PreviousHandX = handX;
                     holdingHand = hand;
@@ -1123,8 +1145,8 @@ namespace ConductorChaos.Playground
             ApplyWagonDoors();
         }
 
-        private static float MoveWagonDoor(float offset, float delta, bool opensNegative) =>
-            Mathf.Clamp(offset + Mathf.Clamp(delta, -0.06f, 0.06f), opensNegative ? -WagonDoorTravel : 0f, opensNegative ? 0f : WagonDoorTravel);
+        private static float MoveWagonDoor(float offset, float delta, bool opensNegative, float grip = 1f) =>
+            Mathf.Clamp(offset + Mathf.Clamp(delta, -0.06f, 0.06f) * grip, opensNegative ? -WagonDoorTravel : 0f, opensNegative ? 0f : WagonDoorTravel);
 
         private static Vector3 WagonDoorDisplacement(float offset)
         {
@@ -1146,7 +1168,7 @@ namespace ConductorChaos.Playground
             if (!doorBody) return;
             foreach (var player in players)
             {
-                if (!player || !player.IsSpawned || !player.TryGetControlHand(doorBody, out var hand, out var position)) continue;
+                if (!player || !player.IsSpawned || !player.TryGetControlHand(doorBody, out var hand, out var position, out _)) continue;
                 Vector3 handDirection = fireboxDoor.parent.InverseTransformPoint(position) - fireboxDoor.localPosition;
                 handDirection = Vector3.ProjectOnPlane(Quaternion.Inverse(doorRest) * handDirection, Vector3.up);
                 if (handDirection.sqrMagnitude < 0.04f) break;
@@ -1324,7 +1346,7 @@ namespace ConductorChaos.Playground
             if (!canStoke) return;
             foreach (var player in players)
             {
-                if (!player || !player.IsSpawned || !player.TryGetControlHand(shovelBody, out var hand, out var handPosition) ||
+                if (!player || !player.IsSpawned || !player.TryGetControlHand(shovelBody, out var hand, out var handPosition, out _) ||
                     hand != shovelHand) continue;
                 if (!shovelHeld)
                 {
@@ -1467,7 +1489,7 @@ namespace ConductorChaos.Playground
         private bool CoalIsHeld(Rigidbody coal)
         {
             foreach (var player in players)
-                if (player && player.TryGetControlHand(coal, out _, out _)) return true;
+                if (player && player.TryGetControlHand(coal, out _, out _, out _)) return true;
             return false;
         }
 
@@ -1618,7 +1640,8 @@ namespace ConductorChaos.Playground
                 if (panel == null) continue;
                 if (panel.Leaf) panel.Leaf.localPosition = panel.RestPosition;
                 if (panel.Body) { ControlOwners.Remove(panel.Body); Destroy(panel.Body); }
-                if (panel.Handle) Destroy(panel.Handle);
+                if (panel.OutsideHandle) Destroy(panel.OutsideHandle);
+                if (panel.InsideHandle) Destroy(panel.InsideHandle);
                 if (panel.Panel) Destroy(panel.Panel);
                 for (int j = 0; j < panel.OriginalColliders.Length; j++)
                     if (panel.OriginalColliders[j]) panel.OriginalColliders[j].enabled = panel.OriginalEnabled[j];
