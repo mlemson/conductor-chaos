@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: M_Sheep_EyeWhite
-    second: {fileID: 2100000, guid: 8abd0b684a142bb449690496251ab105, type: 2}
+    second: {fileID: 2100000, guid: f1850d89d03ac37db6c2a08f511f1227, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -23,7 +23,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: M_Sheep_Tongue
-    second: {fileID: 2100000, guid: e9790d496c599724ea0bca28224c0076, type: 2}
+    second: {fileID: 2100000, guid: 1fca7324bebf33f2902e2d74506c95f1, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
