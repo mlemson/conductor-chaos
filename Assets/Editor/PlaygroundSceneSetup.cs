@@ -1,5 +1,6 @@
 using System.Linq;
 using ConductorChaos.Playground;
+using ConductorChaos.Stations;
 using ConductorChaos.Track;
 using Unity.Netcode;
 using Unity.Netcode.Components;
@@ -82,6 +83,22 @@ namespace ConductorChaos.Editor
             var drive = locomotive.GetComponent<TrainDrive>() ? locomotive.GetComponent<TrainDrive>() : Undo.AddComponent<TrainDrive>(locomotive);
             Undo.RecordObject(drive, "Set train track");
             drive.Configure(track, fraction * track.Length);
+            var wagons = new System.Collections.Generic.List<Rigidbody>();
+            foreach (var name in new[] { "Tender_Blockout", "RegionalWagon_Blockout", "CattleWagon_Blockout" })
+            {
+                foreach (var wagon in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None).Where(t => (t.name == name || t.name.StartsWith(name + " (")) && t.gameObject.scene == locomotive.scene))
+                {
+                    var wagonBody = wagon.GetComponent<Rigidbody>() ? wagon.GetComponent<Rigidbody>() : Undo.AddComponent<Rigidbody>(wagon.gameObject);
+                    Undo.RecordObject(wagonBody, "Configure wagon physics");
+                    wagonBody.isKinematic = true;
+                    wagonBody.useGravity = false;
+                    wagonBody.interpolation = RigidbodyInterpolation.Interpolate;
+                    if (!wagon.GetComponent<NetworkObject>()) Undo.AddComponent<NetworkObject>(wagon.gameObject);
+                    if (!wagon.GetComponent<NetworkTransform>()) Undo.AddComponent<NetworkTransform>(wagon.gameObject);
+                    wagons.Add(wagonBody);
+                }
+            }
+            drive.ConfigureWagons(wagons.ToArray());
             float railCenter = 0f;
             var wheels = locomotive.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Wheels");
             if (wheels && wheels.TryGetComponent<Renderer>(out var wheelRenderer))
@@ -110,14 +127,25 @@ namespace ConductorChaos.Editor
             Debug.Log("Conductor body mesh is readable for the continuous leg rig.");
         }
 
-        [MenuItem("Tools/Conductor Chaos/Build Local Trial Client")]
+        [MenuItem("Tools/Conductor Chaos/Build Windows Client")]
         public static void BuildLocalTrialClient()
         {
+            var scenes = new[]
+            {
+                "Assets/Scenes/TrainPlayground.unity",
+                $"Assets/Scenes/{ServiceRun.IntroScene}.unity",
+                $"Assets/Scenes/{ServiceRun.FirstLevelScene}.unity"
+            };
+            if (scenes.Any(path => !AssetDatabase.LoadAssetAtPath<SceneAsset>(path)))
+            {
+                Debug.LogError("De lobby, introductie en het eerste level moeten aanwezig zijn om de dienst te bouwen.");
+                return;
+            }
             const string directory = "work/PlaygroundClient";
             System.IO.Directory.CreateDirectory(directory);
             var result = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                scenes = new[] { "Assets/Scenes/TrainPlayground.unity" },
+                scenes = scenes,
                 locationPathName = directory + "/ConductorChaos.exe",
                 target = BuildTarget.StandaloneWindows64,
                 options = BuildOptions.Development

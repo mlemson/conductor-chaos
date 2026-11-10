@@ -8,4 +8,13 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/TrainPlayground.unity
     guid: 560fa867ffe42f24ab0df9f7d9a22ef3
+  - enabled: 1
+    path: Assets/Scenes/ServiceIntroduction.unity
+    guid: b6e3d86ee5379854a9d07fb35460655a
+  - enabled: 1
+    path: Assets/Scenes/ServiceLevel01.unity
+    guid: 7335a4e2e8aca514885579dc380c3eb1
+  - enabled: 1
+    path: Assets/Scenes/ChaosMenuPreview.unity
+    guid: 1243e31e1ac0e3341aa4db720511402a
   m_configObjects: {}

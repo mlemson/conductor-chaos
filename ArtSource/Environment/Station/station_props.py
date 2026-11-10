@@ -13,6 +13,33 @@ from station_common import (DEG, arch_loop, ball, capsule, circle_loop, clock, c
 
 
 # ------------------------------------------------------------------ zitten & opslag
+def loose_prop(name, mesh, colliders, position, rotation=None):
+    """A movable model node with its own compound collider, separate from the building."""
+    root = f"Loose_{name}"
+    shapes = colliders if isinstance(colliders, tuple) else (colliders,)
+    return [(root, mesh, None, position, rotation, True)] + [
+        (f"Col_{name}_{i}", shape, root, (0, 0, 0), None, False)
+        for i, shape in enumerate(shapes, 1)
+    ]
+
+
+def swing_door(name, mesh, collider, hinge, open_deg, start_deg=0.0, closed=None):
+    """Knopen voor een draaiend deurblad (deur, kluisdeurtje, hekpoort) dat SwingDoor in Unity aanstuurt.
+
+    De knoop `name` heeft zijn pivot op het scharnier en draait om zijn eigen Y-as. Twee lege knopen leggen de
+    uitersten vast, zodat Unity niets hoeft te raden: Hinge_<name>_Closed (dicht) en Hinge_<name>_Open (helemaal
+    open, open_deg graden vanaf dicht). start_deg = de stand waarin het blad in het model (en dus de scène) staat.
+    closed = rotatie van de dichte stand (3x3), standaard geen."""
+    base = closed if closed is not None else mk.rot_y(0)
+
+    def at(deg):
+        return base @ mk.rot_y(deg * DEG)
+    return [(name, mesh, None, tuple(hinge), at(start_deg), True),
+            (f"Col_{name}", collider, name, (0, 0, 0), None, False),
+            (f"Hinge_{name}_Closed", None, None, tuple(hinge), at(0.0), True),
+            (f"Hinge_{name}_Open", None, None, tuple(hinge), at(open_deg), True)]
+
+
 def bench(length=1.8, *, split_colliders=False):
     """Parkbank: drie dikke zittinglatten, twee rugleuninglatten, marine gietijzeren zijframes."""
     L = length

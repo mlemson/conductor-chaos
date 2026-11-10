@@ -128,8 +128,9 @@ namespace ConductorChaos.EditorTools
             go.name = "StylizedTerrain";
             go.transform.position = new Vector3(-data.size.x / 2f, -BaseFraction * TerrainHeight, -data.size.z / 2f);
             var t = go.GetComponent<Terrain>();
-            t.basemapDistance = 1000f;                               // textures scherp houden op afstand
-            t.drawInstanced = true;
+            t.materialTemplate = StylizedTerrainShaderTools.GetOrCreateMaterial();
+            t.basemapDistance = 5000f;
+            t.drawInstanced = false;
             Undo.RegisterCreatedObjectUndo(go, "Create Stylized Terrain");
             TerrainCliffsEditor.AddTo(t);                             // steile hellingen krijgen grondtextuur; geen extra mesh
             Selection.activeGameObject = go;

@@ -8,7 +8,7 @@ namespace ConductorChaos.Playground
         public const float DefaultCameraDistance = 4f;
         public const float FirstPersonDistance = 0.8f;
         public const float GripPalmOffset = 0.05f;
-        public const float PlantingReach = 0.12f;
+        public const float PlantingReach = 0.15f;
 
         public static float ZoomDistance(float distance, float scroll)
         {
@@ -47,9 +47,10 @@ namespace ConductorChaos.Playground
             return Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, -0.18f, -0.16f);
         }
 
-        public static bool CanPlantHand(Vector3 palm, Vector3 point, Vector3 normal)
+        public static bool CanPlantHand(Vector3 palm, Vector3 point, Vector3 normal, float extraReach = 0f)
         {
-            return (point + normal * GripPalmOffset - palm).sqrMagnitude <= PlantingReach * PlantingReach;
+            float reach = PlantingReach + extraReach;
+            return (point + normal * GripPalmOffset - palm).sqrMagnitude <= reach * reach;
         }
 
         public static ConfigurableJoint PlantHand(GameObject hand, Rigidbody support, Vector3 handAnchor,

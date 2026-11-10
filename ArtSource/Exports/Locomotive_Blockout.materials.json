@@ -1,10 +1,10 @@
 {
   "model": "Locomotive_Blockout",
   "stats": {
-    "parts": 13,
-    "tris": 36908,
-    "verts": 19580,
-    "materials": 14
+    "parts": 25,
+    "tris": 51430,
+    "verts": 27102,
+    "materials": 15
   },
   "materials": {
     "M_Loco_Red": {
@@ -268,6 +268,25 @@
       "opts": {
         "flat": 0.5,
         "paint": 0.3,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Loco_Warm": {
+      "base": "#E2722B",
+      "ramp": [
+        "#B5531F",
+        "#DA6B2C",
+        "#E2722B",
+        "#EA7931",
+        "#B79282"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "flat": 0.4,
+        "paint": 0.4,
         "grime": 1.0,
         "cells": 0.55,
         "cellSize": 0.8

@@ -19,7 +19,9 @@ Assets (Assets/Art/Models/Environment/Track):
   Track_Curve_R20_15_A/B, Track_Curve_R20_30_A/B   bochten (A en B buigen naar tegengestelde kanten;
                                             de prefabbouwer noemt ze Left/Right na meten in Unity)
   Track_BufferStop                           3 m eindstuk met stootblok (rood-wit, ronde buffers)
-  Track_Broken_6m                            kapotte rail + gebroken bielzen (alleen visueel)
+  Track_Broken_6m                            kapotte rail + gebroken bielzen; herstelbaar met de moersleutel (#215):
+                                            Broken_Bits / Fixed_Rail / Repair_Bolt
+  Track_Switch_20m_A/B                       wissel (build_switch_kit.py, #214)
   Track_Bridge_Trestle_6m                    houten schraagbrug, poten 10 m lang (laat ze in het terrein zakken)
   Prop_WarningSign, Prop_Barrier             waarschuwingsbord en slagboom uit het concept
 
@@ -358,9 +360,13 @@ def buffer_stop(rng):
 
 
 def broken(rng):
-    """Kapot stuk: één rail gebroken met een gat en een omhoog gebogen eind, gespleten en ontbrekende bielzen."""
+    """Kapot stuk: één rail gebroken met een gat en een omhoog gebogen eind, gespleten en ontbrekende bielzen.
+    Herstelbaar (issue #215): de kapotte delen staan in de knoop Broken_Bits, de herstelde rail (met lasplaten en
+    nieuwe bielzen) in Fixed_Rail (verborgen), en Repair_Bolt is de dikke spoorbout die je met de moersleutel
+    erin ramt (Repair_Bolt_Home = helemaal erin)."""
     path = Path(6.0)
     parts = [rail(path, RAIL_Z), bed(path, rng)]
+    bits, fixed = [], []
     gap0, gap1 = 2.85, 3.35
     parts.append(rail(path, -RAIL_Z, 0.0, gap0 - 0.55))
     parts.append(rail(path, -RAIL_Z, gap1 + 0.6, path.length))
@@ -369,7 +375,19 @@ def broken(rng):
     stub_a = stub_a.transform(R=mk.rot_z(math.radians(14)) @ mk.rot_y(math.radians(-8)), t=(gap0 - 0.55, SLEEPER_TOP, -RAIL_Z))
     stub_b = rail(Path(0.6), 0.0, 0.0, 0.6).transform(t=(-0.6, -SLEEPER_TOP, 0))
     stub_b = stub_b.transform(R=mk.rot_z(math.radians(-9)) @ mk.rot_y(math.radians(12)), t=(gap1 + 0.6, SLEEPER_TOP + 0.02, -RAIL_Z))
-    parts += [stub_a, stub_b]
+    bits += [stub_a, stub_b]
+    # herstelde rail: nieuw stuk met 6 mm voeg aan beide kanten, lasplaten over de voegen
+    a, b = gap0 - 0.55, gap1 + 0.6
+    fixed.append(rail(path, -RAIL_Z, a + 0.006, b - 0.006))
+    for xj in (a, b):
+        for sz in (-1, 1):
+            za, zb = sorted((-RAIL_Z + sz * (RAIL_W * 0.30 + 0.006), -RAIL_Z + sz * (RAIL_W * 0.30 + 0.034)))
+            plate = rbox(xj - 0.22, xj + 0.22, SLEEPER_TOP + 0.035, SLEEPER_TOP + 0.10, za, zb, 0.008, "M_Track_Plate", div=1)
+            fixed.append(plate)
+            for dx in (-0.12, 0.12):
+                nut = mk.cylinder(0.022, 0.03, 6, 0.0, mat="M_Track_Plate", axis="z")
+                nut.sharp = True
+                fixed.append(nut.transform(t=(xj + dx, SLEEPER_TOP + 0.068, -RAIL_Z + sz * (RAIL_W * 0.30 + 0.041))))
     for i, s in enumerate(stations(path.length)):
         if abs(s - 3.0) < 0.5:
             # gespleten biels: twee helften, scheef
@@ -378,7 +396,8 @@ def broken(rng):
                 if sgn < 0:
                     half = half.transform(s=(1, 1, -1))
                 half = half.transform(R=mk.rot_x(sgn * ang) @ mk.rot_y(sgn * 0.10), t=(0, -0.02, sgn * 0.10))
-                parts.append(path.place(half, s))
+                bits.append(path.place(half, s))
+            fixed.append(path.place(sleeper(rng), s))               # nieuwe biels na het herstel
         elif abs(s - 2.2) < 0.3:
             continue                                           # ontbrekende biels
         else:
@@ -387,10 +406,23 @@ def broken(rng):
     for _ in range(4):
         sp = mk.cylinder(0.025, 0.22, 6, 0.0, mat="M_Track_Plate", axis="x")
         sp.sharp = True
-        parts.append(sp.transform(R=mk.rot_y(rng.uniform(0, math.pi)), t=(rng.uniform(2.2, 4.0), BED_TOP + 0.03, rng.uniform(-2.0, -1.4))))
-    parts.append(rbox(3.6, 3.9, BED_TOP, BED_TOP + 0.03, -1.75, -1.4, 0.01, "M_Track_Plate", div=1).transform(R=mk.rot_y(0.4)))
+        bits.append(sp.transform(R=mk.rot_y(rng.uniform(0, math.pi)), t=(rng.uniform(2.2, 4.0), BED_TOP + 0.03, rng.uniform(-2.0, -1.4))))
+    bits.append(rbox(3.6, 3.9, BED_TOP, BED_TOP + 0.03, -1.75, -1.4, 0.01, "M_Track_Plate", div=1).transform(R=mk.rot_y(0.4)))
+    # reserverail naast het spoor (verdwijnt bij het herstel)
+    spare = rail(Path(1.7), 0.0).transform(t=(0, -SLEEPER_TOP, 0))
+    bits.append(spare.transform(R=mk.rot_y(0.12) @ mk.rot_x(0.25), t=(2.15, BED_TOP - 0.01, -2.35)))
+    # dikke spoorbout naast de rail op de biels voor het gat: steekt 15 cm uit, gele kop
+    s_bolt = [st for st in stations(path.length) if st < gap0 - 0.55][-1]
+    home = (s_bolt, SLEEPER_TOP + 0.02, -RAIL_Z - 0.26)
+    out = 0.15
+    bolt = mk.merge(mk.cylinder(0.07, 0.06, 6, 0.012, mat="M_Track_Warn", axis="y").transform(t=(0, 0.03, 0)),
+                    mk.cylinder(0.03, out + 0.02, 8, 0.0, mat="M_Track_Plate", axis="y").transform(t=(0, -(out + 0.02) / 2 + 0.001, 0)))
+    extras = {"Broken_Bits": (mk.merge(*bits), (0, 0, 0), True),
+              "Fixed_Rail": (mk.merge(*fixed), (0, 0, 0), False),
+              "Repair_Bolt": (bolt, (home[0], home[1] + out, home[2]), True)}
+    markers = [("Repair_Bolt_Home", home)]
     rails = ((RAIL_Z, 0.0, None), (-RAIL_Z, 0.0, gap0 - 0.55), (-RAIL_Z, gap1 + 0.6, None))
-    return path, mk.merge(*parts), collider_track(path, rails=rails)
+    return path, mk.merge(*parts), collider_track(path, rails=rails), extras, markers
 
 
 def trestle(rng, length=6.0, leg=10.0):
@@ -474,9 +506,11 @@ def barrier(rng):
 
 
 # ------------------------------------------------------------------ export
-def make_scene(name, mesh, col, socks, density, radius):
+def make_scene(name, mesh, col, socks, density, radius, extras=None):
+    """extras: {knoop: (mesh, pivot, zichtbaar)} voor losse onderdelen (bijv. kapot/hersteld, issue #215)."""
+    extras = extras or {}
     sc = mk.Scene(name)
-    used = sorted(set(mesh.M) | (set(col.M) if col is not None else set()))
+    used = sorted(set(mesh.M) | (set(col.M) if col is not None else set()) | {m for e in extras.values() for m in e[0].M})
     for mname in used:
         ramp, sm, sh, op = MATERIALS[mname]
         sc.material(mname, ramp[2], ramp, sm, ramp_shift=sh, opts=dict(op))
@@ -485,6 +519,8 @@ def make_scene(name, mesh, col, socks, density, radius):
     sc.parts[-1].gradient = 0.25
     if col is not None:
         sc.add(mk.Part("Col_Main", col, (0, 0, 0), name, visible=False))
+    for ename, (emesh, piv, vis) in extras.items():
+        sc.add(mk.Part(ename, emesh.transform(t=tuple(-float(v) for v in piv)), tuple(float(v) for v in piv), name, visible=vis))
     for sname, p in socks:
         sc.add(mk.Part(sname, None, tuple(float(v) for v in p), name))
     sc.facet_all()
@@ -504,8 +540,8 @@ def build_all():
             A[f"Track_Curve_R20_{ang}_{tag}"] = (p, track(p, rng), collider_track(p), sockets(p))
     p, m, c = buffer_stop(rng)
     A["Track_BufferStop"] = (p, m, c, sockets(p))
-    p, m, c = broken(rng)
-    A["Track_Broken_6m"] = (p, m, c, sockets(p))
+    p, m, c, ex, mark = broken(rng)
+    A["Track_Broken_6m"] = (p, m, c, sockets(p) + mark, ex)
     rng = np.random.default_rng([2026, 82])
     p, m, c = trestle(rng)
     A["Track_Bridge_Trestle_6m"] = (p, m, c, sockets(p))
@@ -533,8 +569,9 @@ def build_all():
     guids = {n: unity_assets.material(ROOT, f"{MAT_DIR}/{n}.mat", n, ramp[2], sm, None, None, ramp, sh, op)
              for n, (ramp, sm, sh, op) in MATERIALS.items()}
     manifest = {}
-    for name, (path, mesh, col, socks) in A.items():
-        sc = make_scene(name, mesh, col, socks, density=700, radius=0.22)
+    for name, entry in A.items():
+        path, mesh, col, socks = entry[:4]
+        sc = make_scene(name, mesh, col, socks, density=700, radius=0.22, extras=entry[4] if len(entry) > 4 else None)
         fbx_rel = f"{MODEL_DIR}/{name}.fbx"
         sc.write_fbx_ascii(os.path.join(ROOT, fbx_rel))
         sc.write_glb(os.path.join(EXP_DIR, name + ".glb"), include_hidden=False)

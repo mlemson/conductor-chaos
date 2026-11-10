@@ -10,10 +10,12 @@ Uitvoer:
   Assets/Art/Models/Environment/SignGlyphs/StationGlyphs.fbx + .json   (bordletters voor aanpasbare namen, #209)
   Assets/Art/Models/Environment/Station/Platform/Platform_*.fbx      (zelfde pivot als een spoorstuk)
   Assets/Art/Models/Environment/Station/Props/Prop_*.fbx             (pivot midden-onder, voorkant +Z)
+  Assets/Art/Models/Environment/Station/Farm/Farm_*.fbx              (boerderijdecor, zie farm_props.py)
   Assets/Art/Materials/Environment/Station/M_Stn_*.mat
   ArtSource/Exports/Environment/Station/*.glb + StationKit.json
 Col_*-knopen zijn verborgen botsvormen; de prefabbouwer in Unity (Conductor Chaos > Art > Station) maakt er
-MeshColliders van. Light_*-knopen zijn ankers voor lampen, Door (Door_L/Door_R) draait om zijn scharnier (Y-as).
+MeshColliders van. Light_*-knopen zijn ankers voor lampen. Door, Door_L/Door_R, LockerDoor_* en Gate_* draaien om hun
+scharnier (Y-as van de knoop); de prefabbouwer hangt er SwingDoor aan zodat je ze met je handen open en dicht doet.
 Spawn_*, Briefing_* en Spot_* zijn lege ankers voor gameplay (briefingruimte).
 """
 import json
@@ -24,10 +26,13 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import main_station as main_station  # noqa: E402
+import farm_props as farm  # noqa: E402
+import bell_props as bell  # noqa: E402
 import main_station_props as mprops  # noqa: E402
 import station_building as building  # noqa: E402
 import station_platform as platform  # noqa: E402
 import station_props as props  # noqa: E402
+import tool_props as tools  # noqa: E402
 from station_common import GLYPHS, ROOT, mk, text_mesh, write_manifest  # noqa: E402
 from station_common import export as _export  # noqa: E402
 
@@ -110,7 +115,8 @@ def build_props(manifest):
 def build_briefing_props(manifest):
     """Losse props uit de briefingruimte van het hoofdstation (issue #207), voor hergebruik."""
     P = {}
-    P["Prop_Lockers"] = simple("Prop_Lockers", *mprops.lockers())
+    lk, lk_cols, lk_doors = mprops.lockers()              # deurtjes los: LockerDoor_1..4 draaien om hun scharnier
+    P["Prop_Lockers"] = simple("Prop_Lockers", lk, lk_cols, mprops.locker_door_nodes(lk_doors))
     P["Prop_RouteBoard"] = simple("Prop_RouteBoard", *mprops.route_board_prop())
     P["Prop_NoticeBoard"] = simple("Prop_NoticeBoard", *mprops.notice_board_prop())
     P["Prop_CoffeeCounter"] = simple("Prop_CoffeeCounter", *mprops.coffee_counter_prop())
@@ -122,6 +128,27 @@ def build_briefing_props(manifest):
                                    [("Light_Lamp", None, None, (0, -1.22, 0), None, True)])
     for name, nodes in P.items():
         export(name, "Props", nodes, density=900, radius=0.12, manifest=manifest)
+
+
+def build_tools(manifest):
+    """Gereedschap van de conducteur (issues #215, #216): moersleutel en kaartjestang (beweegbaar) en het kaartje."""
+    P = {"Prop_Wrench": simple("Prop_Wrench", *tools.wrench()),
+         "Prop_TicketPunch": simple("Prop_TicketPunch", *tools.ticket_punch()),
+         "Prop_Ticket": simple("Prop_Ticket", *tools.ticket())}
+    for name, nodes in P.items():
+        export(name, "Props", nodes, density=3000, radius=0.03, manifest=manifest)
+
+
+def build_farm(manifest):
+    """Boerderijdecor (schuur, stal, hek, poort, drinkbak, hooiberg, ...): zelfde prefabstraat als de stationsprops."""
+    for name, (make, density, radius) in farm.ASSETS.items():
+        export(name, "Farm", make(), density=density, radius=radius, manifest=manifest)
+
+
+def build_service(manifest):
+    """Vertrekbel op het perron (bel + paal), voor de dienstregeling."""
+    for name, (make, density, radius) in bell.ASSETS.items():
+        export(name, "Service", make(), density=density, radius=radius, manifest=manifest)
 
 
 def build_main(manifest):
@@ -155,7 +182,7 @@ def build_building(manifest):
            extra={"floor": building.FL, "footprint": [building.LX, building.HW, -building.D, 0.0]})
 
 
-ALL = ("props", "briefing", "platform", "building", "main", "glyphs")
+ALL = ("props", "briefing", "tools", "farm", "service", "platform", "building", "main", "glyphs")
 
 
 def main(which=ALL):
@@ -164,6 +191,12 @@ def main(which=ALL):
         build_props(manifest)
     if "briefing" in which:
         build_briefing_props(manifest)
+    if "tools" in which:
+        build_tools(manifest)
+    if "farm" in which:
+        build_farm(manifest)
+    if "service" in which:
+        build_service(manifest)
     if "platform" in which:
         build_platform(manifest)
     if "platform" in which or "platform-no-stripe" in which:

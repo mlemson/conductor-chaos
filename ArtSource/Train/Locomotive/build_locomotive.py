@@ -12,6 +12,14 @@ Versie 2 volgt de art review 'Locomotief · ontwerpblad v2' van @mlemson:
   * robuuste gebogen grepen (geel = interactie) en een klein gouden fluitje.
 Alles met zachte, ronde afrondingen; geschilderde variatie in vertexkleur.
 
+Cabine v3 (referentiebeeld @mlemson, 8 nov 2026):
+  * brede lessenaar over bijna de hele cabinebreedte: startknop | vuurdeur | hittemeter | schuifhendel | bordje;
+  * de snelheidshendel is een brede trekhendel die van boven naar beneden door een gouden sleuf schuift
+    (boven = vooruit, midden = neutraal, onder = achteruit; zie het bordje met pijlen);
+  * hittemeter (oranje/rode zone, vlammetje) met losse 'HeatNeedle' die de brandstof van het vuur toont;
+  * plafondlamp met gouden kooi ('CabLamp', hangt aan het dak);
+  * geen kachelpijp en geen kolenbak in de cabine meer: de schepkolen liggen nu op de kolenwagen.
+
 Assen: rijrichting +X (kop), perronkant op z = 0 (kijkt naar +Z), spoorstaaf op y = -0.62,
 cabinevloer op y = 0.74. Starre hiërarchie.
 
@@ -31,6 +39,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "ArtSource", "Tools"))
 import meshkit as mk  # noqa: E402
+from train_couplers import add_couplers
 import unity_assets  # noqa: E402
 
 PALETTE = json.load(open(os.path.join(ROOT, "Docs", "References", "palette.json"), encoding="utf-8"))
@@ -124,7 +133,8 @@ def build_headlight():
                     8, mat="M_Loco_Trim", closed=True, phase=math.pi / 8)
     ring = to_x(ring)
     ring.sharp = False
-    back = to_x(mk.lathe([(0.0, 0.02), (ri + 0.02, 0.02), (ri + 0.02, 0.08), (0.0, 0.08)], 8, mat="M_Loco_Trim",
+    # achterplaat net binnen de ketelneus (0,056 i.p.v. 0,06) en niet in het vlak van de lensachterkant (0,02)
+    back = to_x(mk.lathe([(0.0, 0.023), (ri + 0.02, 0.023), (ri + 0.02, 0.056), (0.0, 0.056)], 8, mat="M_Loco_Trim",
                          phase=math.pi / 8))
     lens = to_x(mk.lathe([(0.0, 0.17), (0.18, 0.155), (0.30, 0.11), (ri - 0.005, 0.05), (ri - 0.005, 0.02), (0.0, 0.02)],
                          8, mat="M_Loco_Lamp", phase=math.pi / 8))
@@ -158,13 +168,13 @@ def build_cab():
              (0, -1, CAB_FLOOR, REAR_DOOR_TOP, ZC - REAR_DOOR, ZC + REAR_DOOR)]                   # achterdeur
     parts = [mk.hollow_box(outer, inner, holes, radius=r, step=0.25, div=2, mat="M_Loco_Red", inner_mat="M_Loco_Interior")]
     # gouden kaders uit één stuk rond de zijopeningen en de achterdoorgang
-    # kaders steken 1 cm in de opening: hun binnenkant valt dan niet samen met de dagkant van de wand
-    wi = (win[0] + 0.01, win[1] - 0.01, win[2] + 0.01, win[3] - 0.01)
-    side = mk.frame_ring(*wi, 0.06, -0.012, 0.04, 0.02, mat="M_Loco_Gold")
+    # Laat de gouden lip over de dagkant vallen zonder hetzelfde vlak te delen.
+    side = mk.frame_ring(win[0] + 0.014, win[1] - 0.014, win[2] + 0.014, win[3] - 0.014,
+                         0.06, -0.018, 0.04, 0.02, mat="M_Loco_Gold")
     parts += [side.transform(t=(0, 0, z_out)), side.transform(s=(1, 1, -1), t=(0, 0, z_in))]
-    rear = mk.frame_ring(ZC - REAR_DOOR + 0.01, ZC + REAR_DOOR - 0.01, CAB_FLOOR - 0.05, REAR_DOOR_TOP - 0.01, 0.06,
-                         -0.012, 0.04, 0.02,
-                         mat="M_Loco_Gold", open_bottom=True)
+    # net als bij de zijramen: de lijst valt 14 mm over de dagkant, zodat hij er geen vlak mee deelt (geen z-fighting)
+    rear = mk.frame_ring(ZC - REAR_DOOR + 0.014, ZC + REAR_DOOR - 0.014, CAB_FLOOR - 0.05, REAR_DOOR_TOP - 0.014,
+                         0.06, -0.012, 0.04, 0.02, mat="M_Loco_Gold", open_bottom=True)
     parts.append(rear.transform(R=mk.rot_y(-math.pi / 2), t=(x0, 0, 0)))
     # geschilderde panelen ('vierkantjes', concept): dun, bijna vlak op de cabinewanden, doffer rood
     for zf, sgn in ((z_out, 1), (z_in, -1)):
@@ -196,26 +206,40 @@ def build_frame():
         rbox(BOILER[0] + 0.25, BOILER[1] - 0.45, -0.34, y0 + 0.04, ZC - 0.62, ZC + 0.62, 0.16, "M_Loco_Trim", div=2),
     ]
     beam_half = 1.00                                   # bufferbalk smaller dan het frame
+    # Bij het frame houden zodat het opstapje de grenzen van de cabinecamera niet vergroot.
+    cab_rear = CAB[0]
+    step_end = cab_rear - 0.66
+    parts.append(rbox(step_end, cab_rear + 0.025, CAB_FLOOR - 0.14, CAB_FLOOR - 0.012,
+                      ZC - 0.62, ZC + 0.62, 0.028, "M_Loco_Trim"))
+    parts.append(rbox(step_end + 0.035, cab_rear - 0.006, CAB_FLOOR - 0.021, CAB_FLOOR,
+                      ZC - REAR_DOOR, ZC + REAR_DOOR, 0.007, "M_Loco_Interact"))
+    post = step_end + 0.07
+    top_rail = CAB_FLOOR + 0.68
+    for dz in (-0.55, 0.55):
+        z = ZC + dz
+        parts += [mk.capsule_between((cab_rear + 0.022, top_rail + 0.06, z), (post, top_rail, z),
+                                     0.028, 0.028, 10, 2, mat="M_Loco_Interact"),
+                  # iets dunnere staander: anders vallen de bolkoppen in de hoek precies samen (z-fighting)
+                  mk.capsule_between((post, top_rail, z), (post, CAB_FLOOR - 0.03, z),
+                                     0.0275, 0.0275, 10, 2, mat="M_Loco_Interact")]
     for sgn, xe in ((1, x1), (-1, x0)):
         bx0, bx1 = (xe - 0.02, xe + 0.15) if sgn > 0 else (xe - 0.15, xe + 0.02)
         parts.append(rbox(bx0, bx1, -0.04, 0.38, ZC - beam_half, ZC + beam_half, 0.07, "M_Loco_Red", div=2))
         for zs in (ZC - beam_half - 0.02, ZC + beam_half - 0.15):
-            parts.append(rbox(bx0 - 0.02, bx1 + 0.03, -0.06, 0.40, zs, zs + 0.17, 0.07, "M_Loco_Gold", div=2))  # ronde hoekkussens
+            parts.append(rbox(bx0 - 0.01, bx1 + 0.02, -0.03, 0.37, zs, zs + 0.17, 0.07, "M_Loco_Gold", div=2))  # ronde hoekkussens
         for dz in (-0.62, 0.62):
             xs = xe + sgn * 0.22
             parts.append(mk.cylinder(0.065, 0.16, 12, 0.02, mat="M_Loco_Frame").transform(t=(xs, 0.17, ZC + dz)))
             parts.append(rbox(xe + sgn * 0.33 - 0.08, xe + sgn * 0.33 + 0.08, 0.06, 0.29, ZC + dz - 0.12, ZC + dz + 0.12, 0.07,
                               "M_Loco_Trim", div=2))                                                               # ronde blokbuffer
-        parts.append(rbox(min(xe, xe + sgn * 0.40), max(xe, xe + sgn * 0.40), 0.10, 0.24, ZC - 0.09, ZC + 0.09, 0.05,
-                          "M_Loco_Frame", div=2))                                                                  # koppeling
     # trapjes onder de cabine
     for zf, sgn in ((ZC + CAB_W / 2, 1), (ZC - CAB_W / 2, -1)):
         for (y0s, y1s, d) in ((-0.30, -0.22, 0.14), (-0.02, 0.06, 0.06)):
             za, zb = (zf - 0.06, zf + d) if sgn > 0 else (zf - d, zf + 0.06)
             parts.append(rbox(-1.95, -1.33, y0s, y1s, za, zb, 0.025, "M_Loco_Frame"))
         for xs in (-1.93, -1.41):
-            za, zb = (zf - 0.05, zf + 0.13) if sgn > 0 else (zf - 0.13, zf + 0.05)      # wangen net anders dan de treden
-            parts.append(rbox(xs, xs + 0.06, -0.32, 0.10, za, zb, 0.02, "M_Loco_Frame"))
+            za, zb = (zf - 0.056, zf + 0.13) if sgn > 0 else (zf - 0.13, zf + 0.056)
+            parts.append(rbox(xs, xs + 0.06, -0.294, 0.10, za, zb, 0.02, "M_Loco_Frame"))   # niet in het vlak van de treden
     return mk.merge(*parts)
 
 
@@ -243,49 +267,189 @@ def build_cylinders():
     return mk.merge(*parts)
 
 
+# ----------------------------------------------------------- lessenaar (cabine v3)
+# Alles op het voorvlak wordt gebouwd in 'vlakruimte': u = naar rechts (gezien vanuit de cabine, = +Z),
+# v = omhoog vanaf de cabinevloer, d = uit het vlak de cabine in (= -X). face() zet dat om naar loc-ruimte.
+FIRE_X0, FIRE_X1 = CAB[1] - 0.98, CAB[1] - 0.24      # voorvlak (kijkt de cabine in) en achterkant
+CONSOLE_HW = 0.98                                     # halve breedte (cabine binnen: 1,05)
+CONSOLE_H = 0.72
+BUTTON_UV = (-0.80, 0.43)                             # startknop
+DOOR_HINGE_U = -0.62                                  # vuurdeur 0,76 breed: u -0,62 .. +0,14
+DOOR_MID_U = DOOR_HINGE_U + 0.38
+HEAT_UV, HEAT_R = (0.30, 0.42), 0.125                 # hittemeter
+LEVER_U, LEVER_V = 0.61, 0.41                         # hendel in de middenstand
+LEVER_TRAVEL = 0.19                                   # = TrainDrive.LeverTravel (boven = vooruit, onder = achteruit)
+LEVER_OUT = 0.11                                      # hart van de trekstang voor het vlak
+SLOT = (0.58, 0.64, 0.16, 0.655)                      # sleuf u0, u1, v0, v1
+PLATE = (0.745, 0.935, 0.115, 0.70)                   # bordje met pijlen
+LAMP_X = (CAB[0] + CAB[1]) / 2                        # plafondlamp midden in de cabine
+
+
+def face(m, u=0.0, v=0.0, d=0.0):
+    """Mesh uit vlakruimte (x = u, y = v, z = d) naar loc-ruimte op het voorvlak van de lessenaar."""
+    return m.transform(R=mk.rot_y(-math.pi / 2), t=(FIRE_X0 - d, CAB_FLOOR + v, ZC + u))
+
+
+def flat(points, z0, z1, mat, c=0.0015):
+    """Plat icoontje/wijzer (polygoon in het vlak) met een klein afgeschuind randje."""
+    return mk.prism(points, z0, z1, c, mat=mat)
+
+
+def build_gauge(r, zones=(), flame=False, depth=0.05, needle_angle=-120.0):
+    """Ronde meter in vlakruimte (midden = oorsprong, kijkt naar +z): gouden rand, perkamenten wijzerplaat,
+    streepjes over 240 graden, optioneel gekleurde zones en een vlammetje. Geeft (meter, wijzer) terug; de wijzer
+    staat op `needle_angle` (graden vanaf boven, met de klok mee) en draait om z."""
+    seg = 20
+    ri = r * 0.80
+    # zelfde opbouw als de drukmeter op het blad: gouden schijf met afgeronde rand, perkamenten plaat ervoor
+    bezel = mk.cylinder(r, depth, seg, 0.015, mat="M_Loco_Gold", axis="z").transform(t=(0, 0, depth / 2))
+    zf = depth + 0.004                                       # voorkant van de wijzerplaat
+    dial = mk.cylinder(ri, 0.010, seg, 0.003, mat="M_Loco_Dial", axis="z").transform(t=(0, 0, zf - 0.005))
+    parts = [bezel, dial]
+
+    def sector(a0, a1, r0, r1, n=10):
+        pts = [(r1 * math.sin(math.radians(a0 + (a1 - a0) * k / n)), r1 * math.cos(math.radians(a0 + (a1 - a0) * k / n)))
+               for k in range(n + 1)]
+        pts += [(r0 * math.sin(math.radians(a1 - (a1 - a0) * k / n)), r0 * math.cos(math.radians(a1 - (a1 - a0) * k / n)))
+                for k in range(n + 1)]
+        return pts
+
+    for (a0, a1, mat) in zones:
+        parts.append(flat(sector(a0, a1, ri * 0.66, ri * 0.92), zf, zf + 0.004, mat))
+    for k in range(9):                                       # streepjes: -120 .. +120 graden
+        a = -120.0 + 30.0 * k
+        length = ri * (0.24 if k % 2 == 0 else 0.15)
+        tick = flat([(-0.0045, ri * 0.90 - length), (0.0045, ri * 0.90 - length), (0.0045, ri * 0.90), (-0.0045, ri * 0.90)],
+                    zf, zf + 0.006, "M_Loco_Trim")
+        parts.append(tick.transform(R=mk.rot_z(-math.radians(a))))
+    if flame:                                                # vlammetje onderin (tussen de uiteinden van de schaal)
+        outer = [(0.0, 1.0), (0.14, 0.78), (0.30, 0.56), (0.36, 0.34), (0.30, 0.13), (0.15, 0.02), (-0.15, 0.02),
+                 (-0.30, 0.13), (-0.36, 0.34), (-0.30, 0.52), (-0.20, 0.66), (-0.14, 0.50), (-0.06, 0.70)]
+        inner = [(0.0, 0.62), (0.13, 0.40), (0.17, 0.22), (0.09, 0.08), (-0.09, 0.08), (-0.17, 0.22), (-0.13, 0.40)]
+        h, y0 = ri * 0.46, -ri * 0.78
+        parts.append(flat([(x * h, y0 + y * h) for x, y in outer], zf, zf + 0.004, "M_Loco_Warm"))
+        parts.append(flat([(x * h, y0 + y * h) for x, y in inner], zf + 0.003, zf + 0.007, "M_Loco_Gold"))
+    needle = mk.merge(
+        flat([(-0.0075, -ri * 0.16), (0.0075, -ri * 0.16), (0.0028, ri * 0.80), (-0.0028, ri * 0.80)], zf + 0.007, zf + 0.012,
+             "M_Loco_Trim"),
+        mk.cylinder(ri * 0.13, 0.010, 12, 0.003, mat="M_Loco_Gold", axis="z").transform(t=(0, 0, zf + 0.013)))
+    needle = needle.transform(R=mk.rot_z(-math.radians(needle_angle)))
+    return mk.merge(*parts), needle
+
+
+def build_lever_unit():
+    """Gouden sleuf met donkere groef voor de trekhendel + bordje (boven = vooruit, streep = stil, onder = achteruit)."""
+    u0, u1, v0, v1 = SLOT
+    w = 0.045
+    parts = [mk.frame_ring(u0, u1, v0, v1, w, 0.0, 0.035, 0.012, mat="M_Loco_Gold"),
+             rbox(u0 - 0.004, u1 + 0.004, v0 - 0.004, v1 + 0.004, -0.012, 0.004, 0.02, "M_Loco_Frame")]
+    for uu in (u0 - w / 2, u1 + w / 2):
+        for vv in (v0 - w / 2, v1 + w / 2):
+            parts.append(mk.ellipsoid(0.011, 0.011, 0.007, 10, 5, mat="M_Loco_Gold").transform(t=(uu, vv, 0.035)))
+    pu0, pu1, pv0, pv1 = PLATE
+    parts += [rbox(pu0, pu1, pv0, pv1, -0.03, 0.012, 0.02, "M_Loco_RedDark"),
+              mk.frame_ring(pu0 + 0.016, pu1 - 0.016, pv0 + 0.016, pv1 - 0.016, 0.010, 0.010, 0.018, 0.003, mat="M_Loco_Gold")]
+    cu = (pu0 + pu1) / 2
+    z0, z1 = 0.011, 0.019
+    arrow = [(0.0, 0.045), (0.040, 0.008), (0.013, 0.008), (0.013, -0.042), (-0.013, -0.042), (-0.013, 0.008), (-0.040, 0.008)]
+    train = [(-0.050, 0.010), (0.050, 0.010), (0.050, 0.032), (0.036, 0.038), (0.036, 0.054), (0.024, 0.054),
+             (0.024, 0.038), (-0.012, 0.038), (-0.012, 0.058), (-0.056, 0.058), (-0.056, 0.051), (-0.050, 0.051)]
+
+    def icon_train(v):
+        body = flat([(x + cu, y + v - 0.034) for x, y in train], z0, z1, "M_Loco_Dial")
+        wheels = [mk.cylinder(0.012, z1 - z0 + 0.002, 12, 0.002, mat="M_Loco_Dial", axis="z").transform(
+            t=(cu + xw, v - 0.024, (z0 + z1) / 2 + 0.001)) for xw in (-0.030, 0.026)]
+        return mk.merge(body, *wheels)
+
+    parts += [flat([(x + cu, y + 0.62) for x, y in arrow], z0, z1, "M_Loco_Dial"),
+              icon_train(0.53),
+              rbox(cu - 0.032, cu + 0.032, LEVER_V - 0.008, LEVER_V + 0.008, z0, z1, 0.003, "M_Loco_Dial"),
+              flat([(x + cu, -y + 0.30) for x, y in arrow], z0, z1, "M_Loco_Dial"),
+              icon_train(0.21)]
+    return mk.merge(*parts)
+
+
 def build_firebox():
-    """Kooloventje in de cabine (achterkant ketel): donker blok met kachelpijp, drukmeter en kolenbak.
-    Losse onderdelen voor gameplay: FireboxDoor (scharniert om lokale Y) en Regulator (draait om lokale Z)."""
-    x0, x1 = CAB
-    fx0, fx1 = x1 - 0.82, x1 - 0.24
-    stove = rbox(fx0, fx1, CAB_FLOOR - 0.01, CAB_FLOOR + 0.86, ZC - 0.40, ZC + 0.40, 0.09, "M_Loco_Trim", div=3)
-    top = rbox(fx0 - 0.03, fx1 + 0.03, CAB_FLOOR + 0.84, CAB_FLOOR + 0.92, ZC - 0.43, ZC + 0.43, 0.04, "M_Loco_Gold", div=3)
-    pipe = mk.capsule_between((fx0 + 0.28, CAB_FLOOR + 0.9, ZC + 0.18), (fx0 + 0.28, ROOF_Y + 0.05, ZC + 0.18),
-                              0.075, 0.075, 12, 2, mat="M_Loco_Frame")
+    """Brede lessenaar met kooloven (achterkant ketel): vuurdeur-opening, gouden rand met rood blad, drukmeter op
+    het blad, startknopring, hittemeter, sleuf + bordje voor de trekhendel en vier gouden bouten.
+    Losse onderdelen voor gameplay: FireboxDoor, Regulator, StartButton, SpeedNeedle en HeatNeedle."""
+    fx0, fx1 = FIRE_X0, FIRE_X1
+    lo, hi = DOOR_HINGE_U + 0.04, DOOR_HINGE_U + 0.72      # vuuropening achter de deur
+    stove = mk.hollow_box(
+        (fx0, fx1, CAB_FLOOR - 0.01, CAB_FLOOR + CONSOLE_H, ZC - CONSOLE_HW, ZC + CONSOLE_HW),
+        (fx0 + 0.07, fx1 - 0.08, CAB_FLOOR + 0.10, CAB_FLOOR + 0.60, ZC + lo - 0.07, ZC + hi + 0.07),
+        [(0, -1, CAB_FLOOR + 0.13, CAB_FLOOR + 0.52, ZC + lo, ZC + hi)],
+        radius=0.09, mat="M_Loco_Trim", inner_mat="M_Loco_Frame")
+    top = mk.merge(
+        rbox(fx0 - 0.03, fx1 + 0.03, CAB_FLOOR + 0.70, CAB_FLOOR + 0.75, ZC - CONSOLE_HW - 0.03, ZC + CONSOLE_HW + 0.03,
+             0.024, "M_Loco_Gold"),
+        rbox(fx0 - 0.02, fx1 + 0.02, CAB_FLOOR + 0.738, CAB_FLOOR + 0.78, ZC - CONSOLE_HW - 0.02, ZC + CONSOLE_HW + 0.02,
+             0.020, "M_Loco_RedDark"))
+    bu, bv = BUTTON_UV
+    button_ring = mk.cylinder(0.102, 0.038, 16, 0.009, mat="M_Loco_Gold", axis="x").transform(
+        t=(fx0 - 0.018, CAB_FLOOR + bv, ZC + bu))
     gauge = mk.merge(
-        mk.cylinder(0.11, 0.05, 20, 0.015, mat="M_Loco_Gold", axis="x").transform(t=(fx0 - 0.02, CAB_FLOOR + 1.10, ZC - 0.20)),
-        mk.cylinder(0.085, 0.02, 20, 0.005, mat="M_Loco_Dial", axis="x").transform(t=(fx0 - 0.045, CAB_FLOOR + 1.10, ZC - 0.20)),
-        rbox(fx0 - 0.068, fx0 - 0.05, CAB_FLOOR + 1.09, CAB_FLOOR + 1.17, ZC - 0.21, ZC - 0.19, 0.004, "M_Loco_Trim"),  # wijzer
-        mk.capsule_between((fx0 + 0.05, CAB_FLOOR + 0.92, ZC - 0.20), (fx0 - 0.01, CAB_FLOOR + 1.05, ZC - 0.20), 0.025, 0.025, 8, 1,
-                           mat="M_Loco_Gold"))
-    rng = np.random.default_rng(3)
-    lumps = []
-    for k in range(16):
-        sx, sy, sz = rng.uniform(0.07, 0.12), rng.uniform(0.05, 0.08), rng.uniform(0.07, 0.11)
-        lump = mk.ellipsoid(sx, sy, sz, 7, 4, mat="M_Loco_Coal")
-        lump.sharp = True                                   # facetjes = steenkool
-        lumps.append(lump.transform(R=mk.rot_y(rng.uniform(0, math.pi)) @ mk.rot_x(rng.uniform(-0.4, 0.4)),
-                                    t=(x0 + 0.34 + rng.uniform(0, 0.36), CAB_FLOOR + 0.40 + rng.uniform(-0.01, 0.06),
-                                       ZC - 0.98 + rng.uniform(0, 0.42))))
-    # schepbak in de hoek (overkant), zodat de doorgang naar de kolenwagen vrij blijft
-    bin_ = mk.merge(rbox(x0 + 0.22, x0 + 0.80, CAB_FLOOR - 0.01, CAB_FLOOR + 0.42, ZC - 1.04, ZC - 0.50, 0.05, "M_Loco_RedDark", div=3),
-                    *lumps)
-    return mk.merge(stove, top, pipe, gauge), bin_, (fx0, fx1)
+        mk.cylinder(0.11, 0.05, 20, 0.015, mat="M_Loco_Gold", axis="x").transform(t=(fx0 - 0.02, CAB_FLOOR + 0.96, ZC - 0.20)),
+        mk.cylinder(0.085, 0.02, 20, 0.005, mat="M_Loco_Dial", axis="x").transform(t=(fx0 - 0.045, CAB_FLOOR + 0.96, ZC - 0.20)),
+        mk.capsule_between((fx0 + 0.05, CAB_FLOOR + 0.78, ZC - 0.20), (fx0 - 0.01, CAB_FLOOR + 0.91, ZC - 0.20), 0.025, 0.025, 8, 1,
+                           mat="M_Loco_Gold"),
+        *(rbox(-0.007, -0.005, 0.062, 0.081, -0.004, 0.004, 0.0008, "M_Loco_Trim").transform(
+            R=mk.rot_x(math.radians(angle)), t=(fx0 - 0.05, CAB_FLOOR + 0.96, ZC - 0.20))
+          for angle in range(-120, 121, 40)))
+    heat, _ = build_gauge(HEAT_R, zones=((30.0, 75.0, "M_Loco_Warm"), (75.0, 120.0, "M_Loco_Red")), flame=True)
+    bolts = [face(mk.ellipsoid(0.022, 0.022, 0.012, 12, 6, mat="M_Loco_Gold"), uu, vv, 0.002)
+             for uu in (-0.92, 0.46) for vv in (0.06, 0.64)]
+    return mk.merge(stove, top, gauge, button_ring, face(heat, *HEAT_UV), face(build_lever_unit()), *bolts), (fx0, fx1)
+
+
+def build_heat_needle():
+    """Wijzer van de hittemeter (los: TrainDrive draait hem om lokale X, net als SpeedNeedle). Rust = koud (-120)."""
+    _, needle = build_gauge(HEAT_R, needle_angle=-120.0)
+    return needle.transform(R=mk.rot_y(-math.pi / 2))
 
 
 def build_firebox_door():
     """Vuurdeurtje (los onderdeel; pivot = scharnier links), gouden rand met gloeiend venster."""
-    d = mk.merge(rbox(-0.015, 0.03, -0.17, 0.17, 0.0, 0.40, 0.03, "M_Loco_Gold", div=3),
-                 rbox(-0.035, -0.005, -0.10, 0.10, 0.08, 0.32, 0.025, "M_Loco_Fire", div=3),
-                 mk.ellipsoid(0.02, 0.03, 0.03, 8, 4, mat="M_Loco_Trim").transform(t=(-0.03, 0.0, 0.36)))
+    d = mk.merge(rbox(-0.025, 0.03, -0.24, 0.24, 0.0, 0.76, 0.03, "M_Loco_Gold", div=3),
+                 rbox(-0.045, -0.01, -0.196, 0.196, 0.048, 0.712, 0.025, "M_Loco_RedDark"),
+                 rbox(-0.055, -0.035, -0.126, 0.126, 0.12, 0.59, 0.009, "M_Loco_Fire"),
+                 *(mk.cylinder(0.037, 0.13, 12, 0.009, mat="M_Loco_Frame", axis="y").transform(
+                     t=(0, y, 0.014)) for y in (-0.155, 0.155)))
     return d
 
 
 def build_regulator():
-    """Snelheidshendel (los onderdeel; pivot = as, draait om lokale Z). Geel = interactie."""
-    return mk.merge(mk.cylinder(0.05, 0.08, 12, 0.01, mat="M_Loco_Frame", axis="z"),
-                    mk.capsule_between((0, 0, 0.0), (-0.05, 0.42, 0.0), 0.025, 0.022, 8, 2, mat="M_Loco_Trim"),
-                    mk.ellipsoid(0.055, 0.055, 0.055, 12, 6, mat="M_Loco_Interact").transform(t=(-0.05, 0.45, 0)))
+    """Brede trekhendel (los onderdeel; pivot = hart van de greep in de middenstand). Schuift langs lokale Y door de
+    sleuf; de donkere steel steekt in de groef. Geel = interactie."""
+    half = 0.10
+    return mk.merge(
+        mk.cylinder(0.040, 2 * half, 14, 0.012, mat="M_Loco_Interact", axis="z"),
+        *(mk.cylinder(0.047, 0.03, 14, 0.010, mat="M_Loco_Frame", axis="z").transform(t=(0, 0, s * (half + 0.012)))
+          for s in (-1, 1)),
+        mk.cylinder(0.034, 0.045, 12, 0.008, mat="M_Loco_Gold", axis="x").transform(t=(0.045, 0, 0)),
+        rbox(0.05, LEVER_OUT + 0.02, -0.022, 0.022, -0.022, 0.022, 0.008, "M_Loco_Frame"))
+
+
+def build_cab_lamp():
+    """Plafondlamp: gouden voet, gloeiende glazen koepel met gouden kooi en een knopje onderaan (pivot = plafond)."""
+    seg = 16
+    y_rim = -0.050
+    rg, ry = 0.112, 0.120
+    base = mk.lathe([(0.0, 0.0), (0.150, 0.0), (0.150, -0.016), (0.132, -0.034), (0.118, -0.042), (0.0, -0.046)], seg,
+                    mat="M_Loco_Gold", phase=math.pi / seg)
+    collar = mk.torus(0.120, 0.014, seg, 6, mat="M_Loco_Gold").transform(t=(0, y_rim, 0))
+    glass = mk.lathe([(rg * math.cos(math.radians(a)), y_rim - ry * math.sin(math.radians(a))) for a in range(0, 91, 15)],
+                     seg, mat="M_Loco_Lamp", phase=math.pi / seg)
+    cage = [collar]
+    rc, ryc = rg + 0.010, ry + 0.010
+    for phi in (0.0, math.pi / 2):                          # twee bogen die elkaar onderin kruisen
+        pts = [(rc * math.cos(math.radians(a)) * math.cos(phi), y_rim - ryc * math.sin(math.radians(a)),
+                rc * math.cos(math.radians(a)) * math.sin(phi)) for a in range(0, 181, 20)]
+        cage += [mk.capsule_between(p, q, 0.0085, 0.0085, 8, 1, mat="M_Loco_Gold") for p, q in zip(pts[:-1], pts[1:])]
+    lat = math.radians(48)
+    cage.append(mk.torus(rc * math.cos(lat), 0.0085, seg, 5, mat="M_Loco_Gold").transform(t=(0, y_rim - ryc * math.sin(lat), 0)))
+    knob = mk.ellipsoid(0.022, 0.018, 0.022, 10, 5, mat="M_Loco_Gold").transform(t=(0, y_rim - ryc - 0.010, 0))
+    return mk.merge(base, glass, *cage, knob)
 
 
 def build_wheels():
@@ -345,24 +509,61 @@ def build_locomotive():
     sc.material("M_Loco_Fire", R_["vest"][2], fire_ramp, 0.40, emissive=R_["helmet"][2], opts={"emissive": 1.0, "rim": 0.0, "paint": 0.6})
     sc.material("M_Loco_Coal", R_["ui_bg"][1], R_["ui_bg"], 0.30, ramp_shift=-0.1, opts={"paint": 1.0, "edge": 1.6})
     sc.material("M_Loco_Dial", R_["parchment"][3], R_["parchment"], 0.30, opts={"flat": 0.5, "paint": 0.3})
+    sc.material("M_Loco_Warm", R_["vest"][2], R_["vest"], 0.30, opts={"flat": 0.4, "paint": 0.4})   # oranje zone hittemeter
     sc.add(mk.Part("Locomotive", None))
     sc.add(mk.Part("Frame", build_frame(), (0, 0, 0), "Locomotive"))
     cab, roof = build_cab()
     sc.add(mk.Part("Cab", cab, (0, 0, 0), "Locomotive"))
     sc.add(mk.Part("CabRoof", roof, (0, 0, 0), "Cab"))   # los: te verbergen voor een camera van bovenaf
+    sc.add(mk.Part("CabLamp", build_cab_lamp(), (LAMP_X, ROOF_Y - 0.04, ZC), "CabRoof"))   # hangt aan het plafond
     sc.add(mk.Part("Boiler", build_boiler(), (0, 0, 0), "Locomotive"))
     sc.add(mk.Part("HeadLight", build_headlight(), (BOILER[1] - 0.06, LAMP_Y, ZC), "Locomotive"))
     sc.add(mk.Part("Wheels", build_wheels(), (0, 0, 0), "Locomotive"))
     sc.add(mk.Part("Cylinders", build_cylinders(), (0, 0, 0), "Locomotive"))
-    firebox, coal, (fx0, fx1) = build_firebox()
+    firebox, (fx0, fx1) = build_firebox()
     sc.add(mk.Part("Firebox", firebox, (0, 0, 0), "Locomotive"))
-    sc.add(mk.Part("FireboxDoor", build_firebox_door(), (fx0, CAB_FLOOR + 0.44, ZC - 0.20), "Firebox"))
-    sc.add(mk.Part("Regulator", build_regulator(), (fx0 - 0.02, CAB_FLOOR + 0.62, ZC + 0.48), "Firebox"))
-    sc.add(mk.Part("CoalBin", coal, (0, 0, 0), "Locomotive"))
+    sc.add(mk.Part("FireboxDoor", build_firebox_door(), (fx0 - 0.035, CAB_FLOOR + 0.32, ZC + DOOR_HINGE_U), "Firebox"))
+    sc.add(mk.Part("Regulator", build_regulator(), (fx0 - LEVER_OUT, CAB_FLOOR + LEVER_V, ZC + LEVER_U), "Firebox"))
+    sc.add(mk.Part("HeatNeedle", build_heat_needle(), (fx0, CAB_FLOOR + HEAT_UV[1], ZC + HEAT_UV[0]), "Firebox"))
     sc.add(mk.Part("GrabRails", build_grabrails(), (0, 0, 0), "Locomotive"))
+    needle = rbox(-0.008, 0.008, 0, 0.075, -0.008, 0.008, 0.003, "M_Loco_Trim")
+    needle = needle.transform(R=mk.rot_x(math.radians(-120)))
+    sc.add(mk.Part("SpeedNeedle", needle, (fx0 - 0.08, CAB_FLOOR + 0.96, ZC - 0.20), "Firebox"))
+    button = mk.cylinder(0.075, 0.04, 16, 0.012, mat="M_Loco_Red", axis="x")
+    sc.add(mk.Part("StartButton", button, (fx0 - 0.05, CAB_FLOOR + BUTTON_UV[1], ZC + BUTTON_UV[0]), "Firebox"))
+    latch = mk.cylinder(0.047, 0.12, 12, 0.018, mat="M_Loco_Interact", axis="x")
+    sc.add(mk.Part("FireboxLatch", latch, (-0.074, 0, 0.686), "FireboxDoor"))
+    # schep: blad 0,38 x 0,38 m zodat de losse kolenbrokken uit de tenderbak (tot ~0,30 m) erop passen.
+    # De botsvormen van blad en randen staan in TrainDrive.PrepareStoking en moeten hiermee overeenkomen.
+    shovel = mk.merge(
+        mk.capsule_between((0, 0, 0), (0, 0, 0.50), 0.024, 0.019, 10, 2, mat="M_Loco_Gold"),
+        rbox(-0.07, 0.07, -0.027, 0.027, -0.029, 0.029, 0.018, "M_Loco_Interact"),
+        rbox(-0.050, 0.050, -0.035, 0.032, 0.42, 0.50, 0.014, "M_Loco_Gold"),
+        rbox(-0.19, 0.19, -0.040, -0.008, 0.46, 0.84, 0.012, "M_Loco_Frame"),
+        *(rbox(a, b, -0.024, 0.055, 0.465, 0.82, 0.009, "M_Loco_Trim")
+          for a, b in ((-0.19, -0.165), (0.165, 0.19))),
+        rbox(-0.19, 0.19, -0.024, 0.025, 0.818, 0.84, 0.009, "M_Loco_Trim"))
+    sc.add(mk.Part("CoalShovel", shovel, (CAB[0] + 0.98, CAB_FLOOR + 0.84, ZC - 0.91), "Locomotive",
+                   rotation=mk.rot_x(math.radians(83))))
+    sc.add(mk.Part("ShovelLoad", None, (0, 0.006, 0.65), "CoalShovel"))
+    # de schepkolen (CoalChunk*, CoalScoopPoint) liggen sinds cabine v3 op de kolenwagen ('CoalStock')
+    sc.add(mk.Part("FireboxFeedPoint", None, (fx0 - 0.06, CAB_FLOOR + 0.33, ZC + DOOR_MID_U), "Firebox"))
+    coals = mk.merge(*(mk.ellipsoid(0.07, 0.047, 0.085, 7, 4, mat="M_Loco_Coal").transform(
+        t=(fx0 + x, CAB_FLOOR + 0.135 + y, ZC + DOOR_MID_U + z))
+        for x, y, z in ((0.18, 0, -0.17), (0.19, .014, 0), (0.18, .008, .17), (.31, .016, -.11), (.32, .009, .07), (.32, 0, .21), (.43, .022, 0))))
+    sc.add(mk.Part("FireboxCoals", coals, (0, 0, 0), "Firebox"))
+    flame = mk.merge(
+        mk.lathe([(0, 0), (0.082, 0.021), (0.072, 0.091), (0.045, 0.16), (0, 0.285)], 8, mat="M_Loco_Fire"),
+        *(mk.lathe([(0, 0), (0.064, 0.026), (0.048, 0.085), (0, height)], 7, mat="M_Loco_Fire")
+          .transform(R=mk.rot_x(tilt), t=(x, 0, z))
+          for x, z, height, tilt in ((0.02, -0.11, 0.21, -0.22), (0.055, 0.115, 0.235, 0.27), (-0.095, 0.018, 0.16, -0.18))))
+    sc.add(mk.Part("FireboxFlame", flame, (fx0 + 0.28, CAB_FLOOR + 0.16, ZC + DOOR_MID_U), "Firebox"))
+    sc.add(mk.Part("ChimneySmoke", None, (BOILER[1] - 0.85, BOILER_TOP + 0.89, ZC), "Locomotive"))
+    add_couplers(sc, "Locomotive", RAIL_Y, ZC, FRAME[0] - 0.10, FRAME[1] + 0.10, "M_Loco_Trim", "M_Loco_Interact")
     for p in sc.parts:
         p.gradient = 0.30
-        if p.name in ("Cab", "CabRoof", "Boiler", "Frame", "HeadLight", "Cylinders", "Firebox", "CoalBin", "FireboxDoor", "Regulator"):
+        if p.name in ("Cab", "CabRoof", "CabLamp", "Boiler", "Frame", "HeadLight", "Cylinders", "Firebox", "FireboxDoor",
+                      "Regulator", "HeatNeedle"):
             p.ao_group = "body"
     sc.get("Wheels").gradient = 0.12
     sc.facet_all()

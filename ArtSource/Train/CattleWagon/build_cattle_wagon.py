@@ -25,6 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "ArtSource", "Tools"))
 import meshkit as mk  # noqa: E402
+from train_couplers import add_couplers
 import unity_assets  # noqa: E402
 
 PALETTE = json.load(open(os.path.join(ROOT, "Docs", "References", "palette.json"), encoding="utf-8"))
@@ -45,7 +46,6 @@ SIDE_BAYS = [(-3.06, -2.05), (-1.93, -0.92), (0.92, 1.93), (2.05, 3.06)]
 END_BAYS = [(ZC - 1.18, ZC - 0.62), (ZC + 0.62, ZC + 1.18)]
 BOGIE_X = 2.05
 RAIL_Y = -0.62
-WHEEL_Z = 1.29                  # wielhart t.o.v. hartlijn = spoorwijdte 2,58 m (gelijk aan loc/tender en de spoorkit)
 
 
 def box(x0, x1, y0, y1, z0, z1, r, mat, div=1):
@@ -138,8 +138,8 @@ def build_interior():
         for k in range(stack):
             rot = rng.uniform(-0.15, 0.15)
             b = box(-0.42, 0.42, 0.0, 0.40, -0.26, 0.26, 0.06, "M_Cattle_Straw", div=1)
-            band = mk.merge(box(-0.24, -0.18, -0.005, 0.41, -0.272, 0.272, 0.01, "M_Cattle_Trim"),    # 1 cm boven de baal
-                            box(0.18, 0.24, -0.005, 0.41, -0.272, 0.272, 0.01, "M_Cattle_Trim"))
+            band = mk.merge(box(-0.24, -0.18, -0.005, 0.405, -0.265, 0.265, 0.01, "M_Cattle_Trim"),
+                            box(0.18, 0.24, -0.005, 0.405, -0.265, 0.265, 0.01, "M_Cattle_Trim"))
             parts.append(mk.merge(b, band).transform(R=mk.rot_y(rot), t=(x, FLOOR + 0.03 + k * 0.40, z)))
     # voerbak (één stuk: U-profiel) tegen de overkant
     trough = mk.prism(mk.chamfer_poly([(-0.32, 0.0), (0.32, 0.0), (0.32, 0.36), (0.24, 0.36), (0.24, 0.10), (-0.24, 0.10),
@@ -153,12 +153,12 @@ def build_underframe():
     for bx in (-BOGIE_X, BOGIE_X):
         parts.append(box(bx - 0.95, bx + 0.95, -0.40, -0.16, ZC - W / 2 + 0.14, ZC + W / 2 - 0.14, 0.06, "M_Cattle_Trim"))
         for ax in (bx - 0.62, bx + 0.62):
-            for zs in (ZC + WHEEL_Z, ZC - WHEEL_Z):
+            for zs in (ZC + 1.29, ZC - 1.29):
                 w = mk.cylinder(0.33, 0.12, 12, 0.035, mat="M_Cattle_Wheel", axis="z")
                 hub = mk.cylinder(0.13, 0.16, 8, 0.03, mat="M_Cattle_Red", axis="z")
                 w.sharp = hub.sharp = True
                 parts.append(mk.merge(w, hub).transform(t=(ax, RAIL_Y + 0.33, zs)))
-        for zs in (ZC + WHEEL_Z + 0.13, ZC - WHEEL_Z - 0.13):      # aspotten buiten de wielen
+        for zs in (ZC + W / 2 + 0.12, ZC - W / 2 - 0.12):
             parts.append(box(bx - 0.22, bx + 0.22, -0.36, -0.10, zs - 0.06, zs + 0.06, 0.02, "M_Cattle_Red"))
     return mk.merge(*parts)
 
@@ -175,14 +175,14 @@ def build_ends():
         for dz in (-0.58, 0.58):
             xo = ex + sgn * 0.28
             parts += [mk.capsule_between((ex - sgn * 0.02, 1.08, ZC + dz), (xo, 1.08, ZC + dz), 0.026, 0.026, 8, 1, mat="M_Cattle_Interact"),
-                      mk.capsule_between((xo, 1.08, ZC + dz), (xo, SILL_Y + 0.02, ZC + dz), 0.026, 0.026, 8, 1, mat="M_Cattle_Interact")]
+                      # iets dunnere staander: anders vallen de bolkoppen in de hoek precies samen (z-fighting)
+                      mk.capsule_between((xo, 1.08, ZC + dz), (xo, SILL_Y + 0.02, ZC + dz), 0.0255, 0.0255, 8, 1, mat="M_Cattle_Interact")]
         for dz in (-0.80, 0.80):
             buf = mk.cylinder(0.07, 0.30, 8, 0.015, mat="M_Cattle_Trim")
             plate = mk.cylinder(0.16, 0.06, 8, 0.02, mat="M_Cattle_Trim")
             buf.sharp = plate.sharp = True
             parts.append(buf.transform(t=(ex + sgn * 0.12, 0.17, ZC + dz)))
             parts.append(plate.transform(t=(ex + sgn * 0.27, 0.17, ZC + dz)))
-        parts.append(box(min(ex, ex + sgn * 0.33), max(ex, ex + sgn * 0.33), -0.18, -0.02, ZC - 0.12, ZC + 0.12, 0.04, "M_Cattle_Trim"))
     # gouden naambordje op de onderregel (beide kanten)
     plaque = box(-2.75, -2.10, 0.08, 0.24, 0.0, CAGE + 0.012, 0.015, "M_Cattle_Gold")
     parts += [plaque, plaque.transform(s=(1, 1, -1), t=(0, 0, -W))]
@@ -213,6 +213,7 @@ def build_cattle_wagon():
     sc.add(mk.Part("SlideDoor_Far", door.transform(s=(1, 1, -1)), (0, SILL_Y - 0.04, -W - CAGE - 0.05), "CattleWagon"))
     sc.add(mk.Part("Underframe", build_underframe(), (0, 0, 0), "CattleWagon"))
     sc.add(mk.Part("Ends", build_ends(), (0, 0, 0), "CattleWagon"))
+    add_couplers(sc, "CattleWagon", RAIL_Y, ZC, -L / 2 - CAGE - 0.12, L / 2 + CAGE + 0.12, "M_Cattle_Trim", "M_Cattle_Interact")
     for p in sc.parts:
         p.gradient = 0.25
     sc.facet_all()

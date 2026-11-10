@@ -3,7 +3,8 @@
 //    Assets/Art/Prefabs/Station/... met:
 //      - een MeshCollider op elke verborgen botsvorm Col_* (renderer uit), zoals de spoorkit;
 //      - een warm puntlicht op elk anker Light_* (lantaarns, hanglampen in de hal);
-//      - static flags op alles behalve bewegende delen (Door/Door_L/Door_R van de gebouwen, Boom van de overweg);
+//      - static flags op alles behalve bewegende deuren, slagbomen en losse meubels;
+//      - SwingDoor + physics op elk draaiend blad (Door, Door_L/R, LockerDoor_*, Gate): met de hand open en dicht;
 //      - StationSign op elk naambord Sign_* (naam in te typen, letters uit SignGlyphs; issue #209).
 //    Gebeurt automatisch als prefabs ontbreken of na het (her)importeren van de modellen;
 //    opnieuw via Conductor Chaos > Art > Station > Rebuild Station Prefabs.
@@ -15,6 +16,8 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using ConductorChaos.Playground;
+using ConductorChaos.Stations;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEditor;
@@ -31,6 +34,17 @@ namespace ConductorChaos.EditorTools
         const string ExampleScene = "Assets/Scenes/Art/StationExample.unity";
         static readonly Color LampColor = new Color(1.0f, 0.85f, 0.55f);
         static readonly string[] Moving = { "Door", "Door_L", "Door_R", "Boom" };
+        static readonly string[] Buildings = { "Station_Building", "Station_Main" };
+        const string LoosePrefix = "Loose_";
+        const string HingePrefix = "Hinge_";
+
+        /// <summary>Draaiend blad uit het model: heeft de knopen Hinge_&lt;naam&gt;_Closed en Hinge_&lt;naam&gt;_Open naast zich.</summary>
+        static bool IsSwingDoor(Transform t) =>
+            t.parent && !t.name.StartsWith(HingePrefix) && !t.name.StartsWith("Col_") &&
+            t.parent.Find($"{HingePrefix}{t.name}_Closed") && t.parent.Find($"{HingePrefix}{t.name}_Open");
+
+        static float SwingDoorMass(string name) =>
+            name.StartsWith("LockerDoor") ? 1.2f : name.StartsWith("Gate") ? 4f : 7f;
         static readonly Dictionary<string, float> MovableMasses = new()
         {
             { "Prop_Barrel", 2f },
@@ -39,7 +53,14 @@ namespace ConductorChaos.EditorTools
             { "Prop_CrateStack", 5f },
             { "Prop_LuggageCart", 3.5f },
             { "Prop_Planter", 8f },
-            { "Prop_TrashBin", 1.5f }
+            { "Prop_TrashBin", 1.5f },
+            { "Prop_PottedPlant", 3f },
+            { "Prop_Stool", 1.5f },
+            { "Prop_Suitcase", 1f },
+            { "Prop_Bell", 0.35f },
+            { "Prop_Mug", 0.25f },
+            { "Prop_Wrench", 1.2f },
+            { "Prop_TicketPunch", 0.5f }
         };
 
         static StationKitPrefabs()
@@ -51,7 +72,7 @@ namespace ConductorChaos.EditorTools
                 int models = AssetDatabase.FindAssets("t:Model", new[] { ModelDir }).Length;
                 int prefabs = AssetDatabase.IsValidFolder(PrefabDir) ? AssetDatabase.FindAssets("t:Prefab", new[] { PrefabDir }).Length : 0;
                 if (models > 0 && prefabs < models) Build();
-                else if (MovableMasses.Keys.Any(NeedsPhysics))
+                else if (MovableMasses.Keys.Any(NeedsPhysics) || Buildings.Any(NeedsBuildingPhysics))
                     BuildPrefabs(movableOnly: true);
             };
         }
@@ -70,11 +91,20 @@ namespace ConductorChaos.EditorTools
             return prefab && !prefab.GetComponent<NetworkRigidbody>();
         }
 
+        static bool NeedsBuildingPhysics(string name)
+        {
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{ModelDir}/{name}.fbx");
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/{name}.prefab");
+            return model && prefab && model.transform.Cast<Transform>().Any(child =>
+                (child.name.StartsWith(LoosePrefix) || IsSwingDoor(child)) &&
+                !(prefab.transform.Find(child.name)?.GetComponent<NetworkRigidbody>()));
+        }
+
         static void BuildPrefabs(bool movableOnly)
         {
             EnsureFolder(PrefabDir);
             int made = 0;
-            var signFont = movableOnly ? null : StationSignTools.GetFont();
+            var signFont = StationSignTools.GetFont();
             foreach (var guid in AssetDatabase.FindAssets("t:Model", new[] { ModelDir }))
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
@@ -84,7 +114,8 @@ namespace ConductorChaos.EditorTools
                 var sub = Path.GetDirectoryName(path).Replace('\\', '/').Substring(ModelDir.Length).TrimStart('/');
                 float mass = 0f;
                 bool movable = sub == "Props" && MovableMasses.TryGetValue(name, out mass);
-                if (movableOnly && !movable) continue;
+                if (movableOnly && !(movable && NeedsPhysics(name)) &&
+                    !(Buildings.Contains(name) && NeedsBuildingPhysics(name))) continue;
                 var outDir = string.IsNullOrEmpty(sub) ? PrefabDir : $"{PrefabDir}/{sub}";
                 EnsureFolder(outDir);
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(model);
@@ -100,7 +131,7 @@ namespace ConductorChaos.EditorTools
                             if (mf != null && mf.sharedMesh != null)
                             {
                                 var col = t.gameObject.AddComponent<MeshCollider>();
-                                col.convex = movable;
+                                col.convex = movable || t.parent.name.StartsWith(LoosePrefix) || IsSwingDoor(t.parent);
                                 col.sharedMesh = mf.sharedMesh;
                             }
                         }
@@ -123,22 +154,18 @@ namespace ConductorChaos.EditorTools
                     {
                         bool moving = movable;
                         for (var p = t; !moving && p != null && p != go.transform.parent; p = p.parent)
-                            if (Moving.Contains(p.name)) { moving = true; break; }
+                            if (Moving.Contains(p.name) || p.name.StartsWith(LoosePrefix) || IsSwingDoor(p)) { moving = true; break; }
                         GameObjectUtility.SetStaticEditorFlags(t.gameObject, moving ? (StaticEditorFlags)0 : flags);
                     }
-                    if (movable)
+                    if (movable) AddPhysics(go, name, mass, inLocalSpace: false);
+                    foreach (Transform child in go.transform)
                     {
-                        var body = go.AddComponent<Rigidbody>();
-                        body.mass = mass;
-                        body.interpolation = RigidbodyInterpolation.Interpolate;
-                        body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
-                        if (name == "Prop_LuggageCart")
-                            body.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-                        // In-scene props use the same server-authoritative physics as the playground crate.
-                        go.AddComponent<NetworkObject>();
-                        go.AddComponent<NetworkTransform>();
-                        go.AddComponent<NetworkRigidbody>();
+                        if (!child.name.StartsWith(LoosePrefix)) continue;
+                        var prop = "Prop_" + child.name.Split('_')[1];
+                        AddPhysics(child.gameObject, prop, MovableMasses[prop], inLocalSpace: true);
                     }
+                    foreach (var t in go.GetComponentsInChildren<Transform>(true).Where(IsSwingDoor).ToArray())
+                        AddSwingDoor(t);
                     if (signFont) StationSignTools.Attach(go, name, signFont);      // Sign_*: aanpasbare naam (#209)
                     go.name = name;
                     PrefabUtility.SaveAsPrefabAsset(go, $"{outDir}/{name}.prefab");
@@ -151,6 +178,42 @@ namespace ConductorChaos.EditorTools
             }
             AssetDatabase.SaveAssets();
             Debug.Log($"[Station] {made} stationsprefabs gemaakt in {PrefabDir}. Voorbeeld: Conductor Chaos > Art > Station > Build Station Example Scene.");
+        }
+
+        static void AddPhysics(GameObject go, string prop, float mass, bool inLocalSpace)
+        {
+            var body = go.AddComponent<Rigidbody>();
+            body.mass = mass;
+            body.interpolation = RigidbodyInterpolation.Interpolate;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            if (prop == "Prop_LuggageCart")
+                body.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
+            // Furniture inside a static station is synchronized as individual in-scene objects.
+            go.AddComponent<NetworkObject>();
+            go.AddComponent<NetworkTransform>().InLocalSpace = inLocalSpace;
+            go.AddComponent<NetworkRigidbody>();
+            if (prop == "Prop_Wrench") go.AddComponent<RepairWrench>();
+            if (prop == "Prop_TicketPunch") go.AddComponent<TicketPunch>();
+        }
+
+        /// <summary>Draaiend blad: zelfde physics en netwerksynchronisatie als een losse prop, plus SwingDoor met de
+        /// uiterste standen uit het model (Hinge_*_Closed / Hinge_*_Open).</summary>
+        static void AddSwingDoor(Transform leaf)
+        {
+            var closed = leaf.parent.Find($"{HingePrefix}{leaf.name}_Closed").localRotation;
+            var open = leaf.parent.Find($"{HingePrefix}{leaf.name}_Open").localRotation;
+            float openYaw = Mathf.DeltaAngle(0f, (Quaternion.Inverse(closed) * open).eulerAngles.y);
+
+            var body = leaf.gameObject.AddComponent<Rigidbody>();
+            body.mass = SwingDoorMass(leaf.name);
+            body.useGravity = false;
+            body.interpolation = RigidbodyInterpolation.Interpolate;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            leaf.gameObject.AddComponent<NetworkObject>();
+            leaf.gameObject.AddComponent<NetworkTransform>().InLocalSpace = true;
+            leaf.gameObject.AddComponent<NetworkRigidbody>();
+            leaf.gameObject.AddComponent<SwingDoor>().Configure(closed, openYaw);
         }
 
         [MenuItem("Conductor Chaos/Art/Station/Build Station Example Scene")]

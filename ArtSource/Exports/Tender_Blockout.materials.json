@@ -1,9 +1,9 @@
 {
   "model": "Tender_Blockout",
   "stats": {
-    "parts": 9,
-    "tris": 19932,
-    "verts": 10252,
+    "parts": 162,
+    "tris": 25482,
+    "verts": 13405,
     "materials": 10
   },
   "materials": {

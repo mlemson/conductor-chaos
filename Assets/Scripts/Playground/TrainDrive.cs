@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ConductorChaos.Stations;
 using ConductorChaos.Track;
 using Unity.Netcode;
 using Unity.Netcode.Components;
@@ -14,206 +15,1592 @@ namespace ConductorChaos.Playground
         [SerializeField] private float startDistance;
         [SerializeField] private float maximumSpeed = 6f;
         [SerializeField] private float acceleration = 2f;
+        [SerializeField] private Rigidbody[] availableWagons = System.Array.Empty<Rigidbody>();
         private readonly NetworkVariable<bool> powered = new(false);
         private readonly NetworkVariable<bool> buttonDown = new(false);
         private readonly NetworkVariable<float> throttle = new(0f);
+        private readonly NetworkVariable<float> displayedSpeed = new(0f);
+        private readonly NetworkVariable<float> doorAngle = new(0f);
+        private readonly NetworkVariable<Vector4> wagonDoorOffsets = new(Vector4.zero);
+        private const float FuelCapacity = 3f;
+        private const float StartingFuel = FuelCapacity * 0.5f;
+        private readonly NetworkVariable<float> fuel = new(StartingFuel);
+        private readonly NetworkVariable<Vector3> shovelPosition = new();
+        private readonly NetworkVariable<Quaternion> shovelRotation = new(Quaternion.identity);
         private Rigidbody body;
-        private Pose guidedOrigin;
-        private Pose guidedTarget;
-        private bool hasGuidedTarget;
         private TrackPiece track;
         private float distance, speed;
         private Transform lever;
         private Transform leverParent;
         private Transform leverPivot;
         private Rigidbody leverBody;
-        private HingeJoint leverHinge;
         private PlaygroundPlayer[] players = System.Array.Empty<PlaygroundPlayer>();
         private float nextPlayerScan;
-        private bool leverHeld;
+        private Transform leverHand;
+        // Trekhendel (cabine v3): schuift langs de verticale as van de loc door de sleuf in de lessenaar.
+        // Boven = vooruit, midden = neutraal, onder = achteruit. Moet gelijk zijn aan LEVER_TRAVEL in build_locomotive.py.
+        private const float LeverTravel = 0.19f;
+        private float leverOffset, leverGripPitch, leverGripOffset;
+        private Vector3 leverRestPosition, leverSlideAxis;
         private Vector3 leverPosition, leverScale;
         private Collider[] leverColliders;
         private bool[] leverColliderEnabled;
         private readonly Collider[] buttonContacts = new Collider[16];
         private float nextButtonPress;
         private Transform startButton;
+        private Renderer startButtonRenderer;
+        private MaterialPropertyBlock buttonOriginalProperties, buttonProperties;
+        private Light startButtonLight;
+        private bool? buttonLit;
+        private Transform speedNeedle, heatNeedle, cabLamp;
+        private float displayedHeat;
+        private Light cabLampLight;
+        private Transform fireboxDoor, fireboxLatch, doorHand;
+        private Rigidbody doorBody;
+        private SphereCollider latchCollider;
+        private Quaternion doorRest;
+        private Vector3 previousDoorHand;
+        private float doorOpeningSign;
+        private Transform shovel, shovelLoad, coalScoopPoint, fireboxFeedPoint, fireboxFlame;
+        private Transform shovelParent;
+        private Rigidbody shovelBody;
+        private SphereCollider shovelGrip;
+        private BoxCollider shovelBlade, addedCoalBinCollider;
+        private readonly BoxCollider[] shovelRims = new BoxCollider[3];
+        private Collider[] originalShovelColliders;
+        private bool[] originalShovelColliderStates;
+        private Transform coalBin, smokeOrigin;
+        // Waar de schepkolen liggen: sinds cabine v3 de 'CoalStock' op de kolenwagen (oudere modellen: 'CoalBin' in de loc).
+        // De thuisposities van de brokken staan in de ruimte van dat voertuig.
+        private Transform coalSource;
+        private Rigidbody coalSourceBody;
+        private MeshFilter cabin;
+        private TrainSteamEffects steamEffects;
+        private readonly List<Rigidbody> coalBodies = new();
+        private readonly List<Vector3> coalHomes = new();
+        private readonly List<Quaternion> coalHomeRotations = new();
+        private readonly List<float> coalRespawnTimes = new();
+        // Losse kolen in de tenderbak: brokken die stil liggen 'slapen' (kinematisch, als kind van de wagen), zodat ze
+        // vast meerijden. Scheppen of een brok grijpen schakelt de gewone fysica weer in.
+        private readonly List<bool> coalAsleep = new();
+        private readonly List<float> coalCalmTime = new();
+        private readonly List<float> coalRadius = new();
+        private readonly Dictionary<Rigidbody, int> coalIndex = new();
+        private Bounds coalBinLocal;
+        // Kolenposes zijn relatief aan het voertuig met de kolen (coalSource): stil liggende kolen veranderen dan niet.
+        private NetworkList<CoalPose> coalPoses;
+        private static readonly Dictionary<Rigidbody, TrainDrive> GrippableCoal = new();
+        private readonly Dictionary<Rigidbody, (Pose From, Pose To)> guidedMotion = new();
+        private static readonly Dictionary<Rigidbody, TrainDrive> ControlOwners = new();
+        private readonly WagonDoorPanel[] wagonDoors = new WagonDoorPanel[4];   // 0/1: platform side, 2/3: far side (DoorLeaf_*_Far)
+        private const float WagonDoorTravel = 0.56f;
+        private const float WagonDoorLeadIn = 0.08f;
+        private const float WagonDoorInset = 0.05f;
+        private const float WagonDoorPanelGrip = 0.65f;
+
+        private sealed class WagonDoorPanel
+        {
+            public Transform Leaf, Hand;
+            public Rigidbody Body;
+            public BoxCollider Panel;
+            public CapsuleCollider OutsideHandle, InsideHandle;
+            public Collider[] OriginalColliders;
+            public bool[] OriginalEnabled;
+            public Vector3 RestPosition;
+            public float PreviousHandX;
+            public bool OpensNegative;
+            public float Inward = -1f;
+        }
+
+        // Positie/rotatie relatief aan het voertuig waar de kolen bij horen (coalSource), niet in wereldruimte.
+        private struct CoalPose : INetworkSerializable, System.IEquatable<CoalPose>
+        {
+            public Vector3 Position;
+            public Quaternion Rotation;
+            public bool Visible;
+            public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+            {
+                serializer.SerializeValue(ref Position);
+                serializer.SerializeValue(ref Rotation);
+                serializer.SerializeValue(ref Visible);
+            }
+            public bool Equals(CoalPose other) => Visible == other.Visible && Position == other.Position && Rotation == other.Rotation;
+        }
+
+        private void Awake()
+        {
+            coalPoses = new NetworkList<CoalPose>();
+        }
+        internal static bool IsCoalBody(Rigidbody target) => target && GrippableCoal.ContainsKey(target);
+
+        // Locomotieven en wagons van alle treinen (issue #214: een wissel is bezet zolang er een op staat).
+        private static readonly HashSet<Rigidbody> TrainBodies = new();
+        internal static bool IsTrainBody(Rigidbody target) => target && TrainBodies.Contains(target);
+
+        internal static void WakeGrippedCoal(Rigidbody target)
+        {
+            if (target && GrippableCoal.TryGetValue(target, out var train)) train.WakeCoal(train.coalIndex[target]);
+        }
+
+        internal Rigidbody GuidedSupport(Rigidbody surface)
+        {
+            if (!surface || !surface.isKinematic) return null;
+            if (coalIndex.ContainsKey(surface)) surface = coalSourceBody;
+            return surface && surface.isKinematic && couplers.ContainsKey(surface) ? surface : null;
+        }
+
+        internal Vector3 GuidedPointVelocity(Rigidbody vehicle, Vector3 point)
+        {
+            if (!vehicle.isKinematic) return vehicle.GetPointVelocity(point);
+            if (!guidedMotion.TryGetValue(vehicle, out var motion)) return Vector3.zero;
+            Vector3 local = Quaternion.Inverse(motion.From.rotation) * (point - motion.From.position);
+            Vector3 velocity = (motion.To.position + motion.To.rotation * local - point) / Time.fixedDeltaTime;
+            // A wagon can snap onto its rail pose when it couples.
+            return Vector3.ClampMagnitude(velocity, maximumSpeed + 3f);
+        }
+
+        private void MoveGuidedBody(Rigidbody vehicle, Vector3 position, Quaternion rotation)
+        {
+            guidedMotion[vehicle] = (new Pose(vehicle.position, vehicle.rotation), new Pose(position, rotation));
+            vehicle.MovePosition(position);
+            vehicle.MoveRotation(rotation);
+        }
+        internal static TrainDrive FindControlOwner(Rigidbody target) =>
+            target && ControlOwners.TryGetValue(target, out var owner) ? owner : target ? target.GetComponentInParent<TrainDrive>() : null;
+
+        internal bool TryGetCabin(Vector3 playerPosition, float margin, out Transform frame)
+        {
+            frame = null;
+            if (!IsSpawned || !cabin || !cabin.sharedMesh) return false;
+            Bounds bounds = cabin.sharedMesh.bounds;
+            bounds.Expand(margin * 2f);
+            if (!bounds.Contains(cabin.transform.InverseTransformPoint(playerPosition + transform.up * 0.15f))) return false;
+            frame = cabin.transform;
+            return true;
+        }
+
+        internal Vector3 ClampCabinEye(Vector3 eye)
+        {
+            Bounds bounds = cabin.sharedMesh.bounds;
+            Vector3 margin = new Vector3(0.24f, 0.12f, 0.24f);
+            Vector3 min = bounds.min + margin;
+            Vector3 max = bounds.max - margin;
+            return new Vector3(Mathf.Clamp(eye.x, min.x, max.x), Mathf.Clamp(eye.y, min.y, max.y),
+                Mathf.Clamp(eye.z, min.z, max.z));
+        }
+        internal bool TryFindRecoveryPoint(out Vector3 point, out Vector3 velocity)
+        {
+            point = velocity = Vector3.zero;
+            if (!IsSpawned || !cabin || !cabin.sharedMesh || !body) return false;
+            Vector3 center = cabin.transform.TransformPoint(cabin.sharedMesh.bounds.center);
+            float nearest = float.PositiveInfinity;
+            foreach (RaycastHit hit in Physics.RaycastAll(center + Vector3.up * 10f, Vector3.down, 20f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.rigidbody != body || hit.normal.y < 0.7f || hit.distance >= nearest) continue;
+                nearest = hit.distance;
+                point = hit.point;
+            }
+            if (float.IsPositiveInfinity(nearest)) return false;
+            velocity = body.GetPointVelocity(point);
+            return true;
+        }
+        private Transform shovelHand;
+        private bool shovelHeld;
+        private Vector3 previousShovelHand, shovelReleaseVelocity;
+        private Collider[] shovelHolderColliders;
+        private Vector3 shovelRestPosition;
+        private Quaternion shovelRestRotation, shovelBladeRotation;
+        private Vector3 shovelStartPosition;
+        private Quaternion shovelStartRotation;
+        private Light firelight;
+        private bool canStoke;
+        internal bool HasCoalFurnace => IsSpawned && canStoke;
+        internal float FuelFraction => fuel.Value / FuelCapacity;
+        internal bool ServicePowerOn => powered.Value;
+        internal float ServiceSpeed => displayedSpeed.Value;
+        internal Vector3 ServiceRailPosition => transform.TransformPoint(0f, -TrackPiece.RailToTrainPivot, railCenterOffset);
+        internal bool ServiceDerailed => derailed;
+        internal bool ServiceDoorsClosed => wagonDoorOffsets.Value.sqrMagnitude < .035f * .035f;
+        internal bool ServiceDoorOpened
+        {
+            get
+            {
+                Vector4 offsets = wagonDoorOffsets.Value;
+                for (int i = 0; i < wagonDoors.Length; i++)
+                    if (Mathf.Abs(offsets[i]) >= .38f) return true;
+                return false;
+            }
+        }
+        internal bool IsServiceDoorOpen(Transform leaf)
+        {
+            Vector4 offsets = wagonDoorOffsets.Value;
+            for (int i = 0; i < wagonDoors.Length; i++)
+                if (wagonDoors[i]?.Leaf == leaf && Mathf.Abs(offsets[i]) >= .38f) return true;
+            return false;
+        }
         private Quaternion leverRest;
-        private float railCenterOffset;
+        private float railCenterOffset, rearwardRailSign;
+        private const float CouplingRange = 1.05f;
         private readonly Dictionary<TrackPiece, TrackPiece> previous = new();
+        private readonly Dictionary<TrackPiece, TrackPiece> following = new();
+        private TrackPiece[] railPieces = System.Array.Empty<TrackPiece>();
+        private readonly RaycastHit[] railObstacleHits = new RaycastHit[32];
+        private readonly Dictionary<Rigidbody, LooseWagon> looseWagons = new();
+        private readonly List<Rigidbody> coupledWagons = new();
+        private readonly Dictionary<Rigidbody, float> couplingGaps = new();
+        private readonly Dictionary<Rigidbody, CouplerLayout> couplers = new();
+        private readonly HashSet<Rigidbody> reversedWagons = new();
+        private readonly List<MeshCollider> derailColliders = new();
+        private readonly List<BoxCollider> derailBoxes = new();
+        private readonly List<Joint> derailJoints = new();
+        private PhysicsMaterial derailMaterial;
+        private float originalTrainMass;
+        private bool derailed;
+
+        private sealed class LooseWagon
+        {
+            public TrackPiece Piece;
+            public float Along, Speed;
+            public bool Reversed;
+            public Vector3 Offset;
+            public readonly Dictionary<PlaygroundPlayer, Vector3> Pushes = new();
+        }
+
+        private readonly struct CouplerLayout
+        {
+            public readonly Vector3 Positive, Negative;
+            public readonly float FrontSign;
+            public CouplerLayout(Vector3 front, Vector3 rear)
+            {
+                bool frontIsPositive = front.x > rear.x;
+                Positive = frontIsPositive ? front : rear;
+                Negative = frontIsPositive ? rear : front;
+                FrontSign = frontIsPositive ? 1f : -1f;
+            }
+            public float Center => (Positive.z + Negative.z) * 0.5f;
+        }
 
         public void Configure(TrackPiece first, float start) { firstTrack = first; startDistance = start; }
-        internal bool IsLeverCollider(Collider candidate) => leverPivot && candidate && candidate.transform == leverPivot;
+        public void ConfigureWagons(Rigidbody[] wagons) => availableWagons = wagons;
+        internal bool IsCabControlCollider(Collider candidate) =>
+            candidate && (candidate == latchCollider || IsShovelGrip(candidate) || IsLeverHandle(candidate) ||
+                IsWagonDoorPanel(candidate) || IsWagonDoorHandle(candidate));
 
-        internal Vector3 GuidedPointVelocity(Vector3 point)
+        internal bool IsWagonDoorPanel(Collider candidate)
         {
-            if (!hasGuidedTarget) return Vector3.zero;
-            Vector3 local = Quaternion.Inverse(guidedOrigin.rotation) * (point - guidedOrigin.position);
-            Vector3 velocity = (guidedTarget.position + guidedTarget.rotation * local - point) / Time.fixedDeltaTime;
-            return Vector3.ClampMagnitude(velocity, maximumSpeed + 3f);
+            if (!candidate) return false;
+            foreach (var door in wagonDoors)
+                if (door != null && candidate == door.Panel) return true;
+            return false;
+        }
+
+        internal bool IsWagonDoorHandle(Collider candidate)
+        {
+            if (!candidate) return false;
+            foreach (var door in wagonDoors)
+                if (door != null && (candidate == door.OutsideHandle || candidate == door.InsideHandle)) return true;
+            return false;
+        }
+
+        internal bool IsLeverHandle(Collider candidate) => leverPivot && candidate && candidate.transform == leverPivot;
+        internal bool IsShovelGrip(Collider candidate) => candidate && (candidate == shovelGrip || candidate.transform == shovelLoad);
+
+        internal bool TryClaimCabControl(Collider candidate, Transform hand)
+        {
+            if (!IsShovelGrip(candidate)) return true;
+            if (shovelHand && shovelHand != hand) return false;
+            shovelHand = hand;
+            return true;
+        }
+
+        internal void ReleaseCabControl(Collider candidate, Transform hand)
+        {
+            if (IsShovelGrip(candidate) && shovelHand == hand) shovelHand = null;
         }
 
         public override void OnNetworkSpawn()
         {
             body = GetComponent<Rigidbody>();
+            originalTrainMass = body.mass;
+            derailed = false;
             body.isKinematic = true;
             body.useGravity = false;
             body.interpolation = IsServer ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
-            if (IsServer) { powered.Value = false; throttle.Value = 0f; buttonDown.Value = false; nextButtonPress = 0f; }
+            if (IsServer) { powered.Value = false; throttle.Value = 0f; displayedSpeed.Value = 0f; doorAngle.Value = 0f; wagonDoorOffsets.Value = Vector4.zero; speed = 0f; buttonDown.Value = false; nextButtonPress = 0f; }
+            coalBin = coalScoopPoint = coalSource = null;
+            coalSourceBody = null;
             foreach (var t in GetComponentsInChildren<Transform>(true))
             {
                 if (t.name == "Regulator") { lever = t; leverRest = t.localRotation; }
-                if (t.name == "Wheels" && t.TryGetComponent<Renderer>(out var wheels))
-                    railCenterOffset = transform.InverseTransformPoint(wheels.bounds.center).z;
+                if (t.name == "HeatNeedle") heatNeedle = t;
+                if (t.name == "CabLamp") cabLamp = t;
+                if (t.name == "StartButton") startButton = t;
+                if (t.name == "SpeedNeedle") speedNeedle = t;
+                if (t.name == "FireboxDoor") fireboxDoor = t;
+                if (t.name == "FireboxLatch") fireboxLatch = t;
+                if (t.name == "CoalShovel") shovel = t;
+                if (t.name == "CoalBin" || t.name == "CoalStock") coalBin = t;
+                if (t.name == "Cab") cabin = t.GetComponent<MeshFilter>();
+                if (t.name == "ChimneySmoke") smokeOrigin = t;
+                if (t.name == "ShovelLoad") shovelLoad = t;
+                if (t.name == "CoalScoopPoint") coalScoopPoint = t;
+                if (t.name == "FireboxFeedPoint") fireboxFeedPoint = t;
+                if (t.name == "FireboxFlame") fireboxFlame = t;
             }
             CreateCabControls();
+            if (cabLamp)
+            {
+                var glow = new GameObject("Cabinelamp licht");
+                glow.transform.SetParent(cabLamp, false);
+                glow.transform.localPosition = Vector3.down * 0.11f;
+                cabLampLight = glow.AddComponent<Light>();
+                cabLampLight.type = LightType.Point;
+                cabLampLight.color = new Color(1f, 0.925f, 0.63f);
+                cabLampLight.range = 2.4f;
+                cabLampLight.intensity = 0.6f;
+                cabLampLight.shadows = LightShadows.None;
+            }
+            if (startButton && startButton.TryGetComponent<Renderer>(out startButtonRenderer))
+            {
+                buttonOriginalProperties = new MaterialPropertyBlock();
+                startButtonRenderer.GetPropertyBlock(buttonOriginalProperties);
+                buttonProperties = new MaterialPropertyBlock();
+                startButtonRenderer.GetPropertyBlock(buttonProperties);
+                var lamp = new GameObject("Startknop licht");
+                lamp.transform.SetParent(startButton, false);
+                lamp.transform.localPosition = Vector3.left * 0.08f;
+                startButtonLight = lamp.AddComponent<Light>();
+                startButtonLight.type = LightType.Point;
+                startButtonLight.color = new Color(0.988f, 0.486f, 0.412f);
+                startButtonLight.range = 0.55f;
+                startButtonLight.intensity = 0.8f;
+                buttonLit = null;
+            }
+            if (fireboxDoor && fireboxLatch)
+            {
+                doorRest = fireboxDoor.localRotation;
+                var latchOffset = fireboxDoor.InverseTransformPoint(fireboxLatch.position);
+                doorOpeningSign = Mathf.Sign(latchOffset.x * latchOffset.z);
+                doorBody = fireboxDoor.gameObject.AddComponent<Rigidbody>();
+                doorBody.isKinematic = true;
+                doorBody.useGravity = false;
+                latchCollider = fireboxLatch.gameObject.AddComponent<SphereCollider>();
+                latchCollider.radius = 0.085f;
+            }
+            PrepareStoking();
+            if (smokeOrigin && coalBodies.Count > 0)
+            {
+                var steam = new GameObject("Stoom en motorgeluid");
+                steam.transform.SetParent(smokeOrigin, false);
+                steamEffects = steam.AddComponent<TrainSteamEffects>();
+                var puff = coalBodies[0].GetComponent<MeshFilter>().sharedMesh;
+                Material puffMaterial = coalBodies[0].GetComponent<Renderer>().sharedMaterial;
+                foreach (var part in GetComponentsInChildren<Renderer>(true))
+                    if (part.name == "FireboxCoals") { puffMaterial = part.sharedMaterial; break; }
+                Vector3 puffSize = puff ? puff.bounds.size : Vector3.one * 0.137f;
+                steamEffects.Configure(puff, puffMaterial, 0.137f / Mathf.Max(0.01f, (puffSize.x + puffSize.y + puffSize.z) / 3f));
+            }
+            couplers.Clear();
+            couplers.Add(body, GetCouplers(transform));
+            TrainBodies.Add(body);
+            foreach (var wagon in availableWagons)
+                if (wagon) TrainBodies.Add(wagon);
+            railCenterOffset = couplers[body].Center;
+            rearwardRailSign = couplers[body].FrontSign;
+            foreach (var wagon in availableWagons)
+                if (wagon && wagon != body) couplers[wagon] = GetCouplers(wagon.transform);
+            PrepareWagonDoors();
             if (!IsServer) return;
+            BuildRailLinks();
+            foreach (var wagon in availableWagons)
+                if (wagon && wagon != body) looseWagons.TryAdd(wagon, new LooseWagon());
             track = firstTrack;
             if (track) distance = Mathf.Clamp(startDistance, 0f, track.Length);
-            foreach (var piece in FindObjectsByType<TrackPiece>(FindObjectsSortMode.None))
-                if (piece.next && !previous.ContainsKey(piece.next)) previous.Add(piece.next, piece);
-            if (!track || !track.HasSockets || track.Length < 0.01f)
+            if (!RailUsable(track))
                 Debug.LogError("TrainDrive: configure a connected starting track.", this);
             else
             {
-                track.Evaluate(distance / track.Length, out var position, out var direction);
-                if (direction.sqrMagnitude > 0.01f)
+                if (TryRailPose(track, distance, railCenterOffset, false, out var position, out var rotation))
                 {
-                    var rotation = Quaternion.LookRotation(direction, track.transform.up) * Quaternion.Euler(0f, 90f, 0f);
-                    body.position = position + track.transform.up * TrackPiece.RailToTrainPivot - rotation * new Vector3(0f, 0f, railCenterOffset);
+                    body.position = position;
                     body.rotation = rotation;
+                    if (canStoke)
+                    {
+                        shovelBody.position = body.position + body.rotation * shovelStartPosition;
+                        shovelBody.rotation = body.rotation * shovelStartRotation;
+                    }
                 }
             }
         }
 
         private void Update()
         {
-            if (!IsServer && leverPivot) leverPivot.localRotation = leverRest * Quaternion.Euler(0, 0, -throttle.Value * 35f);
-            if (startButton) startButton.localScale = new Vector3(0.18f, buttonDown.Value ? 0.025f : 0.04f, 0.18f);
+            if (!IsServer && leverPivot) leverPivot.localPosition = leverRestPosition + leverSlideAxis * (throttle.Value * LeverTravel);
+            if (startButton) startButton.localScale = new Vector3(buttonDown.Value ? 0.6f : 1f, 1f, 1f);
+            if (startButtonRenderer && buttonLit != powered.Value)
+            {
+                buttonProperties.SetFloat("_Emissive", powered.Value ? 1f : 0f);
+                startButtonRenderer.SetPropertyBlock(buttonProperties);
+                if (startButtonLight) startButtonLight.enabled = powered.Value;
+                buttonLit = powered.Value;
+            }
+            if (speedNeedle)
+            {
+                float sweep = 240f * Mathf.Clamp01(displayedSpeed.Value / Mathf.Max(maximumSpeed, 0.01f));
+                speedNeedle.localRotation = Quaternion.Euler(sweep - (fireboxLatch ? 0f : 120f), 0f, 0f);
+            }
+            if (heatNeedle)
+            {
+                // Hittemeter: de brandstof in de oven (0 = koud links, vol = rode zone rechts), zelfde zwaai als SpeedNeedle.
+                float heat = IsSpawned && canStoke ? Mathf.Clamp01(fuel.Value / FuelCapacity) : 0f;
+                displayedHeat = Mathf.MoveTowards(displayedHeat, heat, 0.6f * Time.deltaTime);
+                heatNeedle.localRotation = Quaternion.Euler(240f * displayedHeat, 0f, 0f);
+            }
+            if (!IsServer && fireboxDoor && fireboxLatch) ApplyDoorAngle();
+            if (IsSpawned && !IsServer) ApplyWagonDoors();
+            if (IsSpawned && canStoke) PresentStoking();
+            if (steamEffects) steamEffects.Present(powered.Value, displayedSpeed.Value / Mathf.Max(maximumSpeed, 0.01f));
         }
 
         private void FixedUpdate()
         {
-            hasGuidedTarget = false;
-            if (!IsSpawned || !IsServer || !track || !track.HasSockets) return;
+            if (!IsSpawned || !IsServer) return;
+            guidedMotion.Clear();
             UpdateCabControls();
-            speed = Mathf.MoveTowards(speed, powered.Value ? throttle.Value * maximumSpeed : 0f, acceleration * Time.fixedDeltaTime);
+            MoveTrain();
+            UpdateCoal();
+        }
+
+        private void MoveTrain()
+        {
+            if (derailed)
+            {
+                displayedSpeed.Value = body.linearVelocity.magnitude;
+                return;
+            }
+            TryCoupleWagon();
+            foreach (var wagon in coupledWagons)
+                if (wagon) couplingGaps[wagon] = Mathf.MoveTowards(couplingGaps[wagon], 0f, 0.4f * Time.fixedDeltaTime);
+            MoveLooseWagons();
+            if (!RailUsable(track))
+            {
+                displayedSpeed.Value = 0f;
+                return;
+            }
+            var service = ServiceRun.Active;
+            bool needsFuel = canStoke && !(service && service.IsTrainingTrain(this));
+            bool canDrive = powered.Value && (!needsFuel || fuel.Value > 0f) && (!service || service.AllowsMotion(this));
+            if (canDrive && needsFuel)
+                fuel.Value = Mathf.Max(0f, fuel.Value - Mathf.Abs(throttle.Value) * Time.fixedDeltaTime / 35f);
+            speed = Mathf.MoveTowards(speed, canDrive ? throttle.Value * maximumSpeed : 0f, acceleration * Time.fixedDeltaTime);
             var oldTrack = track;
             float oldDistance = distance;
             float remaining = speed * Time.fixedDeltaTime;
-            for (int i = 0; i < 64 && Mathf.Abs(remaining) > 0.0001f; i++)
+            bool reachedEnd = !AdvanceOnRail(ref track, ref distance, remaining);
+            // kapotte wissel (issue #214): wie erop rijdt, ontspoort echt
+            if (track != oldTrack && TrackSwitch.For(track) is { IsBroken: true })
             {
-                float length = track.Length;
-                if (length < 0.01f) { speed = 0; break; }
-                float nextDistance = distance + remaining;
-                if (nextDistance >= 0f && nextDistance <= length) { distance = nextDistance; break; }
-                if (nextDistance > length && track.next && track.next.HasSockets && !track.next.name.Contains("Broken"))
-                {
-                    remaining = nextDistance - length;
-                    track = track.next;
-                    distance = 0f;
-                }
-                else if (nextDistance < 0f && previous.TryGetValue(track, out var before) && before && before.HasSockets && !before.name.Contains("Broken"))
-                {
-                    remaining = nextDistance;
-                    track = before;
-                    distance = track.Length;
-                }
-                else { distance = Mathf.Clamp(nextDistance, 0f, length); speed = 0f; break; }
+                SampleRail(oldTrack, oldDistance, out _, out var brokenDirection);
+                Derail(brokenDirection * speed);
+                return;
             }
-            if (track.Length < 0.01f) return;
-            track.Evaluate(distance / track.Length, out var railPosition, out var direction);
-            if (direction.sqrMagnitude < 0.01f) return;
-            var up = track.transform.up;
-            var rotation = Quaternion.LookRotation(direction, up) * Quaternion.Euler(0f, 90f, 0f);
-            Vector3 target = railPosition + up * TrackPiece.RailToTrainPivot - rotation * new Vector3(0f, 0f, railCenterOffset);
-            Vector3 movement = target - body.position;
-            if (movement.sqrMagnitude > 0.000001f)
+            bool towardTail = remaining * rearwardRailSign > 0f;
+            float leadingEnd = Mathf.Sign(remaining) * (towardTail ? ConsistRearExtent() : FrontExtent(body));
+            bool wagonsFit = coupledWagons.Count == 0 || CanPlaceWagons(track, distance);
+            bool blocked = Mathf.Abs(remaining) > 0.0001f && RailMovementBlocked(body, oldTrack, oldDistance, track, distance, leadingEnd);
+            if ((reachedEnd || (towardTail && !wagonsFit)) && !blocked && Mathf.Abs(speed) > 0.01f)
             {
-                Vector3 forward = movement.normalized;
-                Vector3 center = body.position + body.rotation * new Vector3(0f, 0f, railCenterOffset);
-                Vector3 front = center + forward * (speed >= 0 ? 3.4f : 2.6f) + up * 0.8f;
-                foreach (var hit in Physics.BoxCastAll(front, new Vector3(1.1f, 0.6f, 0.1f), forward,
-                             Quaternion.LookRotation(forward, up), movement.magnitude + 0.1f, ~0, QueryTriggerInteraction.Ignore))
+                var endTrack = track;
+                float endDistance = distance;
+                if (towardTail && !wagonsFit)
+                    AdvanceOnRail(ref endTrack, ref endDistance, ConsistRearExtent() * rearwardRailSign);
+                if (endTrack && !endTrack.name.Contains("BufferStop"))
                 {
-                    if (hit.collider.transform.IsChildOf(transform) || hit.collider.GetComponentInParent<TrackPiece>() ||
-                        hit.collider is TerrainCollider || hit.collider.GetComponentInParent<PlaygroundPlayer>()) continue;
-                    track = oldTrack;
-                    distance = oldDistance;
-                    speed = 0f;
+                    SampleRail(oldTrack, oldDistance, out _, out var direction);
+                    Derail(direction * speed);
                     return;
                 }
             }
-            guidedOrigin = new Pose(body.position, body.rotation);
-            guidedTarget = new Pose(target, rotation);
-            hasGuidedTarget = true;
-            body.MovePosition(target);
-            body.MoveRotation(rotation);
+            if (reachedEnd) speed = 0f;
+            if (!TryRailPose(track, distance, railCenterOffset, false, out var target, out var rotation) ||
+                blocked || !wagonsFit)
+            {
+                track = oldTrack;
+                distance = oldDistance;
+                speed = 0f;
+                displayedSpeed.Value = 0f;
+                PlaceWagons();
+                return;
+            }
+            SampleRail(oldTrack, oldDistance, out var oldRailPosition, out _);
+            SampleRail(track, distance, out var railPosition, out _);
+            displayedSpeed.Value = Vector3.Distance(oldRailPosition, railPosition) / Time.fixedDeltaTime;
+            MoveGuidedBody(body, target, rotation);
+            PlaceWagons();
+        }
+
+        private void Derail(Vector3 velocity)
+        {
+            derailed = true;
+            powered.Value = false;
+            throttle.Value = 0f;
+            leverOffset = 0f;
+            speed = 0f;
+            body.mass = Mathf.Max(originalTrainMass, 8f);
+            derailMaterial = new PhysicsMaterial("Derailment friction") { dynamicFriction = 0.02f, staticFriction = 0.02f, frictionCombine = PhysicsMaterialCombine.Minimum };
+            Rigidbody tail = body;
+            MakeDynamic(body, velocity);
+            foreach (var wagon in coupledWagons)
+            {
+                if (!wagon) continue;
+                MakeDynamic(wagon, velocity);
+                var joint = wagon.gameObject.AddComponent<ConfigurableJoint>();
+                joint.connectedBody = tail;
+                joint.autoConfigureConnectedAnchor = false;
+                var layout = couplers[wagon];
+                joint.anchor = PositiveTowardHead(wagon) ? layout.Positive : layout.Negative;
+                joint.connectedAnchor = tail.transform.InverseTransformPoint(wagon.transform.TransformPoint(joint.anchor));
+                joint.xMotion = joint.yMotion = joint.zMotion = ConfigurableJointMotion.Locked;
+                joint.angularXMotion = joint.angularYMotion = joint.angularZMotion = ConfigurableJointMotion.Free;
+                joint.breakForce = body.mass * Physics.gravity.magnitude * 0.75f;
+                derailJoints.Add(joint);
+                tail = wagon;
+            }
+            if (canStoke)
+                for (int i = 0; i < coalBodies.Count; i++)
+                    if (coalBodies[i].gameObject.activeSelf) WakeCoal(i);
+        }
+
+        private void MakeDynamic(Rigidbody vehicle, Vector3 velocity)
+        {
+            foreach (var shape in vehicle.GetComponentsInChildren<MeshCollider>())
+            {
+                if (shape.attachedRigidbody != vehicle || shape.convex || !shape.enabled || !shape.sharedMesh) continue;
+                Bounds bounds = shape.sharedMesh.bounds;
+                if (shape.transform == cabin?.transform)
+                {
+                    float floor = bounds.size.y * 0.2f;
+                    float wall = Mathf.Min(bounds.size.z * 0.1f, 0.2f);
+                    AddDerailBox(shape, new Vector3(bounds.center.x, bounds.min.y + floor * 0.5f, bounds.center.z),
+                        new Vector3(bounds.size.x, floor, bounds.size.z));
+                    for (int side = -1; side <= 1; side += 2)
+                        AddDerailBox(shape, new Vector3(bounds.center.x, bounds.center.y, bounds.center.z + side * (bounds.extents.z - wall * 0.5f)),
+                            new Vector3(bounds.size.x, bounds.size.y, wall));
+                }
+                else AddDerailBox(shape, bounds.center, bounds.size);
+                shape.enabled = false;
+                derailColliders.Add(shape);
+            }
+            vehicle.isKinematic = false;
+            vehicle.useGravity = true;
+            vehicle.linearVelocity = velocity;
+        }
+
+        private void AddDerailBox(MeshCollider shape, Vector3 center, Vector3 size)
+        {
+            var box = shape.gameObject.AddComponent<BoxCollider>();
+            box.center = center;
+            box.size = Vector3.Max(size, Vector3.one * 0.01f);
+            box.sharedMaterial = derailMaterial;
+            box.isTrigger = shape.isTrigger;
+            derailBoxes.Add(box);
+        }
+
+        private static bool RailUsable(TrackPiece piece) =>
+            RailLinkable(piece) && piece.isActiveAndEnabled && !IsBrokenTrack(piece);
+
+        // Mag in het spoornet (ook als het nu kapot is): een kapot stuk met RepairPoint wordt na reparatie berijdbaar
+        // (issue #215). Een kapot stuk zonder RepairPoint blijft zoals vroeger buiten het spoornet.
+        private static bool RailLinkable(TrackPiece piece) =>
+            piece && piece.HasSockets && piece.Length >= 0.01f &&
+            (!piece.name.Contains("Broken") || piece.GetComponent<RepairPoint>());
+
+        private static bool IsBrokenTrack(TrackPiece piece)
+        {
+            if (!piece.name.Contains("Broken")) return false;
+            var repair = piece.GetComponent<RepairPoint>();
+            return !repair || repair.IsBroken;
+        }
+
+        private void BuildRailLinks()
+        {
+            railPieces = FindObjectsByType<TrackPiece>();
+            foreach (var piece in railPieces)
+            {
+                if (!piece.HasSockets || !piece.next) continue;
+                following[piece] = piece.next;
+                previous.TryAdd(piece.next, piece);
+            }
+            foreach (var piece in railPieces)
+            {
+                if (!RailLinkable(piece) || following.ContainsKey(piece) || piece.name.Contains("BufferStop")) continue;
+                TrackPiece nearest = null;
+                float best = 0.25f * 0.25f;
+                foreach (var candidate in railPieces)
+                {
+                    if (candidate == piece || previous.ContainsKey(candidate) || !RailLinkable(candidate)) continue;
+                    float gap = (piece.EndPosition - candidate.StartPosition).sqrMagnitude;
+                    if (gap >= best || Vector3.Dot(piece.EndDirection, candidate.StartDirection) < 0.9f) continue;
+                    nearest = candidate;
+                    best = gap;
+                }
+                if (!nearest) continue;
+                following.Add(piece, nearest);
+                previous.Add(nearest, piece);
+            }
+            // wissels (issue #214): beide routes hebben hetzelfde stuk ervoor; welke je oprijdt, kiest de wissel
+            foreach (var piece in railPieces)
+            {
+                var junction = TrackSwitch.For(piece);
+                if (!junction || piece != junction.Straight || !junction.Diverge) continue;
+                TrackPiece entry = null;
+                if (!previous.TryGetValue(junction.Straight, out entry)) previous.TryGetValue(junction.Diverge, out entry);
+                if (!entry) continue;
+                previous[junction.Straight] = entry;
+                previous[junction.Diverge] = entry;
+                following[entry] = junction.Straight;
+            }
+        }
+
+        private bool AdvanceOnRail(ref TrackPiece piece, ref float along, float delta)
+        {
+            for (int i = 0; i < 64 && RailUsable(piece); i++)
+            {
+                float length = piece.Length;
+                float target = along + delta;
+                if (target >= 0f && target <= length)
+                {
+                    along = target;
+                    return true;
+                }
+                bool forward = target > length;
+                var links = forward ? following : previous;
+                links.TryGetValue(piece, out var next);
+                // oprijden vanaf het begin van een wissel (issue #214): de stand van de wissel kiest de route
+                var junction = forward ? TrackSwitch.For(next) : null;
+                if (junction && previous.TryGetValue(next, out var entry) && entry == piece) next = junction.ActiveRoute;
+                if (!next || !RailUsable(next))
+                {
+                    along = forward ? length : 0f;
+                    return false;
+                }
+                delta = forward ? target - length : target;
+                piece = next;
+                along = forward ? 0f : next.Length;
+            }
+            return false;
+        }
+
+        private void SampleRail(TrackPiece piece, float along, out Vector3 position, out Vector3 direction)
+        {
+            float length = piece.Length;
+            piece.Evaluate(along / length, out position, out direction);
+            const float seam = 0.5f;
+            // Meet halfway across a recovered socket gap so slow wagons never jump it in one tick.
+            if (along < seam && previous.TryGetValue(piece, out var before) && before && before.next != piece)
+            {
+                float blend = Mathf.SmoothStep(0.5f, 0f, along / seam);
+                position += (before.EndPosition - piece.StartPosition) * blend;
+                direction = Vector3.Slerp(direction, before.EndDirection, blend);
+            }
+            else if (length - along < seam && following.TryGetValue(piece, out var after) && after && piece.next != after)
+            {
+                float blend = Mathf.SmoothStep(0.5f, 0f, (length - along) / seam);
+                position += (after.StartPosition - piece.EndPosition) * blend;
+                direction = Vector3.Slerp(direction, after.StartDirection, blend);
+            }
+        }
+
+        private bool TryRailPose(TrackPiece piece, float along, float center, bool reversed,
+            out Vector3 position, out Quaternion rotation)
+        {
+            position = default;
+            rotation = default;
+            if (!RailUsable(piece)) return false;
+            SampleRail(piece, along, out var rail, out var direction);
+            if (direction.sqrMagnitude < 0.01f) return false;
+            rotation = Quaternion.LookRotation(direction, piece.transform.up) *
+                       Quaternion.Euler(0f, reversed ? -90f : 90f, 0f);
+            position = rail + rotation * new Vector3(0f, TrackPiece.RailToTrainPivot, -center);
+            return true;
+        }
+
+        private bool RailMovementBlocked(Rigidbody vehicle, TrackPiece from, float before, TrackPiece to, float after, float lead)
+        {
+            Vector3 start = RailProbePoint(from, before, lead, out var facing);
+            Vector3 end = RailProbePoint(to, after, lead, out _);
+            Vector3 move = end - start;
+            float length = move.magnitude;
+            if (length <= 0.0001f) return false;
+            int count = Physics.BoxCastNonAlloc(start, new Vector3(1.05f, 0.55f, 0.06f), move / length,
+                railObstacleHits, facing, length + 0.05f, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+            {
+                var obstacle = railObstacleHits[i].collider;
+                if (obstacle.transform.IsChildOf(vehicle.transform) || (vehicle == body && IsCoupledWagon(obstacle)) ||
+                    obstacle is TerrainCollider || obstacle.GetComponentInParent<TrackPiece>() ||
+                    obstacle.GetComponentInParent<PlaygroundPlayer>()) continue;
+                return true;
+            }
+            return false;
+        }
+
+        private Vector3 RailProbePoint(TrackPiece piece, float along, float lead, out Quaternion facing)
+        {
+            var nosePiece = piece;
+            float noseDistance = along;
+            bool onTrack = AdvanceOnRail(ref nosePiece, ref noseDistance, lead);
+            if (onTrack) { piece = nosePiece; along = noseDistance; }
+            SampleRail(piece, along, out var rail, out var direction);
+            if (direction.sqrMagnitude < 0.01f) direction = piece.StartDirection;
+            facing = Quaternion.LookRotation(direction * Mathf.Sign(lead), piece.transform.up);
+            return rail + facing * Vector3.up * 1.35f + (onTrack ? Vector3.zero : direction * lead);
+        }
+
+        private static Bounds ModelBounds(Transform root)
+        {
+            var bounds = new Bounds();
+            bool found = false;
+            foreach (var filter in root.GetComponentsInChildren<MeshFilter>())
+            {
+                if (!filter.sharedMesh) continue;
+                var b = filter.sharedMesh.bounds;
+                for (int i = 0; i < 8; i++)
+                {
+                    var p = b.center + Vector3.Scale(b.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                    p = root.InverseTransformPoint(filter.transform.TransformPoint(p));
+                    if (!found) { bounds = new Bounds(p, Vector3.zero); found = true; }
+                    else bounds.Encapsulate(p);
+                }
+            }
+            return bounds;
+        }
+
+        private static CouplerLayout GetCouplers(Transform root)
+        {
+            Transform front = null, rear = null, chimney = null;
+            foreach (var node in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (node.name == "Coupler_Front") front = node;
+                if (node.name == "Coupler_Rear") rear = node;
+                if (node.name == "ChimneySmoke") chimney = node;
+            }
+            if (front && rear)
+                return new CouplerLayout(root.InverseTransformPoint(front.position), root.InverseTransformPoint(rear.position));
+
+            // Legacy scene models still use their previous bounds-based spacing.
+            Bounds bounds = ModelBounds(root);
+            float center = bounds.center.z;
+            foreach (var node in root.GetComponentsInChildren<Transform>())
+                if (node.name == "Wheels" && node.TryGetComponent<Renderer>(out var wheels))
+                {
+                    center = root.InverseTransformPoint(wheels.bounds.center).z;
+                    break;
+                }
+            var positive = new Vector3(bounds.max.x, 0.17f, center);
+            var negative = new Vector3(bounds.min.x, 0.17f, center);
+            return chimney && root.InverseTransformPoint(chimney.position).x < bounds.center.x
+                ? new CouplerLayout(negative, positive) : new CouplerLayout(positive, negative);
+        }
+
+        private void TryCoupleWagon()
+        {
+            if (!RailUsable(track) || Mathf.Abs(speed) > 2.2f) return;
+            var tail = coupledWagons.Count == 0 ? body : coupledWagons[coupledWagons.Count - 1];
+            if (!tail || !couplers.TryGetValue(tail, out var tailLayout)) return;
+            bool tailPositiveTowardHead = PositiveTowardHead(tail);
+            Vector3 rear = tail.position + tail.rotation * (tailPositiveTowardHead ? tailLayout.Negative : tailLayout.Positive);
+            Vector3 outward = tail.rotation * (tailPositiveTowardHead ? Vector3.left : Vector3.right);
+            float tailExtent = ConsistRearExtent();
+            Rigidbody nearest = null;
+            bool nearestReversed = false;
+            float nearestGap = 0f;
+            float nearestDistance = CouplingRange * CouplingRange;
+            foreach (var wagon in availableWagons)
+            {
+                if (!wagon || wagon == body || coupledWagons.Contains(wagon) || !couplers.TryGetValue(wagon, out var layout) ||
+                    !wagon.TryGetComponent<NetworkObject>(out var networkWagon) || !networkWagon.IsSpawned) continue;
+                float alignment = Vector3.Dot(outward, wagon.rotation * Vector3.right);
+                if (Mathf.Abs(alignment) < 0.86f) continue;
+                bool positiveTowardHead = alignment < 0f;
+                bool reversed = positiveTowardHead != (rearwardRailSign > 0f);
+                Vector3 socket = positiveTowardHead ? layout.Positive : layout.Negative;
+                Vector3 front = wagon.position + wagon.rotation * socket;
+                Vector3 gap = front - rear;
+                float forwardGap = Vector3.Dot(gap, outward);
+                if (gap.sqrMagnitude >= nearestDistance || forwardGap < -0.09f ||
+                    (gap - forwardGap * outward).sqrMagnitude > 0.24f * 0.24f) continue;
+                float spacing = Mathf.Max(0f, forwardGap);
+                if (!WagonPose(track, distance, tailExtent + spacing + Mathf.Abs(socket.x), wagon, reversed, out var expected, out _) ||
+                    (expected - wagon.position).sqrMagnitude > 0.50f * 0.50f) continue;
+                nearest = wagon;
+                nearestReversed = reversed;
+                nearestGap = spacing;
+                nearestDistance = gap.sqrMagnitude;
+            }
+            if (!nearest) return;
+            coupledWagons.Add(nearest);
+            couplingGaps.Add(nearest, nearestGap);
+            if (nearestReversed) reversedWagons.Add(nearest);
+            looseWagons.Remove(nearest);
+        }
+
+        internal void QueueWagonPush(Rigidbody wagon, PlaygroundPlayer player, Vector3 direction)
+        {
+            if (IsSpawned && IsServer && looseWagons.TryGetValue(wagon, out var motion))
+                motion.Pushes.TryAdd(player, direction);
+        }
+
+        private void MoveLooseWagons()
+        {
+            foreach (var entry in looseWagons)
+            {
+                var wagon = entry.Key;
+                var motion = entry.Value;
+                if (!wagon || !wagon.TryGetComponent<NetworkObject>(out var net) || !net.IsSpawned ||
+                    (motion.Pushes.Count == 0 && Mathf.Abs(motion.Speed) < 0.001f))
+                {
+                    motion.Pushes.Clear();
+                    motion.Speed = 0f;
+                    continue;
+                }
+                if (!RailUsable(motion.Piece) && !FindWagonRail(wagon, motion))
+                {
+                    motion.Pushes.Clear();
+                    motion.Speed = 0f;
+                    continue;
+                }
+
+                SampleRail(motion.Piece, motion.Along, out _, out var direction);
+                float effort = 0f;
+                var tangent = Vector3.ProjectOnPlane(direction, Vector3.up).normalized;
+                foreach (var push in motion.Pushes)
+                    if (push.Key && push.Key.IsSpawned) effort += Vector3.Dot(push.Value, tangent);
+                motion.Pushes.Clear();
+                float requestedSpeed = Mathf.Clamp(effort * 0.20f, -0.65f, 0.65f);
+                float acceleration = Mathf.Abs(requestedSpeed) > 0.001f ? 0.36f : 1.2f;
+                motion.Speed = Mathf.MoveTowards(motion.Speed, requestedSpeed, acceleration * Time.fixedDeltaTime);
+                float step = motion.Speed * Time.fixedDeltaTime;
+                if (Mathf.Abs(step) < 0.0001f) continue;
+
+                var piece = motion.Piece;
+                float along = motion.Along;
+                var layout = couplers[wagon];
+                bool towardRear = (step > 0f) != motion.Reversed;
+                float lead = Mathf.Sign(step) * (towardRear ? -layout.Negative.x : layout.Positive.x);
+                if (!AdvanceOnRail(ref piece, ref along, step) ||
+                    !TryRailPose(piece, along, layout.Center, motion.Reversed, out var position, out var rotation))
+                {
+                    motion.Speed = 0f;
+                    continue;
+                }
+                var nose = piece;
+                float noseDistance = along;
+                if (!AdvanceOnRail(ref nose, ref noseDistance, lead) ||
+                    RailMovementBlocked(wagon, motion.Piece, motion.Along, piece, along, lead))
+                {
+                    motion.Speed = 0f;
+                    continue;
+                }
+
+                motion.Piece = piece;
+                motion.Along = along;
+                motion.Offset = Vector3.MoveTowards(motion.Offset, Vector3.zero, Mathf.Abs(step) * 0.5f);
+                MoveGuidedBody(wagon, position + rotation * motion.Offset,
+                    Quaternion.RotateTowards(wagon.rotation, rotation, 60f * Time.fixedDeltaTime));
+            }
+        }
+
+        private bool FindWagonRail(Rigidbody wagon, LooseWagon motion)
+        {
+            motion.Piece = null;
+            float center = couplers[wagon].Center;
+            Vector3 railOrigin = wagon.position + wagon.rotation * new Vector3(0f, -TrackPiece.RailToTrainPivot, center);
+            float nearest = 0.65f * 0.65f;
+            foreach (var piece in railPieces)
+            {
+                if (!RailUsable(piece)) continue;
+                float length = piece.Length;
+                if ((railOrigin - piece.StartPosition).sqrMagnitude > (length + 0.65f) * (length + 0.65f)) continue;
+                int segments = Mathf.CeilToInt(length * 2f);
+                Vector3 start = piece.StartPosition;
+                for (int i = 1; i <= segments; i++)
+                {
+                    piece.Evaluate(i / (float)segments, out var end, out _);
+                    Vector3 chord = end - start;
+                    float fraction = Mathf.Clamp01(Vector3.Dot(railOrigin - start, chord) / Mathf.Max(0.0001f, chord.sqrMagnitude));
+                    float gap = (railOrigin - Vector3.Lerp(start, end, fraction)).sqrMagnitude;
+                    start = end;
+                    if (gap >= nearest) continue;
+                    float progress = (i - 1 + fraction) / segments;
+                    piece.Evaluate(progress, out _, out var direction);
+                    float facing = Vector3.Dot(wagon.rotation * Vector3.right, direction);
+                    if (Mathf.Abs(facing) < 0.85f) continue;
+                    nearest = gap;
+                    motion.Piece = piece;
+                    motion.Along = progress * length;
+                    motion.Reversed = facing > 0f;
+                }
+            }
+            if (!TryRailPose(motion.Piece, motion.Along, center, motion.Reversed, out var position, out var rotation)) return false;
+            motion.Offset = Quaternion.Inverse(rotation) * (wagon.position - position);
+            return true;
+        }
+
+        private bool IsCoupledWagon(Collider collider)
+        {
+            foreach (var wagon in coupledWagons)
+                if (wagon && collider.transform.IsChildOf(wagon.transform)) return true;
+            return false;
+        }
+
+        private bool WagonPose(TrackPiece piece, float along, float offset, Rigidbody wagon, bool reversed,
+            out Vector3 position, out Quaternion rotation)
+        {
+            position = default;
+            rotation = default;
+            return AdvanceOnRail(ref piece, ref along, offset * rearwardRailSign) &&
+                   TryRailPose(piece, along, couplers[wagon].Center, reversed, out position, out rotation);
+        }
+
+        // The FBX importer can mirror the model's X axis. The named locomotive mounts define which way is forward.
+        private bool PositiveTowardHead(Rigidbody wagon) => (rearwardRailSign > 0f) != reversedWagons.Contains(wagon);
+
+        private float FrontExtent(Rigidbody wagon) =>
+            PositiveTowardHead(wagon) ? couplers[wagon].Positive.x : -couplers[wagon].Negative.x;
+
+        private float RearExtent(Rigidbody wagon) =>
+            PositiveTowardHead(wagon) ? -couplers[wagon].Negative.x : couplers[wagon].Positive.x;
+
+        private float ConsistRearExtent()
+        {
+            float extent = RearExtent(body);
+            foreach (var wagon in coupledWagons)
+                if (wagon) extent += couplingGaps[wagon] + FrontExtent(wagon) + RearExtent(wagon);
+            return extent;
+        }
+
+        private bool CanPlaceWagons(TrackPiece piece, float along)
+        {
+            float offset = RearExtent(body);
+            foreach (var wagon in coupledWagons)
+            {
+                if (!wagon || !couplers.ContainsKey(wagon)) return false;
+                offset += couplingGaps[wagon] + FrontExtent(wagon);
+                if (!WagonPose(piece, along, offset, wagon, reversedWagons.Contains(wagon), out _, out _)) return false;
+                offset += RearExtent(wagon);
+            }
+            return true;
+        }
+
+        private void PlaceWagons()
+        {
+            float offset = RearExtent(body);
+            foreach (var wagon in coupledWagons)
+            {
+                if (!wagon) return;
+                offset += couplingGaps[wagon] + FrontExtent(wagon);
+                if (WagonPose(track, distance, offset, wagon, reversedWagons.Contains(wagon), out var position, out var rotation))
+                {
+                    MoveGuidedBody(wagon, position, rotation);
+                }
+                offset += RearExtent(wagon);
+            }
         }
 
         private void UpdateCabControls()
         {
-            if (!leverPivot || !startButton) return;
             if (Time.time >= nextPlayerScan)
             {
                 players = FindObjectsByType<PlaygroundPlayer>(FindObjectsSortMode.None);
                 nextPlayerScan = Time.time + 0.25f;
             }
-            bool held = false;
+            UpdateFireboxDoor();
+            UpdateWagonDoors();
+            UpdateShovel();
+            if (!leverPivot || !startButton) return;
+            PlaygroundPlayer operatorPlayer = null;
+            Transform hand = null;
             foreach (var player in players)
-                if (player && player.IsSpawned && player.IsHoldingBody(leverBody)) { held = true; break; }
-            if (leverHinge && held != leverHeld)
+                if (player && player.IsSpawned && player.TryGetControlHand(leverBody, out hand, out _, out _))
+                { operatorPlayer = player; break; }
+            if (hand)
             {
-                if (!held)
+                float pitch = operatorPlayer.CabAimPitch;
+                if (leverHand != hand)
                 {
-                    var spring = leverHinge.spring;
-                    spring.targetPosition = leverHinge.angle;
-                    leverHinge.spring = spring;
+                    leverGripPitch = pitch;
+                    leverGripOffset = leverOffset;
                 }
-                leverHinge.useSpring = !held;
-                leverHeld = held;
+                leverOffset = MoveCabLever(leverGripOffset, leverGripPitch, pitch);
             }
-            float angle = Mathf.DeltaAngle(0f, (Quaternion.Inverse(leverRest) * leverPivot.localRotation).eulerAngles.z);
-            float input = Mathf.Clamp(-angle / 35f, -1f, 1f);
-            if (Mathf.Abs(input) < 0.06f) input = 0f;
+            leverHand = hand;
+            leverPivot.localPosition = leverRestPosition + leverSlideAxis * leverOffset;
+            float input = derailed ? 0f : leverOffset / LeverTravel;
             if (Mathf.Abs(input - throttle.Value) > 0.01f || (input == 0f && throttle.Value != 0f)) throttle.Value = input;
 
-            bool touching = false;
+            bool touching = false, pressing = false;
             int count = Physics.OverlapSphereNonAlloc(startButton.position, 0.12f, buttonContacts, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
             {
-                var player = buttonContacts[i].GetComponentInParent<PlaygroundPlayer>();
-                if (player && player.IsSpawned && player.IsHandCollider(buttonContacts[i])) { touching = true; break; }
+                Collider contact = buttonContacts[i];
+                var player = contact.GetComponentInParent<PlaygroundPlayer>();
+                if (!player || !player.IsSpawned || !player.IsHandCollider(contact)) continue;
+                touching = true;
+                Vector3 point = contact.bounds.center;
+                Vector3 towardButton = startButton.position - point;
+                var handBody = contact.attachedRigidbody;
+                if (handBody && towardButton.sqrMagnitude > 0.0001f &&
+                    Vector3.Dot(handBody.GetPointVelocity(point) - body.GetPointVelocity(point), towardButton.normalized) > 0.2f)
+                    pressing = true;
             }
-            if (touching && !buttonDown.Value && Time.time >= nextButtonPress)
+            bool pressed = touching && (buttonDown.Value || pressing);
+            if (!derailed && pressed && !buttonDown.Value && Time.time >= nextButtonPress)
             {
                 powered.Value = !powered.Value;
                 nextButtonPress = Time.time + 0.35f;
             }
-            if (buttonDown.Value != touching) buttonDown.Value = touching;
+            if (buttonDown.Value != pressed) buttonDown.Value = pressed;
+        }
+
+        private static float MoveCabLever(float startOffset, float startPitch, float pitch)
+        {
+            float offset = Mathf.Clamp(startOffset + (startPitch - pitch) * (LeverTravel / 22f), -LeverTravel, LeverTravel);
+            return Mathf.Abs(offset) <= LeverTravel * .10f ? 0f : offset;
+        }
+
+        private void PrepareWagonDoors()
+        {
+            Debug.Assert(Mathf.Approximately(MoveWagonDoor(-WagonDoorTravel, -1f, true), -WagonDoorTravel));
+            Debug.Assert(Mathf.Approximately(MoveWagonDoor(WagonDoorTravel, 1f, false), WagonDoorTravel));
+            Debug.Assert(Mathf.Approximately(MoveWagonDoor(0f, -.04f, true, WagonDoorPanelGrip), -.026f));
+            Debug.Assert(Mathf.Approximately(WagonDoorDisplacement(WagonDoorLeadIn * 0.5f).x, 0f));
+            Debug.Assert(Mathf.Approximately(WagonDoorDisplacement(WagonDoorTravel).z, -WagonDoorInset));
+            foreach (var wagon in availableWagons)
+            {
+                if (!wagon) continue;
+                Transform left = null, right = null, farLeft = null, farRight = null;
+                foreach (var part in wagon.GetComponentsInChildren<Transform>(true))
+                {
+                    if (part.name == "DoorLeaf_L") left = part;
+                    else if (part.name == "DoorLeaf_R") right = part;
+                    else if (part.name == "DoorLeaf_L_Far") farLeft = part;
+                    else if (part.name == "DoorLeaf_R_Far") farRight = part;
+                }
+                if (!left || !right) continue;
+                var leftMesh = left.GetComponent<MeshFilter>();
+                var rightMesh = right.GetComponent<MeshFilter>();
+                if (!leftMesh || !leftMesh.sharedMesh || !rightMesh || !rightMesh.sharedMesh ||
+                    left.GetComponent<Rigidbody>() || right.GetComponent<Rigidbody>())
+                {
+                    Debug.LogWarning("TrainDrive: wagon door panels are missing meshes or already have rigidbodies.", wagon);
+                    return;
+                }
+                float leftSide = left.localPosition.x - left.parent.InverseTransformPoint(right.position).x;
+                float rightSide = right.localPosition.x - right.parent.InverseTransformPoint(left.position).x;
+                if (Mathf.Abs(leftSide) < 0.01f || Mathf.Abs(rightSide) < 0.01f || Mathf.Sign(leftSide) == Mathf.Sign(rightSide))
+                {
+                    Debug.LogWarning("TrainDrive: wagon door panels do not have distinct sides.", wagon);
+                    return;
+                }
+                wagonDoors[0] = CreateWagonDoor(left, leftMesh.sharedMesh.bounds, leftSide < 0f);
+                wagonDoors[1] = CreateWagonDoor(right, rightMesh.sharedMesh.bounds, rightSide < 0f);
+                // Same door on the far side of the wagon: slides the same way along X, but tucks in toward +Z.
+                var farLeftMesh = farLeft ? farLeft.GetComponent<MeshFilter>() : null;
+                var farRightMesh = farRight ? farRight.GetComponent<MeshFilter>() : null;
+                if (farLeftMesh && farLeftMesh.sharedMesh && farRightMesh && farRightMesh.sharedMesh &&
+                    !farLeft.GetComponent<Rigidbody>() && !farRight.GetComponent<Rigidbody>())
+                {
+                    wagonDoors[2] = CreateWagonDoor(farLeft, farLeftMesh.sharedMesh.bounds, leftSide < 0f, 1f);
+                    wagonDoors[3] = CreateWagonDoor(farRight, farRightMesh.sharedMesh.bounds, rightSide < 0f, 1f);
+                }
+                ApplyWagonDoors();
+                return;
+            }
+        }
+
+        private WagonDoorPanel CreateWagonDoor(Transform leaf, Bounds bounds, bool opensNegative, float inward = -1f)
+        {
+            var panel = new WagonDoorPanel { Leaf = leaf, RestPosition = leaf.localPosition, OpensNegative = opensNegative, Inward = inward };
+            panel.OriginalColliders = leaf.GetComponentsInChildren<Collider>(true);
+            panel.OriginalEnabled = new bool[panel.OriginalColliders.Length];
+            for (int i = 0; i < panel.OriginalColliders.Length; i++)
+            {
+                panel.OriginalEnabled[i] = panel.OriginalColliders[i].enabled;
+                panel.OriginalColliders[i].enabled = false;
+            }
+            panel.Body = leaf.gameObject.AddComponent<Rigidbody>();
+            panel.Body.isKinematic = true;
+            panel.Body.useGravity = false;
+            panel.Panel = leaf.gameObject.AddComponent<BoxCollider>();
+            panel.Panel.center = bounds.center;
+            panel.Panel.size = new Vector3(bounds.size.x, bounds.size.y, Mathf.Max(0.09f, bounds.size.z));
+            float handleX = Mathf.Lerp(bounds.min.x, bounds.max.x, opensNegative ? .82f : .18f);
+            float handleY = Mathf.Lerp(bounds.min.y, bounds.max.y, .45f);
+            float outsideZ = inward < 0f ? bounds.max.z + .03f : bounds.min.z - .03f;
+            float insideZ = inward < 0f ? bounds.min.z - .03f : bounds.max.z + .03f;
+            panel.OutsideHandle = CreateWagonDoorHandle(leaf, "Outside", new Vector3(handleX, handleY, outsideZ));
+            panel.InsideHandle = CreateWagonDoorHandle(leaf, "Inside", new Vector3(handleX, handleY, insideZ));
+            ControlOwners[panel.Body] = this;
+            return panel;
+        }
+
+        private static CapsuleCollider CreateWagonDoorHandle(Transform leaf, string side, Vector3 fallbackCenter)
+        {
+            var mesh = leaf.Find(leaf.name + "_Handle" + side);
+            var handle = leaf.gameObject.AddComponent<CapsuleCollider>();
+            handle.center = mesh ? mesh.localPosition : fallbackCenter;
+            handle.direction = 1;
+            handle.radius = .06f;
+            handle.height = .55f;
+            return handle;
+        }
+
+        private void UpdateWagonDoors()
+        {
+            Vector4 offsets = wagonDoorOffsets.Value;
+            for (int i = 0; i < wagonDoors.Length; i++)
+            {
+                var panel = wagonDoors[i];
+                if (panel == null || !panel.Body) continue;
+                Transform holdingHand = null;
+                foreach (var player in players)
+                {
+                    if (!player || !player.IsSpawned ||
+                        !player.TryGetControlHand(panel.Body, out var hand, out var position, out var surface, useAim: true)) continue;
+                    float handX = panel.Leaf.parent.InverseTransformPoint(position).x;
+                    if (panel.Hand == hand)
+                    {
+                        float delta = handX - panel.PreviousHandX;
+                        float grip = surface == panel.Panel ? WagonDoorPanelGrip : 1f;
+                        offsets[i] = MoveWagonDoor(offsets[i], delta, panel.OpensNegative, grip);
+                    }
+                    panel.PreviousHandX = handX;
+                    holdingHand = hand;
+                    break;
+                }
+                panel.Hand = holdingHand;
+            }
+            if (offsets != wagonDoorOffsets.Value) wagonDoorOffsets.Value = offsets;
+            ApplyWagonDoors();
+        }
+
+        private static float MoveWagonDoor(float offset, float delta, bool opensNegative, float grip = 1f) =>
+            Mathf.Clamp(offset + Mathf.Clamp(delta, -0.06f, 0.06f) * grip, opensNegative ? -WagonDoorTravel : 0f, opensNegative ? 0f : WagonDoorTravel);
+
+        private static Vector3 WagonDoorDisplacement(float offset)
+        {
+            float distance = Mathf.Abs(offset);
+            float slide = Mathf.Max(0f, distance - WagonDoorLeadIn) * WagonDoorTravel / (WagonDoorTravel - WagonDoorLeadIn);
+            return new Vector3(Mathf.Sign(offset) * slide, 0f, -WagonDoorInset * Mathf.Clamp01(distance / WagonDoorLeadIn));
+        }
+
+        private void ApplyWagonDoors()
+        {
+            Vector4 offsets = wagonDoorOffsets.Value;
+            for (int i = 0; i < wagonDoors.Length; i++)
+            {
+                if (wagonDoors[i] == null || !wagonDoors[i].Leaf) continue;
+                Vector3 move = WagonDoorDisplacement(offsets[i]);
+                move.z *= -wagonDoors[i].Inward;      // platform side tucks in toward -Z, far side toward +Z
+                wagonDoors[i].Leaf.localPosition = wagonDoors[i].RestPosition + move;
+            }
+        }
+
+        private void UpdateFireboxDoor()
+        {
+            if (!doorBody) return;
+            foreach (var player in players)
+            {
+                if (!player || !player.IsSpawned || !player.TryGetControlHand(doorBody, out var hand, out var position, out _)) continue;
+                Vector3 handDirection = fireboxDoor.parent.InverseTransformPoint(position) - fireboxDoor.localPosition;
+                handDirection = Vector3.ProjectOnPlane(Quaternion.Inverse(doorRest) * handDirection, Vector3.up);
+                if (handDirection.sqrMagnitude < 0.04f) break;
+                if (doorHand == hand && player.HasCabControlInput)
+                {
+                    float delta = Vector3.SignedAngle(previousDoorHand, handDirection, Vector3.up) * doorOpeningSign;
+                    doorAngle.Value = Mathf.Clamp(doorAngle.Value + Mathf.Clamp(delta, -6f, 6f), 0f, 100f);
+                    ApplyDoorAngle();
+                }
+                doorHand = hand;
+                previousDoorHand = handDirection;
+                return;
+            }
+            doorHand = null;
+        }
+
+        private void ApplyDoorAngle() =>
+            fireboxDoor.localRotation = doorRest * Quaternion.AngleAxis(doorAngle.Value * doorOpeningSign, Vector3.up);
+
+        private void PrepareStoking()
+        {
+            canStoke = shovel && shovelLoad && fireboxFeedPoint && fireboxFlame && doorBody;
+            if (!canStoke) return;
+            if (!coalBin) FindCoalStockOnWagons();
+            canStoke = coalBin && coalScoopPoint;
+            if (!canStoke)
+            {
+                Debug.LogWarning("TrainDrive: geen schepkolen gevonden. Koppel de kolenwagen (Tender_Blockout met 'CoalStock') " +
+                                 "via Tools > Conductor Chaos > Configure Train On Selected Track; stoken staat uit.", this);
+                return;
+            }
+            coalSource = coalBin.IsChildOf(transform) ? transform : coalSourceBody ? coalSourceBody.transform : coalBin.root;
+            if (coalSource == transform) coalSourceBody = body;
+            var chunks = System.Array.FindAll(coalBin.GetComponentsInChildren<MeshFilter>(),
+                mesh => mesh.name.StartsWith("CoalChunk", System.StringComparison.Ordinal));
+            if (chunks.Length == 0) { canStoke = false; return; }
+            System.Array.Sort(chunks, (a, b) => string.CompareOrdinal(a.name, b.name));
+            if (!coalBin.GetComponent<Collider>() && coalBin.TryGetComponent<MeshFilter>(out var binMesh))
+            {
+                addedCoalBinCollider = coalBin.gameObject.AddComponent<BoxCollider>();
+                addedCoalBinCollider.center = binMesh.sharedMesh.bounds.center;
+                addedCoalBinCollider.size = binMesh.sharedMesh.bounds.size;
+            }
+
+            if (IsServer) coalPoses.Clear();
+            foreach (var chunk in chunks)
+            {
+                var piece = Instantiate(chunk.gameObject, chunk.transform.position, chunk.transform.rotation);
+                piece.name = chunk.name + " (fysiek)";
+                chunk.gameObject.SetActive(false);
+                foreach (var existing in piece.GetComponents<Collider>()) existing.enabled = false;
+                // Botsvorm = de convexe vorm van het brok (zoals bij het vullen van de bak in settle_coal.py), zodat de
+                // brokken blijven liggen zoals ze liggen; zonder leesbare mesh een iets kleinere box.
+                var mesh = chunk.sharedMesh;
+                if (mesh && mesh.isReadable)
+                {
+                    var hull = piece.AddComponent<MeshCollider>();
+                    hull.sharedMesh = mesh;
+                    hull.convex = true;
+                }
+                else
+                {
+                    var box = piece.AddComponent<BoxCollider>();
+                    box.center = mesh ? mesh.bounds.center : Vector3.zero;
+                    box.size = mesh ? mesh.bounds.size * 0.85f : Vector3.one * 0.13f;
+                }
+                var coal = piece.AddComponent<Rigidbody>();
+                coal.mass = 0.25f;
+                coal.maxDepenetrationVelocity = 0.5f;
+                coal.isKinematic = true;
+                coal.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+                // slapend in de bak: hangt aan de wagen en rijdt exact mee (ook op clients, die de pose lokaal volgen)
+                piece.transform.SetParent(coalSource, true);
+                int index = coalBodies.Count;
+                if (IsServer)
+                {
+                    GrippableCoal.Add(coal, this);
+                    coalPoses.Add(new CoalPose { Position = piece.transform.localPosition, Rotation = piece.transform.localRotation, Visible = true });
+                }
+                coalIndex[coal] = index;
+                coalBodies.Add(coal);
+                coalAsleep.Add(true);
+                coalCalmTime.Add(0f);
+                Vector3 extents = mesh ? Vector3.Scale(mesh.bounds.extents, piece.transform.lossyScale) : Vector3.one * 0.065f;
+                coalRadius.Add(Mathf.Max(extents.x, Mathf.Max(extents.y, extents.z)));
+                coalHomes.Add(piece.transform.localPosition);
+                coalHomeRotations.Add(piece.transform.localRotation);
+                coalRespawnTimes.Add(0f);
+            }
+            // gebied waarin kolen mogen slapen en waarin schep/handen/spelers ze wekken: de vulling + marge
+            coalBinLocal = new Bounds(coalHomes[0], Vector3.zero);
+            foreach (var home in coalHomes) coalBinLocal.Encapsulate(home);
+            coalBinLocal.Expand(new Vector3(0.5f, 0.8f, 0.5f));
+
+            shovelRestPosition = shovel.localPosition;
+            shovelRestRotation = shovel.localRotation;
+            shovelParent = shovel.parent;
+            shovelStartPosition = transform.InverseTransformPoint(shovel.position);
+            shovelStartRotation = Quaternion.Inverse(transform.rotation) * shovel.rotation;
+            Vector3 bladeDirection = Vector3.ProjectOnPlane(shovelLoad.localPosition, Vector3.up);
+            shovelBladeRotation = Quaternion.LookRotation(bladeDirection, Vector3.up);
+            originalShovelColliders = shovel.GetComponentsInChildren<Collider>(true);
+            originalShovelColliderStates = new bool[originalShovelColliders.Length];
+            for (int i = 0; i < originalShovelColliders.Length; i++)
+            {
+                originalShovelColliderStates[i] = originalShovelColliders[i].enabled;
+                originalShovelColliders[i].enabled = false;
+            }
+            shovel.SetParent(null, true);
+            shovelBody = shovel.gameObject.AddComponent<Rigidbody>();
+            shovelBody.mass = 0.4f;
+            shovelBody.isKinematic = !IsServer;
+            shovelBody.useGravity = IsServer;
+            shovelBody.interpolation = RigidbodyInterpolation.Interpolate;
+            ControlOwners[shovelBody] = this;
+            shovelGrip = shovel.gameObject.AddComponent<SphereCollider>();
+            shovelGrip.radius = 0.066f;
+            shovelBlade = shovelLoad.gameObject.AddComponent<BoxCollider>();
+            shovelBlade.center = new Vector3(0f, -0.03f, 0f);
+            shovelBlade.size = new Vector3(0.38f, 0.032f, 0.38f);
+            for (int i = 0; i < shovelRims.Length; i++)
+            {
+                var rim = shovelLoad.gameObject.AddComponent<BoxCollider>();
+                rim.center = i == 2 ? new Vector3(0f, -0.0055f, 0.179f) : new Vector3(i == 0 ? -0.1775f : 0.1775f, 0.0095f, -0.0075f);
+                rim.size = i == 2 ? new Vector3(0.38f, 0.049f, 0.022f) : new Vector3(0.025f, 0.079f, 0.355f);
+                shovelRims[i] = rim;
+            }
+            var firelightObject = new GameObject("Vuurlicht");
+            firelightObject.transform.SetParent(fireboxFlame, false);
+            firelight = firelightObject.AddComponent<Light>();
+            firelight.type = LightType.Point;
+            firelight.color = new Color(1f, 0.49f, 0.18f);
+            firelight.range = 0.9f;
+            if (!IsServer) return;
+            fuel.Value = StartingFuel;
+            shovelPosition.Value = shovelBody.position;
+            shovelRotation.Value = shovelBody.rotation;
+        }
+
+        private void FindCoalStockOnWagons()
+        {
+            foreach (var wagon in availableWagons)
+            {
+                if (!wagon || wagon == body) continue;
+                Transform stock = null, scoop = null;
+                foreach (var t in wagon.GetComponentsInChildren<Transform>(true))
+                {
+                    if (t.name == "CoalStock" || t.name == "CoalBin") stock = t;
+                    if (t.name == "CoalScoopPoint") scoop = t;
+                }
+                if (!stock || !scoop) continue;
+                coalBin = stock;
+                coalScoopPoint = scoop;
+                coalSourceBody = wagon;
+                return;
+            }
+        }
+
+        private void CoalHome(int index, out Vector3 position, out Quaternion rotation)
+        {
+            // Rigidbody-pose als die er is: die is al bijgewerkt voordat de transform wordt gesynchroniseerd.
+            if (coalSourceBody)
+            {
+                Pose source = CoalSourcePose();
+                position = source.position + source.rotation * coalHomes[index];
+                rotation = source.rotation * coalHomeRotations[index];
+                return;
+            }
+            position = coalSource.TransformPoint(coalHomes[index]);
+            rotation = coalSource.rotation * coalHomeRotations[index];
+        }
+
+        private void UpdateShovel()
+        {
+            if (!canStoke) return;
+            foreach (var player in players)
+            {
+                if (!player || !player.IsSpawned || !player.TryGetControlHand(shovelBody, out var hand, out var handPosition, out _) ||
+                    hand != shovelHand) continue;
+                if (!shovelHeld)
+                {
+                    shovelHeld = true;
+                    shovelBody.isKinematic = true;
+                    previousShovelHand = handPosition;
+                    shovelReleaseVelocity = Vector3.zero;
+                    shovelHolderColliders = player.GetComponentsInChildren<Collider>();
+                    SetShovelHolderCollisions(true);
+                }
+                shovelReleaseVelocity = Vector3.ClampMagnitude((handPosition - previousShovelHand) / Time.fixedDeltaTime, 10f);
+                previousShovelHand = handPosition;
+                Quaternion rotation = Quaternion.LookRotation(player.CabAimForward, transform.up) * Quaternion.Inverse(shovelBladeRotation);
+                shovelBody.MovePosition(handPosition);
+                rotation = Quaternion.RotateTowards(shovelBody.rotation, rotation, 360f * Time.fixedDeltaTime);
+                shovelBody.MoveRotation(rotation);
+                shovelPosition.Value = handPosition;
+                shovelRotation.Value = rotation;
+                return;
+            }
+            if (shovelHeld)
+            {
+                SetShovelHolderCollisions(false);
+                shovelHolderColliders = null;
+                shovelHeld = false;
+                shovelBody.isKinematic = false;
+                shovelBody.linearVelocity = shovelReleaseVelocity;
+            }
+            shovelPosition.Value = shovelBody.position;
+            shovelRotation.Value = shovelBody.rotation;
+        }
+
+        private void SetShovelHolderCollisions(bool ignore)
+        {
+            if (shovelHolderColliders == null) return;
+            foreach (var part in shovelHolderColliders)
+            {
+                if (!part || !part.enabled) continue;
+                if (shovelGrip) Physics.IgnoreCollision(part, shovelGrip, ignore);
+                if (shovelBlade) Physics.IgnoreCollision(part, shovelBlade, ignore);
+                foreach (var rim in shovelRims)
+                    if (rim) Physics.IgnoreCollision(part, rim, ignore);
+            }
+        }
+
+        private void UpdateCoal()
+        {
+            if (!canStoke) return;
+            Vector3 mouth = Vector3.Lerp(fireboxFeedPoint.position, fireboxFlame.position, 0.42f);
+            Pose source = CoalSourcePose();
+            Quaternion worldToSource = Quaternion.Inverse(source.rotation);
+            Bounds shovelBounds = shovelBlade.bounds;
+            foreach (var rim in shovelRims)
+                if (rim && rim.enabled) shovelBounds.Encapsulate(rim.bounds);
+            for (int i = 0; i < coalBodies.Count; i++)
+            {
+                var coal = coalBodies[i];
+                if (!coal.gameObject.activeSelf)
+                {
+                    if (Time.time < coalRespawnTimes[i]) continue;
+                    CoalHome(i, out var home, out _);
+                    int overlaps = Physics.OverlapSphereNonAlloc(home, 0.05f, buttonContacts, ~0, QueryTriggerInteraction.Ignore);
+                    bool occupied = false;
+                    for (int j = 0; j < overlaps && !occupied; j++)
+                        occupied = IsCoalBody(buttonContacts[j].attachedRigidbody);
+                    if (occupied) continue;
+                    coal.isKinematic = true;
+                    coal.transform.SetParent(coalSource, false);
+                    coal.transform.localPosition = coalHomes[i];
+                    coal.transform.localRotation = coalHomeRotations[i];
+                    coalAsleep[i] = true;
+                    coalCalmTime[i] = 0f;
+                    coal.gameObject.SetActive(true);
+                }
+                Vector3 position = coalAsleep[i]
+                    ? source.position + source.rotation * coal.transform.localPosition
+                    : coal.position;
+                float reach = coalRadius[i] + 0.025f;
+                bool shovelContact = (shovelBounds.ClosestPoint(position) - position).sqrMagnitude < reach * reach &&
+                                     ShovelTouchesCoal(position, reach);
+                if (coalAsleep[i])
+                {
+                    if (shovelContact) WakeCoal(i);
+                }
+                else
+                {
+                    Vector3 local = worldToSource * (coal.position - source.position);
+                    Vector3 relative = coal.linearVelocity - SourceVelocity(coal.position);
+                    Vector3 spin = coal.angularVelocity - (coalSourceBody ? coalSourceBody.angularVelocity : Vector3.zero);
+                    bool calm = !shovelContact && !CoalIsHeld(coal) && coalBinLocal.Contains(local) &&
+                                relative.sqrMagnitude < 0.05f * 0.05f && spin.sqrMagnitude < 0.5f * 0.5f;
+                    coalCalmTime[i] = calm ? coalCalmTime[i] + Time.fixedDeltaTime : 0f;
+                    if (coalCalmTime[i] > 0.75f) SleepCoal(i);
+                }
+                bool inFire = doorAngle.Value >= 50f && fuel.Value < FuelCapacity - 0.05f &&
+                              (coal.position - mouth).sqrMagnitude < 0.23f * 0.23f;
+                Vector3 stock = source.position;
+                if (inFire || coal.position.y < stock.y - 20f || (coal.position - stock).sqrMagnitude > 10000f)
+                {
+                    if (inFire) fuel.Value = Mathf.Min(FuelCapacity, fuel.Value + 0.5f);
+                    WakeCoal(i);
+                    coal.gameObject.SetActive(false);
+                    coalRespawnTimes[i] = Time.time + 2.5f;
+                }
+                var previousPose = coalPoses[i];
+                var pose = new CoalPose { Visible = coal.gameObject.activeSelf };
+                if (coalAsleep[i])
+                {
+                    pose.Position = coal.transform.localPosition;
+                    pose.Rotation = coal.transform.localRotation;
+                }
+                else
+                {
+                    pose.Position = worldToSource * (coal.position - source.position);
+                    pose.Rotation = worldToSource * coal.rotation;
+                }
+                if (pose.Visible != previousPose.Visible || (pose.Position - previousPose.Position).sqrMagnitude > 0.0001f ||
+                    Quaternion.Angle(pose.Rotation, previousPose.Rotation) > 2f)
+                    coalPoses[i] = pose;
+            }
+        }
+
+        private Pose CoalSourcePose()
+        {
+            if (!coalSourceBody) return new Pose(coalSource.position, coalSource.rotation);
+            return guidedMotion.TryGetValue(coalSourceBody, out var motion)
+                ? motion.From : new Pose(coalSourceBody.position, coalSourceBody.rotation);
+        }
+        private Vector3 SourceVelocity(Vector3 point) => coalSourceBody ? GuidedPointVelocity(coalSourceBody, point) : Vector3.zero;
+
+        private bool ShovelTouchesCoal(Vector3 point, float reach)
+        {
+            if (!shovelBlade || !shovelBlade.enabled || !shovelBlade.gameObject.activeInHierarchy) return false;
+            if ((shovelBlade.ClosestPoint(point) - point).sqrMagnitude < reach * reach) return true;
+            foreach (var rim in shovelRims)
+                if (rim && rim.enabled && (rim.ClosestPoint(point) - point).sqrMagnitude < reach * reach) return true;
+            return false;
+        }
+
+        private bool CoalIsHeld(Rigidbody coal)
+        {
+            foreach (var player in players)
+                if (player && player.TryGetControlHand(coal, out _, out _, out _)) return true;
+            return false;
+        }
+
+        private void WakeCoal(int index)
+        {
+            if (!coalAsleep[index]) return;
+            var coal = coalBodies[index];
+            Pose source = CoalSourcePose();
+            Vector3 position = source.position + source.rotation * coal.transform.localPosition;
+            Quaternion rotation = source.rotation * coal.transform.localRotation;
+            coal.transform.SetParent(null, true);
+            coal.isKinematic = false;
+            coal.position = position;
+            coal.rotation = rotation;
+            coal.linearVelocity = SourceVelocity(position);
+            coal.angularVelocity = coalSourceBody ? coalSourceBody.angularVelocity : Vector3.zero;
+            coal.WakeUp();
+            coalAsleep[index] = false;
+            coalCalmTime[index] = 0f;
+        }
+
+        private void SleepCoal(int index)
+        {
+            var coal = coalBodies[index];
+            coal.isKinematic = true;
+            coal.transform.SetParent(coalSource, true);
+            coalAsleep[index] = true;
+            coalCalmTime[index] = 0f;
+        }
+
+        private void PresentStoking()
+        {
+            if (!IsServer)
+            {
+                float follow = 1f - Mathf.Exp(-24f * Time.deltaTime);
+                shovel.SetPositionAndRotation(Vector3.Lerp(shovel.position, shovelPosition.Value, follow),
+                    Quaternion.Slerp(shovel.rotation, shovelRotation.Value, follow));
+                // kolen hangen op clients altijd aan hun wagen; de pose is relatief, dus rijden ze zonder naijlen mee
+                for (int i = 0; i < coalBodies.Count && i < coalPoses.Count; i++)
+                {
+                    var coal = coalBodies[i].transform;
+                    var pose = coalPoses[i];
+                    if (!coal.gameObject.activeSelf && pose.Visible)
+                    {
+                        coal.localPosition = pose.Position;
+                        coal.localRotation = pose.Rotation;
+                    }
+                    coal.gameObject.SetActive(pose.Visible);
+                    if (!pose.Visible) continue;
+                    coal.localPosition = Vector3.Lerp(coal.localPosition, pose.Position, follow);
+                    coal.localRotation = Quaternion.Slerp(coal.localRotation, pose.Rotation, follow);
+                }
+            }
+            float flameStrength = fuel.Value > 0f ? Mathf.Lerp(0.38f, 1f, Mathf.Clamp01(fuel.Value)) : 0f;
+            fireboxFlame.gameObject.SetActive(flameStrength > 0f);
+            float flicker = 1f + 0.12f * Mathf.Sin(Time.time * 9f) + 0.07f * Mathf.Sin(Time.time * 17f);
+            fireboxFlame.localScale = new Vector3(1f, flicker, 1f) * flameStrength;
+            firelight.intensity = 1.1f * flameStrength * flicker;
         }
 
         private void CreateCabControls()
         {
-            if (!lever) { Debug.LogError("TrainDrive: de cabinehendel Regulator ontbreekt.", this); return; }
+            if (!lever || !startButton) { Debug.LogError("TrainDrive: de cabinehendel of startknop ontbreekt in het locomotiefmodel.", this); return; }
             leverParent = lever.parent;
             leverPosition = lever.localPosition;
             leverScale = lever.localScale;
-            Vector3 pivotPosition = lever.position - transform.up * 0.1f;
-            Vector3 buttonPosition = pivotPosition + transform.right * 0.2f + transform.up * 0.34f - transform.forward * 0.27f;
-            Quaternion buttonRotation = transform.rotation;
-            var door = leverParent.Find("FireboxDoor");
-            var stove = leverParent.GetComponent<Renderer>();
-            if (door && stove)
-            {
-                Vector3 axis = leverParent.right.normalized;
-                Vector3 outward = Vector3.Dot(door.position - stove.bounds.center, axis) < 0f ? -axis : axis;
-                Vector3 side = Vector3.ProjectOnPlane(lever.position - door.position, transform.up);
-                side = Vector3.ProjectOnPlane(side, outward).normalized;
-                if (side.sqrMagnitude < 0.01f) side = Vector3.Cross(transform.up, outward).normalized;
-                pivotPosition = door.position + outward * 0.035f + transform.up * 0.1f + side * 0.48f;
-                buttonPosition = door.position + outward * 0.04f + transform.up * 0.29f + side * 0.05f;
-                buttonRotation = Quaternion.FromToRotation(Vector3.up, outward);
-            }
+            Vector3 pivotPosition = lever.position;
             leverColliders = lever.GetComponentsInChildren<Collider>(true);
             leverColliderEnabled = new bool[leverColliders.Length];
             for (int i = 0; i < leverColliders.Length; i++)
@@ -226,52 +1613,127 @@ namespace ConductorChaos.Playground
             leverPivot.SetParent(leverParent, false);
             leverPivot.position = pivotPosition;
             leverPivot.localRotation = leverRest;
+            leverRestPosition = leverPivot.localPosition;
+            leverSlideAxis = leverParent.InverseTransformDirection(transform.up).normalized;
+            leverOffset = leverGripPitch = leverGripOffset = 0f;
             lever.SetParent(leverPivot, false);
             lever.localPosition = Vector3.zero;
             lever.localRotation = Quaternion.identity;
             lever.localScale = leverScale;
-            var handle = leverPivot.gameObject.AddComponent<SphereCollider>();
-            handle.center = new Vector3(-0.05f, 0.45f, 0f);
-            handle.radius = 0.18f;
+            // Greep = de brede gele trekstang (pivot = hart van de greep); de capsule volgt de lengte van de stang.
+            var handle = leverPivot.gameObject.AddComponent<CapsuleCollider>();
+            handle.direction = 2;
+            handle.height = 0.30f;
+            if (lever.TryGetComponent<MeshFilter>(out var leverMesh) && leverMesh.sharedMesh)
+            {
+                Vector3 size = Vector3.Scale(leverMesh.sharedMesh.bounds.size, leverScale);
+                handle.direction = size.x >= size.y && size.x >= size.z ? 0 : size.y >= size.z ? 1 : 2;
+                handle.height = size[handle.direction] + 0.04f;
+            }
+            handle.center = Vector3.zero;
+            handle.radius = 0.06f;
             leverBody = leverPivot.gameObject.AddComponent<Rigidbody>();
             leverBody.mass = 0.15f;
             leverBody.useGravity = false;
-            leverBody.isKinematic = !IsServer;
+            leverBody.isKinematic = true;
             leverBody.angularDamping = 0.75f;
-            leverBody.interpolation = RigidbodyInterpolation.Interpolate;
-            if (IsServer)
-            {
-                leverHinge = leverPivot.gameObject.AddComponent<HingeJoint>();
-                leverHinge.connectedBody = body;
-                leverHinge.autoConfigureConnectedAnchor = false;
-                leverHinge.connectedAnchor = body.transform.InverseTransformPoint(leverPivot.position);
-                leverHinge.axis = Vector3.forward;
-                leverHinge.useLimits = true;
-                leverHinge.limits = new JointLimits { min = -35f, max = 35f };
-                leverHinge.spring = new JointSpring { spring = 25f, damper = 5f, targetPosition = 0f };
-                leverHinge.useSpring = true;
-            }
+            leverBody.interpolation = RigidbodyInterpolation.None;
 
-            var button = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            button.name = "Startknop";
-            startButton = button.transform;
-            startButton.SetParent(leverParent, false);
-            startButton.position = buttonPosition;
-            startButton.rotation = buttonRotation;
-            startButton.localScale = new Vector3(0.18f, 0.04f, 0.18f);
-            if (lever.TryGetComponent<Renderer>(out var leverRenderer))
-                button.GetComponent<Renderer>().sharedMaterial = leverRenderer.sharedMaterial;
-            foreach (var renderer in GetComponentsInChildren<Renderer>())
-            {
-                foreach (var material in renderer.sharedMaterials)
-                    if (material && material.name == "M_Loco_Red") { button.GetComponent<Renderer>().sharedMaterial = material; break; }
-                if (button.GetComponent<Renderer>().sharedMaterial && button.GetComponent<Renderer>().sharedMaterial.name == "M_Loco_Red") break;
-            }
         }
 
         public override void OnNetworkDespawn()
         {
-            if (startButton) Destroy(startButton.gameObject);
+            if (body) TrainBodies.Remove(body);
+            foreach (var wagon in availableWagons)
+                if (wagon) TrainBodies.Remove(wagon);
+            if (derailed)
+            {
+                if (body) { body.isKinematic = true; body.useGravity = false; }
+                foreach (var wagon in coupledWagons)
+                    if (wagon) { wagon.isKinematic = true; wagon.useGravity = false; }
+                foreach (var joint in derailJoints)
+                    if (joint) Destroy(joint);
+                foreach (var box in derailBoxes)
+                    if (box) Destroy(box);
+                foreach (var shape in derailColliders)
+                    if (shape) shape.enabled = true;
+                if (body) body.mass = originalTrainMass;
+                if (derailMaterial) Destroy(derailMaterial);
+                derailMaterial = null;
+                derailJoints.Clear();
+                derailBoxes.Clear();
+                derailColliders.Clear();
+                derailed = false;
+            }
+            if (startButton) startButton.localScale = Vector3.one;
+            if (startButtonRenderer && buttonOriginalProperties != null) startButtonRenderer.SetPropertyBlock(buttonOriginalProperties);
+            if (startButtonLight) Destroy(startButtonLight.gameObject);
+            startButtonRenderer = null;
+            startButtonLight = null;
+            if (speedNeedle) speedNeedle.localRotation = Quaternion.identity;
+            if (heatNeedle) heatNeedle.localRotation = Quaternion.identity;
+            displayedHeat = 0f;
+            if (cabLampLight) Destroy(cabLampLight.gameObject);
+            cabLampLight = null;
+            if (fireboxDoor && fireboxLatch) fireboxDoor.localRotation = doorRest;
+            if (latchCollider) Destroy(latchCollider);
+            if (doorBody) Destroy(doorBody);
+            for (int i = 0; i < wagonDoors.Length; i++)
+            {
+                var panel = wagonDoors[i];
+                if (panel == null) continue;
+                if (panel.Leaf) panel.Leaf.localPosition = panel.RestPosition;
+                if (panel.Body) { ControlOwners.Remove(panel.Body); Destroy(panel.Body); }
+                if (panel.OutsideHandle) Destroy(panel.OutsideHandle);
+                if (panel.InsideHandle) Destroy(panel.InsideHandle);
+                if (panel.Panel) Destroy(panel.Panel);
+                for (int j = 0; j < panel.OriginalColliders.Length; j++)
+                    if (panel.OriginalColliders[j]) panel.OriginalColliders[j].enabled = panel.OriginalEnabled[j];
+                wagonDoors[i] = null;
+            }
+            if (canStoke)
+            {
+                SetShovelHolderCollisions(false);
+                shovelHolderColliders = null;
+                shovelHeld = false;
+                ControlOwners.Remove(shovelBody);
+                if (shovelBody) shovelBody.isKinematic = true;
+                shovel.SetParent(shovelParent, false);
+                shovel.localPosition = shovelRestPosition;
+                shovel.localRotation = shovelRestRotation;
+                for (int i = 0; i < originalShovelColliders.Length; i++)
+                    if (originalShovelColliders[i]) originalShovelColliders[i].enabled = originalShovelColliderStates[i];
+                fireboxFlame.gameObject.SetActive(true);
+                fireboxFlame.localScale = Vector3.one;
+                Destroy(shovelGrip);
+                Destroy(shovelBody);
+                Destroy(firelight.gameObject);
+                Destroy(shovelBlade);
+                foreach (var rim in shovelRims)
+                    if (rim) Destroy(rim);
+                if (addedCoalBinCollider) Destroy(addedCoalBinCollider);
+                foreach (var coal in coalBodies)
+                {
+                    GrippableCoal.Remove(coal);
+                    if (coal) Destroy(coal.gameObject);
+                }
+                coalBodies.Clear();
+                coalAsleep.Clear();
+                coalCalmTime.Clear();
+                coalRadius.Clear();
+                coalIndex.Clear();
+                coalHomes.Clear();
+                coalHomeRotations.Clear();
+                coalRespawnTimes.Clear();
+                foreach (var chunk in coalBin.GetComponentsInChildren<MeshFilter>(true))
+                    if (chunk.name.StartsWith("CoalChunk", System.StringComparison.Ordinal)) chunk.gameObject.SetActive(true);
+            }
+            if (steamEffects) steamEffects.Teardown();
+            shovelHand = null;
+            canStoke = false;
+            coalSource = null;
+            coalSourceBody = null;
+            doorHand = null;
             if (lever && leverParent)
             {
                 lever.SetParent(leverParent, false);
@@ -284,10 +1746,17 @@ namespace ConductorChaos.Playground
                     if (leverColliders[i]) leverColliders[i].enabled = leverColliderEnabled[i];
             if (leverPivot) Destroy(leverPivot.gameObject);
             players = System.Array.Empty<PlaygroundPlayer>();
-            leverHeld = false;
+            leverHand = null;
+            leverOffset = leverGripPitch = leverGripOffset = 0f;
             nextPlayerScan = 0f;
             previous.Clear();
+            following.Clear();
+            railPieces = System.Array.Empty<TrackPiece>();
+            looseWagons.Clear();
+            coupledWagons.Clear();
+            couplingGaps.Clear();
+            couplers.Clear();
+            reversedWagons.Clear();
         }
     }
 }
-

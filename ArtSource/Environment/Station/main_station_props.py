@@ -18,32 +18,107 @@ import station_props as props
 
 
 # ------------------------------------------------------------------ kluisjes
+LOCKER_OPEN = 112                                   # graden: zo ver draait een kluisdeurtje open (om zijn scharnier)
+
+
+def locker_door(wd, h):
+    """Eén kluisdeurtje, lokaal: scharnier op x = 0 (linkerrand), blad naar +X, y = hoogte in de kast, voorkant +Z.
+    Ventilatiesleuven, naambordje en gele knop zitten op het blad en draaien mee. Geeft (mesh, botsvorm)."""
+    parts = [slab(rounded_rect_loop(0.0, wd, 0.12, h - 0.06, 0.03, 2), [], -0.011, 0.011, 0.008, "M_Stn_Locker")]
+    for j in range(3):                                   # ventilatiesleuven (bolle staafjes)
+        y = h - 0.22 - j * 0.07
+        parts.append(capsule((0.09, y, 0.009), (wd - 0.09, y, 0.009), 0.014, mat="M_Stn_LockerDark", seg=6, rings=1))
+    xc = wd / 2
+    parts.append(slab(rounded_rect_loop(xc - 0.08, xc + 0.08, h - 0.48, h - 0.38, 0.02, 2), [], 0.003, 0.019, 0.004,
+                      "M_Stn_Cream"))
+    parts.append(ball(0.032, "M_Stn_Yellow", 10, 6).transform(t=(wd - 0.07, 0.86, 0.023)))
+    for y in (0.34, h - 0.30):                           # scharnieren op de rand
+        parts.append(rbox(-0.012, 0.035, y - 0.035, y + 0.035, -0.018, 0.018, 0.006, "M_Stn_LockerDark"))
+    col = col_box(0.0, wd, 0.12, h - 0.06, -0.012, 0.012)
+    return mk.merge(*parts), col
+
+
+def _locker_contents(k, xa, xb, y_floor, y_shelf, z0, z1):
+    """Wat er in kluisje k staat (vast, hoort bij de kast): laarzen, opgevouwen uniform, broodtrommel, lantaarn."""
+    xm, zm = (xa + xb) / 2, (z0 + z1) / 2
+    kind = k % 5
+    if kind == 0:                                        # werklaarzen: schacht smaller dan de voet
+        return [mk.merge(rbox(x - 0.045, x + 0.045, y_floor + 0.06, y_floor + 0.25, zm - 0.065, zm + 0.03, 0.025, "M_Stn_Dark"),
+                         rbox(x - 0.058, x + 0.058, y_floor - 0.004, y_floor + 0.10, zm - 0.075, zm + 0.13, 0.03, "M_Stn_Dark"))
+                for x in (xm - 0.075, xm + 0.075)]
+    if kind == 1:                                        # stapel opgevouwen uniformen, elke laag iets kleiner
+        return [rbox(xm - 0.15 + j * 0.008, xm + 0.15 - j * 0.008, y_shelf - 0.004 + j * 0.062, y_shelf + 0.066 + j * 0.062,
+                     zm - 0.13 + j * 0.008, zm + 0.11 - j * 0.008, 0.025, ("M_Stn_Navy", "M_Stn_NavyLight", "M_Stn_Navy")[j])
+                for j in range(3)]
+    if kind == 2:                                        # broodtrommel met hengsel
+        return [rbox(xm - 0.13, xm + 0.13, y_shelf - 0.004, y_shelf + 0.16, zm - 0.09, zm + 0.09, 0.03, "M_Stn_Red"),
+                rbox(xm - 0.06, xm + 0.06, y_shelf + 0.15, y_shelf + 0.19, zm - 0.02, zm + 0.02, 0.012, "M_Stn_Cream")]
+    if kind == 3:                                        # handlantaarn
+        return [cyl(0.085, 0.05, 10, 0.012, "M_Stn_Metal").transform(t=(xm, y_floor + 0.021, zm)),
+                cyl(0.062, 0.17, 10, 0.0, "M_Stn_Glow").transform(t=(xm, y_floor + 0.125, zm)),
+                cyl(0.090, 0.05, 10, 0.014, "M_Stn_Metal").transform(t=(xm, y_floor + 0.23, zm))]
+    return [rbox(xm - 0.14, xm + 0.14, y_floor - 0.004, y_floor + 0.30, zm - 0.11, zm + 0.10, 0.04, "M_Stn_Timber")]   # tas
+
+
 def lockers(n=4, w=0.46, h=1.62, d=0.46, top_crate=True):
-    """Rij blauwe personeelskluisjes: kast met plint en kroonlijst, deurtjes met ventilatiesleuven, gele knop en
-    een naambordje. Voorkant +Z, pivot midden-onder."""
+    """Rij blauwe personeelskluisjes die open kunnen. Voorkant +Z, pivot midden-onder.
+
+    Geeft (kast, botsvormen, deurtjes):
+      kast        open kast: achterwand, bodem, tussenschotten, per vak een schap en iets erin, plint en kroonlijst
+      botsvormen  tuple losse blokken (achterwand, bodem, kap, schotten, schappen): je kunt in een open vak reiken
+      deurtjes    [(naam, mesh, botsvorm, scharnierpositie)] in kastcoördinaten, dicht; elk deurtje draait om zijn
+                  eigen Y-as (scharnier links) tot LOCKER_OPEN graden naar buiten
+    """
     W = n * w
-    parts = [rbox(-W / 2, W / 2, 0.08, h, -d / 2, d / 2 - 0.02, 0.02, "M_Stn_LockerDark"),
-             rbox(-W / 2 + 0.02, W / 2 - 0.02, 0.0, 0.09, -d / 2 + 0.02, d / 2 - 0.05, 0.015, "M_Stn_Dark"),
-             rbox(-W / 2 - 0.03, W / 2 + 0.03, h - 0.02, h + 0.06, -d / 2 - 0.01, d / 2 + 0.02, 0.02, "M_Stn_Locker")]
     zf = d / 2 - 0.02                                   # voorkant kast
+    zb = -d / 2
+    t = 0.028                                           # plaatdikte
+    y_floor, y_shelf = 0.130, h - 0.44
+    # Kast als schil van platen die in elkaar steken (nergens twee vlakken in hetzelfde vlak): zijwanden buitenom,
+    # achterwand en bodem ertussen, tussenschotten en schappen daar weer in.
+    parts = [rbox(-W / 2 + 0.010, W / 2 - 0.010, 0.092, h - 0.012, zb + 0.008, zb + 0.008 + t, 0.008, "M_Stn_LockerDark"),
+             rbox(-W / 2 + 0.010, W / 2 - 0.010, 0.100, y_floor, zb + 0.016, zf - 0.014, 0.006, "M_Stn_LockerDark"),
+             rbox(-W / 2 + 0.02, W / 2 - 0.02, 0.0, 0.09, zb + 0.02, d / 2 - 0.05, 0.015, "M_Stn_Dark"),  # plint
+             rbox(-W / 2 - 0.03, W / 2 + 0.03, h - 0.02, h + 0.06, zb - 0.01, d / 2 + 0.02, 0.02, "M_Stn_Locker")]
+    cols = [col_box(-W / 2, W / 2, 0.0, h, zb, zb + 0.008 + t),
+            col_box(-W / 2, W / 2, 0.0, y_floor, zb, zf - 0.006),
+            col_box(-W / 2 - 0.03, W / 2 + 0.03, h - 0.02, h + 0.06, zb - 0.01, d / 2 + 0.02)]
+    for k in range(n + 1):                               # zijwanden (buitenom) en tussenschotten, net achter het deurvlak
+        xs = -W / 2 + k * w
+        if k in (0, n):
+            xa, xb = (xs, xs + t) if k == 0 else (xs - t, xs)
+            parts.append(rbox(xa, xb, 0.085, h - 0.005, zb, zf - 0.006, 0.010, "M_Stn_Locker"))
+        else:
+            xa, xb = xs - t / 2, xs + t / 2
+            parts.append(rbox(xa, xb, 0.108, h - 0.006, zb + 0.024, zf - 0.006, 0.008, "M_Stn_Locker"))
+        cols.append(col_box(xa, xb, 0.0, h, zb, zf - 0.006))
+    doors = []
     for k in range(n):
         x0, x1 = -W / 2 + k * w + 0.025, -W / 2 + (k + 1) * w - 0.025
-        xc = (x0 + x1) / 2
-        door = slab(rounded_rect_loop(x0, x1, 0.12, h - 0.06, 0.03, 2), [], zf - 0.004, zf + 0.018, 0.008, "M_Stn_Locker")
-        parts.append(door)
-        for j in range(3):                               # ventilatiesleuven (bolle staafjes)
-            y = h - 0.22 - j * 0.07
-            parts.append(capsule((x0 + 0.09, y, zf + 0.016), (x1 - 0.09, y, zf + 0.016), 0.014, mat="M_Stn_LockerDark",
-                                 seg=6, rings=1))
-        parts.append(slab(rounded_rect_loop(xc - 0.08, xc + 0.08, h - 0.48, h - 0.38, 0.02, 2), [], zf + 0.010, zf + 0.026,
-                          0.004, "M_Stn_Cream"))
-        parts.append(ball(0.032, "M_Stn_Yellow", 10, 6).transform(t=(x1 - 0.07, 0.86, zf + 0.03)))
+        xa, xb = -W / 2 + k * w + t / 2 + 0.004, -W / 2 + (k + 1) * w - t / 2 - 0.004
+        parts.append(rbox(xa - 0.012, xb + 0.012, y_shelf - 0.024, y_shelf, zb + 0.030, zf - 0.07, 0.008, "M_Stn_LockerDark"))
+        cols.append(col_box(xa, xb, y_shelf - 0.024, y_shelf, zb, zf - 0.07))
+        parts.append(ball(0.020, "M_Stn_Yellow", 8, 5).transform(t=((xa + xb) / 2, y_shelf - 0.06, zb + t + 0.020)))   # haakje
+        parts += _locker_contents(k, xa, xb, y_floor, y_shelf, zb + t, zf - 0.02)
+        leaf, lcol = locker_door(x1 - x0, h)
+        doors.append((f"LockerDoor_{k + 1}", leaf, lcol, (x0, 0.0, zf + 0.007)))
     if top_crate:
         m, _ = props.crate(0.42)
         parts.append(m.transform(R=mk.rot_y(0.12), t=(-W / 4, h + 0.06, -0.02)))
         parts.append(rbox(0.05, 0.45, h + 0.06, h + 0.24, -0.16, 0.12, 0.03, "M_Stn_Timber"))     # doos
-    col = col_box(-W / 2 - 0.03, W / 2 + 0.03, 0, h + 0.06, -d / 2, d / 2 + 0.03)
-    return mk.merge(*parts), col
+        cols.append(col_box(-W / 4 - 0.24, 0.45, h + 0.06, h + 0.24, -0.22, 0.20))
+    return mk.merge(*parts), tuple(cols), doors
+
+
+def locker_door_nodes(doors, position=(0, 0, 0), rotation=None, opened=()):
+    """Knopen voor export(): elk deurtje met botsvorm en scharnierstanden, geplaatst met de kast mee.
+    opened = {nummer: graden} zet een deurtje in het model alvast op een kier of open."""
+    opened = dict(opened or {})
+    R = rotation if rotation is not None else mk.rot_y(0)
+    nodes = []
+    for k, (name, leaf, col, hinge) in enumerate(doors, 1):
+        nodes += props.swing_door(name, leaf, col, R @ hinge + position, -LOCKER_OPEN, -opened.get(k, 0), closed=R)
+    return nodes
 
 
 # ------------------------------------------------------------------ borden
@@ -183,7 +258,17 @@ def counter_screen():
                     rbox(-0.19, 0.19, 0.15, 0.39, 0.015, 0.026, 0.004, "M_Stn_NavyLight"))
 
 
-def coffee_counter(L=2.6, d=0.62, h=0.92):
+def coffee_counter_items(L, h):
+    return [
+        ("Bell_Counter", counter_bell(), col_box(-0.075, 0.075, 0, 0.105, -0.075, 0.075),
+         (L / 2 - 0.30, h, 0.12), mk.rot_y(0)),
+        *[(f"Mug_Counter{k + 1}", mug(mat), col_box(-0.045, 0.085, 0, 0.10, -0.045, 0.045),
+           (x, h, 0.15), mk.rot_y(0.6 * k))
+          for k, (x, mat) in enumerate(((0.05, "M_Stn_Cream"), (0.22, "M_Stn_Red")))],
+    ]
+
+
+def coffee_counter(L=2.6, d=0.62, h=0.92, *, include_loose=True):
     """Koffiebar/balie: houten kast met panelen, licht houten werkblad met overstek naar voren (+Z), bel,
     kassaschermpje en mokken. Pivot midden-onder."""
     parts = [rbox(-L / 2, L / 2, 0.06, h - 0.05, -d / 2, d / 2 - 0.06, 0.03, "M_Stn_Timber"),
@@ -197,10 +282,9 @@ def coffee_counter(L=2.6, d=0.62, h=0.92):
         parts.append(slab(rounded_rect_loop(x0 + 0.05, x0 + pw - 0.05, 0.18, h - 0.17, 0.03, 2),
                           [rounded_rect_loop(x0 + 0.10, x0 + pw - 0.10, 0.23, h - 0.22, 0.02, 2)],
                           zf - 0.004, zf + 0.010, 0.004, "M_Stn_TimberDark"))
-    parts.append(counter_bell().transform(t=(L / 2 - 0.30, h, 0.12)))
+    if include_loose:
+        parts.extend(mesh.transform(R=rot, t=pos) for _, mesh, _, pos, rot in coffee_counter_items(L, h))
     parts.append(counter_screen().transform(R=mk.rot_y(math.pi + 0.35), t=(-L / 2 + 0.45, h, -0.02)))
-    for k, x in enumerate((0.05, 0.22)):
-        parts.append(mug(("M_Stn_Cream", "M_Stn_Red")[k]).transform(R=mk.rot_y(0.6 * k), t=(x, h, 0.15)))
     col = col_box(-L / 2 - 0.05, L / 2 + 0.05, 0.0, h, -d / 2 - 0.03, d / 2 + 0.04)
     return mk.merge(*parts), col
 

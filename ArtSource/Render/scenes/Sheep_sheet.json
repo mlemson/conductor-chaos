@@ -1,0 +1,298 @@
+[
+ {
+  "name": "Sheep_front",
+  "params": {
+   "w": 640,
+   "h": 640,
+   "yaw": 0,
+   "pitch": 8,
+   "dist": 6,
+   "ortho": 0.56,
+   "target": "0,0.40,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Animals/Sheep.glb",
+     "mats": "../Exports/Animals/Sheep.materials.json",
+     "pose": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "Sheep_34",
+  "params": {
+   "w": 640,
+   "h": 640,
+   "yaw": -38,
+   "pitch": 8,
+   "dist": 6,
+   "ortho": 0.56,
+   "target": "0,0.40,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Animals/Sheep.glb",
+     "mats": "../Exports/Animals/Sheep.materials.json",
+     "pose": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "Sheep_side",
+  "params": {
+   "w": 640,
+   "h": 640,
+   "yaw": -90,
+   "pitch": 8,
+   "dist": 6,
+   "ortho": 0.56,
+   "target": "0,0.40,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Animals/Sheep.glb",
+     "mats": "../Exports/Animals/Sheep.materials.json",
+     "pose": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "Sheep_back",
+  "params": {
+   "w": 640,
+   "h": 640,
+   "yaw": 180,
+   "pitch": 8,
+   "dist": 6,
+   "ortho": 0.56,
+   "target": "0,0.40,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Animals/Sheep.glb",
+     "mats": "../Exports/Animals/Sheep.materials.json",
+     "pose": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "Sheep_expr_clueless",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -10,
+   "pitch": 4,
+   "dist": 2.6,
+   "fov": 21,
+   "target": "0,0.47,0.25",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/Animals/Sheep.glb",
+     "mats": "../Exports/Animals/Sheep.materials.json",
+     "pose": {
+      "Pupil_L": {
+       "addPos": [
+        0.0,
+        0.012,
+        0
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        0.0,
+        0.012,
+        0
+       ]
+      }
+     }
+    }
+   ]
+  }
+ },
+ {
+  "name": "Sheep_expr_curious",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -10,
+   "pitch": 4,
+   "dist": 2.6,
+   "fov": 21,
+   "target": "0,0.47,0.25",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/Animals/Sheep.glb",
+     "mats": "../Exports/Animals/Sheep.materials.json",
+     "pose": {
+      "Pupil_L": {
+       "addPos": [
+        -0.018,
+        0.026,
+        0
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        -0.018,
+        0.026,
+        0
+       ]
+      },
+      "Fx_Alert": {
+       "visible": true
+      }
+     }
+    }
+   ]
+  }
+ },
+ {
+  "name": "Sheep_expr_happy",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -10,
+   "pitch": 4,
+   "dist": 2.6,
+   "fov": 21,
+   "target": "0,0.47,0.25",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/Animals/Sheep.glb",
+     "mats": "../Exports/Animals/Sheep.materials.json",
+     "pose": {
+      "Mouth_Neutral": {
+       "visible": false
+      },
+      "Mouth_Surprised": {
+       "visible": false
+      },
+      "Mouth_Happy": {
+       "visible": true
+      },
+      "Eye_L": {
+       "visible": false
+      },
+      "Eye_R": {
+       "visible": false
+      },
+      "EyeClosed_L": {
+       "visible": true
+      },
+      "EyeClosed_R": {
+       "visible": true
+      }
+     }
+    }
+   ]
+  }
+ },
+ {
+  "name": "Sheep_expr_surprised",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -10,
+   "pitch": 4,
+   "dist": 2.6,
+   "fov": 21,
+   "target": "0,0.47,0.25",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/Animals/Sheep.glb",
+     "mats": "../Exports/Animals/Sheep.materials.json",
+     "pose": {
+      "Mouth_Neutral": {
+       "visible": false
+      },
+      "Mouth_Surprised": {
+       "visible": true
+      },
+      "Mouth_Happy": {
+       "visible": false
+      },
+      "Pupil_L": {
+       "addPos": [
+        0.0,
+        0.004,
+        0
+       ],
+       "scale": [
+        0.8,
+        0.8,
+        1
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        0.0,
+        0.004,
+        0
+       ],
+       "scale": [
+        0.8,
+        0.8,
+        1
+       ]
+      },
+      "Fx_Alert": {
+       "visible": true
+      }
+     }
+    }
+   ]
+  }
+ },
+ {
+  "name": "Sheep_hero",
+  "params": {
+   "w": 1000,
+   "h": 900,
+   "yaw": -30,
+   "pitch": 9,
+   "dist": 3.4,
+   "fov": 22,
+   "target": "0,0.40,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Animals/Sheep.glb",
+     "mats": "../Exports/Animals/Sheep.materials.json",
+     "pose": {
+      "Pupil_L": {
+       "addPos": [
+        -0.008,
+        0.018,
+        0
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        -0.008,
+        0.018,
+        0
+       ]
+      }
+     }
+    }
+   ]
+  }
+ }
+]

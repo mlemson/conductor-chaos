@@ -16,12 +16,12 @@ ModelImporter:
     materialLocation: 1
   animations:
     importAnimation: 0
+    isReadable: 1
   meshes:
     globalScale: 1
     useFileUnits: 1
     useFileScale: 1
     importBlendShapes: 0
-    isReadable: 1
     importVisibility: 1
     importCameras: 0
     importLights: 0

@@ -188,7 +188,7 @@
     },
     "Track_Broken_6m": {
       "fbx": "Assets/Art/Models/Environment/Track/Track_Broken_6m.fbx",
-      "tris": 4644,
+      "tris": 3768,
       "length": 6.0,
       "radius": null,
       "angleDeg": 0.0,
@@ -198,11 +198,11 @@
       "min": [
         0.0,
         -0.06,
-        -3.127
+        -2.15
       ],
       "max": [
         6.0,
-        0.571,
+        0.43,
         2.15
       ]
     },
@@ -404,6 +404,66 @@
         0.19,
         1.15,
         1.447
+      ]
+    },
+    "Track_Switch_20m_A": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Switch_20m_A.fbx",
+      "tris": 31256,
+      "length": 20.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "rise": 0.0,
+      "hill": 0.0,
+      "side": 1,
+      "switch": {
+        "crossing": [
+          10.159,
+          1.29
+        ],
+        "heelS": 2.505,
+        "heelD": 2.661,
+        "divergeLength": 20.944,
+        "divergeOffset": 5.359
+      },
+      "min": [
+        0.0,
+        -0.095,
+        -3.0
+      ],
+      "max": [
+        20.0,
+        0.92,
+        7.509
+      ]
+    },
+    "Track_Switch_20m_B": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Switch_20m_B.fbx",
+      "tris": 31256,
+      "length": 20.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "rise": 0.0,
+      "hill": 0.0,
+      "side": -1,
+      "switch": {
+        "crossing": [
+          10.159,
+          1.29
+        ],
+        "heelS": 2.505,
+        "heelD": 2.661,
+        "divergeLength": 20.944,
+        "divergeOffset": 5.359
+      },
+      "min": [
+        0.0,
+        -0.095,
+        -7.509
+      ],
+      "max": [
+        20.0,
+        0.92,
+        3.0
       ]
     }
   }

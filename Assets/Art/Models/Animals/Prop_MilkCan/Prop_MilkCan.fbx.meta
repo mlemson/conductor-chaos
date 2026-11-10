@@ -1,0 +1,50 @@
+fileFormatVersion: 2
+guid: 16ab09ac3e5ed05d54ba1a95a5c8ef71
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_MilkCan_Metal
+    second: {fileID: 2100000, guid: 3a04cd22ac997dc8a51dba8a3d58fe51, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_MilkCan_MetalDark
+    second: {fileID: 2100000, guid: b74968b0b6770e1b190be5e5b56bc666, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_MilkCan_MetalLight
+    second: {fileID: 2100000, guid: 824db8d2b4e314067836cad81c96e0ba, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_MilkCan_Handle
+    second: {fileID: 2100000, guid: 7c242ecd21c9cd01394de73916958257, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

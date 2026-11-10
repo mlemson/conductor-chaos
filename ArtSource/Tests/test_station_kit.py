@@ -14,6 +14,7 @@
   gebakken tekst, bordletters zonder dubbele vlakken
 """
 import json
+import math
 import os
 import re
 import struct
@@ -134,7 +135,8 @@ def test_building_walkable():
 
 
 def test_assets():
-    decorative = {"Prop_WallLantern", "Prop_HangingSign", "Prop_Banner", "Prop_PendantLamp"}
+    decorative = {"Prop_WallLantern", "Prop_HangingSign", "Prop_Banner", "Prop_PendantLamp", "Prop_Ticket",
+                  "Service_Bell", "Service_BellPost"}      # botsvorm staat op de knopen in de scène
     budgets = {"Station_Building": 50000, "Station_Main": 130000}   # hoofdstation: gevel, vleugels én interieur
     for name, a in KIT["assets"].items():
         cols = [n for n in a["nodes"] if n.startswith("Col_")]
@@ -190,7 +192,7 @@ def test_leanto_furniture_free():
     """Bank, tonnen en kratten onder de luifel: geen overlap met elkaar, de palen of de plint van het gebouw."""
     boxes = []
     for name, (m, c), R, t in B._furniture():
-        V = c.transform(R=R, t=t).V
+        V = np.vstack([shape.transform(R=R, t=t).V for shape in (c if isinstance(c, tuple) else (c,))])
         boxes.append((name, V.min(0), V.max(0)))
     for z in (-0.30, -B.D / 2, -B.D + 0.30):
         boxes.append((f"paal z={z:.2f}", np.array([B.LPOST_X - 0.2, 0, z - 0.2]), np.array([B.LPOST_X + 0.2, 9, z + 0.2])))
@@ -203,6 +205,32 @@ def test_leanto_furniture_free():
             gap = np.max(np.maximum(b0 - a1, a0 - b1))
             assert gap > 0.02, f"{na} en {nb} staan in elkaar (speling {gap * 100:.1f} cm)"
     print(f"PASS luifel: {len(B._furniture())} spullen staan vrij")
+
+
+def test_loose_station_props():
+    expected = {
+        "Station_Building": {"Bench": 3, "Barrel": 2, "CrateStack": 1, "Stool": 1, "PottedPlant": 1, "Suitcase": 1},
+        "Station_Main": {"Bench": 6, "LuggageCart": 1, "CrateStack": 1, "PottedPlant": 3, "Bell": 1, "Mug": 2},
+    }
+    for name, nodes in (("Station_Building", B.build(np.random.default_rng([2026, 1821]))), ("Station_Main", MS.build())):
+        counts = {}
+        bounds = {}
+        for node, mesh, parent, position, rotation, visible in nodes:
+            if not node.startswith("Loose_"):
+                continue
+            kind = node.split("_")[1]
+            counts[kind] = counts.get(kind, 0) + 1
+            assert node in KIT["assets"][name]["nodes"], f"{node}: ontbreekt in export"
+            assert parent is None and mesh is not None and visible, node
+            colliders = [n for n in nodes if n[0].startswith("Col_") and n[2] == node]
+            assert colliders and all(n[1] is not None and not n[5] for n in colliders), node
+            vertices = np.vstack([n[1].transform(R=rotation, t=position).V for n in colliders])
+            lo, hi = vertices.min(0), vertices.max(0)
+            for other, (other_lo, other_hi) in bounds.items():
+                assert np.max(np.maximum(other_lo - hi, lo - other_hi)) >= -0.001, (node, other)
+            bounds[node] = lo, hi
+        assert counts == expected[name], (name, counts)
+    print("PASS losse stationsprops: eigen zichtbare mesh en botsvorm in beide stations")
 
 
 def test_main_station():
@@ -219,7 +247,11 @@ def test_main_station():
     seats = [k for k in nodes if k.startswith("Briefing_Seat_")]
     assert len(seats) >= 6, seats
     for k in ["Spawn_Briefing", "Briefing_Board", "Spot_Coffee", "Spot_Lockers"] + seats:
-        x, y, z = nodes[k][3]
+        _, _, parent, position, _, _ = nodes[k]
+        if k in seats:
+            assert parent.startswith("Loose_Bench_"), k
+            position = nodes[parent][4] @ position + nodes[parent][3]
+        x, y, z = position
         m = 0.05 if k == "Briefing_Board" else 0.2          # het bord hangt tegen de achterwand
         assert MS.XI0 + 0.3 < x < MS.XI1 - 0.3 and MS.ZI0 + m < z < MS.ZI1 - 0.2, f"{k} buiten de ruimte: {x, z}"
         assert MS.FL - 0.01 <= y <= MS.FL + 3.5, f"{k} op hoogte {y:.2f}"
@@ -227,6 +259,41 @@ def test_main_station():
         assert "Col_" + k in nodes and nodes["Col_" + k][2] == k, f"{k}: botsvorm hangt niet aan de deur"
     print(f"PASS hoofdstation: deur {door_w:.2f}x{door_h:.2f} m, {len(seats)} zitplaatsen, "
           f"ruimte {MS.XI1 - MS.XI0:.1f}x{MS.ZI1 - MS.ZI0:.1f} m")
+
+
+def test_swing_doors():
+    """Elk draaiend blad (deur, kluisdeurtje, staldeur, hekpoort) heeft een botsvorm die meedraait en de twee
+    scharnierstanden waar SwingDoor in Unity zijn grenzen uit haalt; de beginstand ligt tussen dicht en open."""
+    import farm_props as FP
+    import main_station_props as MP
+
+    def yaw(R):
+        return math.degrees(math.atan2(-R[2, 0], R[0, 0]))                 # mk.rot_y(a) -> a
+    models = {"Station_Main": MS.build(), "Station_Building": B.build(np.random.default_rng([2026, 1821])),
+              "Farm_Barn": FP.barn(), "Farm_Gate": FP.gate()}
+    lk, lk_cols, lk_doors = MP.lockers()
+    models["Prop_Lockers"] = MP.locker_door_nodes(lk_doors)
+    expect = {"Station_Main": {"Door_L", "Door_R"} | {f"LockerDoor_{k}" for k in range(1, 6)},
+              "Station_Building": {"Door"}, "Farm_Barn": {"Door_L", "Door_R"}, "Farm_Gate": {"Gate"},
+              "Prop_Lockers": {f"LockerDoor_{k}" for k in range(1, 5)}}
+    count = 0
+    for model, nodes in models.items():
+        by = {n[0]: n for n in nodes}
+        doors = {k[len("Hinge_"):-len("_Closed")] for k in by if k.startswith("Hinge_") and k.endswith("_Closed")}
+        assert doors == expect[model], f"{model}: draaiende bladen {sorted(doors)}"
+        for d in doors:
+            leaf, closed, opened = by[d], by[f"Hinge_{d}_Closed"], by[f"Hinge_{d}_Open"]
+            assert by[f"Col_{d}"][2] == d, f"{model}/{d}: botsvorm hangt niet aan het blad"
+            assert leaf[2] is None and closed[2] is None and opened[2] is None, f"{model}/{d}: knopen horen onder de wortel"
+            assert np.allclose(leaf[3], closed[3]) and np.allclose(leaf[3], opened[3]), f"{model}/{d}: scharnier verschilt"
+            assert abs(leaf[1].V[:, 0]).min() < 0.05 and abs(leaf[1].V[:, 2]).max() < 0.20, f"{model}/{d}: pivot niet op het scharnier"
+            rel = lambda n: yaw(closed[4].T @ n[4])
+            span, start = rel(opened), rel(leaf)
+            assert 80 <= abs(span) <= 120, f"{model}/{d}: draait {span:.0f} graden"
+            assert min(0, span) - 0.5 <= start <= max(0, span) + 0.5, f"{model}/{d}: beginstand {start:.0f} buiten 0..{span:.0f}"
+            count += 1
+    assert len(lk_cols) >= 6, "kluisjes: de kast hoort losse botsvormen te hebben (open vakken)"
+    print(f"PASS draaiende bladen: {count} deuren, kluisdeurtjes en poorten met botsvorm en scharnierstanden")
 
 
 def test_station_signs():
@@ -284,5 +351,7 @@ if __name__ == "__main__":
     test_no_double_faces()
     test_layout_no_double_faces()
     test_leanto_furniture_free()
+    test_loose_station_props()
     test_main_station()
+    test_swing_doors()
     test_station_signs()

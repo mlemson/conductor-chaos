@@ -8,6 +8,7 @@
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace ConductorChaos.EditorTools
 {
@@ -18,9 +19,14 @@ namespace ConductorChaos.EditorTools
         const string ShaderName = "ConductorChaos/StylizedTerrain";
         const string AutoKey = "ConductorChaos.StylizedTerrain.AutoApplied.v1";
         const string UrpTerrainLit = "Packages/com.unity.render-pipelines.universal/Runtime/Materials/TerrainLit.mat";
+        static readonly HashSet<Terrain> KnownTerrains = new HashSet<Terrain>();
+        static bool terrainTrackingReady;
 
         static StylizedTerrainShaderTools()
         {
+            EditorApplication.delayCall += RememberTerrains;
+            EditorSceneManager.sceneOpened += (_, _) => RememberTerrains();
+            EditorApplication.hierarchyChanged += ApplyToNewNeighbours;
             EditorApplication.delayCall += () =>
             {
                 if (EditorApplication.isPlayingOrWillChangePlaymode || EditorPrefs.GetBool(AutoKey, false)) return;
@@ -31,6 +37,38 @@ namespace ConductorChaos.EditorTools
                     Debug.Log($"[Terrain] {n} terrein(en) tekenen nu gras zoals de kliffen (ConductorChaos/StylizedTerrain). " +
                               "Sla de scène op om dit te bewaren. Terug: Conductor Chaos > Art > Terrain > Use URP Terrain Lit (back).");
             };
+        }
+
+        static void RememberTerrains()
+        {
+            foreach (var terrain in Object.FindObjectsByType<Terrain>(FindObjectsInactive.Include))
+                KnownTerrains.Add(terrain);
+            terrainTrackingReady = true;
+        }
+
+        static void ApplyToNewNeighbours()
+        {
+            if (!terrainTrackingReady) return;
+            var terrains = Object.FindObjectsByType<Terrain>(FindObjectsInactive.Include);
+            foreach (var terrain in terrains)
+            {
+                if (!KnownTerrains.Add(terrain) || EditorApplication.isPlayingOrWillChangePlaymode ||
+                    !terrain.gameObject.scene.IsValid() || !terrain.gameObject.scene.isLoaded) continue;
+                var current = terrain.materialTemplate;
+                if (current && current.shader && current.shader.name != "Universal Render Pipeline/Terrain/Lit") continue;
+                foreach (var neighbour in terrains)
+                {
+                    if (neighbour == terrain || neighbour.gameObject.scene != terrain.gameObject.scene ||
+                        !neighbour.materialTemplate || !neighbour.materialTemplate.shader || neighbour.materialTemplate.shader.name != ShaderName) continue;
+                    Undo.RecordObject(terrain, "Match neighbouring terrain");
+                    terrain.materialTemplate = neighbour.materialTemplate;
+                    terrain.drawInstanced = false;
+                    terrain.basemapDistance = Mathf.Max(terrain.basemapDistance, 5000f);
+                    EditorUtility.SetDirty(terrain);
+                    EditorSceneManager.MarkSceneDirty(terrain.gameObject.scene);
+                    break;
+                }
+            }
         }
 
         [MenuItem("Conductor Chaos/Art/Terrain/Use Stylized Terrain Shader")]

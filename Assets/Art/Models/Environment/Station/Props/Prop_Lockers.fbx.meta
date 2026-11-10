@@ -22,6 +22,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Stn_Glow
+    second: {fileID: 2100000, guid: ebf9f31aa3ba6dc565c2c80c191c2b00, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Stn_Locker
     second: {fileID: 2100000, guid: 3997a5df31b8cf4834b8d7e9b35a15f2, type: 2}
   - first:
@@ -29,6 +34,26 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Stn_LockerDark
     second: {fileID: 2100000, guid: 0442184946bbeebf7e1522095cb07aeb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Metal
+    second: {fileID: 2100000, guid: 6a1739cbab34eaeaafb107c26123d222, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Navy
+    second: {fileID: 2100000, guid: 1a9ea4affd27dd0f3292beac180fb551, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_NavyLight
+    second: {fileID: 2100000, guid: c1eafab629b0e170ba7cca64a971959a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Red
+    second: {fileID: 2100000, guid: 12ae9c277a35109f8af7856b5fc966a5, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule

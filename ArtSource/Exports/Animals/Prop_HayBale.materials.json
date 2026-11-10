@@ -1,0 +1,69 @@
+{
+  "model": "Prop_HayBale",
+  "height_m": 0.48,
+  "stats": {
+    "parts": 2,
+    "tris": 1524,
+    "verts": 796,
+    "materials": 3
+  },
+  "materials": {
+    "M_HayBale_Straw": {
+      "base": "#F5AC4A",
+      "ramp": [
+        "#684029",
+        "#C9813B",
+        "#DE913F",
+        "#F5AC4A",
+        "#F9B44F"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.2,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2,
+        "cells": 0.6,
+        "cellSize": 0.25
+      }
+    },
+    "M_HayBale_StrawLight": {
+      "base": "#FDDB78",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.5,
+      "smoothness": 0.2,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_HayBale_Strap": {
+      "base": "#804936",
+      "ramp": [
+        "#693B2E",
+        "#774332",
+        "#804936",
+        "#8F5039",
+        "#B46D4B"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    }
+  }
+}
