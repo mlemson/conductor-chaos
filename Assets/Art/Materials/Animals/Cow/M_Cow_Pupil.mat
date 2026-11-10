@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Cow_Pupil
+  m_Shader: {fileID: 4800000, guid: b5459282d8a4f8506c331a2339199b4e, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap:
+    RenderType: Opaque
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _RampShift: -0.3
+    - _Flat: 0.15
+    - _Edge: 0.35
+    - _Rim: 0.1
+    - _Spec: 0.25
+    - _Cells: 1.0
+    - _CellSize: 0.45
+    - _Grime: 0.0
+    - _Emissive: 0.0
+    - _Opacity: 1.0
+    - _HasShade: 1.0
+    - _SoftEdge: 0.0
+    - _ReceiveShadowsF: 0.0
+    - _Cull: 2.0
+    - _Flow: 0.0
+    - _FlowStreaks: 0.6
+    - _Bubble: 0.0
+    - _BubbleSpeed: 1.0
+    - _SrcBlend: 1.0
+    - _DstBlend: 0.0
+    - _ZWrite: 1.0
+    m_Colors:
+    - _Ramp0: {r: 0.109804, g: 0.058824, b: 0.054902, a: 1.000}
+    - _Ramp1: {r: 0.160784, g: 0.113725, b: 0.105882, a: 1.000}
+    - _Ramp2: {r: 0.207843, g: 0.105882, b: 0.074510, a: 1.000}
+    - _Ramp3: {r: 0.219608, g: 0.145098, b: 0.125490, a: 1.000}
+    - _Ramp4: {r: 0.352941, g: 0.250980, b: 0.219608, a: 1.000}
+    - _BaseColor: {r: 0.207843, g: 0.105882, b: 0.074510, a: 1.000}
+    - _RimColor: {r: 0.698039, g: 0.772549, b: 0.952941, a: 1.000}
+    - _DirtColor: {r: 0.313725, g: 0.200000, b: 0.188235, a: 1.000}
+    - _GrimeY: {r: -0.350000, g: 0.850000, b: 0.000000, a: 0.000}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

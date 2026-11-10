@@ -614,10 +614,11 @@ def interior():
     parts.append(mp.coffee_sign(0.70, 0.56).transform(R=R, t=(XI0 + 0.04, FL + 2.30, -3.40)))
     # rechterwand: kluisjes, kapstok, kratten
     R2 = mk.rot_y(-math.pi / 2)
-    lk, lkc = mp.lockers(5)
+    lk, lkc, lk_doors = mp.lockers(5)                     # kast vast, deurtjes los (LockerDoor_1..5 met scharnier)
     xl = XI1 - 0.04 - 0.015 - 0.23
     parts.append(lk.transform(R=R2, t=(xl, FL, -4.60)))
-    cols.append(lkc.transform(R=R2, t=(xl, FL, -4.60)))
+    cols += [c.transform(R=R2, t=(xl, FL, -4.60)) for c in lkc]
+    loose += mp.locker_door_nodes(lk_doors, (xl, FL, -4.60), R2)
     parts.append(mp.coat_rack_wall(1.25).transform(R=R2, t=(XI1, FL + 1.62, -1.85)))
     loose += props.loose_prop("CrateStack_Briefing", *props.crate_stack(split_colliders=True),
                               (3.75, FL, -6.65), mk.rot_y(0.2))
@@ -694,10 +695,9 @@ def build(rng=None):
         ("Facade", fac, None, (0, 0, 0), None, True),
         ("BriefingRoom", inter, None, (0, 0, 0), None, True),
         ("RoofFrame", frame, None, (0, 0, 0), None, True),
-        ("Door_L", leaf_l, None, (x0 + 0.03, FL + 0.005, hz), mk.rot_y(96 * DEG), True),
-        ("Col_Door_L", col_l, "Door_L", (0, 0, 0), None, False),
-        ("Door_R", leaf_r, None, (x1 - 0.03, FL + 0.005, hz), mk.rot_y(-96 * DEG), True),
-        ("Col_Door_R", col_r, "Door_R", (0, 0, 0), None, False),
+        # deurbladen staan open in het model; SwingDoor laat ze tussen dicht (0) en open (98 graden) draaien
+        *props.swing_door("Door_L", leaf_l, col_l, (x0 + 0.03, FL + 0.005, hz), 98, 96),
+        *props.swing_door("Door_R", leaf_r, col_r, (x1 - 0.03, FL + 0.005, hz), -98, -96),
         ("Col_Main", col, None, (0, 0, 0), None, False),
         ("Light_Lantern_L", None, None, (-1.98, FL + 2.58, 0.30), None, True),
         ("Light_Lantern_R", None, None, (1.98, FL + 2.58, 0.30), None, True),

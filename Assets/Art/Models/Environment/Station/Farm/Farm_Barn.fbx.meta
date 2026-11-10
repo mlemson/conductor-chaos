@@ -1,0 +1,85 @@
+fileFormatVersion: 2
+guid: a0527eb60948cf80a18f8f0cda8ba3d5
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_BarnRed
+    second: {fileID: 2100000, guid: c45c25e83cde4d96cd34cf56da793f52, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_BarnRedDark
+    second: {fileID: 2100000, guid: a006470495e3de3346887cde561adfdc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Collider
+    second: {fileID: 2100000, guid: a7fc0ff57b6e8961de45c5adb6ed0b72, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Cream
+    second: {fileID: 2100000, guid: f33ba799c431d373cd590530ce10a073, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Dark
+    second: {fileID: 2100000, guid: f4f8c14a2d071b7df81729e35f8c15fb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_RoofRed
+    second: {fileID: 2100000, guid: b89d8b7b84f2e782c144be8377f3bb73, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_RoofRedDark
+    second: {fileID: 2100000, guid: db91497d1665e572ad9442a3b8766688, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Straw
+    second: {fileID: 2100000, guid: ef4ef6276e47f6698029aed636a0649f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_StrawDark
+    second: {fileID: 2100000, guid: db9e617a43ce0184db115a5bceee5546, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Timber
+    second: {fileID: 2100000, guid: 649095d9b374d32d067d51345ade6719, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stn_Yellow
+    second: {fileID: 2100000, guid: a6e0339c23b66e2d77f37e89e2641770, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

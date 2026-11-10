@@ -26,6 +26,8 @@
         "Facade",
         "Door",
         "Col_Door",
+        "Hinge_Door_Closed",
+        "Hinge_Door_Open",
         "Col_Main",
         "Light_Lantern_L",
         "Light_Lantern_R",
@@ -905,7 +907,7 @@
     "Prop_Lockers": {
       "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_Lockers.fbx",
       "category": "Props",
-      "tris": 2444,
+      "tris": 3896,
       "min": [
         -0.95,
         0.0,
@@ -919,7 +921,35 @@
       "nodes": [
         "Prop_Lockers",
         "Mesh",
-        "Col_Main"
+        "Col_Main",
+        "Col_2",
+        "Col_3",
+        "Col_4",
+        "Col_5",
+        "Col_6",
+        "Col_7",
+        "Col_8",
+        "Col_9",
+        "Col_10",
+        "Col_11",
+        "Col_12",
+        "Col_13",
+        "LockerDoor_1",
+        "Col_LockerDoor_1",
+        "Hinge_LockerDoor_1_Closed",
+        "Hinge_LockerDoor_1_Open",
+        "LockerDoor_2",
+        "Col_LockerDoor_2",
+        "Hinge_LockerDoor_2_Closed",
+        "Hinge_LockerDoor_2_Open",
+        "LockerDoor_3",
+        "Col_LockerDoor_3",
+        "Hinge_LockerDoor_3_Closed",
+        "Hinge_LockerDoor_3_Open",
+        "LockerDoor_4",
+        "Col_LockerDoor_4",
+        "Hinge_LockerDoor_4_Closed",
+        "Hinge_LockerDoor_4_Open"
       ]
     },
     "Prop_RouteBoard": {
@@ -1064,7 +1094,7 @@
     "Station_Main": {
       "fbx": "Assets/Art/Models/Environment/Station/Station_Main.fbx",
       "category": "Building",
-      "tris": 119526,
+      "tris": 121182,
       "min": [
         -18.28,
         -0.0,
@@ -1087,8 +1117,12 @@
         "RoofFrame",
         "Door_L",
         "Col_Door_L",
+        "Hinge_Door_L_Closed",
+        "Hinge_Door_L_Open",
         "Door_R",
         "Col_Door_R",
+        "Hinge_Door_R_Closed",
+        "Hinge_Door_R_Open",
         "Col_Main",
         "Light_Lantern_L",
         "Light_Lantern_R",
@@ -1125,6 +1159,26 @@
         "Col_Mug_Counter1_1",
         "Loose_Mug_Counter2",
         "Col_Mug_Counter2_1",
+        "LockerDoor_1",
+        "Col_LockerDoor_1",
+        "Hinge_LockerDoor_1_Closed",
+        "Hinge_LockerDoor_1_Open",
+        "LockerDoor_2",
+        "Col_LockerDoor_2",
+        "Hinge_LockerDoor_2_Closed",
+        "Hinge_LockerDoor_2_Open",
+        "LockerDoor_3",
+        "Col_LockerDoor_3",
+        "Hinge_LockerDoor_3_Closed",
+        "Hinge_LockerDoor_3_Open",
+        "LockerDoor_4",
+        "Col_LockerDoor_4",
+        "Hinge_LockerDoor_4_Closed",
+        "Hinge_LockerDoor_4_Open",
+        "LockerDoor_5",
+        "Col_LockerDoor_5",
+        "Hinge_LockerDoor_5_Closed",
+        "Hinge_LockerDoor_5_Open",
         "Loose_CrateStack_Briefing",
         "Col_CrateStack_Briefing_1",
         "Col_CrateStack_Briefing_2",
@@ -1233,7 +1287,11 @@
         "Prop_TicketPunch",
         "Mesh",
         "Col_Main",
-        "Punch_Jaw"
+        "Punch_Jaw",
+        "Punch_Upper",
+        "Punch_HandleUpper",
+        "Punch_Lower",
+        "Punch_HandleLower"
       ]
     },
     "Prop_Ticket": {
@@ -1254,6 +1312,240 @@
         "Prop_Ticket",
         "Mesh",
         "Ticket_Hole"
+      ]
+    },
+    "Farm_Barn": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Barn.fbx",
+      "category": "Farm",
+      "tris": 4776,
+      "min": [
+        -2.62,
+        0.0,
+        -2.31
+      ],
+      "max": [
+        2.62,
+        3.95,
+        2.997
+      ],
+      "nodes": [
+        "Farm_Barn",
+        "Mesh",
+        "Col_Main",
+        "Col_2",
+        "Col_3",
+        "Col_4",
+        "Col_5",
+        "Col_6",
+        "Col_7",
+        "Col_8",
+        "Col_9",
+        "Col_10",
+        "Col_11",
+        "Door_L",
+        "Col_Door_L",
+        "Hinge_Door_L_Closed",
+        "Hinge_Door_L_Open",
+        "Door_R",
+        "Col_Door_R",
+        "Hinge_Door_R_Closed",
+        "Hinge_Door_R_Open",
+        "Light_Barn"
+      ]
+    },
+    "Farm_Shed": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Shed.fbx",
+      "category": "Farm",
+      "tris": 1308,
+      "min": [
+        -1.95,
+        0.0,
+        -1.381
+      ],
+      "max": [
+        1.95,
+        2.577,
+        1.479
+      ],
+      "nodes": [
+        "Farm_Shed",
+        "Mesh",
+        "Col_Main",
+        "Col_2",
+        "Col_3",
+        "Col_4",
+        "Col_5",
+        "Col_6",
+        "Col_7",
+        "Col_8",
+        "Col_9"
+      ]
+    },
+    "Farm_Fence_3m": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Fence_3m.fbx",
+      "category": "Farm",
+      "tris": 228,
+      "min": [
+        -0.075,
+        0.0,
+        -0.075
+      ],
+      "max": [
+        3.064,
+        1.2,
+        0.087
+      ],
+      "nodes": [
+        "Farm_Fence_3m",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Farm_Gate": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Gate.fbx",
+      "category": "Farm",
+      "tris": 428,
+      "min": [
+        -0.09,
+        0.0,
+        -0.09
+      ],
+      "max": [
+        2.09,
+        1.535,
+        0.09
+      ],
+      "nodes": [
+        "Farm_Gate",
+        "Mesh",
+        "Col_Main",
+        "Col_2",
+        "Gate",
+        "Col_Gate",
+        "Hinge_Gate_Closed",
+        "Hinge_Gate_Open"
+      ]
+    },
+    "Farm_Trough": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Trough.fbx",
+      "category": "Farm",
+      "tris": 184,
+      "min": [
+        -0.8,
+        0.0,
+        -0.31
+      ],
+      "max": [
+        0.8,
+        0.46,
+        0.31
+      ],
+      "nodes": [
+        "Farm_Trough",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Farm_Haystack": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Haystack.fbx",
+      "category": "Farm",
+      "tris": 540,
+      "min": [
+        -1.229,
+        0.0,
+        -1.2
+      ],
+      "max": [
+        1.176,
+        2.575,
+        1.221
+      ],
+      "nodes": [
+        "Farm_Haystack",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Farm_HayRack": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_HayRack.fbx",
+      "category": "Farm",
+      "tris": 772,
+      "min": [
+        -0.75,
+        -0.003,
+        -0.309
+      ],
+      "max": [
+        0.75,
+        1.27,
+        0.309
+      ],
+      "nodes": [
+        "Farm_HayRack",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Farm_MilkStand": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_MilkStand.fbx",
+      "category": "Farm",
+      "tris": 1392,
+      "min": [
+        -0.65,
+        0.0,
+        -0.35
+      ],
+      "max": [
+        0.65,
+        1.036,
+        0.35
+      ],
+      "nodes": [
+        "Farm_MilkStand",
+        "Mesh",
+        "Col_Main",
+        "Col_2"
+      ]
+    },
+    "Farm_Wheelbarrow": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Wheelbarrow.fbx",
+      "category": "Farm",
+      "tris": 828,
+      "min": [
+        -0.3,
+        0.0,
+        -1.106
+      ],
+      "max": [
+        0.3,
+        0.862,
+        0.93
+      ],
+      "nodes": [
+        "Farm_Wheelbarrow",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Farm_Scarecrow": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_Scarecrow.fbx",
+      "category": "Farm",
+      "tris": 930,
+      "min": [
+        -0.925,
+        0.0,
+        -0.414
+      ],
+      "max": [
+        0.929,
+        2.18,
+        0.414
+      ],
+      "nodes": [
+        "Farm_Scarecrow",
+        "Mesh",
+        "Col_Main",
+        "Col_2"
       ]
     }
   },
@@ -1805,6 +2097,86 @@
         "cells": 0.5,
         "cellSize": 0.8,
         "grime": 0.25
+      }
+    },
+    "M_Stn_Straw": {
+      "ramp": [
+        "#684029",
+        "#C9813B",
+        "#DE913F",
+        "#F5AC4A",
+        "#F9B44F"
+      ],
+      "smoothness": 0.05,
+      "rampShift": 0.3,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.35,
+        "paint": 1.2
+      }
+    },
+    "M_Stn_StrawDark": {
+      "ramp": [
+        "#684029",
+        "#C9813B",
+        "#DE913F",
+        "#F5AC4A",
+        "#F9B44F"
+      ],
+      "smoothness": 0.05,
+      "rampShift": 0.0,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.35,
+        "grime": 0.3
+      }
+    },
+    "M_Stn_BarnRed": {
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "smoothness": 0.1,
+      "rampShift": -0.15,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.5,
+        "grime": 0.35
+      }
+    },
+    "M_Stn_BarnRedDark": {
+      "ramp": [
+        "#5E271F",
+        "#8D3432",
+        "#C54D3E",
+        "#DA523F",
+        "#FC7C69"
+      ],
+      "smoothness": 0.1,
+      "rampShift": -0.5,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.5,
+        "grime": 0.35
+      }
+    },
+    "M_Stn_Water": {
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "smoothness": 0.5,
+      "rampShift": 0.1,
+      "opts": {
+        "cells": 0.3,
+        "cellSize": 0.6,
+        "grime": 0.0
       }
     }
   }

@@ -1,0 +1,144 @@
+[
+ {
+  "name": "Prop_HayBale_hero",
+  "params": {
+   "w": 600,
+   "h": 600,
+   "yaw": -32,
+   "pitch": 14,
+   "dist": 3.2,
+   "fov": 22,
+   "target": "0,0.25,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Animals/Prop_HayBale.glb",
+     "mats": "../Exports/Animals/Prop_HayBale.materials.json",
+     "pose": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "Prop_MilkCan_hero",
+  "params": {
+   "w": 600,
+   "h": 600,
+   "yaw": -32,
+   "pitch": 14,
+   "dist": 3.2,
+   "fov": 22,
+   "target": "0,0.25,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Animals/Prop_MilkCan.glb",
+     "mats": "../Exports/Animals/Prop_MilkCan.materials.json",
+     "pose": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "Animals_lineup",
+  "params": {
+   "w": 1600,
+   "h": 700,
+   "yaw": 0,
+   "pitch": 7,
+   "dist": 8,
+   "ortho": 1.0,
+   "target": "0,0.62,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Conductor.glb",
+     "mats": "../Exports/Conductor.materials.json",
+     "pos": [
+      -1.75,
+      0,
+      0
+     ],
+     "rotY": 18
+    },
+    {
+     "url": "../Exports/Animals/Sheep.glb",
+     "mats": "../Exports/Animals/Sheep.materials.json",
+     "pose": {
+      "Pupil_L": {
+       "addPos": [
+        -0.008,
+        0.018,
+        0
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        -0.008,
+        0.018,
+        0
+       ]
+      }
+     },
+     "pos": [
+      -0.8,
+      0,
+      0
+     ],
+     "rotY": 24
+    },
+    {
+     "url": "../Exports/Animals/Cow.glb",
+     "mats": "../Exports/Animals/Cow.materials.json",
+     "pose": {
+      "Pupil_L": {
+       "addPos": [
+        -0.008,
+        0.018,
+        0
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        -0.008,
+        0.018,
+        0
+       ]
+      }
+     },
+     "pos": [
+      0.4,
+      0,
+      0
+     ],
+     "rotY": -28
+    },
+    {
+     "url": "../Exports/Animals/Prop_HayBale.glb",
+     "mats": "../Exports/Animals/Prop_HayBale.materials.json",
+     "pose": {},
+     "pos": [
+      1.75,
+      0,
+      -0.25
+     ],
+     "rotY": 20
+    },
+    {
+     "url": "../Exports/Animals/Prop_MilkCan.glb",
+     "mats": "../Exports/Animals/Prop_MilkCan.materials.json",
+     "pose": {},
+     "pos": [
+      1.28,
+      0,
+      0.45
+     ],
+     "rotY": 0
+    }
+   ]
+  }
+ }
+]

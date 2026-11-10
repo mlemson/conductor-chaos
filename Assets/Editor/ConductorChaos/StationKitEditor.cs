@@ -4,6 +4,7 @@
 //      - een MeshCollider op elke verborgen botsvorm Col_* (renderer uit), zoals de spoorkit;
 //      - een warm puntlicht op elk anker Light_* (lantaarns, hanglampen in de hal);
 //      - static flags op alles behalve bewegende deuren, slagbomen en losse meubels;
+//      - SwingDoor + physics op elk draaiend blad (Door, Door_L/R, LockerDoor_*, Gate): met de hand open en dicht;
 //      - StationSign op elk naambord Sign_* (naam in te typen, letters uit SignGlyphs; issue #209).
 //    Gebeurt automatisch als prefabs ontbreken of na het (her)importeren van de modellen;
 //    opnieuw via Conductor Chaos > Art > Station > Rebuild Station Prefabs.
@@ -16,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using ConductorChaos.Playground;
+using ConductorChaos.Stations;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEditor;
@@ -34,6 +36,15 @@ namespace ConductorChaos.EditorTools
         static readonly string[] Moving = { "Door", "Door_L", "Door_R", "Boom" };
         static readonly string[] Buildings = { "Station_Building", "Station_Main" };
         const string LoosePrefix = "Loose_";
+        const string HingePrefix = "Hinge_";
+
+        /// <summary>Draaiend blad uit het model: heeft de knopen Hinge_&lt;naam&gt;_Closed en Hinge_&lt;naam&gt;_Open naast zich.</summary>
+        static bool IsSwingDoor(Transform t) =>
+            t.parent && !t.name.StartsWith(HingePrefix) && !t.name.StartsWith("Col_") &&
+            t.parent.Find($"{HingePrefix}{t.name}_Closed") && t.parent.Find($"{HingePrefix}{t.name}_Open");
+
+        static float SwingDoorMass(string name) =>
+            name.StartsWith("LockerDoor") ? 1.2f : name.StartsWith("Gate") ? 4f : 7f;
         static readonly Dictionary<string, float> MovableMasses = new()
         {
             { "Prop_Barrel", 2f },
@@ -85,7 +96,7 @@ namespace ConductorChaos.EditorTools
             var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{ModelDir}/{name}.fbx");
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/{name}.prefab");
             return model && prefab && model.transform.Cast<Transform>().Any(child =>
-                child.name.StartsWith(LoosePrefix) &&
+                (child.name.StartsWith(LoosePrefix) || IsSwingDoor(child)) &&
                 !(prefab.transform.Find(child.name)?.GetComponent<NetworkRigidbody>()));
         }
 
@@ -120,7 +131,7 @@ namespace ConductorChaos.EditorTools
                             if (mf != null && mf.sharedMesh != null)
                             {
                                 var col = t.gameObject.AddComponent<MeshCollider>();
-                                col.convex = movable || t.parent.name.StartsWith(LoosePrefix);
+                                col.convex = movable || t.parent.name.StartsWith(LoosePrefix) || IsSwingDoor(t.parent);
                                 col.sharedMesh = mf.sharedMesh;
                             }
                         }
@@ -143,7 +154,7 @@ namespace ConductorChaos.EditorTools
                     {
                         bool moving = movable;
                         for (var p = t; !moving && p != null && p != go.transform.parent; p = p.parent)
-                            if (Moving.Contains(p.name) || p.name.StartsWith(LoosePrefix)) { moving = true; break; }
+                            if (Moving.Contains(p.name) || p.name.StartsWith(LoosePrefix) || IsSwingDoor(p)) { moving = true; break; }
                         GameObjectUtility.SetStaticEditorFlags(t.gameObject, moving ? (StaticEditorFlags)0 : flags);
                     }
                     if (movable) AddPhysics(go, name, mass, inLocalSpace: false);
@@ -153,6 +164,8 @@ namespace ConductorChaos.EditorTools
                         var prop = "Prop_" + child.name.Split('_')[1];
                         AddPhysics(child.gameObject, prop, MovableMasses[prop], inLocalSpace: true);
                     }
+                    foreach (var t in go.GetComponentsInChildren<Transform>(true).Where(IsSwingDoor).ToArray())
+                        AddSwingDoor(t);
                     if (signFont) StationSignTools.Attach(go, name, signFont);      // Sign_*: aanpasbare naam (#209)
                     go.name = name;
                     PrefabUtility.SaveAsPrefabAsset(go, $"{outDir}/{name}.prefab");
@@ -182,6 +195,25 @@ namespace ConductorChaos.EditorTools
             go.AddComponent<NetworkRigidbody>();
             if (prop == "Prop_Wrench") go.AddComponent<RepairWrench>();
             if (prop == "Prop_TicketPunch") go.AddComponent<TicketPunch>();
+        }
+
+        /// <summary>Draaiend blad: zelfde physics en netwerksynchronisatie als een losse prop, plus SwingDoor met de
+        /// uiterste standen uit het model (Hinge_*_Closed / Hinge_*_Open).</summary>
+        static void AddSwingDoor(Transform leaf)
+        {
+            var closed = leaf.parent.Find($"{HingePrefix}{leaf.name}_Closed").localRotation;
+            var open = leaf.parent.Find($"{HingePrefix}{leaf.name}_Open").localRotation;
+            float openYaw = Mathf.DeltaAngle(0f, (Quaternion.Inverse(closed) * open).eulerAngles.y);
+
+            var body = leaf.gameObject.AddComponent<Rigidbody>();
+            body.mass = SwingDoorMass(leaf.name);
+            body.useGravity = false;
+            body.interpolation = RigidbodyInterpolation.Interpolate;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            leaf.gameObject.AddComponent<NetworkObject>();
+            leaf.gameObject.AddComponent<NetworkTransform>().InLocalSpace = true;
+            leaf.gameObject.AddComponent<NetworkRigidbody>();
+            leaf.gameObject.AddComponent<SwingDoor>().Configure(closed, openYaw);
         }
 
         [MenuItem("Conductor Chaos/Art/Station/Build Station Example Scene")]

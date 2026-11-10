@@ -30,18 +30,20 @@ def wrench():
 
 
 def ticket_punch():
-    parts = []
+    pivot = np.array((0.055, 0, 0))
+    nodes = [("Punch_Jaw", None, None, (0.13, 0.0, 0.0), None, True)]
     for s in (1, -1):
-        parts.append(capsule((-0.17, 0.05 * s, 0), (-0.01, 0.018 * s, 0), 0.017, 0.015, 10, 3, "M_Stn_Navy"))
-        parts.append(capsule((-0.005, 0.017 * s, 0), (0.06, 0.013 * s, 0), 0.010, seg=8, rings=2, mat="M_Stn_Metal"))
-        parts.append(rbox(0.055, 0.155, 0.009 * s if s > 0 else -0.032, 0.032 if s > 0 else -0.009, -0.014, 0.014,
-                          0.006, "M_Stn_Metal"))
+        name = "Upper" if s > 0 else "Lower"
+        grip = capsule((-0.17, 0.05 * s, 0), (-0.01, 0.018 * s, 0), 0.017, 0.015, 10, 3, "M_Stn_Navy")
+        arm = capsule((-0.005, 0.017 * s, 0), (0.06, -0.013 * s, 0), 0.010, seg=8, rings=2, mat="M_Stn_Metal")
+        bottom, top = sorted((-0.032 * s, -0.009 * s))
+        jaw = rbox(0.055, 0.155, bottom, top, -0.014, 0.014, 0.006, "M_Stn_Metal")
+        nodes.append((f"Punch_{name}", mk.merge(grip, arm, jaw).transform(t=-pivot), None, tuple(pivot), None, True))
+        nodes.append((f"Punch_Handle{name}", None, f"Punch_{name}", tuple(np.array((-.135, .048 * s, 0)) - pivot), None, True))
     rivet = mk.cylinder(0.021, 0.036, 12, 0.006, mat="M_Stn_Yellow", axis="z").transform(t=(0.055, 0, 0))
     pin = mk.cylinder(0.008, 0.012, 8, 0.002, mat="M_Stn_Dark", axis="y").transform(t=(0.135, 0.004, 0))
-    parts += [rivet, pin]
-    mesh = mk.merge(*parts)
     col = col_box(-0.19, 0.16, -0.07, 0.07, -0.025, 0.025)
-    return mesh, col, [("Punch_Jaw", None, None, (0.13, 0.0, 0.0), None, True)]
+    return mk.merge(rivet, pin), col, nodes
 
 
 def ticket():

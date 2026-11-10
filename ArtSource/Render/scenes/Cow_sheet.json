@@ -1,0 +1,298 @@
+[
+ {
+  "name": "Cow_front",
+  "params": {
+   "w": 640,
+   "h": 640,
+   "yaw": 0,
+   "pitch": 8,
+   "dist": 6,
+   "ortho": 0.74,
+   "target": "0,0.50,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Animals/Cow.glb",
+     "mats": "../Exports/Animals/Cow.materials.json",
+     "pose": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "Cow_34",
+  "params": {
+   "w": 640,
+   "h": 640,
+   "yaw": -38,
+   "pitch": 8,
+   "dist": 6,
+   "ortho": 0.74,
+   "target": "0,0.50,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Animals/Cow.glb",
+     "mats": "../Exports/Animals/Cow.materials.json",
+     "pose": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "Cow_side",
+  "params": {
+   "w": 640,
+   "h": 640,
+   "yaw": -90,
+   "pitch": 8,
+   "dist": 6,
+   "ortho": 0.74,
+   "target": "0,0.50,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Animals/Cow.glb",
+     "mats": "../Exports/Animals/Cow.materials.json",
+     "pose": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "Cow_back",
+  "params": {
+   "w": 640,
+   "h": 640,
+   "yaw": 180,
+   "pitch": 8,
+   "dist": 6,
+   "ortho": 0.74,
+   "target": "0,0.50,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Animals/Cow.glb",
+     "mats": "../Exports/Animals/Cow.materials.json",
+     "pose": {}
+    }
+   ]
+  }
+ },
+ {
+  "name": "Cow_expr_calm",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -10,
+   "pitch": 4,
+   "dist": 3.2,
+   "fov": 21,
+   "target": "0,0.70,0.35",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/Animals/Cow.glb",
+     "mats": "../Exports/Animals/Cow.materials.json",
+     "pose": {
+      "Pupil_L": {
+       "addPos": [
+        0.0,
+        0.004,
+        0
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        0.0,
+        0.004,
+        0
+       ]
+      }
+     }
+    }
+   ]
+  }
+ },
+ {
+  "name": "Cow_expr_curious",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -10,
+   "pitch": 4,
+   "dist": 3.2,
+   "fov": 21,
+   "target": "0,0.70,0.35",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/Animals/Cow.glb",
+     "mats": "../Exports/Animals/Cow.materials.json",
+     "pose": {
+      "Pupil_L": {
+       "addPos": [
+        -0.018,
+        0.026,
+        0
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        -0.018,
+        0.026,
+        0
+       ]
+      },
+      "Fx_Alert": {
+       "visible": true
+      }
+     }
+    }
+   ]
+  }
+ },
+ {
+  "name": "Cow_expr_happy",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -10,
+   "pitch": 4,
+   "dist": 3.2,
+   "fov": 21,
+   "target": "0,0.70,0.35",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/Animals/Cow.glb",
+     "mats": "../Exports/Animals/Cow.materials.json",
+     "pose": {
+      "Mouth_Neutral": {
+       "visible": false
+      },
+      "Mouth_Surprised": {
+       "visible": false
+      },
+      "Mouth_Happy": {
+       "visible": true
+      },
+      "Eye_L": {
+       "visible": false
+      },
+      "Eye_R": {
+       "visible": false
+      },
+      "EyeClosed_L": {
+       "visible": true
+      },
+      "EyeClosed_R": {
+       "visible": true
+      }
+     }
+    }
+   ]
+  }
+ },
+ {
+  "name": "Cow_expr_startled",
+  "params": {
+   "w": 460,
+   "h": 460,
+   "yaw": -10,
+   "pitch": 4,
+   "dist": 3.2,
+   "fov": 21,
+   "target": "0,0.70,0.35",
+   "lightRel": 1,
+   "ground": "0",
+   "items": [
+    {
+     "url": "../Exports/Animals/Cow.glb",
+     "mats": "../Exports/Animals/Cow.materials.json",
+     "pose": {
+      "Mouth_Neutral": {
+       "visible": false
+      },
+      "Mouth_Surprised": {
+       "visible": true
+      },
+      "Mouth_Happy": {
+       "visible": false
+      },
+      "Pupil_L": {
+       "addPos": [
+        0.0,
+        0.004,
+        0
+       ],
+       "scale": [
+        0.8,
+        0.8,
+        1
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        0.0,
+        0.004,
+        0
+       ],
+       "scale": [
+        0.8,
+        0.8,
+        1
+       ]
+      },
+      "Fx_Alert": {
+       "visible": true
+      }
+     }
+    }
+   ]
+  }
+ },
+ {
+  "name": "Cow_hero",
+  "params": {
+   "w": 1000,
+   "h": 900,
+   "yaw": -30,
+   "pitch": 9,
+   "dist": 4.4,
+   "fov": 22,
+   "target": "0,0.50,0",
+   "lightRel": 1,
+   "groundShadowOnly": 1,
+   "items": [
+    {
+     "url": "../Exports/Animals/Cow.glb",
+     "mats": "../Exports/Animals/Cow.materials.json",
+     "pose": {
+      "Pupil_L": {
+       "addPos": [
+        -0.008,
+        0.018,
+        0
+       ]
+      },
+      "Pupil_R": {
+       "addPos": [
+        -0.008,
+        0.018,
+        0
+       ]
+      }
+     }
+    }
+   ]
+  }
+ }
+]

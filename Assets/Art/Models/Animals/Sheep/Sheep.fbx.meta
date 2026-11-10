@@ -1,0 +1,70 @@
+fileFormatVersion: 2
+guid: 24a45449054767d1bfbbb27538394a21
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Sheep_EyeWhite
+    second: {fileID: 2100000, guid: 8abd0b684a142bb449690496251ab105, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Sheep_Pupil
+    second: {fileID: 2100000, guid: c70e89b4b9276fc105b4edf099fdaf07, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Sheep_Mouth
+    second: {fileID: 2100000, guid: 3d35e37453745ed0bc065454f40018ff, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Sheep_Tongue
+    second: {fileID: 2100000, guid: e9790d496c599724ea0bca28224c0076, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Sheep_Wool
+    second: {fileID: 2100000, guid: 408046e77ff96568888d1ab5296c6187, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Sheep_Face
+    second: {fileID: 2100000, guid: cb69fa85cf7836cf462bdb18e44d2fff, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Sheep_Hoof
+    second: {fileID: 2100000, guid: e9af5315e3c2f10e96ee3cffdb3f9821, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Sheep_Alert
+    second: {fileID: 2100000, guid: a38dbb0a97da02e1a734d5d95a216ae3, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

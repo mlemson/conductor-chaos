@@ -30,6 +30,8 @@ def main():
                    "BusinessTraveler/build_business_traveler.py", "ChildPassenger/build_child_passenger.py",
                    "BaggageHelper/build_baggage_helper.py"):
         run(PY, os.path.join(HERE, "Characters", *script.split("/")))
+    for script in ("Sheep/build_sheep.py", "Cow/build_cow.py", "build_animal_props.py"):
+        run(PY, os.path.join(HERE, "Animals", *script.split("/")))
     run(PY, os.path.join(HERE, "Train", "RegionalWagon", "build_regional_wagon.py"))
     run(PY, os.path.join(HERE, "Train", "Locomotive", "build_locomotive.py"))
     run(PY, os.path.join(HERE, "Train", "Tender", "build_tender.py"))
@@ -52,10 +54,12 @@ def main():
     run(PY, os.path.join(HERE, "Render", "env_scenes.py"))
     run(PY, os.path.join(HERE, "Render", "character_scenes.py"))
     run(PY, os.path.join(HERE, "Render", "station_scenes.py"))
+    run(PY, os.path.join(HERE, "Render", "animal_scenes.py"))
     for scenes in ("conductor_sheet.json", "art_check.json", "loco_sheet.json", "cattle_sheet.json", "env_sheet.json",
                    "ElderlyPassenger_sheet.json", "Tourist_sheet.json", "RailMechanic_sheet.json",
                    "StationMaster_sheet.json", "BusinessTraveler_sheet.json", "ChildPassenger_sheet.json",
                    "BaggageHelper_sheet.json",
+                   "Sheep_sheet.json", "Cow_sheet.json", "animal_props_sheet.json",
                    "characters_in_scene.json", "station_sheet.json"):
         run("node", os.path.join(HERE, "Render", "render.cjs"), os.path.join(HERE, "Render", "scenes", scenes), out, base)
     srv.shutdown()
@@ -63,6 +67,7 @@ def main():
     run(PY, os.path.join(HERE, "Render", "make_sheets.py"))
     run(PY, os.path.join(HERE, "Render", "character_sheets.py"), cwd=os.path.join(HERE, "Render"))
     run(PY, os.path.join(HERE, "Render", "station_sheets.py"), cwd=os.path.join(HERE, "Render"))
+    run(PY, os.path.join(HERE, "Render", "animal_sheets.py"), cwd=os.path.join(HERE, "Render"))
 
 
 if __name__ == "__main__":

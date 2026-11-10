@@ -14,6 +14,7 @@
   gebakken tekst, bordletters zonder dubbele vlakken
 """
 import json
+import math
 import os
 import re
 import struct
@@ -259,6 +260,41 @@ def test_main_station():
           f"ruimte {MS.XI1 - MS.XI0:.1f}x{MS.ZI1 - MS.ZI0:.1f} m")
 
 
+def test_swing_doors():
+    """Elk draaiend blad (deur, kluisdeurtje, staldeur, hekpoort) heeft een botsvorm die meedraait en de twee
+    scharnierstanden waar SwingDoor in Unity zijn grenzen uit haalt; de beginstand ligt tussen dicht en open."""
+    import farm_props as FP
+    import main_station_props as MP
+
+    def yaw(R):
+        return math.degrees(math.atan2(-R[2, 0], R[0, 0]))                 # mk.rot_y(a) -> a
+    models = {"Station_Main": MS.build(), "Station_Building": B.build(np.random.default_rng([2026, 1821])),
+              "Farm_Barn": FP.barn(), "Farm_Gate": FP.gate()}
+    lk, lk_cols, lk_doors = MP.lockers()
+    models["Prop_Lockers"] = MP.locker_door_nodes(lk_doors)
+    expect = {"Station_Main": {"Door_L", "Door_R"} | {f"LockerDoor_{k}" for k in range(1, 6)},
+              "Station_Building": {"Door"}, "Farm_Barn": {"Door_L", "Door_R"}, "Farm_Gate": {"Gate"},
+              "Prop_Lockers": {f"LockerDoor_{k}" for k in range(1, 5)}}
+    count = 0
+    for model, nodes in models.items():
+        by = {n[0]: n for n in nodes}
+        doors = {k[len("Hinge_"):-len("_Closed")] for k in by if k.startswith("Hinge_") and k.endswith("_Closed")}
+        assert doors == expect[model], f"{model}: draaiende bladen {sorted(doors)}"
+        for d in doors:
+            leaf, closed, opened = by[d], by[f"Hinge_{d}_Closed"], by[f"Hinge_{d}_Open"]
+            assert by[f"Col_{d}"][2] == d, f"{model}/{d}: botsvorm hangt niet aan het blad"
+            assert leaf[2] is None and closed[2] is None and opened[2] is None, f"{model}/{d}: knopen horen onder de wortel"
+            assert np.allclose(leaf[3], closed[3]) and np.allclose(leaf[3], opened[3]), f"{model}/{d}: scharnier verschilt"
+            assert abs(leaf[1].V[:, 0]).min() < 0.05 and abs(leaf[1].V[:, 2]).max() < 0.20, f"{model}/{d}: pivot niet op het scharnier"
+            rel = lambda n: yaw(closed[4].T @ n[4])
+            span, start = rel(opened), rel(leaf)
+            assert 80 <= abs(span) <= 120, f"{model}/{d}: draait {span:.0f} graden"
+            assert min(0, span) - 0.5 <= start <= max(0, span) + 0.5, f"{model}/{d}: beginstand {start:.0f} buiten 0..{span:.0f}"
+            count += 1
+    assert len(lk_cols) >= 6, "kluisjes: de kast hoort losse botsvormen te hebben (open vakken)"
+    print(f"PASS draaiende bladen: {count} deuren, kluisdeurtjes en poorten met botsvorm en scharnierstanden")
+
+
 def test_station_signs():
     """StationSign in Unity bouwt de tekst op zoals de generator; alle voorbeeldnamen zijn te zetten."""
     import station_props as P
@@ -316,4 +352,5 @@ if __name__ == "__main__":
     test_leanto_furniture_free()
     test_loose_station_props()
     test_main_station()
+    test_swing_doors()
     test_station_signs()

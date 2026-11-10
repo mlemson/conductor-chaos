@@ -1,0 +1,90 @@
+fileFormatVersion: 2
+guid: a60ffebf617de5a810cd892effe092e3
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cow_EyeWhite
+    second: {fileID: 2100000, guid: 1aa4bd0021ca3c69b3a5a47fca45e262, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cow_Pupil
+    second: {fileID: 2100000, guid: 87aa38d19a40b39109cdf923d05dcf32, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cow_Mouth
+    second: {fileID: 2100000, guid: 6a23cf183dbca1590db04e4ba5c91c00, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cow_Tongue
+    second: {fileID: 2100000, guid: 1a8a54809e7280fb7116be32911fe390, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cow_Coat
+    second: {fileID: 2100000, guid: f3f2edc8d03facf021b8cc24cb60c4b1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cow_Patch
+    second: {fileID: 2100000, guid: 704ddee76f6aee47b273466b1bbfb2c4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cow_Muzzle
+    second: {fileID: 2100000, guid: 83e5996b8f291b7b25ea8287ffd9a2e6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cow_Nostril
+    second: {fileID: 2100000, guid: a4ffb3f872e8f4a49724d6e8e3b33416, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cow_EarInner
+    second: {fileID: 2100000, guid: e3aad72e7793bc71209fe46f324ded9c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cow_Horn
+    second: {fileID: 2100000, guid: 71646c89c858373cf158fc2c834b1e90, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cow_Hoof
+    second: {fileID: 2100000, guid: b4e1c2e7c83d9f651f8de248dc1c834b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cow_Alert
+    second: {fileID: 2100000, guid: 5c51d7b7e8312b1f4ae1716a90585dc2, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

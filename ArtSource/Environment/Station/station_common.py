@@ -77,6 +77,12 @@ MATERIALS = {
     "M_Stn_ChalkDark": (R["chalk_green"], 0.05, -0.35, {"cells": 0.3}),
     "M_Stn_Locker": (R["locker_blue"], 0.25, 0.05, PAINT),
     "M_Stn_LockerDark": (R["locker_blue"], 0.25, -0.35, PAINT),
+    # boerderijdecor (farm_props.py): stro, schuurrood en water, uit bestaande ramps
+    "M_Stn_Straw": (R["crate"], 0.05, 0.30, {"cells": 0.6, "cellSize": 0.35, "paint": 1.2}),
+    "M_Stn_StrawDark": (R["crate"], 0.05, 0.00, {"cells": 0.6, "cellSize": 0.35, "grime": 0.3}),
+    "M_Stn_BarnRed": (R["train_red"], 0.10, -0.15, WOOD),
+    "M_Stn_BarnRedDark": (R["train_red"], 0.10, -0.50, WOOD),
+    "M_Stn_Water": (R["water"], 0.50, 0.10, {"cells": 0.3, "cellSize": 0.6, "grime": 0.0}),
 }
 
 

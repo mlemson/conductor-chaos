@@ -1,0 +1,163 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &7228339193222270345
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1183612536303297704, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -402985557508391360, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 87
+      objectReference: {fileID: 0}
+    - target: {fileID: 26800284140411851, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 87
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_Name
+      value: Prop_StationSign
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 87
+      objectReference: {fileID: 0}
+    - target: {fileID: 1087489976930883697, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2905678204400777456, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 87
+      objectReference: {fileID: 0}
+    - target: {fileID: 3743993344710040121, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 87
+      objectReference: {fileID: 0}
+    - target: {fileID: 8857536079875442789, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 87
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: -402985557508391360, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2868980530025680335}
+    - targetCorrespondingSourceObject: {fileID: 8857536079875442789, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5449340909929899443}
+  m_SourcePrefab: {fileID: 100100000, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+--- !u!23 &847466839611889361 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -1183612536303297704, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+  m_PrefabInstance: {fileID: 7228339193222270345}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &2177621225932944329 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -402985557508391360, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+  m_PrefabInstance: {fileID: 7228339193222270345}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &2868980530025680335
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2177621225932944329}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 6732614776686430436, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+--- !u!1 &2214770530914043372 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8857536079875442789, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+  m_PrefabInstance: {fileID: 7228339193222270345}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5449340909929899443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2214770530914043372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5f9f2c4efeb3cab1545cd22d2483e7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.Stations.StationSign
+  text: STATION
+  showIcon: 1
+  font: {fileID: 11400000, guid: 2e37a1bdf799b764aa1d3a1e8f2b5d38, type: 2}
+  letterHeight: 0.264
+  room: 1.724
+  iconWidth: 0.3432
+  iconGap: 0.1188
+  iconScale: 0.84919
+  textZ: 0.056
+  textDepth: 0.035
+  bakedText: {fileID: 7730343469374199288}
+  bakedIcon: {fileID: 847466839611889361}
+--- !u!23 &7730343469374199288 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 1087489976930883697, guid: 005bb7d81d4b9cfb85c1c53c5241e169, type: 3}
+  m_PrefabInstance: {fileID: 7228339193222270345}
+  m_PrefabAsset: {fileID: 0}

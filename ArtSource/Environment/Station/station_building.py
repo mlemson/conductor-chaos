@@ -527,8 +527,7 @@ def build(rng):
         ("Interior", inter, None, (0, 0, 0), None, True),
         ("RoofFrame", truss, None, (0, 0, 0), None, True),
         ("Facade", fac, None, (0, 0, 0), None, True),
-        ("Door", leaf, None, tuple(hinge), door_R, True),
-        ("Col_Door", leaf_col, "Door", (0, 0, 0), None, False),
+        *props.swing_door("Door", leaf, leaf_col, hinge, -98, -96),      # staat open; draait tussen dicht en open
         ("Col_Main", col, None, (0, 0, 0), None, False),
         ("Light_Lantern_L", None, None, (-2.62, FL + 1.85, 0.30), None, True),
         ("Light_Lantern_R", None, None, (2.62, FL + 1.85, 0.30), None, True),

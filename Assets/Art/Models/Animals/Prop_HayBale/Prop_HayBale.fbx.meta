@@ -1,0 +1,45 @@
+fileFormatVersion: 2
+guid: 22f3475eaf20fc94e16a0b329a4150e2
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_HayBale_Straw
+    second: {fileID: 2100000, guid: 95f6b6e38c1b0ee53c720beb7d1feb5c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_HayBale_StrawLight
+    second: {fileID: 2100000, guid: 6e76ba6ef1a5bcca287cd5ef8806f2dc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_HayBale_Strap
+    second: {fileID: 2100000, guid: 9fb0ef2b5f6d500dfd2c7508ad183d7e, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
