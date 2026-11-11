@@ -4,5 +4,6 @@
 *.json text eol=lf
 *.unity text eol=lf
 *.prefab text eol=lf
-*.asset text eol=lf
+# Unity .asset files can be binary (notably TerrainData); never normalize line endings.
+*.asset -text
 *.meta text eol=lf
