@@ -142,6 +142,18 @@ namespace ConductorChaos.Playground
             if (target && GrippableCoal.TryGetValue(target, out var train)) train.WakeCoal(train.coalIndex[target]);
         }
 
+        internal static Rigidbody FindGuidedSupport(Rigidbody surface)
+        {
+            var owner = FindControlOwner(surface);
+            return owner ? owner.GuidedSupport(surface) : null;
+        }
+
+        internal static Vector3 GuidedBodyVelocity(Rigidbody surface, Vector3 point)
+        {
+            var owner = FindControlOwner(surface);
+            return owner && surface ? owner.GuidedPointVelocity(surface, point) : Vector3.zero;
+        }
+
         internal Rigidbody GuidedSupport(Rigidbody surface)
         {
             if (!surface || !surface.isKinematic) return null;
@@ -403,8 +415,13 @@ namespace ConductorChaos.Playground
             couplers.Clear();
             couplers.Add(body, GetCouplers(transform));
             TrainBodies.Add(body);
+            ControlOwners[body] = this;
             foreach (var wagon in availableWagons)
-                if (wagon) TrainBodies.Add(wagon);
+                if (wagon)
+                {
+                    TrainBodies.Add(wagon);
+                    ControlOwners[wagon] = this;
+                }
             railCenterOffset = couplers[body].Center;
             rearwardRailSign = couplers[body].FrontSign;
             foreach (var wagon in availableWagons)
@@ -1481,9 +1498,9 @@ namespace ConductorChaos.Playground
                     Vector3 relative = coal.linearVelocity - SourceVelocity(coal.position);
                     Vector3 spin = coal.angularVelocity - (coalSourceBody ? coalSourceBody.angularVelocity : Vector3.zero);
                     bool calm = !shovelContact && !CoalIsHeld(coal) && coalBinLocal.Contains(local) &&
-                                relative.sqrMagnitude < 0.05f * 0.05f && spin.sqrMagnitude < 0.5f * 0.5f;
+                                relative.sqrMagnitude < 0.12f * 0.12f && spin.sqrMagnitude < 0.8f * 0.8f;
                     coalCalmTime[i] = calm ? coalCalmTime[i] + Time.fixedDeltaTime : 0f;
-                    if (coalCalmTime[i] > 0.75f) SleepCoal(i);
+                    if (coalCalmTime[i] > 0.6f) SleepCoal(i);
                 }
                 bool inFire = doorAngle.Value >= 50f && fuel.Value < FuelCapacity - 0.05f &&
                               (coal.position - mouth).sqrMagnitude < 0.23f * 0.23f;
@@ -1515,9 +1532,10 @@ namespace ConductorChaos.Playground
 
         private Pose CoalSourcePose()
         {
-            if (!coalSourceBody) return new Pose(coalSource.position, coalSource.rotation);
-            return guidedMotion.TryGetValue(coalSourceBody, out var motion)
-                ? motion.From : new Pose(coalSourceBody.position, coalSourceBody.rotation);
+            // Use the same transform frame as sleeping (parented) coal. Using
+            // the previous guided physics pose here could teleport a waking
+            // piece backwards by one train tick.
+            return new Pose(coalSource.position, coalSource.rotation);
         }
         private Vector3 SourceVelocity(Vector3 point) => coalSourceBody ? GuidedPointVelocity(coalSourceBody, point) : Vector3.zero;
 
@@ -1541,9 +1559,11 @@ namespace ConductorChaos.Playground
         {
             if (!coalAsleep[index]) return;
             var coal = coalBodies[index];
-            Pose source = CoalSourcePose();
-            Vector3 position = source.position + source.rotation * coal.transform.localPosition;
-            Quaternion rotation = source.rotation * coal.transform.localRotation;
+            // Capture the actual world pose before detaching. The child already
+            // follows the moving wagon; recomputing it from a stale vehicle
+            // pose causes a visible jump on the first dynamic physics tick.
+            Vector3 position = coal.transform.position;
+            Quaternion rotation = coal.transform.rotation;
             coal.transform.SetParent(null, true);
             coal.isKinematic = false;
             coal.position = position;
@@ -1558,6 +1578,8 @@ namespace ConductorChaos.Playground
         private void SleepCoal(int index)
         {
             var coal = coalBodies[index];
+            coal.linearVelocity = Vector3.zero;
+            coal.angularVelocity = Vector3.zero;
             coal.isKinematic = true;
             coal.transform.SetParent(coalSource, true);
             coalAsleep[index] = true;
@@ -1643,9 +1665,17 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkDespawn()
         {
-            if (body) TrainBodies.Remove(body);
+            if (body)
+            {
+                TrainBodies.Remove(body);
+                ControlOwners.Remove(body);
+            }
             foreach (var wagon in availableWagons)
-                if (wagon) TrainBodies.Remove(wagon);
+                if (wagon)
+                {
+                    TrainBodies.Remove(wagon);
+                    ControlOwners.Remove(wagon);
+                }
             if (derailed)
             {
                 if (body) { body.isKinematic = true; body.useGravity = false; }

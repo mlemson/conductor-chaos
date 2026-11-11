@@ -24,6 +24,7 @@ namespace ConductorChaos.Playground
         public Quaternion LeftRotation => left.Rotation;
         public Quaternion RightRotation => right.Rotation;
         public Vector3 SupportVelocity => left.HasSupport ? left.SupportVelocity : right.SupportVelocity;
+        public Rigidbody SupportBody => left.HasSupport ? left.SupportBody : right.SupportBody;
 
         private PlaygroundLegRig(Transform model, Rigidbody torso, MeshRenderer original,
             SkinnedMeshRenderer skin, Mesh mesh, Leg left, Leg right)
@@ -199,6 +200,7 @@ namespace ConductorChaos.Playground
             public Quaternion Rotation => bone ? bone.localRotation : Quaternion.identity;
             public Collider Collider => collider;
             public bool HasSupport => supportSurface;
+            public Rigidbody SupportBody => supportSurface ? supportBody : null;
             private Vector3 SupportPoint => supportBody ? supportBody.transform.TransformPoint(supportAnchor) : supportAnchor;
             public Vector3 SupportVelocity => supportSurface && supportBody
                 ? supportBody.GetPointVelocity(SupportPoint)

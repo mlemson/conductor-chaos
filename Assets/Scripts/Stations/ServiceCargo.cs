@@ -13,6 +13,7 @@ namespace ConductorChaos.Stations
         [SerializeField] private BoxCollider destination;
         [SerializeField] private BoxCollider cargoBay;
         private readonly HashSet<Rigidbody> loaded = new();
+        private readonly HashSet<Rigidbody> aboard = new();
         private readonly HashSet<Rigidbody> travelled = new();
         private readonly Dictionary<Rigidbody, Collider[]> pieceColliders = new();
 
@@ -21,10 +22,12 @@ namespace ConductorChaos.Stations
             System.Array.TrueForAll(pieces, piece => piece);
         public int LoadedCount => loaded.Count;
         public int TravelledCount => travelled.Count;
+        public override bool ReadyToDepart => IsConfigured && aboard.Count == Target;
 
         public override void BeginOnServer()
         {
             loaded.Clear();
+            aboard.Clear();
             travelled.Clear();
             pieceColliders.Clear();
             foreach (var piece in pieces)
@@ -34,8 +37,15 @@ namespace ConductorChaos.Stations
         // Called while the crew loads the train, including before it begins moving.
         public void ObserveLoadingOnServer()
         {
+            // Depart only if all required pieces are currently on the wagon.
+            // Keep LoadedCount cumulative so unloading does not reset the HUD.
+            aboard.Clear();
             foreach (var piece in pieces)
-                if (piece && Overlaps(cargoBay, piece)) loaded.Add(piece);
+                if (piece && Overlaps(cargoBay, piece))
+                {
+                    aboard.Add(piece);
+                    loaded.Add(piece);
+                }
         }
 
         // Only the server observes transported cargo, and only while the train is moving.
@@ -78,7 +88,9 @@ namespace ConductorChaos.Stations
             Bounds zoneBounds = zone.bounds;
             foreach (var collider in colliders)
                 if (collider && collider.enabled && !collider.isTrigger &&
-                    collider.gameObject.activeInHierarchy && zoneBounds.Intersects(collider.bounds))
+                    collider.gameObject.activeInHierarchy && zoneBounds.Intersects(collider.bounds) &&
+                    Physics.ComputePenetration(zone, zone.transform.position, zone.transform.rotation,
+                        collider, collider.transform.position, collider.transform.rotation, out _, out _))
                     return true;
             return false;
         }

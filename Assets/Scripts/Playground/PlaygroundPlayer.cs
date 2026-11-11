@@ -100,6 +100,8 @@ namespace ConductorChaos.Playground
         private readonly Collider[] ledgeObstacles = new Collider[64];
         private readonly Collider[] cameraFocusObstacles = new Collider[16];
         private Vector3 ledgeLip, ledgeInward;
+        private Vector3 ledgeLocalLip, ledgeLocalInward;
+        private Rigidbody ledgeSupport;
         private float nextLedgeProbe;
         private bool hasLedge, mantling;
         private bool clearingLimbs;
@@ -138,6 +140,8 @@ namespace ConductorChaos.Playground
             wagonPushDirection = Vector3.zero;
             airborneSupportVelocity = Vector3.zero;
             airborneTrainSupport = null;
+            ledgeSupport = null;
+            hasLedge = mantling = false;
             clearingLimbs = false;
             stalledTime = nextRecoveryProbe = nextTrackStep = 0f;
             body.isKinematic = !IsServer;
@@ -366,8 +370,9 @@ namespace ConductorChaos.Playground
             Vector3 moveDirection = facing * new Vector3(requestedMove.x, 0f, requestedMove.y);
             bool stretchArms = (leftHeld || rightHeld) && !left.HoldingShovel && !right.HoldingShovel;
             if (!trainDrive) trainDrive = FindAnyObjectByType<TrainDrive>();
-            Rigidbody trainSupport = grounded && trainDrive ? trainDrive.GuidedSupport(groundHit.rigidbody) : null;
-            Vector3 trainVelocity = trainSupport ? trainDrive.GuidedPointVelocity(trainSupport, body.position) : Vector3.zero;
+            Rigidbody trainSupport = grounded ? TrainDrive.FindGuidedSupport(groundHit.rigidbody) :
+                legs != null ? TrainDrive.FindGuidedSupport(legs.SupportBody) : null;
+            Vector3 trainVelocity = trainSupport ? TrainDrive.GuidedBodyVelocity(trainSupport, body.position) : Vector3.zero;
             bool cabinView = trainDrive && trainDrive.TryGetCabin(transform.position, -0.06f, out _);
             left.Step(leftHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView, requestedHandFocus, right);
             right.Step(rightHeld, stretchArms, aim, hits, transform, reach, pulling, firmLedgeGrip, moveDirection, cabinView, requestedHandFocus, left);
@@ -381,7 +386,7 @@ namespace ConductorChaos.Playground
             bool bracing = handPush > 0f;
             if (!grounded && !climbing && !bracing && !pulling && !jumpQueued && left.HasGrip != right.HasGrip)
                 (left.HasGrip ? left : right).SlideDown();
-            int hangingHands = StaticGripCenter(out Vector3 gripCenter);
+            int hangingHands = GripCenter(out Vector3 gripCenter, out Rigidbody gripSupport);
             bool hanging = !climbing && hangingHands > 0;
             wagonPushDirection = grounded && !hanging && !climbing && !jumpQueued ? moveDirection * uprightControl : Vector3.zero;
             Vector3 recoveryGroundVelocity = trainSupport ? trainVelocity : grounded && groundHit.rigidbody && groundHit.rigidbody.isKinematic
@@ -393,7 +398,14 @@ namespace ConductorChaos.Playground
             bool stepped = false;
             if (climbing) legs?.BraceForClimb(mantling);
             if (bracing) legs?.ReleaseSupport();
-            bool supported = !climbing && !bracing && legs != null && legs.Step(current, requestedMove, grounded && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting && !hanging, out stepped);
+            bool footOnGround = legs != null && (grounded || legs.HasFootContact());
+            bool supported = !climbing && !bracing && legs != null && legs.Step(current - trainVelocity, requestedMove,
+                footOnGround && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting && !hanging, out stepped);
+            // The torso may be between floor contacts while either foot is still
+            // planted. Kinematic wagons report zero GetPointVelocity, so use
+            // TrainDrive's guided motion for that foot as well.
+            if (!trainSupport && supported) trainSupport = TrainDrive.FindGuidedSupport(legs.SupportBody);
+            if (trainSupport) trainVelocity = TrainDrive.GuidedBodyVelocity(trainSupport, body.position);
             Vector3 groundVelocity = trainSupport ? trainVelocity : supported ? legs.SupportVelocity : recoveryGroundVelocity;
             if (grounded || supported)
             {
@@ -412,14 +424,14 @@ namespace ConductorChaos.Playground
             }
             Vector3 target = groundVelocity + moveDirection * walkSpeed * uprightControl;
             bool jumping = jumpQueued && Time.time - lastJump > 0.25f &&
-                (grounded || ((left.HasGrip || right.HasGrip) && legs != null && legs.HasFootContact()));
+                (grounded || supported || ((left.HasGrip || right.HasGrip) && legs != null && legs.HasFootContact()));
             // Keep some steering when the torso touches uneven ground but neither foot probe finds support.
-            float movementAcceleration = grounded ? acceleration * (supported ? (sprinting ? 1.35f : 1f) : 0.45f)
+            float movementAcceleration = grounded || supported ? acceleration * (supported ? (sprinting ? 1.35f : 1f) : 0.45f)
                 : acceleration * (sprinting ? 0.45f : 0.2f);
             Vector3 change = Vector3.ClampMagnitude(new Vector3(target.x - current.x, 0f, target.z - current.z), movementAcceleration * Time.fixedDeltaTime);
             if (climbing || hanging) change = Vector3.zero;
             else if (!jumping || !trainSupport) body.AddForce(change, ForceMode.VelocityChange);
-            if (hanging) MoveWhileGripping(gripCenter, moveDirection, hangingHands, pulling && !jumpQueued && !bracing);
+            if (hanging) MoveWhileGripping(gripCenter, moveDirection, hangingHands, pulling && !jumpQueued && !bracing, gripSupport);
             if (bracing) body.AddForce(Vector3.up * handPush, ForceMode.Acceleration);
 
             // A small push on alternating planted steps makes running a hop, not a repeated full jump.
@@ -480,20 +492,25 @@ namespace ConductorChaos.Playground
             }
         }
 
-        private int StaticGripCenter(out Vector3 center)
+        private int GripCenter(out Vector3 center, out Rigidbody support)
         {
-            bool leftGrip = left.TryStaticAnchor(out Vector3 leftAnchor);
-            bool rightGrip = right.TryStaticAnchor(out Vector3 rightAnchor);
-            center = leftGrip && rightGrip ? (leftAnchor + rightAnchor) * 0.5f : leftGrip ? leftAnchor : rightAnchor;
+            bool leftGrip = left.TryClimbAnchor(out Vector3 leftAnchor, out Rigidbody leftBody);
+            bool rightGrip = right.TryClimbAnchor(out Vector3 rightAnchor, out Rigidbody rightBody);
+            // Never average anchors attached to independent moving frames.
+            if (leftGrip && rightGrip && leftBody != rightBody) rightGrip = false;
+            support = leftGrip ? leftBody : rightGrip ? rightBody : null;
+            center = leftGrip && rightGrip ? (leftAnchor + rightAnchor) * 0.5f
+                : leftGrip ? leftAnchor : rightAnchor;
             return (leftGrip ? 1 : 0) + (rightGrip ? 1 : 0);
         }
 
-        private void MoveWhileGripping(Vector3 anchor, Vector3 move, int hands, bool pulling)
+        private void MoveWhileGripping(Vector3 anchor, Vector3 move, int hands, bool pulling, Rigidbody support)
         {
             if (move.sqrMagnitude < 0.01f) return;
             Vector3 toGrip = anchor - body.worldCenterOfMass;
             Vector3 tether = toGrip.normalized;
-            Vector3 velocity = body.linearVelocity;
+            Vector3 velocity = body.linearVelocity - (support
+                ? TrainDrive.GuidedBodyVelocity(support, body.worldCenterOfMass) : Vector3.zero);
             // Steer along the swing, leaving a little give for leaning away from the wall.
             Vector3 tangent = Vector3.ProjectOnPlane(move, tether);
             Vector3 push = tangent * (hands == 1 ? 8f : 5f) + move * 2f;
@@ -598,24 +615,30 @@ namespace ConductorChaos.Playground
 
         private bool ApplyClimbAssist(bool pulling)
         {
-            bool leftGrip = left.TryStaticAnchor(out Vector3 leftAnchor);
-            bool rightGrip = right.TryStaticAnchor(out Vector3 rightAnchor);
+            RefreshLedgeFrame();
+            bool leftGrip = left.TryClimbAnchor(out Vector3 leftAnchor, out Rigidbody leftBody);
+            bool rightGrip = right.TryClimbAnchor(out Vector3 rightAnchor, out Rigidbody rightBody);
             if (!pulling || !bodyCapsule || (!leftGrip && !rightGrip))
             {
                 hasLedge = mantling = false;
+                ledgeSupport = null;
                 nextLedgeProbe = 0f;
                 return false;
             }
 
-            bool leftOnLedge = hasLedge && leftGrip && NearLedge(leftAnchor);
-            bool rightOnLedge = hasLedge && rightGrip && NearLedge(rightAnchor);
+            bool leftOnLedge = hasLedge && leftGrip && leftBody == ledgeSupport && NearLedge(leftAnchor);
+            bool rightOnLedge = hasLedge && rightGrip && rightBody == ledgeSupport && NearLedge(rightAnchor);
             if (!leftOnLedge && !rightOnLedge) mantling = false;
             if (Time.time >= nextLedgeProbe)
             {
                 nextLedgeProbe = Time.time + 0.10f;
-                hasLedge = (leftGrip && TryFindLedge(leftAnchor)) || (rightGrip && TryFindLedge(rightAnchor));
-                leftOnLedge = hasLedge && leftGrip && NearLedge(leftAnchor);
-                rightOnLedge = hasLedge && rightGrip && NearLedge(rightAnchor);
+                // All three probes (wall, lip and landing) must agree on one
+                // support body. A grab on a passing wagon must never mantle
+                // onto a different wagon or a nearby stationary cliff.
+                hasLedge = (leftGrip && TryFindLedge(leftAnchor, leftBody)) ||
+                           (rightGrip && TryFindLedge(rightAnchor, rightBody));
+                leftOnLedge = hasLedge && leftGrip && leftBody == ledgeSupport && NearLedge(leftAnchor);
+                rightOnLedge = hasLedge && rightGrip && rightBody == ledgeSupport && NearLedge(rightAnchor);
             }
 
             int hands = (leftOnLedge ? 1 : 0) + (rightOnLedge ? 1 : 0);
@@ -634,14 +657,15 @@ namespace ConductorChaos.Playground
                 if (leftOnLedge) left.FinishClimb();
                 if (rightOnLedge) right.FinishClimb();
                 hasLedge = mantling = false;
+                ledgeSupport = null;
                 return false;
             }
 
             float gripStrength = hands == 2 ? 1f : 0.72f;
             float upSpeed = mantling ? Mathf.Clamp(clearance * 7f, 0f, climbUpSpeed) : climbUpSpeed;
-            // Lean onto the lip first; only push strongly inward when the torso can clear it.
             float inwardSpeed = mantling ? Mathf.Lerp(0.20f, 1.05f, Mathf.InverseLerp(0.22f, 0.04f, clearance)) : 0.12f;
-            Vector3 velocity = body.linearVelocity;
+            Vector3 supportVelocity = ledgeSupport ? TrainDrive.GuidedBodyVelocity(ledgeSupport, body.worldCenterOfMass) : Vector3.zero;
+            Vector3 velocity = body.linearVelocity - supportVelocity;
             float lift = velocity.y < climbUpSpeed ? Mathf.Max(0f, (upSpeed * gripStrength - velocity.y) * 9f - Physics.gravity.y) : 0f;
             Vector3 assist = Vector3.up * lift
                 + ledgeInward * ((inwardSpeed - Vector3.Dot(velocity, ledgeInward)) * 9f);
@@ -649,16 +673,30 @@ namespace ConductorChaos.Playground
             return true;
         }
 
+        private void RefreshLedgeFrame()
+        {
+            if (!ledgeSupport) return;
+            if (TrainDrive.FindGuidedSupport(ledgeSupport) != ledgeSupport)
+            {
+                hasLedge = mantling = false;
+                ledgeSupport = null;
+                return;
+            }
+            ledgeLip = ledgeSupport.transform.TransformPoint(ledgeLocalLip);
+            ledgeInward = ledgeSupport.transform.TransformDirection(ledgeLocalInward);
+        }
+
         private bool NearLedge(Vector3 anchor) => (anchor - ledgeLip).sqrMagnitude <= 0.48f * 0.48f
             && Mathf.Abs(Vector3.Dot(anchor - ledgeLip, ledgeInward)) <= 0.26f;
 
-        private bool TryFindLedge(Vector3 anchor)
+        private bool TryFindLedge(Vector3 anchor, Rigidbody support)
         {
-            Vector3 approach = hasLedge && NearLedge(anchor) ? ledgeInward
+            if (support && TrainDrive.FindGuidedSupport(support) != support) return false;
+            Vector3 approach = hasLedge && support == ledgeSupport && NearLedge(anchor) ? ledgeInward
                 : Vector3.ProjectOnPlane(anchor - body.worldCenterOfMass, Vector3.up).normalized;
             if (approach == Vector3.zero ||
                 !LedgeRay(anchor - approach * 0.24f - Vector3.up * 0.10f, approach, 0.45f, out RaycastHit wall) ||
-                Mathf.Abs(wall.normal.y) > 0.55f || wall.rigidbody)
+                Mathf.Abs(wall.normal.y) > 0.55f || wall.rigidbody != support)
                 return false;
 
             Vector3 inward = Vector3.ProjectOnPlane(-wall.normal, Vector3.up).normalized;
@@ -666,9 +704,10 @@ namespace ConductorChaos.Playground
             Vector3 lip = new Vector3(wall.point.x, anchor.y, wall.point.z);
             Vector3 aboveLip = lip + Vector3.up * 0.30f;
             if (!LedgeRay(aboveLip + inward * 0.08f, Vector3.down, 0.48f, out RaycastHit top) ||
-                top.normal.y < 0.70f || top.rigidbody ||
+                top.normal.y < 0.70f || top.rigidbody != support ||
                 !LedgeRay(aboveLip + inward * (radius * 0.85f + 0.03f), Vector3.down, 0.48f, out RaycastHit landing) ||
-                landing.normal.y < 0.70f || landing.rigidbody || Mathf.Abs(landing.point.y - top.point.y) > 0.12f)
+                landing.normal.y < 0.70f || landing.rigidbody != support ||
+                Mathf.Abs(landing.point.y - top.point.y) > 0.12f)
                 return false;
 
             Vector3 lower = landing.point + Vector3.up * (radius / landing.normal.y + 0.04f);
@@ -680,6 +719,12 @@ namespace ConductorChaos.Playground
 
             ledgeLip = new Vector3(lip.x, Mathf.Max(top.point.y, landing.point.y), lip.z);
             ledgeInward = inward;
+            ledgeSupport = support;
+            if (support)
+            {
+                ledgeLocalLip = support.transform.InverseTransformPoint(ledgeLip);
+                ledgeLocalInward = support.transform.InverseTransformDirection(ledgeInward);
+            }
             return true;
         }
 
@@ -700,14 +745,14 @@ namespace ConductorChaos.Playground
 
         private Vector3 FollowTrainInAir()
         {
-            if (!trainDrive || !airborneTrainSupport) return Vector3.zero;
-            if (!IsGrounded(out var below, 1.6f) || trainDrive.GuidedSupport(below.rigidbody) != airborneTrainSupport)
+            if (!airborneTrainSupport) return Vector3.zero;
+            if (!IsGrounded(out var below, 1.6f) || TrainDrive.FindGuidedSupport(below.rigidbody) != airborneTrainSupport)
             {
                 airborneTrainSupport = null;
                 return Vector3.zero;
             }
             // Apply only the change in wagon velocity so the initial carry is counted once.
-            Vector3 velocity = trainDrive.GuidedPointVelocity(airborneTrainSupport, body.position);
+            Vector3 velocity = TrainDrive.GuidedBodyVelocity(airborneTrainSupport, body.position);
             Vector3 correction = Vector3.ClampMagnitude(velocity - airborneSupportVelocity, 20f * Time.fixedDeltaTime);
             airborneSupportVelocity += correction;
             return correction;
@@ -966,12 +1011,18 @@ namespace ConductorChaos.Playground
                 : PlaygroundControls.HandPushAcceleration(grip, gripSurface, press, upSpeed);
             public void SlideDown() => PlaygroundControls.SlideWallGrip(grip, gripSurface, ref gripNormal);
 
-            public bool TryStaticAnchor(out Vector3 anchor)
+            public bool TryClimbAnchor(out Vector3 anchor, out Rigidbody support)
             {
                 anchor = default;
-                if (!grip || !gripSurface || grip.connectedBody) return false;
-                if ((grip.connectedAnchor - HandPosition).sqrMagnitude > 0.30f * 0.30f) return false;
-                anchor = grip.connectedAnchor;
+                support = null;
+                if (!grip || !gripSurface || !gripSurface.enabled || !gripSurface.gameObject.activeInHierarchy ||
+                    cabGripTrain || heldPunch) return false;
+                support = grip.connectedBody;
+                // Only static geometry and rail-guided kinematic wagon bodies can
+                // support a mantle. Loose dynamic props must not lift the player.
+                if (support && TrainDrive.FindGuidedSupport(support) != support) return false;
+                anchor = support ? support.transform.TransformPoint(grip.connectedAnchor) : grip.connectedAnchor;
+                if ((anchor - HandPosition).sqrMagnitude > 0.30f * 0.30f) return false;
                 if (grip is ConfigurableJoint)
                     anchor -= gripSurface.transform.TransformDirection(gripNormal) * PlaygroundControls.GripPalmOffset;
                 return true;
@@ -1224,7 +1275,9 @@ namespace ConductorChaos.Playground
                     if (hit.rigidbody)
                     {
                         NetworkObject target = hit.rigidbody.GetComponentInParent<NetworkObject>();
-                        if ((!target || !target.IsSpawned || !target.IsOwnedByServer) && !TrainDrive.IsCoalBody(hit.rigidbody)) continue;
+                        bool networkOwned = target && target.IsSpawned && target.IsOwnedByServer;
+                        bool guidedWagon = TrainDrive.FindGuidedSupport(hit.rigidbody) == hit.rigidbody;
+                        if (!networkOwned && !guidedWagon && !TrainDrive.IsCoalBody(hit.rigidbody)) continue;
                     }
                     if (!hit.rigidbody || hit.rigidbody.isKinematic && !TrainDrive.IsCoalBody(hit.rigidbody))
                     {
@@ -1284,7 +1337,8 @@ namespace ConductorChaos.Playground
             private static bool MatchesGripSurface(Collider surface, Collider other) =>
                 other && (surface == other || (other.attachedRigidbody && surface.attachedRigidbody == other.attachedRigidbody));
 
-            private bool IsClimbSurface(RaycastHit hit) => !hit.rigidbody &&
+            private bool IsClimbSurface(RaycastHit hit) =>
+                (!hit.rigidbody || TrainDrive.FindGuidedSupport(hit.rigidbody) == hit.rigidbody) &&
                 (hit.normal.y <= 0.65f || hit.point.y >= parent.worldCenterOfMass.y + 0.06f);
 
             public void FinishClimb()
