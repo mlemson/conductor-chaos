@@ -67,7 +67,10 @@ namespace ConductorChaos.Stations
             (doorsClosed.Value && (introduction
                 ? Phase == RunPhase.Training && CurrentLesson == Lesson.Drive
                 : (Phase is RunPhase.Departure or RunPhase.Travelling or RunPhase.Arrival) &&
-                  TimerRunning && bellRung.Value && (Objective?.ReadyToDepart ?? false)));
+                  TimerRunning && bellRung.Value &&
+                  // Loading is a departure checklist item, not a mid-journey
+                  // brake. Cargo can move or be unloaded after departure.
+                  (Phase != RunPhase.Departure || (Objective?.ReadyToDepart ?? false))));
         internal bool IsTrainingTrain(TrainDrive candidate) => introduction && candidate == train;
 
         public bool IsConfigured => departure && departure.Role == ServiceStation.StationRole.Vertrek &&
