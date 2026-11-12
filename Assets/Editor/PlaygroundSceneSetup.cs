@@ -84,7 +84,7 @@ namespace ConductorChaos.Editor
             Undo.RecordObject(drive, "Set train track");
             drive.Configure(track, fraction * track.Length);
             var wagons = new System.Collections.Generic.List<Rigidbody>();
-            foreach (var name in new[] { "Tender_Blockout", "RegionalWagon_Blockout", "CattleWagon_Blockout" })
+            foreach (var name in new[] { "Tender_Blockout", "RegionalWagon_Blockout", "CattleWagon_Blockout" }.Concat(ConductorChaos.EditorTools.TrainSetTools.Vehicles))
             {
                 foreach (var wagon in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None).Where(t => (t.name == name || t.name.StartsWith(name + " (")) && t.gameObject.scene == locomotive.scene))
                 {

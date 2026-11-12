@@ -36,6 +36,8 @@ def main():
     run(PY, os.path.join(HERE, "Train", "Locomotive", "build_locomotive.py"))
     run(PY, os.path.join(HERE, "Train", "Tender", "build_tender.py"))
     run(PY, os.path.join(HERE, "Train", "CattleWagon", "build_cattle_wagon.py"))
+    run(PY, os.path.join(HERE, "Train", "DieselSet", "build_diesel_set.py"))
+    run(PY, os.path.join(HERE, "Train", "ExpressSets", "build_express_sets.py"))
     run(PY, os.path.join(HERE, "Environment", "build_environment_kit.py"))
     run(PY, os.path.join(HERE, "Environment", "Station", "build_station_kit.py"))
     run(PY, os.path.join(HERE, "Textures", "build_ground_textures.py"))

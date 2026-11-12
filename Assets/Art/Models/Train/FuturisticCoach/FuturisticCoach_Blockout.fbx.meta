@@ -1,0 +1,155 @@
+fileFormatVersion: 2
+guid: 6b8dd0b55fbd3a2b189f3d8b3d04f070
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Body
+    second: {fileID: 2100000, guid: 8fa61983cf95042e558a72d936370bd7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_BodyLow
+    second: {fileID: 2100000, guid: b222baa5011cd762f6ce5db4f6f344bf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Roof
+    second: {fileID: 2100000, guid: 9462bf16bea851c1acddd34379a78e0c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Yellow
+    second: {fileID: 2100000, guid: c5e44d9fdff7e2f6e25322e9f99786c6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Cream
+    second: {fileID: 2100000, guid: 029a1637d90e83237a6d07194cff68dd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Door
+    second: {fileID: 2100000, guid: 4af0061fb62134830102045a75cd024c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Glow
+    second: {fileID: 2100000, guid: 8141d0c06bd56c40ef5ba076b5b08979, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_GlowY
+    second: {fileID: 2100000, guid: 40b2232749226ef8b38f3a8cf8c67787, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Seat
+    second: {fileID: 2100000, guid: 0d4a9a862304adacb05eb1f31ec337dc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Head
+    second: {fileID: 2100000, guid: 0e6f3511daaa8221f9bdc966e01314e9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Step
+    second: {fileID: 2100000, guid: 2d0ed74ea6dc01745d8e633b36927954, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Desk
+    second: {fileID: 2100000, guid: 02e7a9c48480f7a1763f670b672ccad9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Trim
+    second: {fileID: 2100000, guid: ffe936caa75e7f8ec591209c4c78357b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Wheel
+    second: {fileID: 2100000, guid: fb8e7bc23002121d60185c849bef77bd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Metal
+    second: {fileID: 2100000, guid: 65392fd2be14d6bd2fd24186e55b4fd8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Interact
+    second: {fileID: 2100000, guid: 76378f19d591c490d62019889e289dab, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Inner
+    second: {fileID: 2100000, guid: 586ca6cfbd3b35e247f0d5a1031d70e6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Floor
+    second: {fileID: 2100000, guid: 74d01e7baa6b773a4fd429014d766746, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Smoke
+    second: {fileID: 2100000, guid: acca4e7c9b02dd85778f9f5483ba0ad8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Steam
+    second: {fileID: 2100000, guid: f81aeeba64b2c0ae83abfc8a12fe3306, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Glass
+    second: {fileID: 2100000, guid: e3ee2d8b0f083ff5e22d17449b28b4eb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_GlassShine
+    second: {fileID: 2100000, guid: 56873ede59270681313975d67e156715, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_GlassDark
+    second: {fileID: 2100000, guid: 2f71bbd277e9f05cf5dd11bb157f13c5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Lamp
+    second: {fileID: 2100000, guid: 73b99c023714067a102c0fa891c8c838, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Future_Hot
+    second: {fileID: 2100000, guid: 787f8e96457ebf7c9f172c6eb9efc10d, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,6 +1,7 @@
 // Conductor Chaos — iets dat kapot kan zijn en met de moersleutel wordt gerepareerd (issue #215).
 // Werkt op knoopnamen uit de spoorkit: Repair_Bolt (bout die uitsteekt) en Repair_Bolt_Home (bout helemaal erin),
 // Broken_Bits (alleen zichtbaar als het kapot is) en Fixed_Rail (alleen zichtbaar als het heel is).
+// Onderhoudspunten op treinen (knoop RepairPoint_<Naam>) gebruiken dezelfde namen met achtervoegsel __<Naam>.
 // Lomp en fysiek: elke harde tik met de kop van de sleutel tegen de bout ramt hem een stukje verder erin; na genoeg
 // tikken is het heel. De server telt de tikken en beslist; clients tonen alleen de stand.
 using System;
@@ -46,10 +47,10 @@ namespace ConductorChaos.Track
 
         void Awake()
         {
-            bolt = FindDeep(transform, "Repair_Bolt");
-            var home = FindDeep(transform, "Repair_Bolt_Home");
-            bitsBroken = FindDeep(transform, "Broken_Bits");
-            bitsFixed = FindDeep(transform, "Fixed_Rail");
+            bolt = FindPart(transform, "Repair_Bolt");
+            var home = FindPart(transform, "Repair_Bolt_Home");
+            bitsBroken = FindPart(transform, "Broken_Bits");
+            bitsFixed = FindPart(transform, "Fixed_Rail");
             if (bolt)
             {
                 boltOut = bolt.localPosition;
@@ -142,6 +143,25 @@ namespace ConductorChaos.Track
             if (on)
                 foreach (var r in node.GetComponentsInChildren<Renderer>(true))
                     if (!r.enabled) r.enabled = true;
+        }
+
+        // Een trein heeft meerdere onderhoudspunten in één model en knoopnamen in een FBX zijn uniek: daar heten de
+        // onderdelen Repair_Bolt__Fan, Broken_Bits__Fan, ... (train_kit.py). Eerst de kale naam, dan die met achtervoegsel.
+        internal static Transform FindPart(Transform root, string name)
+        {
+            var exact = FindDeep(root, name);
+            return exact ? exact : FindPrefixed(root, name + "__");
+        }
+
+        static Transform FindPrefixed(Transform root, string prefix)
+        {
+            if (root.name.StartsWith(prefix, StringComparison.Ordinal)) return root;
+            foreach (Transform child in root)
+            {
+                var hit = FindPrefixed(child, prefix);
+                if (hit) return hit;
+            }
+            return null;
         }
 
         internal static Transform FindDeep(Transform root, string name)

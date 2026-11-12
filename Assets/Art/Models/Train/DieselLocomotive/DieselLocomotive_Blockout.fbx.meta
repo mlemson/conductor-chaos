@@ -1,0 +1,145 @@
+fileFormatVersion: 2
+guid: b108cfe9be41c47f3288c3ad7eed7bcd
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Body
+    second: {fileID: 2100000, guid: 2ae2e48370bf65e123cbed4e5e680981, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_BodyLow
+    second: {fileID: 2100000, guid: c8674bbca288cbdd04808fc4e5147eaf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Panel
+    second: {fileID: 2100000, guid: 917a2e73b10a6ea484a0842b1cd5fbac, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Cream
+    second: {fileID: 2100000, guid: 13602cc44695be7c8439751a7775c420, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Roof
+    second: {fileID: 2100000, guid: e70558cd674b76db5fc86449e3c6f3c6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Gold
+    second: {fileID: 2100000, guid: 83b1e2c6928970f93bcec3343cd8d3b8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Seat
+    second: {fileID: 2100000, guid: 110e86e6f6f267c2196269c2416c970b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Head
+    second: {fileID: 2100000, guid: 79967939dd80ee59d5686d9c26a970db, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Desk
+    second: {fileID: 2100000, guid: 82548b1141c7e58faaac381cb7208af0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Engine
+    second: {fileID: 2100000, guid: c35ac3c47a01e6b797f26fd8331f55e1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Trim
+    second: {fileID: 2100000, guid: 35cfe2deeef81ad07112f3b4046d295a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Wheel
+    second: {fileID: 2100000, guid: 4268a3a4e324e11760b0908f413bd599, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Metal
+    second: {fileID: 2100000, guid: 8d45c8896490b53fd6ca1c4bc2bc4523, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Interact
+    second: {fileID: 2100000, guid: f077474ddfd03f29b23fb0ecebffde3a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Inner
+    second: {fileID: 2100000, guid: 6ae30ec300843bd5d2f11b9794588c52, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Floor
+    second: {fileID: 2100000, guid: b4996e4b11e2728a2b1d87ada3495f6b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Smoke
+    second: {fileID: 2100000, guid: 7236b7ed0e09dae1cc24e9dcfd3ba259, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Steam
+    second: {fileID: 2100000, guid: a309bd3bffe90245d02198860254d64d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Glass
+    second: {fileID: 2100000, guid: 7ba6b7be83558b2e1f53de1bfb9a7c9b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_GlassShine
+    second: {fileID: 2100000, guid: ee92ac610d3fcbca22b4e52d22d4e5a6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_GlassDark
+    second: {fileID: 2100000, guid: 0051b4967448e44eec890fb7dbbaeb6e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Lamp
+    second: {fileID: 2100000, guid: 0216ebdefe3a5cc4325c6b6997fedba3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Diesel_Hot
+    second: {fileID: 2100000, guid: 637247176eb31a65d908276838530078, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
