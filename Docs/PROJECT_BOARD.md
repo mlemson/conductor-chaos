@@ -2,11 +2,11 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand. Brede epics tellen niet als uitvoertaak.
 
-**Voortgang: 3/104 afgerond (3%)**
+**Voortgang: 3/105 afgerond (3%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 69 | 32 | 0 | 0 | 3 |
+| 70 | 32 | 0 | 0 | 3 |
 
 ## 🗺️ Mijlpalen
 
@@ -14,7 +14,7 @@
 flowchart LR
     P0["P0 · Technisch fundament + stijltest · 3/26 klaar"]
     P1["P1 · Eerste speelbare co-opervaring · 0/67 klaar"]
-    P2["P2 · Bergavontuur en chaos · 0/11 klaar"]
+    P2["P2 · Bergavontuur en chaos · 0/12 klaar"]
     P0 --> P1 --> P2
 ```
 
@@ -22,7 +22,7 @@ flowchart LR
 | :-- | :-- | :-- |
 | **P0** | 🟩⬜⬜⬜⬜⬜⬜⬜⬜⬜ 3/26 | Technisch fundament + stijltest |
 | **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/67 | Eerste speelbare co-opervaring |
-| **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/11 | Bergavontuur en chaos |
+| **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/12 | Bergavontuur en chaos |
 
 ## 🧩 Overkoepelende onderwerpen (geen uitvoertaken)
 
@@ -44,7 +44,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 📋 Taken per status
 
-### 📝 Te doen (69)
+### 📝 Te doen (70)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -117,6 +117,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P2 | [#90 Koppeling kan breken bij hoge impact](https://github.com/mlemson/conductor-chaos/issues/90) | Physics | — | — |
 | P2 | [#92 Optionele mijlpaalcheck: sessie met vier en later zes spelers](https://github.com/mlemson/conductor-chaos/issues/92) | QA | — | — |
 | P2 | [#197 Subtiele zwevende stofdeeltjes in de speelwereld](https://github.com/mlemson/conductor-chaos/issues/197) | Overig | — | — |
+| P2 | [#219 Treinsets Diesel jaren '60, Modern Express en Futuristic Express (modellen, dakladder, onderhoudspunten)](https://github.com/mlemson/conductor-chaos/issues/219) | Overig | — | — |
 
 ### 🔧 Bezig (32)
 
@@ -173,7 +174,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 
 ## 🔗 Open pull requests zonder gekoppelde roadmap-taak
 
-- [#218 Prevent Unity TerrainData corruption from Git newline conversion](https://github.com/mlemson/conductor-chaos/pull/218) — verwijs in de PR-omschrijving naar `Refs #nummer` of `Closes #nummer`.
+Alle open PR's zijn gekoppeld of er zijn geen open PR's.
 
 ## 🤝 Samenwerken met mensen en agents
 
