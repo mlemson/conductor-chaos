@@ -200,6 +200,60 @@ def smooth(stations, count=18, tip=1.7):
     return [dict(x=float(xi), **{k: float(f[k](xi)) for k in keys}) for xi in x]
 
 
+def vshell(x0, levels, N=24, mat="Default", mat_fn=None, cap_top=True, cap_bottom=True):
+    """Ronde kop als open schaal voor een kopwand, opgebouwd uit horizontale ringen (halve superellips in het
+    grondvlak): levels = [{y, a (halve breedte), d (diepte naar voren), n (hoekigheid)}] van onder naar boven.
+    Omdat de ringen horizontaal liggen, vallen raamband, sierbanden en dakrand precies op de lijnen van het model.
+    mat_fn(i, j, jj, middelpunt): i = laag, j = segment (0 = overkant ... N-1 = perronkant), jj = afstand tot de zijkant."""
+    rings = []
+    for lv in levels:
+        e = 2.0 / lv.get("n", 3.5)
+        ring = []
+        for j in range(N + 1):
+            t = -math.pi / 2 + math.pi * j / N
+            sn, cs = math.sin(t), math.cos(t)
+            ring.append((x0 + lv["d"] * abs(cs) ** e, lv["y"], ZC + lv["a"] * math.copysign(abs(sn) ** e, sn)))
+        rings.append(ring)
+    nr = N + 1
+    V = [p for r in rings for p in r]
+    Vn = np.array(V, float)
+    F, M = [], []
+    for i in range(len(rings) - 1):
+        for j in range(N):
+            q = [i * nr + j, (i + 1) * nr + j, (i + 1) * nr + j + 1, i * nr + j + 1]
+            P = Vn[q]
+            nrm = np.cross(P[2] - P[0], P[3] - P[1])
+            c = P.mean(0)
+            if np.linalg.norm(nrm) < 1e-10:
+                continue
+            if np.dot(nrm, c - np.array((x0 - 0.3, c[1], ZC))) < 0:
+                q = q[::-1]
+            F.append(tuple(q))
+            M.append(mat_fn(i, j, min(j, N - 1 - j), c) if mat_fn else mat)
+    for (flag, i, sy) in ((cap_bottom, 0, -1.0), (cap_top, len(rings) - 1, 1.0)):
+        if not flag:
+            continue
+        V.append((x0, levels[i]["y"], ZC))
+        k = len(V) - 1
+        for j in range(N):
+            t = [k, i * nr + j, i * nr + j + 1]
+            P = np.array([V[a] for a in t], float)
+            if np.cross(P[1] - P[0], P[2] - P[0])[1] * sy < 0:
+                t = t[::-1]
+            F.append(tuple(t))
+            M.append(mat_fn(max(i - 1, 0), j, min(j, N - 1 - j), P.mean(0)) if mat_fn else mat)
+    m = mk.Mesh(np.array(V, float), F, M)
+    m.sharp = True
+    return m
+
+
+def shell_point(x0, lv, u):
+    """Punt op een ring van `vshell` op afstand u uit het midden (om er een lamp op te zetten)."""
+    e = lv.get("n", 3.5)
+    c = max(0.0, 1.0 - (abs(u) / lv["a"]) ** e) ** (1.0 / e)
+    return (x0 + lv["d"] * c, lv["y"], ZC + u)
+
+
 def _samples(x0, x1, r0, r1, step, extra=()):
     out = {x0, x1}
     ns = 6
@@ -413,7 +467,7 @@ class Car:
 
 
     # ------------------------------------------------------------- zijdeuren
-    def side_door(self, x0, x1, far=False, leaf="Door", frame_mat="Interact", panel=None, mark=None):
+    def side_door(self, x0, x1, far=False, leaf="Door", frame_mat="Interact", panel=None, mark=None, single=False):
         """Dubbele schuifdeur (dicht) in een zijwand: kader uit één stuk, twee bladen met ruit en gele grepen, opstap.
         Knopen: SideDoorFrame, SideDoorLeaf_L/R, SideDoorSill (+ _Far aan de overkant). De bladen schuiven open langs
         lokale X (elk een halve deurbreedte van elkaar af); pivot = midden-onder van het blad, zoals DoorLeaf_L/R van
@@ -427,9 +481,11 @@ class Car:
         it, tr = self.m("Interact"), self.m("Trim")
         self.add("SideDoorFrame" + sfx, side(frame(x0, x1, Y0 + 0.08, top, 0.08, -0.01, 0.05, 0.022, self.m(frame_mat),
                                                     open_bottom=True)))
-        half = (x1 - x0) / 2
+        half = (x1 - x0) if single else (x1 - x0) / 2
         leaf_h = top - SILL_Y + 0.08
-        for nm, cx, sgn in (("SideDoorLeaf_L" + sfx, x0 + half / 2, -1), ("SideDoorLeaf_R" + sfx, x1 - half / 2, 1)):
+        leaves = ((("SideDoorLeaf" + sfx, (x0 + x1) / 2, -1),) if single else
+                  (("SideDoorLeaf_L" + sfx, x0 + half / 2, -1), ("SideDoorLeaf_R" + sfx, x1 - half / 2, 1)))
+        for nm, cx, sgn in leaves:
             hw = half / 2 - 0.008
             parts = [mk.through_box((-hw, hw, 0.0, leaf_h, -0.03, 0.03), [(-hw + 0.11, hw - 0.11, 0.80, 1.46)], 0.022,
                                     step=0.3, mat=self.m(leaf)),

@@ -17,10 +17,12 @@ SETS = {
                   ("ModernCoach_Blockout", -4.16, ["Aircon", "AxleBox", "BrakeHose"])],
     "FuturisticSet": [("FuturisticCabCar_Blockout", 3.6, ["Pantograph", "PowerCell", "AxleBox", "BrakeHose"]),
                       ("FuturisticCoach_Blockout", -4.16, ["Cooler", "AxleBox", "BrakeHose"])],
+    "FreightSet": [("TankWagon_Blockout", 4.0, ["Valve", "AxleBox", "BrakeHose"]),
+                   ("CargoWagon_Blockout", -4.16, ["DoorLatch", "AxleBox", "BrakeHose"])],
 }
 
 
-HATCH_X = {"DieselSet": 1.7, "ModernSet": 4.76, "FuturisticSet": 4.76}      # x van het dakluik in de scène
+HATCH_X = {"DieselSet": 1.7, "ModernSet": 4.76, "FuturisticSet": 4.76, "FreightSet": 4.0}      # x van het dakluik in de scène
 
 
 def items(name, broken=False, env=True, only=None):

@@ -38,6 +38,14 @@ SHEETS = {
                 "Gewelfd dak met vlak loopdek op 2,50 m, zonder hekjes"],
         repair=["Pantograph · stroomafnemer", "PowerCell · lichtgevende energiecel", "AxleBox · warmgelopen aspot",
                 "BrakeHose · remslang tussen de rijtuigen", "Cooler · dakventilator tussenrijtuig"]),
+    "FreightSet": dict(
+        title="Goederenwagens · ketelwagon + moderne goederenwagon", file="TrainSet_Freight_DesignSheet.png",
+        sub="TankWagon_Blockout + CargoWagon_Blockout · koppelbaar achter elke set",
+        access=["Ketelwagon: gele ladder aan beide kanten naar de loopbrug bovenop",
+                "Goederenwagon: gele ladder op de perronkant, over de dakschouder",
+                "Goederenwagon binnen doorloopbaar langs de kratten"],
+        repair=["Valve · lekkende afsluiter met geel handwiel", "DoorLatch · grendelkast goederenwagon",
+                "AxleBox · warmgelopen aspot (beide wagens)", "BrakeHose · remslang (beide wagens)"]),
 }
 
 
@@ -103,7 +111,7 @@ def build(key, S):
     row = 1200
     paste(sheet, d, shot(key + "_side", (1900, 400), sky=False), 60, row, "Zijaanzicht (perronkant)")
     paste(sheet, d, shot(key + "_top", (1900, 380), sky=False), 60, row + 430, "Bovenaanzicht · loopdek")
-    paste(sheet, d, shot(key + "_hatch", (470, 400), sky=False), 1980, row + 215, "Dakluik + ladder")
+    paste(sheet, d, shot(key + "_hatch", (470, 400), sky=False), 1980, row + 215, "Dak van dichtbij")
     paste(sheet, d, shot(key + "_ladder", (470, 400), sky=False), 2470, row + 215, "Dakladder rijtuig")
     paste(sheet, d, shot(key + "_broken", (960, 395)), 1980, row + 635, "Alles kapot (Broken_Bits)")
     paste(sheet, d, shot(key + "_roof", (930, 190)), 60, row + 840, "Dak, 3/4 achter")

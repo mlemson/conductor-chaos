@@ -1,9 +1,9 @@
 {
   "model": "DieselLocomotive_Blockout",
   "stats": {
-    "parts": 36,
-    "tris": 39300,
-    "verts": 20926,
+    "parts": 42,
+    "tris": 44876,
+    "verts": 24053,
     "materials": 23
   },
   "repairPoints": [

@@ -1,0 +1,417 @@
+{
+  "model": "CargoWagon_Blockout",
+  "stats": {
+    "parts": 26,
+    "tris": 28696,
+    "verts": 14980,
+    "materials": 22
+  },
+  "repairPoints": [
+    "DoorLatch",
+    "AxleBox",
+    "BrakeHose"
+  ],
+  "materials": {
+    "M_Freight_Body": {
+      "base": "#545E90",
+      "ramp": [
+        "#333A62",
+        "#3A4270",
+        "#545E90",
+        "#5D689A",
+        "#6F76A2"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.4,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_BodyLow": {
+      "base": "#333A62",
+      "ramp": [
+        "#333A62",
+        "#3A4270",
+        "#545E90",
+        "#5D689A",
+        "#6F76A2"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.2,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Panel": {
+      "base": "#5D689A",
+      "ramp": [
+        "#333A62",
+        "#3A4270",
+        "#545E90",
+        "#5D689A",
+        "#6F76A2"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.4,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Roof": {
+      "base": "#958E9C",
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.5,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Tank": {
+      "base": "#395251",
+      "ramp": [
+        "#2B3B37",
+        "#395251",
+        "#3D5655",
+        "#466162",
+        "#5B7A7A"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.35,
+      "opts": {
+        "paint": 1.6,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_TankLow": {
+      "base": "#2B3B37",
+      "ramp": [
+        "#2B3B37",
+        "#395251",
+        "#3D5655",
+        "#466162",
+        "#5B7A7A"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.3,
+      "opts": {
+        "paint": 1.3,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Yellow": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.2,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Crate": {
+      "base": "#DE913F",
+      "ramp": [
+        "#684029",
+        "#C9813B",
+        "#DE913F",
+        "#F5AC4A",
+        "#F9B44F"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.15,
+      "opts": {
+        "paint": 1.4,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Deck": {
+      "base": "#7B7582",
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "paint": 1.2,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Trim": {
+      "base": "#482826",
+      "ramp": [
+        "#3B2524",
+        "#482826",
+        "#4B1F18",
+        "#634330",
+        "#7A5A48"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.2,
+      "opts": {
+        "paint": 1.2,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Wheel": {
+      "base": "#33303B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "paint": 0.8,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Metal": {
+      "base": "#8E8796",
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.35,
+      "opts": {
+        "paint": 1.0,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Interact": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Inner": {
+      "base": "#723F29",
+      "ramp": [
+        "#462A21",
+        "#553022",
+        "#593323",
+        "#723F29",
+        "#A66739"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.15,
+      "opts": {
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Floor": {
+      "base": "#814C32",
+      "ramp": [
+        "#6C422A",
+        "#814C32",
+        "#8D543A",
+        "#A56945",
+        "#E59843"
+      ],
+      "rampShift": -0.12,
+      "smoothness": 0.15,
+      "opts": {
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Smoke": {
+      "base": "#684E6B",
+      "ramp": [
+        "#6B4269",
+        "#684E6B",
+        "#A7689C",
+        "#B297B8",
+        "#D2BCD0"
+      ],
+      "rampShift": -0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "grime": 0.0,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Steam": {
+      "base": "#E7E1EA",
+      "ramp": [
+        "#C2CAEA",
+        "#C7D0F0",
+        "#DFDDEE",
+        "#E7E1EA",
+        "#FDF2EB"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "grime": 0.0,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Glass": {
+      "base": "#85A4EC",
+      "ramp": [
+        "#6E83BA",
+        "#7D99D5",
+        "#85A4EC",
+        "#92BAF8",
+        "#98C4FC"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.85,
+      "opts": {
+        "flat": 0.6,
+        "rim": 0.35,
+        "opacity": 0.22,
+        "cells": 0.0,
+        "grime": 0.0,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_GlassShine": {
+      "base": "#85A4EC",
+      "ramp": [
+        "#6E83BA",
+        "#7D99D5",
+        "#85A4EC",
+        "#92BAF8",
+        "#98C4FC"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.7,
+      "opts": {
+        "flat": 0.85,
+        "rim": 0,
+        "opacity": 0.55,
+        "cells": 0.0,
+        "grime": 0.0,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_GlassDark": {
+      "base": "#302629",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.8,
+      "opts": {
+        "flat": 0.6,
+        "rim": 0.3,
+        "opacity": 0.78,
+        "cells": 0.0,
+        "grime": 0.0,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Lamp": {
+      "base": "#FEECA1",
+      "ramp": [
+        "#F9DA7C",
+        "#FDE080",
+        "#FEECA1",
+        "#FEF2B0",
+        "#FFF8DA"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.5,
+      "opts": {
+        "emissive": 0.85,
+        "rim": 0.0,
+        "paint": 0,
+        "grime": 1.0,
+        "cells": 0.55,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Hot": {
+      "base": "#E06A48",
+      "ramp": [
+        "#9E3A22",
+        "#B8432A",
+        "#CD4C2C",
+        "#E06A48",
+        "#E79E80"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.4,
+      "opts": {
+        "emissive": 0.9,
+        "rim": 0.0,
+        "paint": 0,
+        "cells": 0.0,
+        "grime": 0.0,
+        "cellSize": 0.8
+      }
+    }
+  }
+}

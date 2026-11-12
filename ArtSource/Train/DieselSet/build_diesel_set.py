@@ -2,8 +2,9 @@
 
 Twee voertuigen in dezelfde maatvoering als de regionale wagon (zie train_kit.py):
 
-DieselLocomotive_Blockout — bordeauxrode diesel met ronde 'bulldog'-neus uit één vloeiende romp, crème V op de neus
-  die doorloopt als schouderlijn, twee voorruiten in een ronde kap, roosters in de flank, grijs gewelfd dak.
+DieselLocomotive_Blockout — rode diesel met een rechte ronde kop naar de Nederlandse dieseltreinstellen uit de jaren
+  '50/'60: raamband rondom, crème vleugels met de koplampen erin, twee lampjes boven de ruiten, zwarte schort, grijs
+  rond dak; roosters in de flank en een cabinedeur aan beide kanten (`SideDoorLeaf[_Far]`, dicht).
   Binnen doorloopbaar: van de kopse doorgang achter langs het motorblok naar de cabine voorin (lessenaar `CabDesk`,
   gashendel `ThrottleLever`). Dakopgang: gele ladder in de machinekamer naar dakluik `RoofHatch_Engine`.
   Onderhoudspunten: `RepairPoint_Fan` (dakventilator), `RepairPoint_EngineHatch` (motorluik perronkant),
@@ -39,15 +40,20 @@ COLORS = {
     "Engine": ("metal", 0, 0.30, -0.05),
 }
 
-# hoge, stompe bulldog-neus (sleuteldoorsneden; train_kit.smooth maakt er een vloeiend verloop van)
-HOOD = [dict(x=-0.05, a=1.31, yb=-0.28, yt=1.30, n=5.0), dict(x=0.40, a=1.31, yb=-0.28, yt=1.30, n=5.0),
-        dict(x=0.80, a=1.27, yb=-0.28, yt=1.28, n=4.5), dict(x=1.05, a=1.14, yb=-0.26, yt=1.22, n=4.0),
-        dict(x=1.22, a=0.90, yb=-0.18, yt=1.10, n=3.4), dict(x=1.32, a=0.55, yb=-0.02, yt=0.92, n=2.8),
-        dict(x=1.36, a=0.12, yb=0.30, yt=0.66, n=2.2)]
-# cabinekap: vrij rechte voorruit onder een ronde dakrand
-DOME = [dict(x=-0.03, a=1.33, yb=1.22, yt=2.52, n=4.5), dict(x=0.12, a=1.32, yb=1.22, yt=2.50, n=4.5),
-        dict(x=0.30, a=1.27, yb=1.22, yt=2.36, n=4.0), dict(x=0.46, a=1.18, yb=1.22, yt=1.98, n=3.6),
-        dict(x=0.58, a=1.06, yb=1.22, yt=1.60, n=3.2), dict(x=0.66, a=0.92, yb=1.22, yt=1.34, n=3.0)]
+def front_levels():
+    """Ronde kop naar de Nederlandse dieseltreinstellen uit de jaren '50/'60: rechte flanken, raamband rondom,
+    dak dat rond naar voren afloopt. Lagen van schort tot dak; a = halve breedte, d = diepte naar voren."""
+    out = []
+    for y in (-0.30, -0.14, 0.02, 0.16, 0.30, 0.44, 0.58, 0.68, 0.78, 0.88, 0.98, 1.12, 1.27, 1.93, 2.04, 2.10):
+        d = 0.80 + 0.10 * min(1.0, (y + 0.30) / 0.5) if y < 1.2 else 0.90 - 0.12 * (y - 1.2) / 0.9
+        out.append(dict(y=y, a=1.27 + 0.04 * min(1.0, (y + 0.30) / 0.32), d=d, n=3.6))
+    for k in range(1, 8):                       # dak: zelfde welving als vault_roof, 1,2 cm erbuiten
+        t = k / 7.0
+        y = tk.ROOF_BASE + (ROOF_TOP - tk.ROOF_BASE) * math.sin(t * math.pi / 2)
+        c = math.cos(t * math.pi / 2)
+        out.append(dict(y=y + 0.012, a=tk.ROOF_FLAT + (tk.ROOF_A - tk.ROOF_FLAT) * c + 0.012, d=0.24 + 0.54 * c, n=3.6 - 1.0 * t))
+    out[15]["a"] = tk.ROOF_A + 0.012
+    return out
 
 
 def grille(c, x0, x1, y0, y1, slats=5):
@@ -67,60 +73,84 @@ def build_locomotive():
     L = c.L
     ladder_x = -1.90
     hole = c.ladder_hole(ladder_x)
-    shield = (1, 1.36, 2.04, ZC - 1.05, ZC + 1.05)
-    c.body(win_near=[(-2.95, -2.15), (1.95, 2.85)], win_far=[(-3.00, -2.52), (-1.20, -0.40), (1.95, 2.85)],
-           win_y=(1.02, 1.70), ends=(-1,), end_holes=[shield], roof_holes=[hole])
+    door = (1.20, 1.90)                                   # cabinedeur aan beide kanten, vlak achter de kop
+    shield = (1, 1.26, 1.94, ZC - 1.05, ZC + 1.05)
+    c.body(win_near=[(-2.95, -2.15), (2.30, 2.90)], win_far=[(-3.00, -2.52), (-1.20, -0.40), (2.30, 2.90)],
+           win_y=(1.02, 1.70), doors_near=[door], doors_far=[door], ends=(-1,), end_holes=[shield], roof_holes=[hole])
     c.windows()
-    c.bands("Livery", [(-L / 2 + 0.12, L / 2 - 0.12, 0.80, 0.94, "Cream", 0.030),
-                       (-L / 2 + 0.12, L / 2 - 0.12, 0.715, 0.765, "Gold", 0.036),
-                       (-L / 2 + 0.12, L / 2 - 0.12, 1.91, 1.99, "BodyLow", 0.030),
-                       (-3.00, -1.45, 0.22, 0.64, "Panel", 0.028), (0.35, 1.60, 0.22, 0.64, "Panel", 0.028),
-                       (1.80, 3.00, 0.22, 0.64, "Panel", 0.028)])
-    g = mk.merge(grille(c, -1.80, -0.70, 1.08, 1.66), grille(c, -0.40, 0.70, 1.08, 1.66), grille(c, 0.95, 1.65, 1.08, 1.66))
-    c.add("Grilles", mk.merge(g, mirror_far(grille(c, 0.10, 1.50, 1.08, 1.66))))
+    for far in (False, True):
+        c.side_door(door[0], door[1], far=far, leaf="Body", frame_mat="Cream", panel="Panel", single=True)
+    xe = L / 2 - 0.26                                     # banden stoppen waar de kop begint
+    cut = [(door[0] - 0.28, door[1] + 0.28)]
+    specs = []
+    for (y0, y1, mat, depth) in ((0.80, 0.94, "Cream", 0.030), (0.715, 0.765, "Gold", 0.036), (1.91, 1.99, "BodyLow", 0.030)):
+        specs += [(a_, b_, y0, y1, mat, depth) for (a_, b_) in tk.segs(-L / 2 + 0.12, xe, cut)]
+    specs += [(-3.00, -1.45, 0.22, 0.64, "Panel", 0.028), (-0.15, 0.85, 0.22, 0.64, "Panel", 0.028)]
+    c.bands("Livery", specs)
+    g = mk.merge(grille(c, -1.80, -0.70, 1.08, 1.66), grille(c, -0.40, 0.70, 1.08, 1.66))
+    c.add("Grilles", mk.merge(g, mirror_far(grille(c, -0.25, 0.85, 1.08, 1.66))))
 
-    # neus: ronde bulldog-romp met crème V (loopt door in de schouderlijn), ronde kap met twee voorruiten
-    # crème vleugels: een band die bij de kopwand op de schouderlijn (0,80-0,94) ligt en langs de romp naar de neuspunt loopt
-    bands = c.ring_bands(HOOD, [(-0.06, "BodyLow"), (0.78, "Body"), (0.99, "Cream")], "Body")
+    # kop: zwarte schort, rode romp, crème vleugels met de koplampen erin, raamband rondom, grijs rond dak
+    lv = front_levels()
+    x0 = L / 2 - 0.22
+    N = 24
 
-    def hood_mat(i, j, p):
-        return bands[j]
-    dome_mat = c.dome_mat(pillar=True)
-    tip = L / 2 + 1.36
-    extra = []
-    for dz in (-0.60, 0.60):
-        lx = c.surface_x(HOOD, 0.24, dz)
-        house = mk.cylinder(0.17, 0.30, 10, 0.03, mat=c.m("Trim"), axis="x")
-        lens = mk.cylinder(0.125, 0.10, 10, 0.015, mat=c.m("Lamp"), axis="x").transform(t=(0.12, 0, 0))
+    def front_mat(i, j, jj, p):
+        y = (lv[i]["y"] + lv[i + 1]["y"]) / 2
+        if i >= 15:
+            return c.m("Roof")
+        if i == 14:
+            return c.m("Cream")                           # crème lijn onder het dak
+        if i == 12:
+            return c.m("Body") if jj in (0, 4, 8) else c.m("GlassDark")     # raamband met stijlen
+        if y < 0.0:
+            return c.m("Trim")
+        lo = 0.58 if jj >= 3 else (0.68 if jj == 2 else 9.9)        # vleugels lopen smal uit naar de zijkant
+        hi = 0.98 if jj >= 3 else 0.88
+        return c.m("Cream") if lo < y < hi else c.m("Body")
+    extra = [tk.vshell(x0, lv, N=N, mat_fn=front_mat)]
+    for dz in (-0.74, 0.74):                              # koplampen in de vleugels
+        px, py, pz = tk.shell_point(x0, dict(lv[8], y=0.78), dz)
+        house = mk.cylinder(0.17, 0.20, 12, 0.03, mat=c.m("Trim"), axis="x")
+        lens = mk.cylinder(0.125, 0.10, 12, 0.015, mat=c.m("Lamp"), axis="x").transform(t=(0.07, 0, 0))
         house.sharp = lens.sharp = True
-        extra.append(mk.merge(house, lens).transform(t=(L / 2 + lx - 0.10, 0.24, ZC + dz)))
-    badge = mk.cylinder(0.11, 0.08, 8, 0.02, mat=c.m("Gold"), axis="x")
-    badge.sharp = True
-    extra.append(badge.transform(t=(tip - 0.02, 0.50, ZC)))
-    top_lamp = mk.cylinder(0.12, 0.16, 10, 0.02, mat=c.m("Trim"), axis="x")
-    top_lens = mk.cylinder(0.085, 0.08, 10, 0.012, mat=c.m("Lamp"), axis="x").transform(t=(0.05, 0, 0))
-    top_lamp.sharp = top_lens.sharp = True
-    extra.append(mk.merge(top_lamp, top_lens).transform(t=(L / 2 + 0.30, 2.40, ZC)))
-    c.add("Nose", mk.merge(c.hood(HOOD, hood_mat), c.dome(DOME, dome_mat), *extra))
+        extra.append(mk.merge(house, lens).transform(t=(px - 0.05, py, pz)))
+    for dz in (-0.50, 0.50):                              # twee kleine lampjes boven de ruiten
+        px, py, pz = tk.shell_point(x0, dict(lv[13], y=2.02), dz)
+        ring = mk.cylinder(0.085, 0.10, 10, 0.02, mat=c.m("Cream"), axis="x")
+        lens = mk.cylinder(0.055, 0.06, 10, 0.01, mat=c.m("Lamp"), axis="x").transform(t=(0.03, 0, 0))
+        ring.sharp = lens.sharp = True
+        extra.append(mk.merge(ring, lens).transform(t=(px - 0.03, py, pz)))
+    for k in range(3):                                    # snelheidsstrepen in de vleugels
+        for sg in (-1, 1):
+            px, py, pz = tk.shell_point(x0, dict(lv[8], y=0.70 + 0.09 * k), sg * 1.10)
+            extra.append(box(px - 0.02, px + 0.03, py - 0.014, py + 0.014, pz - 0.14, pz + 0.14, 0.006, c.m("Body")))
+    # de V tussen de vleugels: één crème plaat met schuine randen, 1,5 cm voor de kop
+    vee = mk.prism([(-0.56, 0.60), (0.0, 0.08), (0.56, 0.60)], -0.05, 0.015, 0.004, mat=c.m("Cream"))
+    extra.append(tk.to_end(vee, 1, x0 + 0.90).transform(t=(0, 0, ZC)))
+    shelf = box(L / 2 - 0.02, L / 2 + 0.50, 0.96, 1.20, ZC - 1.14, ZC + 1.14, 0.08, c.m("Desk"), div=2)
+    buffer_ = box(L / 2 + 0.50, L / 2 + 0.80, -0.20, 0.06, ZC - 0.22, ZC + 0.22, 0.05, c.m("Panel"), div=2)
+    c.add("Nose", mk.merge(*extra, shelf, buffer_))
+    tip = x0 + 0.90
 
     # dak: gewelfd loopdek met luik, dakventilator (onderhoudspunt), uitlaat en een ronde dakkast
     fan_house = c.fan("Fan", 1.05, ZC)
     stack = mk.lathe([(0.0, 0.0), (0.20, 0.0), (0.20, 0.10), (0.15, 0.16), (0.15, 0.36), (0.19, 0.42), (0.0, 0.42)],
-                     10, mat=c.m("Trim"), phase=math.pi / 10).transform(t=(2.30, ROOF_TOP - 0.02, ZC))
+                     10, mat=c.m("Trim"), phase=math.pi / 10).transform(t=(2.20, ROOF_TOP - 0.02, ZC))
     vent = box(-0.75, 0.15, ROOF_TOP - 0.04, ROOF_TOP + 0.16, ZC - 0.48, ZC + 0.48, 0.09, c.m("Trim"), div=3)
     c.add("Roof", mk.merge(c.roof([hole], front_open=True), fan_house, stack, vent, c.hatch("Engine", *hole)))
 
     # interieur: vloer, dakladder, motorblok langs de overkant, cabine met lessenaar en stoel
-    eng = [box(-0.30, 1.30, FLOOR + 0.02, 1.30, -W + WALL + 0.02, -1.50, 0.10, c.m("Engine"), div=2)]
-    for xx in (-0.02, 0.38, 0.78):
+    eng = [box(-0.60, 0.90, FLOOR + 0.02, 1.30, -W + WALL + 0.02, -1.50, 0.10, c.m("Engine"), div=2)]
+    for xx in (-0.36, 0.04, 0.44):
         eng.append(box(xx, xx + 0.26, 1.28, 1.52, -W + WALL + 0.14, -1.62, 0.06, c.m("BodyLow"), div=2))
     fly = mk.cylinder(0.34, 0.14, 10, 0.03, mat=c.m("Metal"), axis="x")
     fly.sharp = True
-    eng.append(fly.transform(t=(-0.36, 0.72, -2.00)))
-    eng += [tk.tube((1.26, 0.50, -1.80), (1.60, 0.50, -1.80), 0.04, c.m("Interact")),
-            tk.tube((1.60, 0.44, -1.80), (1.60, 1.90, -1.80), 0.055, c.m("Interact"))]
-    c.add("Interior", mk.merge(c.floor(), c.roof_ladder(ladder_x), *eng, c.cab_seat(2.40)))
-    c.desk(L / 2 - WALL - 0.02, 1.16)
+    eng.append(fly.transform(t=(-0.66, 0.72, -2.00)))
+    eng += [tk.tube((0.86, 0.50, -1.80), (1.02, 0.50, -1.80), 0.04, c.m("Interact")),
+            tk.tube((1.02, 0.44, -1.80), (1.02, 1.90, -1.80), 0.055, c.m("Interact"))]
+    c.add("Interior", mk.merge(c.floor(), c.roof_ladder(ladder_x), *eng, c.cab_seat(2.50)))
+    c.desk(L / 2 - WALL - 0.02, 1.10)
 
     c.add("EngineBay", c.side_panel("EngineHatch", -0.90, 0.44, w=0.78, h=0.40, mat="Panel"))
     c.underframe((-2.0, 2.0), x1=L / 2 + 0.10)

@@ -1,0 +1,140 @@
+fileFormatVersion: 2
+guid: 273216c8415a1d4cf086a0c8f9b24aa4
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Body
+    second: {fileID: 2100000, guid: 831353554cee72fed2f48a81ca9cdedc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_BodyLow
+    second: {fileID: 2100000, guid: 23978f38243bef0858af683036934386, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Panel
+    second: {fileID: 2100000, guid: 76ebd4b504684198e82ac834ee691116, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Roof
+    second: {fileID: 2100000, guid: 0bfdda39a2779d1868b073d70499ab37, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Tank
+    second: {fileID: 2100000, guid: cf7c8ab046f948b625d85eebf881ee47, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_TankLow
+    second: {fileID: 2100000, guid: 8e7bd28e3290208b35ee7d5c74b3242d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Yellow
+    second: {fileID: 2100000, guid: 79edff44ff2f19e57e2dd24b1d67ba3a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Crate
+    second: {fileID: 2100000, guid: 6ffff2412e6d5ced96e5a23a8bef97e4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Deck
+    second: {fileID: 2100000, guid: 0740753bdc744b29c34b1d15b95f2086, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Trim
+    second: {fileID: 2100000, guid: d7ec86b7b391d83e359d7d0b1428c923, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Wheel
+    second: {fileID: 2100000, guid: 8e68d07cf7ab903356da0a78bc21a982, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Metal
+    second: {fileID: 2100000, guid: 8ddcc75d8d2034c9ee7dbe7063004e25, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Interact
+    second: {fileID: 2100000, guid: b3b22990a07f7436478893cc6292acf1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Inner
+    second: {fileID: 2100000, guid: a67cc3772b52f402c42b5585cc42bdc9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Floor
+    second: {fileID: 2100000, guid: 70f392639c141c8483e7165ed0e6d36d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Smoke
+    second: {fileID: 2100000, guid: 85507d07f77482079e3910c75b07a710, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Steam
+    second: {fileID: 2100000, guid: 222a92e1cc0fb761ab22a4a1d0d47f46, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Glass
+    second: {fileID: 2100000, guid: f23e15469870a228d55184a34ca4b06f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_GlassShine
+    second: {fileID: 2100000, guid: a13e743c436e689194a8603df81d27b0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_GlassDark
+    second: {fileID: 2100000, guid: 4ad15a15e4e76455ddbd3efc2ca100ce, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Lamp
+    second: {fileID: 2100000, guid: 9c67b2405ac3309f6aef89db046dcb2d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Hot
+    second: {fileID: 2100000, guid: 633e2a8aa026839fbc00e905b85fd1bc, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

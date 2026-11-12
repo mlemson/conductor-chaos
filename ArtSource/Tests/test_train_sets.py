@@ -21,6 +21,8 @@ MODELS = {
     "ModernCoach_Blockout": (["Aircon", "AxleBox", "BrakeHose"], None, "RoofLadder"),
     "FuturisticCabCar_Blockout": (["Pantograph", "PowerCell", "AxleBox", "BrakeHose"], "RoofHatch_Cab", None),
     "FuturisticCoach_Blockout": (["Cooler", "AxleBox", "BrakeHose"], None, "RoofLadder"),
+    "TankWagon_Blockout": (["Valve", "AxleBox", "BrakeHose"], None, "RoofLadder"),
+    "CargoWagon_Blockout": (["DoorLatch", "AxleBox", "BrakeHose"], None, "RoofLadder"),
 }
 
 

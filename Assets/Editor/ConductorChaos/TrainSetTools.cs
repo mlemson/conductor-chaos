@@ -26,7 +26,7 @@ namespace ConductorChaos.EditorTools
         // voertuig -> (map, halve baklengte voor, halve baklengte achter) in modelruimte (+X = voorkant)
         static readonly (string name, string folder, float front, float rear)[] Diesel =
         {
-            ("DieselLocomotive_Blockout", "DieselLocomotive", 4.56f, 3.2f), ("DieselCoach_Blockout", "DieselCoach", 3.6f, 3.6f),
+            ("DieselLocomotive_Blockout", "DieselLocomotive", 3.88f, 3.2f), ("DieselCoach_Blockout", "DieselCoach", 3.6f, 3.6f),
         };
         static readonly (string name, string folder, float front, float rear)[] Modern =
         {
@@ -37,8 +37,13 @@ namespace ConductorChaos.EditorTools
             ("FuturisticCabCar_Blockout", "FuturisticCabCar", 5.62f, 3.2f), ("FuturisticCoach_Blockout", "FuturisticCoach", 3.6f, 3.6f),
         };
 
+        static readonly (string name, string folder, float front, float rear)[] Freight =
+        {
+            ("TankWagon_Blockout", "TankWagon", 3.6f, 3.6f), ("CargoWagon_Blockout", "CargoWagon", 3.6f, 3.6f),
+        };
+
         /// <summary>Alle voertuigen van de nieuwe sets (voor Configure Train: koppelbaar als wagon).</summary>
-        public static IEnumerable<string> Vehicles => Diesel.Concat(Modern).Concat(Futuristic).Select(v => v.name);
+        public static IEnumerable<string> Vehicles => Diesel.Concat(Modern).Concat(Futuristic).Concat(Freight).Select(v => v.name);
 
         [MenuItem("Tools/Conductor Chaos/Train Sets/Place Diesel '60 Set")]
         static void PlaceDiesel() => Place("Diesel '60", Diesel);
@@ -48,6 +53,9 @@ namespace ConductorChaos.EditorTools
 
         [MenuItem("Tools/Conductor Chaos/Train Sets/Place Futuristic Express Set")]
         static void PlaceFuturistic() => Place("Futuristic Express", Futuristic);
+
+        [MenuItem("Tools/Conductor Chaos/Train Sets/Place Freight Wagons (tank + cargo)")]
+        static void PlaceFreight() => Place("Freight wagons", Freight);
 
         [MenuItem("Tools/Conductor Chaos/Train Sets/Prepare Selected Vehicles")]
         static void PrepareSelected()
