@@ -22,6 +22,9 @@ namespace ConductorChaos.Playground
         private readonly NetworkVariable<float> displayedSpeed = new(0f);
         private readonly NetworkVariable<float> doorAngle = new(0f);
         private readonly NetworkVariable<Vector4> wagonDoorOffsets = new(Vector4.zero);
+        private NetworkList<byte> endDoorsOpen;
+        private readonly List<EndDoor> endDoors = new();
+        private const float EndDoorTravel = 0.46f;
         private const float FuelCapacity = 3f;
         private const float StartingFuel = FuelCapacity * 0.5f;
         private readonly NetworkVariable<float> fuel = new(StartingFuel);
@@ -120,6 +123,24 @@ namespace ConductorChaos.Playground
             public float Inward = -1f;
         }
 
+        private sealed class EndDoor
+        {
+            public Rigidbody Vehicle;
+            public Transform Left, Right;
+            public Vector3 LeftRest, RightRest;
+            public Vector3 Center, Slide;
+            public bool Automatic;
+            public float Opening, HoldUntil;
+            public float NextManualPush;
+
+            public void Apply(float opening)
+            {
+                Opening = opening;
+                Left.localPosition = LeftRest + Slide * opening;
+                Right.localPosition = RightRest - Slide * opening;
+            }
+        }
+
         // Positie/rotatie relatief aan het voertuig waar de kolen bij horen (coalSource), niet in wereldruimte.
         private struct CoalPose : INetworkSerializable, System.IEquatable<CoalPose>
         {
@@ -149,6 +170,7 @@ namespace ConductorChaos.Playground
         private void Awake()
         {
             coalPoses = new NetworkList<CoalPose>();
+            endDoorsOpen = new NetworkList<byte>();
         }
         internal static bool IsCoalBody(Rigidbody target) => target && GrippableCoal.ContainsKey(target);
 
@@ -464,6 +486,7 @@ namespace ConductorChaos.Playground
             foreach (var wagon in availableWagons)
                 if (wagon && wagon != body) couplers[wagon] = GetCouplers(wagon.transform);
             PrepareWagonDoors();
+            PrepareEndDoors();
             if (!IsServer) return;
             invalidConsist = false;
             awaitingConsist = startWithCoupledWagons && availableWagons.Length > 0;
@@ -518,6 +541,7 @@ namespace ConductorChaos.Playground
             }
             if (!IsServer && fireboxDoor && fireboxLatch) ApplyDoorAngle();
             if (IsSpawned && !IsServer) ApplyWagonDoors();
+            if (!IsServer) ApplyEndDoors(Time.deltaTime);
             if (IsSpawned && canStoke) PresentStoking();
             if (steamEffects) steamEffects.Present(powered.Value, displayedSpeed.Value / Mathf.Max(maximumSpeed, 0.01f));
         }
@@ -528,6 +552,7 @@ namespace ConductorChaos.Playground
             UpdateCabControls();
             guidedMotion.Clear();
             MoveTrain();
+            UpdateEndDoors();
             UpdateCoal();
         }
 
@@ -1100,6 +1125,110 @@ namespace ConductorChaos.Playground
                     else MoveGuidedBody(wagon, position, rotation);
                 }
                 offset += RearExtent(wagon);
+            }
+        }
+
+        private void PrepareEndDoors()
+        {
+            if (IsServer) endDoorsOpen.Clear();
+            PrepareVehicleEndDoors(body);
+            foreach (var wagon in availableWagons)
+                if (wagon && wagon != body) PrepareVehicleEndDoors(wagon);
+            if (!IsServer) ApplyEndDoors(1f);
+        }
+
+        private void PrepareVehicleEndDoors(Rigidbody vehicle)
+        {
+            var root = vehicle.transform;
+            if (vehicle.GetComponent<TrainBreakdowns>() || root.Find("EndDoorLeaf_L_Front") || root.Find("EndDoorLeaf_L_Rear"))
+                TrainBreakdowns.EnsureMeshColliders(vehicle.gameObject);
+
+            foreach (string end in new[] { "Front", "Rear" })
+            {
+                var left = root.Find("EndDoorLeaf_L_" + end);
+                var right = root.Find("EndDoorLeaf_R_" + end);
+                if (!left || !right) continue;
+                Vector3 across = left.localPosition - right.localPosition;
+                bool automatic = vehicle.name.StartsWith("Modern", System.StringComparison.Ordinal) ||
+                    vehicle.name.StartsWith("Futuristic", System.StringComparison.Ordinal);
+                if (!automatic && left.TryGetComponent<Renderer>(out var renderer))
+                    foreach (var material in renderer.sharedMaterials)
+                        if (material && (material.name.StartsWith("M_Modern_", System.StringComparison.Ordinal) ||
+                            material.name.StartsWith("M_Future_", System.StringComparison.Ordinal)))
+                        {
+                            automatic = true;
+                            break;
+                        }
+                endDoors.Add(new EndDoor
+                {
+                    Vehicle = vehicle, Left = left, Right = right, Automatic = automatic,
+                    LeftRest = left.localPosition, RightRest = right.localPosition,
+                    Center = (left.localPosition + right.localPosition) * 0.5f,
+                    Slide = across.normalized * EndDoorTravel
+                });
+                if (IsServer) endDoorsOpen.Add(0);
+            }
+        }
+
+        private void UpdateEndDoors()
+        {
+            for (int i = 0; i < endDoors.Count; i++)
+            {
+                var door = endDoors[i];
+                if (!door.Vehicle || !door.Left || !door.Right) continue;
+                bool nearby = false;
+                if (!derailed && door.Vehicle.gameObject.activeInHierarchy)
+                    foreach (var player in PlaygroundPlayer.SpawnedPlayers)
+                    {
+                        if (!player || !player.IsSpawned || player.gameObject.scene != gameObject.scene) continue;
+                        Vector3 local = door.Vehicle.transform.InverseTransformPoint(player.transform.position) - door.Center;
+                        if (Mathf.Abs(local.x) > 1.65f || Mathf.Abs(local.z) > 0.85f || local.y < -0.45f || local.y > 2f) continue;
+                        nearby = true;
+                        break;
+                    }
+                if (!door.Automatic)
+                {
+                    if (nearby && Time.time >= door.NextManualPush) CheckManualEndDoor(i, door);
+                    continue;
+                }
+                if (nearby) door.HoldUntil = Time.time + 0.65f;
+                byte target = nearby || Time.time < door.HoldUntil ? (byte)1 : (byte)0;
+                if (endDoorsOpen[i] != target) endDoorsOpen[i] = target;
+            }
+            ApplyEndDoors(Time.fixedDeltaTime);
+        }
+
+        private void CheckManualEndDoor(int index, EndDoor door)
+        {
+            bool open = endDoorsOpen[index] != 0;
+            Vector3 slideDirection = door.Vehicle.transform.TransformDirection(door.Slide.normalized);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Transform leaf = side > 0 ? door.Left : door.Right;
+                Vector3 handle = leaf.position + leaf.up * 0.74f - slideDirection * (side * 0.15f);
+                int count = Physics.OverlapSphereNonAlloc(handle, 0.19f, buttonContacts, ~0, QueryTriggerInteraction.Ignore);
+                for (int i = 0; i < count; i++)
+                {
+                    var hand = buttonContacts[i];
+                    var player = hand.GetComponentInParent<PlaygroundPlayer>();
+                    if (!player || !player.IsSpawned || !player.IsHandCollider(hand) || !hand.attachedRigidbody) continue;
+                    Vector3 relative = hand.attachedRigidbody.GetPointVelocity(handle) - GuidedPointVelocity(door.Vehicle, handle);
+                    if (Vector3.Dot(relative, slideDirection) * side * (open ? -1f : 1f) < 0.45f) continue;
+                    endDoorsOpen[index] = open ? (byte)0 : (byte)1;
+                    door.NextManualPush = Time.time + 0.6f;
+                    return;
+                }
+            }
+        }
+
+        private void ApplyEndDoors(float deltaTime)
+        {
+            for (int i = 0; i < endDoors.Count && i < endDoorsOpen.Count; i++)
+            {
+                var door = endDoors[i];
+                if (!door.Left || !door.Right) continue;
+                float opening = Mathf.MoveTowards(door.Opening, endDoorsOpen[i], 3f * deltaTime);
+                if (opening != door.Opening) door.Apply(opening);
             }
         }
 
@@ -1748,6 +1877,9 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkDespawn()
         {
+            foreach (var door in endDoors)
+                if (door.Left && door.Right) door.Apply(0f);
+            endDoors.Clear();
             if (body)
             {
                 TrainBodies.Remove(body);

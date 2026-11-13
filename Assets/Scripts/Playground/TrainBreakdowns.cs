@@ -24,8 +24,30 @@ namespace ConductorChaos.Playground
 
         void Start()
         {
+            EnsureMeshColliders(gameObject);
             points = GetComponentsInChildren<RepairPoint>(true);
             next = Time.time + firstAfter + Random.Range(0f, Mathf.Max(0f, interval.x));
+        }
+
+        public static bool IsEndDoorLeaf(string name) => name.StartsWith("EndDoorLeaf_", System.StringComparison.Ordinal);
+
+        public static bool NeedsMeshCollider(MeshFilter filter) =>
+            filter.sharedMesh && !filter.GetComponent<Collider>() &&
+            !filter.name.StartsWith("Repair_Bolt", System.StringComparison.Ordinal) &&
+            !filter.name.StartsWith("Broken_Bits", System.StringComparison.Ordinal) &&
+            filter.name != "TankLiquid";
+
+        internal static void EnsureMeshColliders(GameObject vehicle)
+        {
+            foreach (var filter in vehicle.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (!NeedsMeshCollider(filter)) continue;
+                var owner = filter.GetComponentInParent<Rigidbody>();
+                if (owner && !owner.isKinematic && !IsEndDoorLeaf(filter.name)) continue;
+                var collider = filter.gameObject.AddComponent<MeshCollider>();
+                collider.convex = IsEndDoorLeaf(filter.name);
+                collider.sharedMesh = filter.sharedMesh;
+            }
         }
 
         void Update()

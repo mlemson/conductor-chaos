@@ -131,15 +131,10 @@ namespace ConductorChaos.EditorTools
             int colliders = 0, repairs = 0;
             foreach (var filter in vehicle.GetComponentsInChildren<MeshFilter>(true))
             {
-                string n = filter.name;
-                // de bout krijgt van RepairPoint zijn eigen bolvormige botsvorm; rook en losse brokstukken botsen niet
-                // de schuifbladen van de kopdeuren (EndDoorLeaf_*) staan dicht in het model en krijgen pas een botsvorm als de deurcode
-                // ze kan openen; anders kun je niet meer door de trein lopen
-                if (!filter.sharedMesh || filter.GetComponent<Collider>() || n.StartsWith("Repair_Bolt") || n.StartsWith("Broken_Bits")
-                    || n.StartsWith("EndDoorLeaf")) continue;
+                if (!TrainBreakdowns.NeedsMeshCollider(filter)) continue;
                 var collider = Undo.AddComponent<MeshCollider>(filter.gameObject);
                 collider.sharedMesh = filter.sharedMesh;
-                collider.convex = false;
+                collider.convex = TrainBreakdowns.IsEndDoorLeaf(filter.name);
                 colliders++;
             }
             foreach (var node in vehicle.GetComponentsInChildren<Transform>(true))
