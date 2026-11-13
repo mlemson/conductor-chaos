@@ -83,6 +83,8 @@ namespace ConductorChaos.Playground
         private bool cameraHidesBody;
         private float cameraDistance = 4f;
         private float cameraZoomVelocity;
+        private float cameraObstructedUntil;
+        private float cameraBodyHiddenUntil;
         private float cameraHandFocus;
         private float desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
         private float smoothFocusY, smoothFocusVelocity;
@@ -133,6 +135,7 @@ namespace ConductorChaos.Playground
             sessionHost = NetworkManager.GetComponent<PlaygroundHost>();
             cameraDistance = desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
             cameraZoomVelocity = 0f;
+            cameraObstructedUntil = cameraBodyHiddenUntil = 0f;
             cameraEyeOffset = Vector3.zero;
             hasClearCameraPosition = false;
             usingCabinCamera = false;
@@ -832,7 +835,6 @@ namespace ConductorChaos.Playground
             Transform cabinFrame = null;
             usingCabinCamera = trainDrive && trainDrive.TryGetCabin(transform.position, usingCabinCamera ? 0.04f : -0.06f, out cabinFrame);
             float zoomTarget = usingCabinCamera ? 0f : Mathf.SmoothStep(desiredCameraDistance, 0f, Mathf.InverseLerp(44f, 58f, pitch));
-            cameraDistance = PlaygroundControls.EaseCameraDistance(cameraDistance, zoomTarget, ref cameraZoomVelocity);
             float eyeBlend = PlaygroundControls.FirstPersonBlend(cameraDistance);
             Vector3 eyeOffset = PlaygroundControls.FirstPersonEyeOffset(yaw) * eyeBlend;
             if (usingCabinCamera)
@@ -849,7 +851,7 @@ namespace ConductorChaos.Playground
                 if (renderer && renderer.enabled && renderer.gameObject.activeInHierarchy) modelBounds.Encapsulate(renderer.bounds);
 
             Vector3 direction = -(look * Vector3.forward);
-            float available = cameraDistance;
+            float available = Mathf.Max(zoomTarget, cameraDistance);
             int focusCount = Physics.OverlapSphereNonAlloc(focus, radius, cameraFocusObstacles, ~0, QueryTriggerInteraction.Ignore);
             int count = Physics.SphereCastNonAlloc(focus, radius, direction, hits, available, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
@@ -862,6 +864,13 @@ namespace ConductorChaos.Playground
                     { containsFocus = true; break; }
                 if (!containsFocus) available = Mathf.Min(available, Mathf.Max(0f, hits[i].distance - 0.025f));
             }
+            bool recoveringCamera = Time.unscaledTime < cameraObstructedUntil;
+            if (available < cameraDistance || (recoveringCamera && available < zoomTarget && available < cameraDistance + 0.05f))
+                cameraObstructedUntil = Time.unscaledTime + 0.35f;
+            float targetDistance = Mathf.Min(zoomTarget, available);
+            if (Time.unscaledTime < cameraObstructedUntil)
+                targetDistance = Mathf.Min(targetDistance, cameraDistance);
+            cameraDistance = PlaygroundControls.EaseCameraDistance(cameraDistance, targetDistance, ref cameraZoomVelocity);
             if (available < cameraDistance)
             {
                 cameraDistance = available;
@@ -871,14 +880,18 @@ namespace ConductorChaos.Playground
             bool clear = CameraPositionClear(cameraPosition, radius);
             if (!clear)
             {
-                for (float distance = available; distance >= 0f; distance -= 0.1f)
+                cameraObstructedUntil = Time.unscaledTime + 0.35f;
+                for (float distance = cameraDistance; distance >= 0f; distance = Mathf.Max(0f, distance - 0.1f))
                 {
                     Vector3 candidate = focus + direction * distance;
-                    if (!CameraPositionClear(candidate, radius)) continue;
-                    cameraPosition = candidate;
-                    cameraDistance = distance;
-                    clear = true;
-                    break;
+                    if (CameraPositionClear(candidate, radius))
+                    {
+                        cameraPosition = candidate;
+                        cameraDistance = distance;
+                        cameraZoomVelocity = 0f;
+                        clear = true;
+                    }
+                    if (clear || distance == 0f) break;
                 }
             }
             if (!clear && hasClearCameraPosition && (lastClearCameraPosition - focus).sqrMagnitude <= 16f && CameraPositionClear(lastClearCameraPosition, radius) && CameraPathClear(focus, lastClearCameraPosition, radius, focusCount))
@@ -899,6 +912,18 @@ namespace ConductorChaos.Playground
                         break;
                     }
             }
+            if (clear && hasClearCameraPosition)
+            {
+                Vector3 previousOffset = lastClearCameraPosition - focus;
+                Vector3 targetOffset = cameraPosition - focus;
+                if (targetOffset.sqrMagnitude > previousOffset.sqrMagnitude + 0.01f)
+                {
+                    // Ease outward even when returning from an alternate collision-free angle.
+                    Vector3 candidate = Vector3.MoveTowards(lastClearCameraPosition, cameraPosition, 4f * Time.unscaledDeltaTime);
+                    if (CameraPositionClear(candidate, radius) && CameraPathClear(focus, candidate, radius, focusCount))
+                        cameraPosition = candidate;
+                }
+            }
             if (clear) { lastClearCameraPosition = cameraPosition; hasClearCameraPosition = true; }
             Vector3 offset = cameraPosition - focus;
             Vector3 viewDirection = offset.sqrMagnitude > 0.0001f ? offset.normalized : direction;
@@ -906,8 +931,10 @@ namespace ConductorChaos.Playground
             float modelEdge = Vector3.Dot(modelBounds.center - focus, viewDirection) + Vector3.Dot(modelBounds.extents, axis);
             cameraHandFocus = Mathf.MoveTowards(cameraHandFocus,
                 PlaygroundControls.FirstPersonBlend(offset.magnitude), 6f * Time.unscaledDeltaTime);
-            SetCameraBodyHidden(offset.magnitude < Mathf.Max(PlaygroundControls.FirstPersonDistance,
-                modelEdge + radius + (cameraHidesBody ? 0.15f : 0.03f)));
+            if (offset.magnitude < Mathf.Max(PlaygroundControls.FirstPersonDistance,
+                modelEdge + radius + (cameraHidesBody ? 0.15f : 0.03f)))
+                cameraBodyHiddenUntil = Time.unscaledTime + 0.25f;
+            SetCameraBodyHidden(Time.unscaledTime < cameraBodyHiddenUntil);
             UpdateCameraFieldOfView(usingCabinCamera || usingLookDownCamera ||
                 (desiredCameraDistance >= 1.5f && offset.sqrMagnitude < 1.5f * 1.5f));
             playerCamera.transform.SetPositionAndRotation(cameraPosition, look);

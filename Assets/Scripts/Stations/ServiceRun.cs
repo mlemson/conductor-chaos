@@ -55,6 +55,8 @@ namespace ConductorChaos.Stations
         public bool BellRung => bellRung.Value;
         public bool DoorsClosed => doorsClosed.Value;
         public bool PowerOn => powerOn.Value;
+        public bool NeedsCoal => train.HasCoalFurnace && train.FuelFraction <= 0f;
+        public bool EscortDoorOpen => Objective is ServiceEscort escort && train.IsServiceDoorOpen(escort.DoorLeaf);
         public bool OffTrack => offTrack.Value;
         public bool TimerRunning => deadline.Value > 0;
         internal bool CanContinue => Phase == RunPhase.Briefing ||
@@ -129,7 +131,7 @@ namespace ConductorChaos.Stations
 
         private void CheckBell()
         {
-            bool readyToRing = Phase == RunPhase.Departure && TimerRunning ||
+            bool readyToRing = Phase == RunPhase.Departure ||
                 Phase == RunPhase.Training && CurrentLesson == Lesson.Bell;
             if (!readyToRing || bellRung.Value || !bellButton) return;
             Transform button = bellButton.transform;
@@ -163,8 +165,8 @@ namespace ConductorChaos.Stations
             if (button) button.localPosition = resting;
         }
 
-        public bool CanAssistFrom(Vector3 position) => Objective is ServiceEscort escort && train.IsServiceDoorOpen(escort.DoorLeaf) &&
-            (Phase == RunPhase.Departure && TimerRunning && Progress == 0 || Phase == RunPhase.Arrival && Progress == 1) &&
+        public bool CanAssistFrom(Vector3 position) => Objective is ServiceEscort escort && EscortDoorOpen &&
+            (Phase == RunPhase.Departure && Progress == 0 || Phase == RunPhase.Arrival && Progress == 1) &&
             escort.IsNear(position);
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
@@ -201,13 +203,14 @@ namespace ConductorChaos.Stations
             if (cargo != null)
             {
                 cargo.ObserveLoadingOnServer();
-                cargoLoaded.Value = cargo.LoadedCount;
+                cargoLoaded.Value = cargo.AboardCount;
             }
 
             if (!TimerRunning)
             {
                 if (CrewAt(departure.Platform))
                     deadline.Value = NetworkManager.ServerTime.Time + TimeLimit(NetworkManager.ConnectedClientsIds.Count);
+                progress.Value = Mathf.Clamp(Objective.ReadProgress(false), 0, Objective.Target);
                 return;
             }
             if (NetworkManager.ServerTime.Time >= deadline.Value)
@@ -223,7 +226,7 @@ namespace ConductorChaos.Stations
             bool docked = stopSeconds >= 1f;
             if (Phase is RunPhase.Travelling or RunPhase.Arrival)
                 phase.Value = docked ? RunPhase.Arrival : RunPhase.Travelling;
-            if (Phase == RunPhase.Travelling && train.ServiceSpeed >= .22f) Objective.ObserveTravelOnServer();
+            if (train.ServiceSpeed >= .22f) Objective.ObserveTravelOnServer();
             if (cargo != null) cargoTravelled.Value = cargo.TravelledCount;
             progress.Value = Mathf.Clamp(Objective.ReadProgress(docked), 0, Objective.Target);
             if (docked && progress.Value >= Objective.Target) Finish(true);

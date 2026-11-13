@@ -5,15 +5,13 @@ using ConductorChaos.Playground;
 namespace ConductorChaos.Stations
 {
     /// <summary>
-    /// Counts real pieces of cargo, not trigger-enter events. The server remembers which
-    /// crates have been in the wagon and which were seen aboard during the journey.
+    /// Counts pieces currently aboard and tracks which ones have ridden on the train.
     /// </summary>
     public sealed class ServiceCargo : ServiceObjective
     {
         [SerializeField] private Rigidbody[] pieces;
         [SerializeField] private BoxCollider destination;
         [SerializeField] private BoxCollider cargoBay;
-        private readonly HashSet<Rigidbody> loaded = new();
         private readonly HashSet<Rigidbody> aboard = new();
         private readonly HashSet<Rigidbody> travelled = new();
         private readonly Dictionary<Rigidbody, Collider[]> pieceColliders = new();
@@ -24,13 +22,12 @@ namespace ConductorChaos.Stations
         public override int Target => pieces?.Length ?? 0;
         public override bool IsConfigured => Target > 0 && destination && cargoBay &&
             System.Array.TrueForAll(pieces, piece => piece);
-        public int LoadedCount => loaded.Count;
+        public int AboardCount => aboard.Count;
         public int TravelledCount => travelled.Count;
         public override bool ReadyToDepart => IsConfigured && aboard.Count == Target;
 
         public override void BeginOnServer()
         {
-            loaded.Clear();
             aboard.Clear();
             travelled.Clear();
             pieceColliders.Clear();
@@ -42,8 +39,6 @@ namespace ConductorChaos.Stations
         // Called while the crew loads the train, including before it begins moving.
         public void ObserveLoadingOnServer()
         {
-            // Depart only if all required pieces are currently on the wagon.
-            // Keep LoadedCount cumulative so unloading does not reset the HUD.
             aboard.Clear();
             var wagon = cargoBay ? TrainDrive.FindGuidedSupport(cargoBay.attachedRigidbody) : null;
             foreach (var piece in pieces)
@@ -54,7 +49,6 @@ namespace ConductorChaos.Stations
                     continue;
                 }
                 aboard.Add(piece);
-                loaded.Add(piece);
                 CarryRestingCargo(piece, wagon);
             }
         }
@@ -99,12 +93,7 @@ namespace ConductorChaos.Stations
         // Only the server observes transported cargo, and only while the train is moving.
         public override void ObserveTravelOnServer()
         {
-            foreach (var piece in pieces)
-            {
-                if (!piece || !Overlaps(cargoBay, piece)) continue;
-                loaded.Add(piece);
-                travelled.Add(piece);
-            }
+            travelled.UnionWith(aboard);
         }
 
         public override int ReadProgress(bool trainStoppedAtDestination)

@@ -150,40 +150,50 @@ namespace ConductorChaos.UI
             hudTitle.text = run.Objective?.Title ?? "Eerste dienst";
             if (objectiveIcon && run.Objective)
                 objectiveIcon.sprite = ChaosUISpriteCatalog.Find(run.Objective.Icon) ?? ChaosUISpriteCatalog.Find("route");
-            if (run.Objective is ServiceCargo)
-            {
-                string cargoStatus = run.Phase == ServiceRun.RunPhase.Arrival
-                    ? $"Gelost {run.Progress}/{run.Objective.Target}  ·  Vervoerd {run.CargoTravelled}/{run.Objective.Target}"
-                    : $"Geladen {run.CargoLoaded}/{run.Objective.Target}  ·  Vervoerd {run.CargoTravelled}/{run.Objective.Target}";
-                hudDetail.text = run.Phase switch
-                {
-                    ServiceRun.RunPhase.Departure when !run.TimerRunning =>
-                        $"{cargoStatus}\nLoop naar het vertrekperron om de dienstklok te starten.",
-                    ServiceRun.RunPhase.Departure when !run.BellRung =>
-                        $"{cargoStatus}\nDruk de gele belknop op het vertrekperron omlaag.",
-                    ServiceRun.RunPhase.Departure =>
-                        $"{cargoStatus}\nDeuren {Mark(run.DoorsClosed)}   Stoom {Mark(run.PowerOn)}   Bel {Mark(run.BellRung)}",
-                    ServiceRun.RunPhase.Arrival =>
-                        $"{run.Arrival.StationName} · {cargoStatus}\nZet de kratten in het gele vrachtvak.",
-                    _ => $"{run.Arrival.StationName} · {cargoStatus}\nRijd naar de groene stopmarkering."
-                };
-            }
-            else
-            {
-                hudDetail.text = run.Phase switch
-                {
-                    ServiceRun.RunPhase.Departure when !run.TimerRunning => "Loop naar het vertrekperron om de dienstklok te starten.",
-                    ServiceRun.RunPhase.Departure when !run.BellRung => "Druk de gele belknop op het vertrekperron omlaag.",
-                    ServiceRun.RunPhase.Departure => $"{run.Objective?.Instructions}\nDeuren {Mark(run.DoorsClosed)}   Stoom {Mark(run.PowerOn)}   Bel {Mark(run.BellRung)}",
-                    ServiceRun.RunPhase.Arrival => $"{run.Arrival.StationName} · {run.Progress}/{run.Objective?.Target}\n{run.Objective?.Instructions}",
-                    _ => $"{run.Arrival.StationName} · Rijd naar de groene stopmarkering.\n{run.Objective?.Instructions}"
-                };
-            }
+            hudDetail.text = NextServiceStep(run);
             timerText.text = run.TimerRunning ? FormatTime(run.TimeLeft) : "Klaar?";
             timerText.color = run.TimerRunning && run.TimeLeft <= 30 ? ChaosUI.GoldLight : ChaosUI.Paper;
         }
 
-        private static string Mark(bool done) => done ? "✓" : "–";
+        private static string NextServiceStep(ServiceRun run)
+        {
+            var objective = run.Objective;
+            if (run.Phase == ServiceRun.RunPhase.Departure)
+            {
+                if (!run.TimerRunning) return "Loop naar het vertrekperron om de dienstklok te starten.";
+                if (objective is ServiceTickets && run.Progress < objective.Target)
+                    return $"Knip de kaartjes van oma op het perron en de twee reizigers in de wagon. ({run.Progress}/{objective.Target})";
+                if (objective is ServiceCargo && run.CargoLoaded < objective.Target)
+                    return objective.Target == 1 ? "Leg de rode koffer in het bagagevak in de wagon."
+                        : $"Zet de kratten in het vrachtvak in de wagon. ({run.CargoLoaded}/{objective.Target} aan boord)";
+                if (objective is ServiceEscort && run.Progress == 0)
+                    return run.EscortDoorOpen ? "Ga naar oma op het perron en druk op E." : "Open de wagondeur aan het perron voor oma.";
+                if (!run.BellRung) return "Druk de gele belknop op het vertrekperron omlaag.";
+            }
+            if (run.Phase == ServiceRun.RunPhase.Arrival)
+            {
+                if (objective is ServiceCargo && run.Progress < objective.Target)
+                {
+                    if (run.CargoTravelled < objective.Target)
+                        return "Breng de achtergebleven vracht aan boord en rijd een stukje om die mee te laten tellen.";
+                    return objective.Target == 1 ? "Zet de rode koffer in het groene bagagevak op het perron."
+                        : $"Zet de kratten in het gele vrachtvak. ({run.Progress}/{objective.Target} gelost)";
+                }
+                if (objective is ServiceEscort && run.Progress < objective.Target)
+                    return run.EscortDoorOpen ? "Ga naar oma en druk op E om haar te helpen uitstappen." : "Open de wagondeur aan het perron voor oma.";
+            }
+            if (objective is ServiceRepair repair && run.Progress < objective.Target && !repair.IsBroken)
+                return "Duw de wisselhendel naar de stand rechtdoor.";
+            if (!run.DoorsClosed) return "Schuif de wagondeuren dicht.";
+            if (!run.PowerOn) return "Druk op de startknop in de cabine.";
+            if (run.NeedsCoal) return "Open de vuurkist en schep er kolen in.";
+            if (objective is ServiceRepair broken && run.Progress < objective.Target)
+                return run.Phase == ServiceRun.RunPhase.Departure
+                    ? "Neem de moersleutel mee en rijd tot vóór de kapotte wissel."
+                    : $"Stop vóór de wissel en tik met de moersleutel tegen de gele bout. ({broken.Hits}/{broken.RequiredHits})";
+            return $"Rijd naar {run.Arrival.StationName} en stop bij de groene stopmarkering.";
+        }
+
         private static string FormatTime(int seconds) => $"{seconds / 60}:{seconds % 60:00}";
 
         private static Text Label(Transform parent, string name, int size, Color color, Vector2 min, Vector2 max,
