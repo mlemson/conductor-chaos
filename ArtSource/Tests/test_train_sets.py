@@ -21,7 +21,10 @@ MODELS = {
     "ModernCoach_Blockout": (["Aircon", "AxleBox", "BrakeHose"], None, "RoofLadder"),
     "FuturisticCabCar_Blockout": (["Pantograph", "PowerCell", "AxleBox", "BrakeHose"], "RoofHatch_Cab", None),
     "FuturisticCoach_Blockout": (["Cooler", "AxleBox", "BrakeHose"], None, "RoofLadder"),
-    "TankWagon_Blockout": (["Valve", "AxleBox", "BrakeHose"], None, "RoofLadder"),
+    "DieselCoach_Doors_Blockout": (["Vent", "AxleBox", "BrakeHose"], "SideDoorLeaf_L", "RoofLadder"),
+    "ModernCoach_Closed_Blockout": (["Aircon", "AxleBox", "BrakeHose"], None, "RoofLadder"),
+    "FuturisticCoach_Closed_Blockout": (["Cooler", "AxleBox", "BrakeHose"], None, "RoofLadder"),
+    "TankWagon_Blockout": (["Valve", "AxleBox", "BrakeHose"], "TankHatch", "RoofLadder"),
     "CargoWagon_Blockout": (["DoorLatch", "AxleBox", "BrakeHose"], None, "RoofLadder"),
 }
 
@@ -46,6 +49,14 @@ def main():
         need = ["Body", "Roof", "Underframe", "Coupler_Front", "Coupler_Rear"] + [x for x in (hatch, ladder) if x]
         for r in repairs:      # wat RepairPoint (met achtervoegsel) zoekt
             need += [f"RepairPoint_{r}", f"Fixed_Rail__{r}", f"Broken_Bits__{r}", f"Repair_Bolt__{r}", f"Repair_Bolt_Home__{r}"]
+        if "CabCar" in model or "Locomotive" in model:      # lessenaar met losse bediening
+            need += ["CabDesk", "ThrottleLever", "SpeedNeedle", "Lamp_Green", "Lamp_Yellow", "Lamp_Red", "EndDoorLeaf_L_Rear"]
+        elif "Tank" in model:
+            need += ["TankLiquid"]
+        else:
+            need += ["EndDoorLeaf_L_Front", "EndDoorLeaf_R_Front", "EndDoorLeaf_L_Rear", "EndDoorLeaf_R_Rear"]
+        if "_Closed" in model and any(n.startswith("SideDoor") for n in names):
+            fails.append(f"{model}: gesloten versie heeft toch een zijdeur")
         fails += [f"{model}: knoop {n} ontbreekt" for n in need if n not in names]
         found = sorted(n[len("RepairPoint_"):] for n in names if n.startswith("RepairPoint_"))
         if found != sorted(repairs):

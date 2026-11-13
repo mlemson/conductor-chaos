@@ -1,10 +1,10 @@
 {
   "model": "DieselLocomotive_Blockout",
   "stats": {
-    "parts": 42,
-    "tris": 44876,
-    "verts": 24053,
-    "materials": 23
+    "parts": 53,
+    "tris": 58696,
+    "verts": 31245,
+    "materials": 24
   },
   "repairPoints": [
     "Fan",
@@ -327,6 +327,26 @@
       "rampShift": 0.0,
       "smoothness": 0.05,
       "opts": {
+        "cells": 0.0,
+        "grime": 0.0,
+        "cellSize": 0.8
+      }
+    },
+    "M_Diesel_Go": {
+      "base": "#92BC4B",
+      "ramp": [
+        "#6F8C35",
+        "#7A9B3C",
+        "#82A740",
+        "#92BC4B",
+        "#A3D25B"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.45,
+      "opts": {
+        "emissive": 0.7,
+        "rim": 0.0,
+        "paint": 0,
         "cells": 0.0,
         "grime": 0.0,
         "cellSize": 0.8

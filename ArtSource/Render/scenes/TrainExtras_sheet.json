@@ -1,0 +1,449 @@
+[
+  {
+    "name": "Console_60s",
+    "params": {
+      "w": 1440,
+      "h": 930,
+      "ss": 1.5,
+      "fov": 52,
+      "yaw": -90,
+      "pitch": 38,
+      "dist": 1.55,
+      "target": "2.85,1.02,-1.3",
+      "lightAz": -40,
+      "lightEl": 45,
+      "shadowSize": 14,
+      "ground": "0",
+      "fogNear": 30,
+      "fogFar": 140,
+      "items": [
+        {
+          "url": "../Exports/DieselLocomotive_Blockout.glb",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "pose": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "Console_2020",
+    "params": {
+      "w": 1440,
+      "h": 930,
+      "ss": 1.5,
+      "fov": 52,
+      "yaw": -90,
+      "pitch": 38,
+      "dist": 1.55,
+      "target": "2.85,1.02,-1.3",
+      "lightAz": -40,
+      "lightEl": 45,
+      "shadowSize": 14,
+      "ground": "0",
+      "fogNear": 30,
+      "fogFar": 140,
+      "items": [
+        {
+          "url": "../Exports/ModernCabCar_Blockout.glb",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "pose": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "Console_2040",
+    "params": {
+      "w": 1440,
+      "h": 930,
+      "ss": 1.5,
+      "fov": 52,
+      "yaw": -90,
+      "pitch": 38,
+      "dist": 1.55,
+      "target": "2.85,1.02,-1.3",
+      "lightAz": -40,
+      "lightEl": 45,
+      "shadowSize": 14,
+      "ground": "0",
+      "fogNear": 30,
+      "fogFar": 140,
+      "items": [
+        {
+          "url": "../Exports/FuturisticCabCar_Blockout.glb",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "pose": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "Variant_DieselCoach_Doors_Blockout",
+    "params": {
+      "w": 1440,
+      "h": 780,
+      "ss": 1.5,
+      "fov": 30,
+      "yaw": 24,
+      "pitch": 9,
+      "dist": 13.5,
+      "target": "0,1.0,-1.3",
+      "lightAz": -40,
+      "lightEl": 45,
+      "shadowSize": 14,
+      "ground": "0",
+      "fogNear": 30,
+      "fogFar": 140,
+      "items": [
+        {
+          "url": "../Exports/ArtCheck_Environment.glb",
+          "pose": {
+            "Bench": {
+              "visible": false
+            },
+            "Lantern": {
+              "visible": false
+            },
+            "Platform": {
+              "visible": false
+            }
+          }
+        },
+        {
+          "url": "../Exports/DieselCoach_Doors_Blockout.glb",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "pose": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "Variant_ModernCoach_Closed_Blockout",
+    "params": {
+      "w": 1440,
+      "h": 780,
+      "ss": 1.5,
+      "fov": 30,
+      "yaw": 24,
+      "pitch": 9,
+      "dist": 13.5,
+      "target": "0,1.0,-1.3",
+      "lightAz": -40,
+      "lightEl": 45,
+      "shadowSize": 14,
+      "ground": "0",
+      "fogNear": 30,
+      "fogFar": 140,
+      "items": [
+        {
+          "url": "../Exports/ArtCheck_Environment.glb",
+          "pose": {
+            "Bench": {
+              "visible": false
+            },
+            "Lantern": {
+              "visible": false
+            },
+            "Platform": {
+              "visible": false
+            }
+          }
+        },
+        {
+          "url": "../Exports/ModernCoach_Closed_Blockout.glb",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "pose": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "Variant_FuturisticCoach_Closed_Blockout",
+    "params": {
+      "w": 1440,
+      "h": 780,
+      "ss": 1.5,
+      "fov": 30,
+      "yaw": 24,
+      "pitch": 9,
+      "dist": 13.5,
+      "target": "0,1.0,-1.3",
+      "lightAz": -40,
+      "lightEl": 45,
+      "shadowSize": 14,
+      "ground": "0",
+      "fogNear": 30,
+      "fogFar": 140,
+      "items": [
+        {
+          "url": "../Exports/ArtCheck_Environment.glb",
+          "pose": {
+            "Bench": {
+              "visible": false
+            },
+            "Lantern": {
+              "visible": false
+            },
+            "Platform": {
+              "visible": false
+            }
+          }
+        },
+        {
+          "url": "../Exports/FuturisticCoach_Closed_Blockout.glb",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "pose": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "TankHatch_closed",
+    "params": {
+      "w": 1080,
+      "h": 720,
+      "ss": 1.5,
+      "fov": 30,
+      "yaw": -24,
+      "pitch": 50,
+      "dist": 4.6,
+      "target": "0,2.45,-1.3",
+      "lightAz": -40,
+      "lightEl": 45,
+      "shadowSize": 14,
+      "ground": "0",
+      "fogNear": 30,
+      "fogFar": 140,
+      "items": [
+        {
+          "url": "../Exports/TankWagon_Blockout.glb",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "pose": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "TankHatch_open",
+    "params": {
+      "w": 1080,
+      "h": 720,
+      "ss": 1.5,
+      "fov": 30,
+      "yaw": -24,
+      "pitch": 50,
+      "dist": 4.6,
+      "target": "0,2.45,-1.3",
+      "lightAz": -40,
+      "lightEl": 45,
+      "shadowSize": 14,
+      "ground": "0",
+      "fogNear": 30,
+      "fogFar": 140,
+      "items": [
+        {
+          "url": "../Exports/TankWagon_Blockout.glb",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "TankHatch": {
+              "rot": [
+                -105,
+                0,
+                0
+              ]
+            },
+            "TankLiquid": {
+              "addPos": [
+                0,
+                0.3,
+                0
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "EndDoor_auto_closed",
+    "params": {
+      "w": 720,
+      "h": 720,
+      "ss": 1.5,
+      "fov": 30,
+      "yaw": -108,
+      "pitch": 9,
+      "dist": 5.6,
+      "target": "-3.7,1.15,-1.3",
+      "lightAz": -40,
+      "lightEl": 45,
+      "shadowSize": 14,
+      "ground": "0",
+      "fogNear": 30,
+      "fogFar": 140,
+      "items": [
+        {
+          "url": "../Exports/ModernCoach_Blockout.glb",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "pose": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "EndDoor_auto_open",
+    "params": {
+      "w": 720,
+      "h": 720,
+      "ss": 1.5,
+      "fov": 30,
+      "yaw": -108,
+      "pitch": 9,
+      "dist": 5.6,
+      "target": "-3.7,1.15,-1.3",
+      "lightAz": -40,
+      "lightEl": 45,
+      "shadowSize": 14,
+      "ground": "0",
+      "fogNear": 30,
+      "fogFar": 140,
+      "items": [
+        {
+          "url": "../Exports/ModernCoach_Blockout.glb",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "EndDoorLeaf_L_Rear": {
+              "addPos": [
+                0,
+                0,
+                0.46
+              ]
+            },
+            "EndDoorLeaf_R_Rear": {
+              "addPos": [
+                0,
+                0,
+                -0.46
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "EndDoor_manual_closed",
+    "params": {
+      "w": 720,
+      "h": 720,
+      "ss": 1.5,
+      "fov": 30,
+      "yaw": -108,
+      "pitch": 9,
+      "dist": 5.6,
+      "target": "-3.7,1.15,-1.3",
+      "lightAz": -40,
+      "lightEl": 45,
+      "shadowSize": 14,
+      "ground": "0",
+      "fogNear": 30,
+      "fogFar": 140,
+      "items": [
+        {
+          "url": "../Exports/DieselCoach_Blockout.glb",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "pose": {}
+        }
+      ]
+    }
+  },
+  {
+    "name": "EndDoor_manual_open",
+    "params": {
+      "w": 720,
+      "h": 720,
+      "ss": 1.5,
+      "fov": 30,
+      "yaw": -108,
+      "pitch": 9,
+      "dist": 5.6,
+      "target": "-3.7,1.15,-1.3",
+      "lightAz": -40,
+      "lightEl": 45,
+      "shadowSize": 14,
+      "ground": "0",
+      "fogNear": 30,
+      "fogFar": 140,
+      "items": [
+        {
+          "url": "../Exports/DieselCoach_Blockout.glb",
+          "pos": [
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "EndDoorLeaf_L_Rear": {
+              "addPos": [
+                0,
+                0,
+                0.46
+              ]
+            },
+            "EndDoorLeaf_R_Rear": {
+              "addPos": [
+                0,
+                0,
+                -0.46
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+]

@@ -61,8 +61,29 @@ def scenes(name):
     ]
 
 
+def one(model, pose=None, env=False):
+    return ([dict(ENV)] if env else []) + [{"url": f"../Exports/{model}.glb", "pos": [0, 0, 0], "pose": pose or {}}]
+
+
+def extras():
+    """Lessenaars, rijtuigversies, vulklep van de ketelwagon en kopdeuren (blad TrainSet_Cabs_Variants)."""
+    out = [{"name": f"Console_{k}", "params": dict(cam(1440, 930, -90, 38, 1.55, "2.85,1.02,-1.3", fov=52), items=one(m))}
+           for k, m in (("60s", "DieselLocomotive_Blockout"), ("2020", "ModernCabCar_Blockout"), ("2040", "FuturisticCabCar_Blockout"))]
+    out += [{"name": f"Variant_{m}", "params": dict(cam(1440, 780, 24, 9, 13.5, "0,1.0,-1.3"), items=one(m, env=True))}
+            for m in ("DieselCoach_Doors_Blockout", "ModernCoach_Closed_Blockout", "FuturisticCoach_Closed_Blockout")]
+    opened = {"TankHatch": {"rot": [-105, 0, 0]}, "TankLiquid": {"addPos": [0, 0.30, 0]}}
+    for nm, pose in (("closed", {}), ("open", opened)):
+        out.append({"name": f"TankHatch_{nm}", "params": dict(cam(1080, 720, -24, 50, 4.6, "0,2.45,-1.3"), items=one("TankWagon_Blockout", pose))})
+    slide = {"EndDoorLeaf_L_Rear": {"addPos": [0, 0, 0.46]}, "EndDoorLeaf_R_Rear": {"addPos": [0, 0, -0.46]}}
+    for m, tag in (("ModernCoach_Blockout", "auto"), ("DieselCoach_Blockout", "manual")):
+        for nm, pose in (("closed", {}), ("open", slide)):
+            out.append({"name": f"EndDoor_{tag}_{nm}", "params": dict(cam(720, 720, -108, 9, 5.6, "-3.7,1.15,-1.3"), items=one(m, pose))})
+    return out
+
+
 def main():
     out = os.path.join(HERE, "scenes")
+    json.dump(extras(), open(os.path.join(out, "TrainExtras_sheet.json"), "w", encoding="utf-8"), indent=2)
     for name in SETS:
         json.dump(scenes(name), open(os.path.join(out, f"{name}_sheet.json"), "w", encoding="utf-8"), indent=2)
         print("scenes", name)

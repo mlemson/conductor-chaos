@@ -1,8 +1,10 @@
 """Moderne goederenwagens bij de treinsets uit train_kit.py — op verzoek van @mlemson.
 
 TankWagon_Blockout — ketelwagon (olie/water): donkergroene ketel met bolle koppen en spanbanden op zadels, vlakke
-  kopbordessen, een gele ladder aan elke kant die over de ketelkop naar de loopbrug bovenop loopt, mangat bovenop.
-  Je loopt er dus óverheen naar de volgende wagon. Onderhoudspunten: `RepairPoint_Valve` (lekkende afsluiter met geel
+  kopbordessen met een kopbalk waar de koppeling uit komt, en aan elke kant een gele ladder die buiten de ketelkop om
+  naar de loopbrug bovenop loopt. Je loopt er dus óverheen naar de volgende wagon.
+  Vulgat: een echt gat bovenin de ketel met een hals (koker de ketel in), klep `TankHatch` (scharniert om lokale X,
+  dicht in het model) en vloeistofspiegel `TankLiquid` (schuift langs lokale Y: 0 = vol, -1,2 = leeg). Onderhoudspunten: `RepairPoint_Valve` (lekkende afsluiter met geel
   handwiel, perronkant), `RepairPoint_AxleBox`, `RepairPoint_BrakeHose`.
 
 CargoWagon_Blockout — moderne gesloten goederenwagon (schuifwandwagen): blauwe bak met ribben en gele bies, gewelfd
@@ -32,9 +34,11 @@ COLORS = {
     "Yellow": ("accent_yellow", 2, 0.25, 0.0, {"paint": 1.2}),
     "Crate": ("crate", 2, 0.15, 0.0),
     "Deck": ("metal", 1, 0.25, 0.0, {"paint": 1.2}),
+    "Liquid": ("water", 1, 0.70, 0.0, {"cells": 0.0, "grime": 0.0}),
 }
 R, CY = 1.14, 1.44            # ketelstraal en hartlijn
 TOP = CY + R                  # bovenkant ketel
+HOLE = 0.29                   # halve maat van het vulgat bovenin de ketel
 
 
 def build_tank():
@@ -51,7 +55,12 @@ def build_tank():
             r = max(0.05, R * math.cos(t))
             ring.append(dict(x=sg * (xc + ec * math.sin(t)), a=r, yb=CY - r, yt=CY + r, n=2.0))
         st += ring
-    tank = tk.loft(st, N=24, mat=c.m("Tank"), cap0=True, cap1=True)
+    mid = dict(a=R, yb=CY - R, yt=CY + R, n=2.0)
+    st = st[:7] + [dict(mid, x=-HOLE), dict(mid, x=HOLE)] + st[7:]
+
+    def tank_mat(i, j, p):
+        return None if abs(p[0]) < HOLE and p[1] > CY + R * 0.95 else c.m("Tank")      # vulgat: geen vlak
+    tank = tk.loft(st, N=24, mat_fn=tank_mat, cap0=True, cap1=True)
     hoops = []
     for x in (-1.9, -0.65, 0.65, 1.9):
         h = mk.cylinder(R + 0.03, 0.09, 24, 0.01, mat=c.m("TankLow"), axis="x")
@@ -60,30 +69,47 @@ def build_tank():
     saddles = [box(x - 0.24, x + 0.24, 0.08, CY - 0.55, ZC - 0.92, ZC + 0.92, 0.06, tr, div=2) for x in (-1.9, 1.9)]
     c.add("Body", mk.merge(tank, *hoops, *saddles))
 
-    # loopbrug bovenop met mangat (naast het loopvlak), kopbordessen en lage kopschotten
-    walk = box(-2.45, 2.45, TOP - 0.06, TOP + 0.05, ZC - 0.40, ZC + 0.40, 0.02, c.m("Deck"))
-    lid = mk.lathe([(0.0, 0.0), (0.30, 0.0), (0.30, 0.10), (0.24, 0.16), (0.0, 0.17)], 12, mat=tr,
-                   phase=math.pi / 12).transform(t=(0.0, TOP - 0.10, ZC - 0.72))
-    c.add("Roof", mk.merge(walk, lid))
+    # loopbrug bovenop (twee delen), daartussen de vulhals: een echte koker die door het gat de ketel in loopt
+    walk = [box(xa, xb, TOP - 0.06, TOP + 0.05, ZC - 0.40, ZC + 0.40, 0.02, c.m("Deck")) for (xa, xb) in ((-2.45, -0.52), (0.52, 2.45))]
+    neck = mk.lathe([(0.25, -1.30), (0.275, -1.30), (0.275, 0.16), (0.25, 0.16)], 16, mat=tr, closed=True)
+    collar = mk.lathe([(0.275, -0.16), (0.45, -0.16), (0.45, 0.06), (0.37, 0.14), (0.275, 0.14)], 16, mat=c.m("TankLow"), closed=True)
+    bottom = mk.cylinder(0.262, 0.03, 16, 0.0, mat=c.m("Wheel"), axis="y").transform(t=(0, -1.30, 0))
+    bottom.sharp = True
+    c.add("Roof", mk.merge(*walk, mk.merge(neck, collar, bottom).transform(t=(0.0, TOP, ZC))))
+    # klep: scharniert om lokale X aan de overkant; dicht = rotatie 0, open = ongeveer -105 graden
+    lid = mk.merge(mk.cylinder(0.32, 0.05, 16, 0.012, mat=tr, axis="y").transform(t=(0, 0.025, 0.31)),
+                   tk.tube((-0.12, 0.085, 0.50), (0.12, 0.085, 0.50), 0.022, it),
+                   box(-0.14, -0.10, 0.04, 0.085, 0.48, 0.52, 0.006, it), box(0.10, 0.14, 0.04, 0.085, 0.48, 0.52, 0.006, it),
+                   box(-0.10, 0.10, -0.03, 0.03, -0.05, 0.03, 0.012, c.m("Metal")))
+    c.add("TankHatch", lid, (0.0, TOP + 0.17, ZC - 0.31))
+    # vloeistofspiegel in de koker: schuif langs lokale Y voor het vulniveau (0 = vol tot de hals, -1,2 = leeg)
+    liquid = mk.cylinder(0.248, 0.02, 16, 0.0, mat=c.m("Liquid"), axis="y")
+    liquid.sharp = True
+    c.add("TankLiquid", liquid, (0.0, TOP - 0.55, ZC))
     deck = [box(-L / 2, L / 2, 0.0, 0.12, ZC - 1.25, ZC + 1.25, 0.04, c.m("Deck"))]
     for sg in (-1, 1):
         xa, xb = sorted((sg * (L / 2 - 0.09), sg * L / 2))
         for (za, zb) in ((ZC - 1.22, ZC - 0.50), (ZC + 0.50, ZC + 1.22)):      # doorgang in het midden blijft vrij
             deck.append(box(xa, xb, 0.10, 0.62, za, zb, 0.03, tr))
+        xa, xb = sorted((sg * (L / 2 - 0.12), sg * (L / 2 + 0.16)))
+        deck.append(box(xa, xb, -0.06, 0.34, ZC - 0.30, ZC + 0.30, 0.05, tr, div=2))       # kopbalk: hier komt de koppeling uit
     c.add("Deck", mk.merge(*deck))
 
     # ladders: recht omhoog vanaf het bordes en schuin over de ketelkop naar de loopbrug
     lad = []
     for sg in (-1, 1):
-        xl = sg * 3.22
-        top = (sg * 2.40, TOP + 0.08)
+        xl = sg * 3.26
+        curve = []                                      # 12 cm buiten de bolle ketelkop langs, tot op de loopbrug
+        for deg in (78, 62, 46, 30, 15, 0):
+            t = math.radians(deg)
+            curve.append((sg * (xc + (ec + 0.14) * math.sin(t)), CY + (R + 0.12) * math.cos(t)))
         for k, dz in enumerate((-0.22, 0.22)):
-            lad += tk.pipe_run([(xl, 0.12, ZC + dz), (xl, 1.55, ZC + dz), (top[0], top[1], ZC + dz),
-                                (top[0] - sg * 0.02, TOP - 0.02, ZC + dz)], 0.03 - 0.0004 * k, it)
-        for y in (0.42, 0.70, 0.98, 1.26, 1.54):
+            pts = [(xl, 0.12, ZC + dz), (xl, 1.50, ZC + dz)] + [(x, y, ZC + dz) for (x, y) in curve]
+            pts.append((sg * (xc - 0.10), TOP + 0.02, ZC + dz))
+            lad += tk.pipe_run(pts, 0.03 - 0.0004 * k, it)
+        for y in (0.40, 0.67, 0.94, 1.21, 1.48):
             lad.append(tk.tube((xl, y, ZC - 0.22), (xl, y, ZC + 0.22), 0.024, it))
-        for f in (0.25, 0.5, 0.75):
-            x, y = xl + (top[0] - xl) * f, 1.55 + (top[1] - 1.55) * f
+        for (x, y) in curve[:-1]:
             lad.append(tk.tube((x, y, ZC - 0.22), (x, y, ZC + 0.22), 0.024, it))
     c.add("RoofLadder", mk.merge(*lad))
 

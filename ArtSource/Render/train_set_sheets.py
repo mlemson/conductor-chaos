@@ -17,7 +17,8 @@ SHEETS = {
     "DieselSet": dict(
         title="Treinset · Diesel jaren '60", file="TrainSet_Diesel60_DesignSheet.png",
         sub="DieselLocomotive_Blockout + DieselCoach_Blockout · upgrade na de stoomtrein",
-        access=["Gele ladder in de machinekamer naar dakluik RoofHatch_Engine",
+        access=["Cabinedeur aan beide kanten; kopdeuren EndDoorLeaf_* (dicht)",
+                "Gele ladder in de machinekamer naar dakluik RoofHatch_Engine",
                 "Gele ladder op de perronkant van het rijtuig, over de dakschouder",
                 "Gewelfd dak met vlak loopdek op 2,50 m, zonder hekjes"],
         repair=["Fan · dakventilator loc", "EngineHatch · motorluik (perronkant)", "AxleBox · warmgelopen aspot",
@@ -41,7 +42,8 @@ SHEETS = {
     "FreightSet": dict(
         title="Goederenwagens · ketelwagon + moderne goederenwagon", file="TrainSet_Freight_DesignSheet.png",
         sub="TankWagon_Blockout + CargoWagon_Blockout · koppelbaar achter elke set",
-        access=["Ketelwagon: gele ladder aan beide kanten naar de loopbrug bovenop",
+        access=["Ketelwagon: gele ladder buiten de ketelkop om naar de loopbrug",
+                "Vulgat met klep TankHatch en vloeistofspiegel TankLiquid",
                 "Goederenwagon: gele ladder op de perronkant, over de dakschouder",
                 "Goederenwagon binnen doorloopbaar langs de kratten"],
         repair=["Valve · lekkende afsluiter met geel handwiel", "DoorLatch · grendelkast goederenwagon",
@@ -122,7 +124,56 @@ def build(key, S):
     print("sheet", out, sheet.size)
 
 
+CONSOLES = [
+    ("Console_60s", "Diesel jaren '60", ["Button_Horn (geel) · Button_Alarm (rood)", "Switch_Lights · Switch_Wiper · Switch_Fan",
+                                         "ThrottleLever (rode rolhendel) · SpeedNeedle", "Lamp_Green / Lamp_Yellow / Lamp_Red"]),
+    ("Console_2020", "Modern Express · 2020", ["Button_Start (groen) · Button_Stop (rood)", "Button_Doors (deuren, i.p.v. pauze) · Button_Horn",
+                                               "Button_Lights · Button_Wiper · ThrottleLever", "SpeedNeedle · Lamp_Green / Yellow / Red"]),
+    ("Console_2040", "Futuristic Express · 2040", ["Button_Horn (groen) · Button_Lights (geel)", "Button_Stop (rood) · Button_Direction (blauw)",
+                                                   "ThrottleLever (gele schuif) · SpeedNeedle", "Lamp_Green / Lamp_Yellow / Lamp_Red"]),
+]
+
+
+def build_extras():
+    W, H = 3000, 2420
+    sheet = Image.new("RGB", (W, H), BG)
+    d = ImageDraw.Draw(sheet)
+    pill(d, 60, 44, "Cabines · rijtuigversies · vulklep · kopdeuren", font(58))
+    d.text((64, 150), "CabDesk met losse bediening per set · rijtuigen met en zonder zijdeuren · TankHatch · EndDoorLeaf_L/R_Front|Rear",
+           font=font(28, False), fill=PARCH)
+    for k, (name, label, lines) in enumerate(CONSOLES):
+        x = 60 + k * 980
+        paste(sheet, d, shot(name, (940, 607)), x, 210, label)
+        d.rounded_rectangle((x, 835, x + 940, 1025), 22, fill=PANEL)
+        for j, t in enumerate(lines):
+            d.ellipse((x + 24, 862 + j * 40, x + 36, 874 + j * 40), fill=YELLOW)
+            d.text((x + 52, 850 + j * 40), t, font=font(25, False), fill=PARCH)
+    variants = [("DieselCoach_Doors_Blockout", "Dieselrijtuig met zijdeuren"), ("ModernCoach_Closed_Blockout", "Modern rijtuig zonder zijdeuren"),
+                ("FuturisticCoach_Closed_Blockout", "Futuristisch rijtuig zonder zijdeuren")]
+    for k, (m, label) in enumerate(variants):
+        paste(sheet, d, shot("Variant_" + m, (940, 509)), 60 + k * 980, 1055, label)
+    y = 1594
+    paste(sheet, d, shot("TankHatch_closed", (705, 470), sky=False), 60, y, "Vulklep dicht")
+    paste(sheet, d, shot("TankHatch_open", (705, 470), sky=False), 785, y, "Vulklep open · TankLiquid")
+    for k, (n, label) in enumerate((("EndDoor_auto_closed", "2020/2040 dicht"), ("EndDoor_auto_open", "open"),
+                                    ("EndDoor_manual_closed", "Diesel dicht"), ("EndDoor_manual_open", "open"))):
+        paste(sheet, d, shot(n, (350, 470), sky=False), 1510 + k * 366, y, label)
+    d.rounded_rectangle((60, 2094, W - 60, 2360), 22, fill=PANEL)
+    notes = ["Kopdeuren: twee schuifbladen per kop, dicht in het model. Open = elk blad 0,46 m van het midden af langs lokale Z (L naar +Z, R naar -Z).",
+             "2020 en 2040: glazen bladen met gele rand, bedoeld om vanzelf te openen als je dichtbij staat. Diesel: dichte deur met ruitje en gele grepen.",
+             "Vulklep TankHatch scharniert om lokale X (0 = dicht, ongeveer -105 graden = open). TankLiquid schuift langs lokale Y (0 = vol, -1,2 = leeg).",
+             "Lessenaar: gele en gekleurde knoppen zijn losse knopen (Button_*, Switch_*), de hendel ThrottleLever draait of schuift, SpeedNeedle draait.",
+             "De openen-en-sluiten-logica zit nog niet in de code; Prepare Selected Vehicles geeft de kopdeurbladen daarom nog geen botsvorm."]
+    for j, t in enumerate(notes):
+        d.ellipse((92, 2132 + j * 44, 104, 2144 + j * 44), fill=YELLOW)
+        d.text((122, 2120 + j * 44), t, font=font(25, False), fill=PARCH)
+    out = os.path.join(ROOT, "Docs", "Art", "TrainSet_Cabs_Variants_DesignSheet.png")
+    sheet.save(out, optimize=True)
+    print("sheet", out, sheet.size)
+
+
 def main():
+    build_extras()
     for key, S in SHEETS.items():
         build(key, S)
 

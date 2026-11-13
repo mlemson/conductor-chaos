@@ -102,6 +102,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Modern_Go
+    second: {fileID: 2100000, guid: 0a45f1a6f836240888403a4ec5287ce2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Modern_Glass
     second: {fileID: 2100000, guid: fa951dfbcba055563eb1a065801181f3, type: 2}
   - first:

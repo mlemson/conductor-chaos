@@ -10,6 +10,11 @@ DieselLocomotive_Blockout — rode diesel met een rechte ronde kop naar de Neder
   Onderhoudspunten: `RepairPoint_Fan` (dakventilator), `RepairPoint_EngineHatch` (motorluik perronkant),
   `RepairPoint_AxleBox` (warmgelopen aspot) en `RepairPoint_BrakeHose` (remslang achter).
 
+DieselCoach_Doors_Blockout — hetzelfde rijtuig met een dubbele zijdeur in het midden (`SideDoorLeaf_L/R[_Far]`).
+
+Alle kopse doorgangen hebben schuifbladen (`EndDoorLeaf_L/R_Front|Rear`, dicht) en de cabine heeft de lessenaar van
+het blad 'Cabine jaren 60' (train_consoles.py).
+
 DieselCoach_Blockout — bijpassend rijtuig: bordeaux met crème raamband en gouden bies, groene banken met crème
   hoofdsteunen. Dakopgang: gele ladder op de perronkant, met de dakwelving mee tot op het loopdek.
   Onderhoudspunten: `RepairPoint_Vent` (dakventilator), `RepairPoint_AxleBox`, `RepairPoint_BrakeHose` (voor).
@@ -149,8 +154,8 @@ def build_locomotive():
     eng.append(fly.transform(t=(-0.66, 0.72, -2.00)))
     eng += [tk.tube((0.86, 0.50, -1.80), (1.02, 0.50, -1.80), 0.04, c.m("Interact")),
             tk.tube((1.02, 0.44, -1.80), (1.02, 1.90, -1.80), 0.055, c.m("Interact"))]
-    c.add("Interior", mk.merge(c.floor(), c.roof_ladder(ladder_x), *eng, c.cab_seat(2.50)))
-    c.desk(L / 2 - WALL - 0.02, 1.10)
+    c.add("Interior", mk.merge(c.floor(), c.roof_ladder(ladder_x), *eng, c.cab_seat(2.02)))
+    c.console("60s")
 
     c.add("EngineBay", c.side_panel("EngineHatch", -0.90, 0.44, w=0.78, h=0.40, mat="Panel"))
     c.underframe((-2.0, 2.0), x1=L / 2 + 0.10)
@@ -161,21 +166,31 @@ def build_locomotive():
     return c
 
 
-def build_coach():
-    c = tk.Car("DieselCoach_Blockout", "DieselCoach", "Diesel", 7.2)
+def build_coach(doors=False):
+    """doors=False: gesloten rijtuig (instappen via de kopse kanten); doors=True: met een dubbele zijdeur in het midden."""
+    c = tk.Car("DieselCoach_Doors_Blockout" if doors else "DieselCoach_Blockout", "DieselCoach", "Diesel", 7.2)
     c.materials(COLORS)
     L = c.L
     wins = [(-3.18, -2.32), (-2.08, -1.22), (-0.98, -0.12), (0.12, 0.98), (1.22, 2.08), (2.32, 3.18)]
+    door = (-0.55, 0.55)
+    if doors:
+        wins = wins[:2] + wins[4:]
     near = [(-2.74, -2.32)] + wins[1:]              # smal raam naast de dakladder
-    c.body(near, wins, (1.00, 1.68))
-    c.window_band("WindowBand", 0.90, 1.78, "Cream")
+    cut = [(door[0] - 0.30, door[1] + 0.30)] if doors else []
+    c.body(near, wins, (1.00, 1.68), doors_near=[door] if doors else (), doors_far=[door] if doors else ())
+    c.window_band("WindowBand", 0.90, 1.78, "Cream", doors_near=cut, doors_far=cut)
     c.windows()
-    c.bands("Livery", [(-L / 2 + 0.12, L / 2 - 0.12, 0.800, 0.850, "Gold", 0.036),
-                       (-L / 2 + 0.12, L / 2 - 0.12, 1.91, 1.99, "BodyLow", 0.030)] +
-            [(a - 0.06, b + 0.06, 0.24, 0.70, "Panel", 0.028) for (a, b) in wins])
-    emblem = mk.cylinder(0.15, 0.06, 10, 0.015, mat=c.m("Gold"), axis="z")
-    emblem.sharp = True
-    c.add("Emblem", mk.merge(emblem.transform(t=(0.0, 0.47, 0.03)), emblem.transform(t=(0.0, 0.47, -W - 0.03))))
+    specs = []
+    for (y0, y1, mat, depth) in ((0.800, 0.850, "Gold", 0.036), (1.91, 1.99, "BodyLow", 0.030)):
+        specs += [(a_, b_, y0, y1, mat, depth) for (a_, b_) in tk.segs(-L / 2 + 0.12, L / 2 - 0.12, cut)]
+    c.bands("Livery", specs + [(a - 0.06, b + 0.06, 0.24, 0.70, "Panel", 0.028) for (a, b) in wins])
+    if doors:
+        for far in (False, True):
+            c.side_door(door[0], door[1], far=far, leaf="Body", frame_mat="Cream", panel="Panel")
+    else:
+        emblem = mk.cylinder(0.15, 0.06, 10, 0.015, mat=c.m("Gold"), axis="z")
+        emblem.sharp = True
+        c.add("Emblem", mk.merge(emblem.transform(t=(0.0, 0.47, 0.03)), emblem.transform(t=(0.0, 0.47, -W - 0.03))))
 
     vent_house = c.fan("Vent", 1.60, ZC, r=0.34)
     domes = [mk.lathe([(0.0, 0.0), (0.24, 0.0), (0.24, 0.06), (0.19, 0.13), (0.10, 0.17), (0.0, 0.18)], 10, mat=c.m("Trim"),
@@ -183,9 +198,11 @@ def build_coach():
     c.add("Roof", mk.merge(c.roof(), vent_house, *domes))
     c.add("RoofLadder", c.side_ladder(-3.04))
 
-    seats = [(-3.37, 1), (3.37, -1)]
+    seats = [(-3.31, 1), (3.31, -1)]
     for xb in (-2.2, -1.1, 0.0, 1.1, 2.2):
         seats += [(xb - 0.12, -1), (xb + 0.12, 1)]
+    if doors:                                       # het middenvak is de instap
+        seats = [st for st in seats if abs(st[0]) > 1.0]
     c.add("Interior", mk.merge(c.floor(), *c.benches(seats, "Seat", "Head")))
     c.underframe((-2.30, 2.30))
     c.axle_box("AxleBox", -2.30)
@@ -198,6 +215,7 @@ def build_coach():
 def main():
     build_locomotive().export("DieselLocomotive", "DieselSet")
     build_coach().export("DieselCoach", "DieselSet")
+    build_coach(doors=True).export("DieselCoach", "DieselSet")
 
 
 if __name__ == "__main__":

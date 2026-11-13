@@ -10,6 +10,10 @@ Futuristic Express (FuturisticCabCar_Blockout, FuturisticCoach_Blockout): marine
   terracotta deurportalen met lichtgevend kader, cyaan lichtlijnen (neus, schort, deurpijlen), lange lage neus met
   grote glazen kap, dakvin. Onderhoudspunten: Pantograph, PowerCell (energiecel), AxleBox, BrakeHose; rijtuig: Cooler.
 
+Van elk tussenrijtuig is er ook een versie zonder zijdeuren: `ModernCoach_Closed_Blockout` en
+`FuturisticCoach_Closed_Blockout`. De cabines hebben de lessenaars van de bladen 'Cabine jaren 2020' en 'Cabine jaren
+2040' (train_consoles.py); de kopse doorgangen hebben glazen schuifbladen (`EndDoorLeaf_L/R_Front|Rear`, dicht).
+
 Beide: binnen doorloopbaar tot in de cabine (`CabDesk`, `ThrottleLever`), zijdeuren als losse bladen
 (`SideDoorLeaf_L/R[_Far]`, dicht), dakopgang via een gele ladder binnen naar dakluik `RoofHatch_Cab` en via de gele
 ladder op de perronkant van het tussenrijtuig. Neus = vloeiende romp + glazen kap (train_kit.loft), gewelfd dak,
@@ -63,6 +67,7 @@ MODERN = dict(
     seat=("Seat", "Head"),
     belly="Cream",
     side_repair=("Converter", "Yellow", 0.51, 0.22),
+    console="2020",
     coach_fan="Aircon",
 )
 
@@ -101,6 +106,7 @@ FUTURISTIC = dict(
     seat=("Seat", "Head"),
     belly="BodyLow",
     side_repair=("PowerCell", "Glow", 0.44, 0.26),
+    console="2040",
     coach_fan="Cooler",
 )
 
@@ -129,6 +135,7 @@ def doors(c, S, door):
 def cab_car(S):
     name, root, prefix, folder = S["cab"]
     c = tk.Car(name, root, prefix, 6.4)
+    c.door_style = "auto"
     c.materials(S["colors"])
     L = c.L
     door = (-2.15, -0.95)
@@ -182,10 +189,10 @@ def cab_car(S):
         gear += [fin, box(-2.86, -2.46, ROOF_TOP + 0.14, ROOF_TOP + 0.24, ZC - 0.085, ZC + 0.085, 0.02, c.m("GlowY"))]
     c.add("Roof", mk.merge(c.roof([hole], front_open=True), *gear))
 
-    near = c.benches([(-0.50, 1), (0.42, -1), (0.66, 1), (1.60, -1)], *S["seat"], sides=(1,))
+    near = c.benches([(-0.50, 1), (0.42, -1)], *S["seat"], sides=(1,))
     far_b = c.benches([(-0.50, 1), (0.42, -1)], *S["seat"], sides=(-1,))
-    c.add("Interior", mk.merge(c.floor(), c.roof_ladder(ladder_x), c.cab_seat(2.45), *near, *far_b))
-    c.desk(L / 2 - tk.WALL - 0.02, S["hood"][0]["yt"] - 0.06)
+    c.add("Interior", mk.merge(c.floor(), c.roof_ladder(ladder_x), c.cab_seat(2.02), *near, *far_b))
+    c.console(S["console"])
     c.underframe((-2.0, 2.0), x1=L / 2 + 0.10, belly=S["belly"])
     c.axle_box("AxleBox", 2.0)
     c.add("Ends", mk.merge(*c.end(-1), c.hose("BrakeHose", -1)))
@@ -194,28 +201,37 @@ def cab_car(S):
     return c, folder
 
 
-def coach(S):
+def coach(S, closed=False):
+    """closed=False: met schuifdeuren in het midden; closed=True: zonder zijdeuren (instappen via de kopse kanten)."""
     name, root, prefix, folder = S["coach"]
+    if closed:
+        name = name.replace("_Blockout", "_Closed_Blockout")
     c = tk.Car(name, root, prefix, 7.2)
+    c.door_style = "auto"
     c.materials(S["colors"])
     L = c.L
     door = (-0.60, 0.60)
     wins = [(-3.18, -2.20), (-1.96, -0.98), (0.98, 1.96), (2.20, 3.18)]
+    if closed:
+        wins = wins[:2] + [(-0.49, 0.49)] + wins[2:]
     near = [(-2.72, -2.20)] + wins[1:]                      # smal raam naast de dakladder
-    c.body(near, wins, (0.98, 1.74), doors_near=[door], doors_far=[door])
+    cut = [] if closed else [(door[0] - 0.36, door[1] + 0.36)]
+    c.body(near, wins, (0.98, 1.74), doors_near=() if closed else [door], doors_far=() if closed else [door])
     if S["wband"]:
-        c.window_band("WindowBand", *S["wband"], doors_near=[(door[0] - 0.36, door[1] + 0.36)],
-                      doors_far=[(door[0] - 0.36, door[1] + 0.36)])
+        c.window_band("WindowBand", *S["wband"], doors_near=cut, doors_far=cut)
     c.windows()
-    livery(c, S, [(door[0] - 0.36, door[1] + 0.36)])
-    doors(c, S, door)
+    livery(c, S, cut)
+    if not closed:
+        doors(c, S, door)
     fan = c.fan(S["coach_fan"], 2.10, ZC, r=0.36)
     ac = mk.merge(box(-2.70, -1.50, ROOF_TOP - 0.04, ROOF_TOP + 0.20, ZC - 0.50, ZC + 0.50, 0.10, c.m("BodyLow"), div=3),
                   *[box(-2.56 + k * 0.19, -2.45 + k * 0.19, ROOF_TOP + 0.19, ROOF_TOP + 0.215, ZC - 0.34, ZC + 0.34, 0.006,
                         c.m("Trim")) for k in range(6)])
     c.add("Roof", mk.merge(c.roof(), fan, ac))
     c.add("RoofLadder", c.side_ladder(-3.04))
-    seats = [(-3.37, 1), (-2.32, -1), (-2.08, 1), (-1.00, -1), (1.00, 1), (2.08, -1), (2.32, 1), (3.37, -1)]
+    seats = [(-3.31, 1), (-2.32, -1), (-2.08, 1), (-1.00, -1), (1.00, 1), (2.08, -1), (2.32, 1), (3.31, -1)]
+    if closed:
+        seats += [(-0.76, 1), (0.76, -1)]
     c.add("Interior", mk.merge(c.floor(), *c.benches(seats, *S["seat"])))
     c.underframe((-2.30, 2.30), belly=S["belly"])
     c.axle_box("AxleBox", -2.30)
@@ -229,8 +245,7 @@ def main():
     which = sys.argv[1:] or ["modern", "futuristic"]
     for key, S, mats in (("modern", MODERN, "ModernSet"), ("futuristic", FUTURISTIC, "FuturisticSet")):
         if key in which:
-            for build in (cab_car, coach):
-                c, folder = build(S)
+            for c, folder in (cab_car(S), coach(S), coach(S, closed=True)):
                 c.export(folder, mats)
 
 

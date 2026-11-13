@@ -1,10 +1,10 @@
 {
   "model": "TankWagon_Blockout",
   "stats": {
-    "parts": 25,
-    "tris": 14644,
-    "verts": 7524,
-    "materials": 22
+    "parts": 27,
+    "tris": 18528,
+    "verts": 9534,
+    "materials": 24
   },
   "repairPoints": [
     "Valve",
@@ -174,6 +174,23 @@
         "cellSize": 0.8
       }
     },
+    "M_Freight_Liquid": {
+      "base": "#83C2EB",
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.7,
+      "opts": {
+        "cells": 0.0,
+        "grime": 0.0,
+        "cellSize": 0.8
+      }
+    },
     "M_Freight_Trim": {
       "base": "#482826",
       "ramp": [
@@ -308,6 +325,26 @@
       "rampShift": 0.0,
       "smoothness": 0.05,
       "opts": {
+        "cells": 0.0,
+        "grime": 0.0,
+        "cellSize": 0.8
+      }
+    },
+    "M_Freight_Go": {
+      "base": "#92BC4B",
+      "ramp": [
+        "#6F8C35",
+        "#7A9B3C",
+        "#82A740",
+        "#92BC4B",
+        "#A3D25B"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.45,
+      "opts": {
+        "emissive": 0.7,
+        "rim": 0.0,
+        "paint": 0,
         "cells": 0.0,
         "grime": 0.0,
         "cellSize": 0.8

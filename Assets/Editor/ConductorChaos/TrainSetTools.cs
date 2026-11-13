@@ -42,8 +42,15 @@ namespace ConductorChaos.EditorTools
             ("TankWagon_Blockout", "TankWagon", 3.6f, 3.6f), ("CargoWagon_Blockout", "CargoWagon", 3.6f, 3.6f),
         };
 
+        // extra rijtuigversies: diesel met zijdeuren, modern en futuristisch zonder zijdeuren
+        static readonly (string name, string folder, float front, float rear)[] Variants =
+        {
+            ("DieselCoach_Doors_Blockout", "DieselCoach", 3.6f, 3.6f), ("ModernCoach_Closed_Blockout", "ModernCoach", 3.6f, 3.6f),
+            ("FuturisticCoach_Closed_Blockout", "FuturisticCoach", 3.6f, 3.6f),
+        };
+
         /// <summary>Alle voertuigen van de nieuwe sets (voor Configure Train: koppelbaar als wagon).</summary>
-        public static IEnumerable<string> Vehicles => Diesel.Concat(Modern).Concat(Futuristic).Concat(Freight).Select(v => v.name);
+        public static IEnumerable<string> Vehicles => Diesel.Concat(Modern).Concat(Futuristic).Concat(Freight).Concat(Variants).Select(v => v.name);
 
         [MenuItem("Tools/Conductor Chaos/Train Sets/Place Diesel '60 Set")]
         static void PlaceDiesel() => Place("Diesel '60", Diesel);
@@ -56,6 +63,9 @@ namespace ConductorChaos.EditorTools
 
         [MenuItem("Tools/Conductor Chaos/Train Sets/Place Freight Wagons (tank + cargo)")]
         static void PlaceFreight() => Place("Freight wagons", Freight);
+
+        [MenuItem("Tools/Conductor Chaos/Train Sets/Place Coach Variants (doors / no doors)")]
+        static void PlaceVariants() => Place("Coach variants", Variants);
 
         [MenuItem("Tools/Conductor Chaos/Train Sets/Prepare Selected Vehicles")]
         static void PrepareSelected()
@@ -114,7 +124,10 @@ namespace ConductorChaos.EditorTools
             {
                 string n = filter.name;
                 // de bout krijgt van RepairPoint zijn eigen bolvormige botsvorm; rook en losse brokstukken botsen niet
-                if (!filter.sharedMesh || filter.GetComponent<Collider>() || n.StartsWith("Repair_Bolt") || n.StartsWith("Broken_Bits")) continue;
+                // de schuifbladen van de kopdeuren (EndDoorLeaf_*) staan dicht in het model en krijgen pas een botsvorm als de deurcode
+                // ze kan openen; anders kun je niet meer door de trein lopen
+                if (!filter.sharedMesh || filter.GetComponent<Collider>() || n.StartsWith("Repair_Bolt") || n.StartsWith("Broken_Bits")
+                    || n.StartsWith("EndDoorLeaf")) continue;
                 var collider = Undo.AddComponent<MeshCollider>(filter.gameObject);
                 collider.sharedMesh = filter.sharedMesh;
                 collider.convex = false;

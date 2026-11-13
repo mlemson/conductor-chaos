@@ -170,8 +170,11 @@ def loft(stations, N=16, half=False, mat="Default", mat_fn=None, cap0=False, cap
                 continue
             if np.dot(nrm, c - (cen[i] + cen[i + 1]) / 2) < 0:
                 q = q[::-1]
+            fm = mat_fn(i, j, c) if mat_fn else mat
+            if fm is None:                      # mat_fn geeft None: hier zit een gat
+                continue
             F.append(tuple(q))
-            M.append(mat_fn(i, j, c) if mat_fn else mat)
+            M.append(fm)
     for (flag, i, sx) in ((cap0, 0, -1.0), (cap1, len(rings) - 1, 1.0)):
         if not flag:
             continue
@@ -328,6 +331,7 @@ class Car:
         self.name, self.root, self.p, self.L = name, root, prefix, L
         self.sc.add(mk.Part(root, None))
         self.repairs = []
+        self.door_style = "manual"       # kopdeuren: "manual" (houten deur met greep) of "auto" (glazen schuifdeur)
 
     def m(self, key):
         return f"M_{self.p}_{key}"
@@ -354,10 +358,12 @@ class Car:
             "Floor": ("interior_wood", 1, 0.15, -0.12, {}),
             "Smoke": ("haze_purple", 1, 0.05, -0.10, {"cells": 0.0, "grime": 0.0}),
             "Steam": ("cloud_snow", 3, 0.05, 0.0, {"cells": 0.0, "grime": 0.0}),
+            "Go": ("dino_green", 3, 0.45, 0.0, {"emissive": 0.7, "rim": 0.0, "paint": 0, "cells": 0.0, "grime": 0.0}),
         }
         for key, (ramp, idx, smooth, shift, opts) in std.items():
             if self.m(key) not in sc.materials:
-                sc.material(self.m(key), R_[ramp][idx], R_[ramp], smooth, ramp_shift=shift, opts=dict(opts))
+                sc.material(self.m(key), R_[ramp][idx], R_[ramp], smooth, ramp_shift=shift, opts=dict(opts),
+                            emissive=R_[ramp][min(idx + 1, 4)] if opts.get("emissive") else None)
         if self.m("Glass") not in sc.materials:
             sc.material(self.m("Glass"), R_["sky"][2], R_["sky"], 0.85, ramp_shift=0.05,
                         opts={"flat": 0.6, "rim": 0.35, "opacity": 0.22, "cells": 0.0, "grime": 0.0})
@@ -573,7 +579,38 @@ class Car:
                 lens = mk.cylinder(0.095, 0.07, 8, 0.012, mat=self.m(lamps), axis="x").transform(t=(0.03, 0, 0))
                 house.sharp = lens.sharp = True
                 out.append(mk.merge(house, lens).transform(R=None if sgn > 0 else mk.rot_y(math.pi), t=(ex + sgn * 0.04, 0.62, ZC + dz)))
+        self.end_door(sgn)
         return out
+
+    def end_door(self, sgn):
+        """Kopdeur: twee schuifbladen (dicht) aan de binnenkant van de kopwand, zodat de doorgang kan sluiten.
+        Knopen EndDoorLeaf_L_<Front|Rear> en EndDoorLeaf_R_...; open = elk blad 0,46 m van het midden af schuiven langs
+        lokale Z (L naar +Z, R naar -Z). Pivot = midden-onder van het blad. De bladen passen open naast de doorgang."""
+        tag = "Front" if sgn > 0 else "Rear"
+        xw = sgn * (self.L / 2 - WALL - 0.032)
+        w = END_DOOR + 0.012
+        y0 = Y0 + FLOOR + 0.03
+        h = END_TOP + 0.05 - y0
+        hw = w / 2 - 0.003
+        tr, it = self.m("Trim"), self.m("Interact")
+        for nm, side in (("L", -1), ("R", 1)):
+            if self.door_style == "auto":
+                hole = (-hw + 0.055, hw - 0.055, 0.22, h - 0.10)
+                bits = [mk.through_box((-hw, hw, 0.0, h, -0.02, 0.02), [hole], 0.012, step=0.3, mat=tr),
+                        self.glass(hole[0], hole[1], hole[2], hole[3], 0.012),
+                        box(side * hw - 0.012, side * hw + 0.012, 0.10, h - 0.10, -0.032, 0.032, 0.006, it)]
+            else:
+                hole = (-hw + 0.07, hw - 0.07, 0.92, h - 0.14)
+                bits = [mk.through_box((-hw, hw, 0.0, h, -0.02, 0.02), [hole], 0.012, step=0.3, mat=self.m("Body")),
+                        frame(hole[0], hole[1], hole[2], hole[3], 0.04, -0.034, 0.034, 0.012, tr),
+                        self.glass(hole[0], hole[1], hole[2], hole[3], 0.012)]
+                gx = side * (hw - 0.06)
+                for face in (1, -1):
+                    bits.append(tube((gx, 0.62, face * 0.065), (gx, 0.86, face * 0.065), 0.02, it))
+                    bits += [box(gx - 0.017, gx + 0.017, y - 0.017, y + 0.017, min(face * 0.065, 0), max(face * 0.065, 0), 0.006, it)
+                             for y in (0.64, 0.84)]
+            leaf = mk.merge(*bits).transform(R=mk.rot_y(math.pi / 2))
+            self.add(f"EndDoorLeaf_{nm}_{tag}", leaf, (xw, y0, ZC - side * w / 2))
 
     def side_ladder(self, x, width=0.40):
         """Gele dakladder op de perronkant: recht omhoog langs de wand en met de welving mee over de dakschouder tot op
@@ -809,6 +846,11 @@ class Car:
             return self.m(glass)
         return fn
 
+    def console(self, style, xw=None):
+        """Bestuurderslessenaar naar de cabinebladen ("60s", "2020" of "2040"); zie train_consoles.py."""
+        import train_consoles
+        train_consoles.add_console(self, style, xw)
+
     def desk(self, x, y, zw=1.5, mat="Desk"):
         """Lessenaar in de cabine: schuin blad uit één stuk met gashendel (ThrottleLever) en lampjes."""
         prof = [(-0.42, y - 0.50), (0.0, y - 0.50), (0.0, y + 0.02), (-0.14, y + 0.10), (-0.42, y - 0.04)]
@@ -823,7 +865,7 @@ class Car:
                          mk.ellipsoid(0.055, 0.055, 0.055, 8, 5, mat=self.m("Interact")).transform(t=(0, 0.27, 0)))
         self.add("ThrottleLever", lever, (x - 0.22, y + 0.03, ZC + 0.58), rotation=mk.rot_z(0.35))
 
-    def cab_seat(self, x, mat="Seat"):
+    def cab_seat(self, x, mat="Interact"):
         prof = [(-0.30, Y0 + FLOOR), (0.22, Y0 + FLOOR), (0.22, 0.56), (-0.14, 0.56), (-0.18, 1.12), (-0.30, 1.12)]
         return mk.prism(mk.chamfer_poly(prof, 0.035), ZC - 0.32, ZC + 0.32, 0.03, mat=self.m(mat)).transform(t=(x, 0, 0))
 

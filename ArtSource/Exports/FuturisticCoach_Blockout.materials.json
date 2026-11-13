@@ -1,10 +1,10 @@
 {
   "model": "FuturisticCoach_Blockout",
   "stats": {
-    "parts": 36,
-    "tris": 42040,
-    "verts": 22926,
-    "materials": 25
+    "parts": 40,
+    "tris": 44592,
+    "verts": 24398,
+    "materials": 26
   },
   "repairPoints": [
     "Cooler",
@@ -366,6 +366,26 @@
       "rampShift": 0.0,
       "smoothness": 0.05,
       "opts": {
+        "cells": 0.0,
+        "grime": 0.0,
+        "cellSize": 0.8
+      }
+    },
+    "M_Future_Go": {
+      "base": "#92BC4B",
+      "ramp": [
+        "#6F8C35",
+        "#7A9B3C",
+        "#82A740",
+        "#92BC4B",
+        "#A3D25B"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.45,
+      "opts": {
+        "emissive": 0.7,
+        "rim": 0.0,
+        "paint": 0,
         "cells": 0.0,
         "grime": 0.0,
         "cellSize": 0.8

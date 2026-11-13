@@ -52,6 +52,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Freight_Liquid
+    second: {fileID: 2100000, guid: 4d3c5d55760bd524da279c5380d4599b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Freight_Trim
     second: {fileID: 2100000, guid: d7ec86b7b391d83e359d7d0b1428c923, type: 2}
   - first:
@@ -89,6 +94,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Freight_Steam
     second: {fileID: 2100000, guid: 222a92e1cc0fb761ab22a4a1d0d47f46, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Freight_Go
+    second: {fileID: 2100000, guid: 873f75c756d792fd88c9dd6f0cfd84ee, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
