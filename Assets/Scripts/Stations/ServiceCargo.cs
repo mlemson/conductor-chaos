@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using ConductorChaos.Playground;
 
 namespace ConductorChaos.Stations
 {
@@ -17,6 +18,9 @@ namespace ConductorChaos.Stations
         private readonly HashSet<Rigidbody> travelled = new();
         private readonly Dictionary<Rigidbody, Collider[]> pieceColliders = new();
 
+        private readonly Dictionary<Rigidbody, Vector3> lastBayVelocity = new();
+        private readonly RaycastHit[] supportHits = new RaycastHit[16];
+
         public override int Target => pieces?.Length ?? 0;
         public override bool IsConfigured => Target > 0 && destination && cargoBay &&
             System.Array.TrueForAll(pieces, piece => piece);
@@ -30,6 +34,7 @@ namespace ConductorChaos.Stations
             aboard.Clear();
             travelled.Clear();
             pieceColliders.Clear();
+            lastBayVelocity.Clear();
             foreach (var piece in pieces)
                 if (piece) pieceColliders[piece] = piece.GetComponentsInChildren<Collider>();
         }
@@ -40,12 +45,55 @@ namespace ConductorChaos.Stations
             // Depart only if all required pieces are currently on the wagon.
             // Keep LoadedCount cumulative so unloading does not reset the HUD.
             aboard.Clear();
+            var wagon = cargoBay ? TrainDrive.FindGuidedSupport(cargoBay.attachedRigidbody) : null;
             foreach (var piece in pieces)
-                if (piece && Overlaps(cargoBay, piece))
+            {
+                if (!piece || !Overlaps(cargoBay, piece))
                 {
-                    aboard.Add(piece);
-                    loaded.Add(piece);
+                    if (piece) lastBayVelocity.Remove(piece);
+                    continue;
                 }
+                aboard.Add(piece);
+                loaded.Add(piece);
+                CarryRestingCargo(piece, wagon);
+            }
+        }
+
+        private void CarryRestingCargo(Rigidbody piece, Rigidbody wagon)
+        {
+            if (!wagon || piece.isKinematic || !HasWagonFloor(piece, wagon))
+            {
+                lastBayVelocity.Remove(piece);
+                return;
+            }
+            foreach (var player in PlaygroundPlayer.SpawnedPlayers)
+                if (player.TryGetControlHand(piece, out _, out _, out _))
+                {
+                    lastBayVelocity.Remove(piece);
+                    return;
+                }
+
+            Vector3 velocity = TrainDrive.GuidedBodyVelocity(wagon, piece.worldCenterOfMass);
+            if (lastBayVelocity.TryGetValue(piece, out var previous) &&
+                (piece.linearVelocity - previous).sqrMagnitude < 0.6f * 0.6f)
+                piece.AddForce(Vector3.ClampMagnitude(velocity - previous, 12f * Time.fixedDeltaTime),
+                    ForceMode.VelocityChange);
+            lastBayVelocity[piece] = velocity;
+        }
+
+        private bool HasWagonFloor(Rigidbody piece, Rigidbody wagon)
+        {
+            if (!pieceColliders.TryGetValue(piece, out var colliders)) return false;
+            Vector3 center = piece.worldCenterOfMass;
+            float bottom = center.y;
+            foreach (var collider in colliders)
+                if (collider && collider.enabled && !collider.isTrigger)
+                    bottom = Mathf.Min(bottom, collider.bounds.min.y);
+            int count = Physics.RaycastNonAlloc(center, Vector3.down, supportHits, center.y - bottom + 0.10f,
+                ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+                if (supportHits[i].rigidbody == wagon && supportHits[i].normal.y > 0.55f) return true;
+            return false;
         }
 
         // Only the server observes transported cargo, and only while the train is moving.

@@ -27,6 +27,13 @@ namespace ConductorChaos.Playground
         private readonly NetworkVariable<float> fuel = new(StartingFuel);
         private readonly NetworkVariable<Vector3> shovelPosition = new();
         private readonly NetworkVariable<Quaternion> shovelRotation = new(Quaternion.identity);
+        [SerializeField] private bool startWithCoupledWagons;
+        private bool awaitingConsist, invalidConsist;
+        private bool tiltLever;
+        private Transform stopButton;
+        private Vector3 startButtonRest;
+        private Quaternion speedNeedleRest;
+        private const float LeverTilt = 28f;
         private Rigidbody body;
         private TrackPiece track;
         private float distance, speed;
@@ -125,6 +132,16 @@ namespace ConductorChaos.Playground
                 serializer.SerializeValue(ref Visible);
             }
             public bool Equals(CoalPose other) => Visible == other.Visible && Position == other.Position && Rotation == other.Rotation;
+        }
+
+        internal static void ConfigureMotionPresentation(Rigidbody vehicle, bool authoritative)
+        {
+            vehicle.interpolation = authoritative ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
+            if (!vehicle.TryGetComponent<NetworkTransform>(out var sync)) return;
+            sync.PositionInterpolationType = NetworkTransform.InterpolationTypes.Lerp;
+            sync.RotationInterpolationType = NetworkTransform.InterpolationTypes.Lerp;
+            sync.PositionLerpSmoothing = false;
+            sync.RotationLerpSmoothing = false;
         }
 
         private void Awake()
@@ -293,7 +310,13 @@ namespace ConductorChaos.Playground
         }
 
         public void Configure(TrackPiece first, float start) { firstTrack = first; startDistance = start; }
-        public void ConfigureWagons(Rigidbody[] wagons) => availableWagons = wagons;
+        public bool HasConfiguredWagon(Rigidbody wagon) => wagon && System.Array.IndexOf(availableWagons, wagon) >= 0;
+
+        public void ConfigureWagons(Rigidbody[] wagons, bool coupledAtStart = false)
+        {
+            availableWagons = wagons;
+            startWithCoupledWagons = coupledAtStart;
+        }
         internal bool IsCabControlCollider(Collider candidate) =>
             candidate && (candidate == latchCollider || IsShovelGrip(candidate) || IsLeverHandle(candidate) ||
                 IsWagonDoorPanel(candidate) || IsWagonDoorHandle(candidate));
@@ -313,6 +336,9 @@ namespace ConductorChaos.Playground
                 if (door != null && (candidate == door.OutsideHandle || candidate == door.InsideHandle)) return true;
             return false;
         }
+
+        internal bool CanReachLever(Collider candidate, Vector3 position) => IsLeverHandle(candidate) &&
+            (tiltLever ? (candidate.ClosestPoint(position) - position).sqrMagnitude < 1.5f * 1.5f : TryGetCabin(position, .12f, out _));
 
         internal bool IsLeverHandle(Collider candidate) => leverPivot && candidate && candidate.transform == leverPivot;
         internal bool IsShovelGrip(Collider candidate) => candidate && (candidate == shovelGrip || candidate.transform == shovelLoad);
@@ -337,16 +363,20 @@ namespace ConductorChaos.Playground
             derailed = false;
             body.isKinematic = true;
             body.useGravity = false;
-            body.interpolation = IsServer ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
+            tiltLever = false;
+            lever = startButton = stopButton = speedNeedle = null;
+            ConfigureMotionPresentation(body, IsServer);
             if (IsServer) { powered.Value = false; throttle.Value = 0f; displayedSpeed.Value = 0f; doorAngle.Value = 0f; wagonDoorOffsets.Value = Vector4.zero; speed = 0f; buttonDown.Value = false; nextButtonPress = 0f; }
             coalBin = coalScoopPoint = coalSource = null;
             coalSourceBody = null;
             foreach (var t in GetComponentsInChildren<Transform>(true))
             {
-                if (t.name == "Regulator") { lever = t; leverRest = t.localRotation; }
+                if (t.name == "Regulator" && !tiltLever) { lever = t; leverRest = t.localRotation; }
                 if (t.name == "HeatNeedle") heatNeedle = t;
                 if (t.name == "CabLamp") cabLamp = t;
-                if (t.name == "StartButton") startButton = t;
+                if (t.name == "ThrottleLever") { lever = t; leverRest = t.localRotation; tiltLever = true; }
+                if (t.name == "StartButton" || t.name == "Button_Start") startButton = t;
+                if (t.name == "Button_Stop") stopButton = t;
                 if (t.name == "SpeedNeedle") speedNeedle = t;
                 if (t.name == "FireboxDoor") fireboxDoor = t;
                 if (t.name == "FireboxLatch") fireboxLatch = t;
@@ -359,6 +389,9 @@ namespace ConductorChaos.Playground
                 if (t.name == "FireboxFeedPoint") fireboxFeedPoint = t;
                 if (t.name == "FireboxFlame") fireboxFlame = t;
             }
+            if (startButton) startButtonRest = startButton.localPosition;
+            if (speedNeedle) speedNeedleRest = speedNeedle.localRotation;
+            if (IsServer && tiltLever && !startButton) powered.Value = true;
             CreateCabControls();
             if (cabLamp)
             {
@@ -372,7 +405,7 @@ namespace ConductorChaos.Playground
                 cabLampLight.intensity = 0.6f;
                 cabLampLight.shadows = LightShadows.None;
             }
-            if (startButton && startButton.TryGetComponent<Renderer>(out startButtonRenderer))
+            if (!tiltLever && startButton && startButton.TryGetComponent<Renderer>(out startButtonRenderer))
             {
                 buttonOriginalProperties = new MaterialPropertyBlock();
                 startButtonRenderer.GetPropertyBlock(buttonOriginalProperties);
@@ -419,6 +452,7 @@ namespace ConductorChaos.Playground
             foreach (var wagon in availableWagons)
                 if (wagon)
                 {
+                    ConfigureMotionPresentation(wagon, IsServer);
                     TrainBodies.Add(wagon);
                     ControlOwners[wagon] = this;
                 }
@@ -428,6 +462,8 @@ namespace ConductorChaos.Playground
                 if (wagon && wagon != body) couplers[wagon] = GetCouplers(wagon.transform);
             PrepareWagonDoors();
             if (!IsServer) return;
+            invalidConsist = false;
+            awaitingConsist = startWithCoupledWagons && availableWagons.Length > 0;
             BuildRailLinks();
             foreach (var wagon in availableWagons)
                 if (wagon && wagon != body) looseWagons.TryAdd(wagon, new LooseWagon());
@@ -452,8 +488,11 @@ namespace ConductorChaos.Playground
 
         private void Update()
         {
-            if (!IsServer && leverPivot) leverPivot.localPosition = leverRestPosition + leverSlideAxis * (throttle.Value * LeverTravel);
-            if (startButton) startButton.localScale = new Vector3(buttonDown.Value ? 0.6f : 1f, 1f, 1f);
+            if (!IsSpawned) return;
+            if (!IsServer && leverPivot) PresentLever(throttle.Value);
+            if (startButton && tiltLever)
+                startButton.localPosition = startButtonRest - startButton.localRotation * Vector3.up * (buttonDown.Value ? 0.02f : 0f);
+            else if (startButton) startButton.localScale = new Vector3(buttonDown.Value ? 0.6f : 1f, 1f, 1f);
             if (startButtonRenderer && buttonLit != powered.Value)
             {
                 buttonProperties.SetFloat("_Emissive", powered.Value ? 1f : 0f);
@@ -463,8 +502,9 @@ namespace ConductorChaos.Playground
             }
             if (speedNeedle)
             {
-                float sweep = 240f * Mathf.Clamp01(displayedSpeed.Value / Mathf.Max(maximumSpeed, 0.01f));
-                speedNeedle.localRotation = Quaternion.Euler(sweep - (fireboxLatch ? 0f : 120f), 0f, 0f);
+                float sweep = (tiltLever ? 258f : 240f) * Mathf.Clamp01(displayedSpeed.Value / Mathf.Max(maximumSpeed, 0.01f));
+                speedNeedle.localRotation = tiltLever ? speedNeedleRest * Quaternion.AngleAxis(-sweep, Vector3.up)
+                    : Quaternion.Euler(sweep - (fireboxLatch ? 0f : 120f), 0f, 0f);
             }
             if (heatNeedle)
             {
@@ -482,8 +522,8 @@ namespace ConductorChaos.Playground
         private void FixedUpdate()
         {
             if (!IsSpawned || !IsServer) return;
-            guidedMotion.Clear();
             UpdateCabControls();
+            guidedMotion.Clear();
             MoveTrain();
             UpdateCoal();
         }
@@ -495,6 +535,7 @@ namespace ConductorChaos.Playground
                 displayedSpeed.Value = body.linearVelocity.magnitude;
                 return;
             }
+            if (invalidConsist || (awaitingConsist && !PlaceStartingConsist())) return;
             TryCoupleWagon();
             foreach (var wagon in coupledWagons)
                 if (wagon) couplingGaps[wagon] = Mathf.MoveTowards(couplingGaps[wagon], 0f, 0.4f * Time.fixedDeltaTime);
@@ -513,12 +554,13 @@ namespace ConductorChaos.Playground
             var oldTrack = track;
             float oldDistance = distance;
             float remaining = speed * Time.fixedDeltaTime;
+            if (tiltLever) remaining *= -rearwardRailSign;
             bool reachedEnd = !AdvanceOnRail(ref track, ref distance, remaining);
             // kapotte wissel (issue #214): wie erop rijdt, ontspoort echt
             if (track != oldTrack && TrackSwitch.For(track) is { IsBroken: true })
             {
                 SampleRail(oldTrack, oldDistance, out _, out var brokenDirection);
-                Derail(brokenDirection * speed);
+                Derail(brokenDirection * (remaining / Time.fixedDeltaTime));
                 return;
             }
             bool towardTail = remaining * rearwardRailSign > 0f;
@@ -534,7 +576,7 @@ namespace ConductorChaos.Playground
                 if (endTrack && !endTrack.name.Contains("BufferStop"))
                 {
                     SampleRail(oldTrack, oldDistance, out _, out var direction);
-                    Derail(direction * speed);
+                    Derail(direction * (remaining / Time.fixedDeltaTime));
                     return;
                 }
             }
@@ -820,6 +862,33 @@ namespace ConductorChaos.Playground
                 ? new CouplerLayout(negative, positive) : new CouplerLayout(positive, negative);
         }
 
+        private bool PlaceStartingConsist()
+        {
+            foreach (var wagon in availableWagons)
+                if (!wagon || !wagon.TryGetComponent<NetworkObject>(out var networkWagon) || !networkWagon.IsSpawned)
+                    return false;
+
+            awaitingConsist = false;
+            foreach (var wagon in availableWagons)
+            {
+                coupledWagons.Add(wagon);
+                couplingGaps.Add(wagon, 0f);
+                if (couplers[wagon].FrontSign != rearwardRailSign) reversedWagons.Add(wagon);
+            }
+            if (!CanPlaceWagons(track, distance))
+            {
+                invalidConsist = true;
+                coupledWagons.Clear();
+                couplingGaps.Clear();
+                reversedWagons.Clear();
+                Debug.LogError("TrainDrive: onvoldoende aansluitend spoor achter de locomotief voor deze samenstelling.", this);
+                return false;
+            }
+            foreach (var wagon in coupledWagons) looseWagons.Remove(wagon);
+            PlaceWagons(snap: true);
+            return true;
+        }
+
         private void TryCoupleWagon()
         {
             if (!RailUsable(track) || Mathf.Abs(speed) > 2.2f) return;
@@ -1010,7 +1079,7 @@ namespace ConductorChaos.Playground
             return true;
         }
 
-        private void PlaceWagons()
+        private void PlaceWagons(bool snap = false)
         {
             float offset = RearExtent(body);
             foreach (var wagon in coupledWagons)
@@ -1019,7 +1088,13 @@ namespace ConductorChaos.Playground
                 offset += couplingGaps[wagon] + FrontExtent(wagon);
                 if (WagonPose(track, distance, offset, wagon, reversedWagons.Contains(wagon), out var position, out var rotation))
                 {
-                    MoveGuidedBody(wagon, position, rotation);
+                    if (snap)
+                    {
+                        wagon.position = position;
+                        wagon.rotation = rotation;
+                        wagon.GetComponent<NetworkTransform>().Teleport(position, rotation, wagon.transform.localScale);
+                    }
+                    else MoveGuidedBody(wagon, position, rotation);
                 }
                 offset += RearExtent(wagon);
             }
@@ -1035,7 +1110,7 @@ namespace ConductorChaos.Playground
             UpdateFireboxDoor();
             UpdateWagonDoors();
             UpdateShovel();
-            if (!leverPivot || !startButton) return;
+            if (!leverPivot) return;
             PlaygroundPlayer operatorPlayer = null;
             Transform hand = null;
             foreach (var player in players)
@@ -1052,32 +1127,50 @@ namespace ConductorChaos.Playground
                 leverOffset = MoveCabLever(leverGripOffset, leverGripPitch, pitch);
             }
             leverHand = hand;
-            leverPivot.localPosition = leverRestPosition + leverSlideAxis * leverOffset;
+            bool stop = stopButton && IsButtonPushed(stopButton, false);
+            if (stop)
+            {
+                leverOffset = leverGripOffset = 0f;
+                if (operatorPlayer) leverGripPitch = operatorPlayer.CabAimPitch;
+                if (startButton) powered.Value = false;
+            }
             float input = derailed ? 0f : leverOffset / LeverTravel;
+            PresentLever(input);
             if (Mathf.Abs(input - throttle.Value) > 0.01f || (input == 0f && throttle.Value != 0f)) throttle.Value = input;
 
-            bool touching = false, pressing = false;
-            int count = Physics.OverlapSphereNonAlloc(startButton.position, 0.12f, buttonContacts, ~0, QueryTriggerInteraction.Ignore);
+            if (!startButton) return;
+            bool pressed = IsButtonPushed(startButton, buttonDown.Value);
+            if (!derailed && !stop && pressed && !buttonDown.Value && Time.time >= nextButtonPress)
+            {
+                powered.Value = tiltLever || !powered.Value;
+                nextButtonPress = Time.time + 0.35f;
+            }
+            if (buttonDown.Value != pressed) buttonDown.Value = pressed;
+        }
+
+        private void PresentLever(float input)
+        {
+            if (tiltLever) leverPivot.localRotation = leverRest * Quaternion.AngleAxis(-input * LeverTilt, Vector3.forward);
+            else leverPivot.localPosition = leverRestPosition + leverSlideAxis * (input * LeverTravel);
+        }
+
+        private bool IsButtonPushed(Transform button, bool held)
+        {
+            int count = Physics.OverlapSphereNonAlloc(button.position, 0.12f, buttonContacts, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
             {
                 Collider contact = buttonContacts[i];
                 var player = contact.GetComponentInParent<PlaygroundPlayer>();
                 if (!player || !player.IsSpawned || !player.IsHandCollider(contact)) continue;
-                touching = true;
+                if (held) return true;
                 Vector3 point = contact.bounds.center;
-                Vector3 towardButton = startButton.position - point;
+                Vector3 towardButton = button.position - point;
                 var handBody = contact.attachedRigidbody;
                 if (handBody && towardButton.sqrMagnitude > 0.0001f &&
-                    Vector3.Dot(handBody.GetPointVelocity(point) - body.GetPointVelocity(point), towardButton.normalized) > 0.2f)
-                    pressing = true;
+                    Vector3.Dot(handBody.GetPointVelocity(point) - GuidedPointVelocity(body, point), towardButton.normalized) > 0.2f)
+                    return true;
             }
-            bool pressed = touching && (buttonDown.Value || pressing);
-            if (!derailed && pressed && !buttonDown.Value && Time.time >= nextButtonPress)
-            {
-                powered.Value = !powered.Value;
-                nextButtonPress = Time.time + 0.35f;
-            }
-            if (buttonDown.Value != pressed) buttonDown.Value = pressed;
+            return false;
         }
 
         private static float MoveCabLever(float startOffset, float startPitch, float pitch)
@@ -1521,8 +1614,10 @@ namespace ConductorChaos.Playground
                 }
                 else
                 {
-                    pose.Position = worldToSource * (coal.position - source.position);
-                    pose.Rotation = worldToSource * coal.rotation;
+                    Pose physicsSource = coalSourceBody ? new Pose(coalSourceBody.position, coalSourceBody.rotation) : source;
+                    Quaternion toLocal = Quaternion.Inverse(physicsSource.rotation);
+                    pose.Position = toLocal * (coal.position - physicsSource.position);
+                    pose.Rotation = toLocal * coal.rotation;
                 }
                 if (pose.Visible != previousPose.Visible || (pose.Position - previousPose.Position).sqrMagnitude > 0.0001f ||
                     Quaternion.Angle(pose.Rotation, previousPose.Rotation) > 2f)
@@ -1618,7 +1713,7 @@ namespace ConductorChaos.Playground
 
         private void CreateCabControls()
         {
-            if (!lever || !startButton) { Debug.LogError("TrainDrive: de cabinehendel of startknop ontbreekt in het locomotiefmodel.", this); return; }
+            if (!lever || (!tiltLever && !startButton)) { Debug.LogError("TrainDrive: de cabinehendel of startknop ontbreekt in het locomotiefmodel.", this); return; }
             leverParent = lever.parent;
             leverPosition = lever.localPosition;
             leverScale = lever.localScale;
@@ -1651,8 +1746,8 @@ namespace ConductorChaos.Playground
                 Vector3 size = Vector3.Scale(leverMesh.sharedMesh.bounds.size, leverScale);
                 handle.direction = size.x >= size.y && size.x >= size.z ? 0 : size.y >= size.z ? 1 : 2;
                 handle.height = size[handle.direction] + 0.04f;
+                if (tiltLever) handle.center = Vector3.Scale(leverMesh.sharedMesh.bounds.center, leverScale);
             }
-            handle.center = Vector3.zero;
             handle.radius = 0.06f;
             leverBody = leverPivot.gameObject.AddComponent<Rigidbody>();
             leverBody.mass = 0.15f;
@@ -1695,12 +1790,13 @@ namespace ConductorChaos.Playground
                 derailColliders.Clear();
                 derailed = false;
             }
-            if (startButton) startButton.localScale = Vector3.one;
+            if (startButton && tiltLever) startButton.localPosition = startButtonRest;
+            else if (startButton) startButton.localScale = Vector3.one;
             if (startButtonRenderer && buttonOriginalProperties != null) startButtonRenderer.SetPropertyBlock(buttonOriginalProperties);
             if (startButtonLight) Destroy(startButtonLight.gameObject);
             startButtonRenderer = null;
             startButtonLight = null;
-            if (speedNeedle) speedNeedle.localRotation = Quaternion.identity;
+            if (speedNeedle) speedNeedle.localRotation = speedNeedleRest;
             if (heatNeedle) heatNeedle.localRotation = Quaternion.identity;
             displayedHeat = 0f;
             if (cabLampLight) Destroy(cabLampLight.gameObject);

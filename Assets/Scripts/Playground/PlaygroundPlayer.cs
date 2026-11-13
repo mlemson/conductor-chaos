@@ -145,6 +145,7 @@ namespace ConductorChaos.Playground
             clearingLimbs = false;
             stalledTime = nextRecoveryProbe = nextTrackStep = 0f;
             body.isKinematic = !IsServer;
+            TrainDrive.ConfigureMotionPresentation(body, IsServer);
             // Leave clearance for the short arms at the shoulders while keeping
             // a solid torso core for collisions and hand interaction.
             if (bodyCapsule) bodyCapsule.radius = Mathf.Min(originalBodyRadius, 0.20f);
@@ -363,7 +364,9 @@ namespace ConductorChaos.Playground
             Quaternion facing = Quaternion.Euler(0f, requestedYaw, 0f);
             float uprightControl = Mathf.InverseLerp(0.15f, 0.75f, Vector3.Dot(body.rotation * Vector3.up, Vector3.up));
             Vector3 current = body.linearVelocity;
-            bool grounded = IsGrounded(out RaycastHit groundHit);
+            RaycastHit groundHit = default;
+            bool leavingFloor = Time.time - lastJump < 0.18f && current.y > airborneSupportVelocity.y + 0.5f;
+            bool grounded = !leavingFloor && IsGrounded(out groundHit);
             Quaternion aim = Quaternion.Euler(requestedPitch, requestedYaw, 0f);
             bool pulling = requestedMove.y > 0.1f;
             bool firmLedgeGrip = hasLedge && pulling;
@@ -398,7 +401,7 @@ namespace ConductorChaos.Playground
             bool stepped = false;
             if (climbing) legs?.BraceForClimb(mantling);
             if (bracing) legs?.ReleaseSupport();
-            bool footOnGround = legs != null && (grounded || legs.HasFootContact());
+            bool footOnGround = !leavingFloor && legs != null && (grounded || legs.HasFootContact());
             bool supported = !climbing && !bracing && legs != null && legs.Step(current - trainVelocity, requestedMove,
                 footOnGround && current.y - legs.SupportVelocity.y < 0.5f, walkSpeed, sprinting && !hanging, out stepped);
             // The torso may be between floor contacts while either foot is still
@@ -407,8 +410,15 @@ namespace ConductorChaos.Playground
             if (!trainSupport && supported) trainSupport = TrainDrive.FindGuidedSupport(legs.SupportBody);
             if (trainSupport) trainVelocity = TrainDrive.GuidedBodyVelocity(trainSupport, body.position);
             Vector3 groundVelocity = trainSupport ? trainVelocity : supported ? legs.SupportVelocity : recoveryGroundVelocity;
+            Vector3 appliedCarry = Vector3.zero;
             if (grounded || supported)
             {
+                if (trainSupport && airborneTrainSupport == trainSupport)
+                {
+                    appliedCarry = TrainVelocityChange(groundVelocity);
+                    body.AddForce(appliedCarry, ForceMode.VelocityChange);
+                    current += appliedCarry;
+                }
                 airborneSupportVelocity = groundVelocity;
                 airborneTrainSupport = trainSupport;
             }
@@ -472,8 +482,11 @@ namespace ConductorChaos.Playground
                 if (jumping)
                 {
                     legs?.ReleaseSupport();
-                    Vector3 velocity = trainSupport ? target : body.linearVelocity;
-                    velocity.y = (trainSupport ? trainVelocity.y : 0f) + jumpSpeed * (hanging ? 0.8f : 1f);
+                    // Preserve velocity relative to the wagon, including a running jump.
+                    Vector3 velocity = trainSupport ? current - appliedCarry : body.linearVelocity;
+                    airborneTrainSupport = trainSupport;
+                    airborneSupportVelocity = groundVelocity;
+                    velocity.y = (trainSupport ? trainVelocity.y - appliedCarry.y : 0f) + jumpSpeed * (hanging ? 0.8f : 1f);
                     body.linearVelocity = velocity;
                     lastJump = Time.time;
                 }
@@ -746,17 +759,21 @@ namespace ConductorChaos.Playground
         private Vector3 FollowTrainInAir()
         {
             if (!airborneTrainSupport) return Vector3.zero;
-            if (!IsGrounded(out var below, 1.6f) || TrainDrive.FindGuidedSupport(below.rigidbody) != airborneTrainSupport)
+            if (TrainDrive.FindGuidedSupport(airborneTrainSupport) != airborneTrainSupport ||
+                !IsGrounded(out var below, 2.4f) || TrainDrive.FindGuidedSupport(below.rigidbody) != airborneTrainSupport)
             {
                 airborneTrainSupport = null;
                 return Vector3.zero;
             }
             // Apply only the change in wagon velocity so the initial carry is counted once.
             Vector3 velocity = TrainDrive.GuidedBodyVelocity(airborneTrainSupport, body.position);
-            Vector3 correction = Vector3.ClampMagnitude(velocity - airborneSupportVelocity, 20f * Time.fixedDeltaTime);
+            Vector3 correction = TrainVelocityChange(velocity);
             airborneSupportVelocity += correction;
             return correction;
         }
+
+        private Vector3 TrainVelocityChange(Vector3 velocity) =>
+            Vector3.ClampMagnitude(velocity - airborneSupportVelocity, 20f * Time.fixedDeltaTime);
 
         private bool IsGrounded(out RaycastHit groundHit, float distance = 0.22f)
         {
@@ -1240,7 +1257,7 @@ namespace ConductorChaos.Playground
                     }
                     if ((point - parent.position).sqrMagnitude > reach * reach) continue;
                     Vector3 offset = point - hand;
-                    bool cabLever = train && train.IsLeverHandle(surface) && train.TryGetCabin(player.position, .12f, out _);
+                    bool cabLever = train && train.CanReachLever(surface, player.position);
                     float maxOffset = cabLever ? .36f : wagonHandle ? .25f : .20f;
                     if ((!train || !train.IsShovelGrip(surface)) && offset.sqrMagnitude > maxOffset * maxOffset) continue;
                     if (Vector3.Dot(offset, aim) < -0.08f || offset.sqrMagnitude >= closestDistance) continue;

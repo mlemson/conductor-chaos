@@ -5,8 +5,7 @@
 //   - Prepare Selected Vehicles: botsvorm (MeshCollider) op elk zichtbaar onderdeel, zodat je erin kunt lopen, de
 //     ladders naar het dakluik en het dak kunt beklimmen en over het dak kunt lopen; een RepairPoint (heel bij de start) op elke
 //     knoop RepairPoint_<Naam>; en TrainBreakdowns, zodat er tijdens het spelen af en toe iets kapot gaat.
-// Daarna: Tools > Conductor Chaos > Configure Train On Selected Track koppelt ze als wagons achter de locomotief.
-// De locs/stuurstandrijtuigen van de nieuwe sets rijden nog niet zelf (TrainDrive is gebouwd rond de stoomloc).
+// Selecteer de locomotief en de bijbehorende wagons en kies Configure Train On Selected Track.
 using System.Collections.Generic;
 using System.Linq;
 using ConductorChaos.Playground;
@@ -51,6 +50,16 @@ namespace ConductorChaos.EditorTools
 
         /// <summary>Alle voertuigen van de nieuwe sets (voor Configure Train: koppelbaar als wagon).</summary>
         public static IEnumerable<string> Vehicles => Diesel.Concat(Modern).Concat(Futuristic).Concat(Freight).Concat(Variants).Select(v => v.name);
+
+        public static bool IsEngine(string name) => Matches(name, Diesel[0].name) ||
+            Matches(name, Modern[0].name) || Matches(name, Futuristic[0].name);
+
+        public static bool IsWagon(string name) =>
+            (!IsEngine(name) && Vehicles.Any(model => Matches(name, model))) ||
+            Matches(name, "RegionalWagon_Blockout") || Matches(name, "RegionalWagon_Closed_Blockout") ||
+            Matches(name, "CattleWagon_Blockout") || Matches(name, "Tender_Blockout");
+
+        static bool Matches(string name, string model) => name == model || name.StartsWith(model + " (");
 
         [MenuItem("Tools/Conductor Chaos/Train Sets/Place Diesel '60 Set")]
         static void PlaceDiesel() => Place("Diesel '60", Diesel);
@@ -112,7 +121,7 @@ namespace ConductorChaos.EditorTools
             }
             Selection.objects = made.ToArray();
             EditorSceneManager.MarkSceneDirty(made[0].scene);
-            Debug.Log($"[Train Sets] {label}: {made.Count} voertuigen geplaatst. Zet ze op het spoor en kies " +
+            Debug.Log($"[Train Sets] {label}: {made.Count} voertuigen geplaatst. Zet de loc op het spoor, selecteer loc en wagons en kies " +
                       "Tools > Conductor Chaos > Configure Train On Selected Track om ze te koppelen.");
         }
 

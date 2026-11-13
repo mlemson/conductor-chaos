@@ -17,7 +17,15 @@ namespace ConductorChaos.Editor
         [MenuItem("Tools/Conductor Chaos/Configure Train On Selected Track")]
         public static void ConfigureTrain()
         {
-            var locomotive = GameObject.Find("Locomotive_Blockout");
+            var vehicles = Selection.gameObjects.Select(go => PrefabUtility.GetOutermostPrefabInstanceRoot(go) ?? go).Distinct().ToArray();
+            var engines = vehicles.Where(go => ConductorChaos.EditorTools.TrainSetTools.IsEngine(go.name)).ToArray();
+            if (engines.Length > 1)
+            {
+                Debug.LogError("Selecteer één locomotief en de bijbehorende wagons.");
+                return;
+            }
+            bool newSet = engines.Length == 1;
+            var locomotive = newSet ? engines[0] : GameObject.Find("Locomotive_Blockout");
             if (!locomotive)
             {
                 const string model = "Assets/Art/Models/Train/Locomotive/Locomotive_Blockout.fbx";
@@ -73,7 +81,25 @@ namespace ConductorChaos.Editor
                 EditorUtility.DisplayDialog("Trein configureren", "Er ligt geen spoor binnen 10 meter van de locomotief. Zet de locomotief dichter bij het spoor en probeer opnieuw.", "OK");
                 return;
             }
+            var consist = newSet
+                ? vehicles.Where(go => go != locomotive && go.scene == locomotive.scene &&
+                    ConductorChaos.EditorTools.TrainSetTools.IsWagon(go.name))
+                    .OrderBy(go => (go.transform.position - locomotive.transform.position).sqrMagnitude).ToArray()
+                : Object.FindObjectsByType<Transform>(FindObjectsSortMode.None)
+                    .Where(t => t.gameObject.scene == locomotive.scene &&
+                        new[] { "Tender_Blockout", "RegionalWagon_Blockout", "CattleWagon_Blockout" }
+                            .Any(name => t.name == name || t.name.StartsWith(name + " (")))
+                    .Select(t => t.gameObject).ToArray();
+            var otherTrains = Object.FindObjectsByType<TrainDrive>(FindObjectsSortMode.None);
+            foreach (var wagon in consist)
+                if (otherTrains.Any(other => other.gameObject != locomotive && other.HasConfiguredWagon(wagon.GetComponent<Rigidbody>())))
+                {
+                    Debug.LogError("Deze wagon hoort al bij een andere trein.", wagon);
+                    return;
+                }
+
             Undo.SetCurrentGroupName("Configure train");
+            if (newSet) ConductorChaos.EditorTools.TrainSetTools.Prepare(locomotive);
             var rb = locomotive.GetComponent<Rigidbody>() ? locomotive.GetComponent<Rigidbody>() : Undo.AddComponent<Rigidbody>(locomotive);
             Undo.RecordObject(rb, "Configure train physics");
             rb.isKinematic = true;
@@ -84,25 +110,31 @@ namespace ConductorChaos.Editor
             Undo.RecordObject(drive, "Set train track");
             drive.Configure(track, fraction * track.Length);
             var wagons = new System.Collections.Generic.List<Rigidbody>();
-            foreach (var name in new[] { "Tender_Blockout", "RegionalWagon_Blockout", "CattleWagon_Blockout" }.Concat(ConductorChaos.EditorTools.TrainSetTools.Vehicles))
+            foreach (var wagon in consist)
             {
-                foreach (var wagon in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None).Where(t => (t.name == name || t.name.StartsWith(name + " (")) && t.gameObject.scene == locomotive.scene))
-                {
-                    var wagonBody = wagon.GetComponent<Rigidbody>() ? wagon.GetComponent<Rigidbody>() : Undo.AddComponent<Rigidbody>(wagon.gameObject);
-                    Undo.RecordObject(wagonBody, "Configure wagon physics");
-                    wagonBody.isKinematic = true;
-                    wagonBody.useGravity = false;
-                    wagonBody.interpolation = RigidbodyInterpolation.Interpolate;
-                    if (!wagon.GetComponent<NetworkObject>()) Undo.AddComponent<NetworkObject>(wagon.gameObject);
-                    if (!wagon.GetComponent<NetworkTransform>()) Undo.AddComponent<NetworkTransform>(wagon.gameObject);
-                    wagons.Add(wagonBody);
-                }
+                if (newSet) ConductorChaos.EditorTools.TrainSetTools.Prepare(wagon);
+                var wagonBody = wagon.GetComponent<Rigidbody>() ? wagon.GetComponent<Rigidbody>() : Undo.AddComponent<Rigidbody>(wagon);
+                Undo.RecordObject(wagonBody, "Configure wagon physics");
+                wagonBody.isKinematic = true;
+                wagonBody.useGravity = false;
+                wagonBody.interpolation = RigidbodyInterpolation.Interpolate;
+                if (!wagon.GetComponent<NetworkObject>()) Undo.AddComponent<NetworkObject>(wagon);
+                if (!wagon.GetComponent<NetworkTransform>()) Undo.AddComponent<NetworkTransform>(wagon);
+                wagons.Add(wagonBody);
             }
-            drive.ConfigureWagons(wagons.ToArray());
+            drive.ConfigureWagons(wagons.ToArray(), newSet);
             float railCenter = 0f;
             var wheels = locomotive.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Wheels");
             if (wheels && wheels.TryGetComponent<Renderer>(out var wheelRenderer))
                 railCenter = locomotive.transform.InverseTransformPoint(wheelRenderer.bounds.center).z;
+            if (newSet)
+            {
+                var mounts = locomotive.GetComponentsInChildren<Transform>(true);
+                var front = mounts.FirstOrDefault(t => t.name == "Coupler_Front");
+                var rear = mounts.FirstOrDefault(t => t.name == "Coupler_Rear");
+                if (front && rear)
+                    railCenter = locomotive.transform.InverseTransformPoint((front.position + rear.position) * 0.5f).z;
+            }
             track.Evaluate(fraction, out var position, out var direction);
             var rotation = Quaternion.LookRotation(direction, track.transform.up) * Quaternion.Euler(0, 90, 0);
             Undo.RecordObject(locomotive.transform, "Place locomotive on track");
