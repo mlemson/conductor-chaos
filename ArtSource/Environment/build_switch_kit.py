@@ -226,6 +226,7 @@ def build(rng, side=1):
     # ---------------------------------------------------------------- dwarsliggers
     rects = []
     timbers = []
+    long_sleeper_colliders = []
     stand_z = -RAIL_Z - 1.30                              # wisselbok naast de tongpunt, buiten het spoor
 
     def rail_zs(x):
@@ -257,6 +258,8 @@ def build(rng, side=1):
             mat = rng.choice(["M_Track_Sleeper", "M_Track_SleeperLight", "M_Track_SleeperOld"], p=[0.6, 0.25, 0.15])
             w, h = SLEEPER[0], SLEEPER[1]
             tm = rbox(x - w / 2, x + w / 2, SLEEPER_TOP - h, SLEEPER_TOP, z0, z1, 0.05, mat, div=1)
+            # Place the timber collider just below the continuous track deck to avoid coplanar surfaces.
+            long_sleeper_colliders.append(tm.copy().set_material("M_Track_Collider").transform(t=(0, -0.005, 0)))
             plates = []
             for za, zb in rail_zs(x):
                 plates.append(rbox(x - 0.15, x + 0.15, SLEEPER_TOP - 0.01, SLEEPER_TOP + 0.022, za - 0.17, zb + 0.17, 0.012,
@@ -335,7 +338,8 @@ def build(rng, side=1):
     # ---------------------------------------------------------------- botsvorm
     col = T.collider_track(P, extra=(T.collider_track(D, with_bed=False),
                                       rbox(xs_ - 0.34, xs_ + 0.34, SLEEPER_TOP - 0.01, SLEEPER_TOP + 0.52,
-                                           stand_z - 0.30, stand_z + 0.30, 0.0, "M_Track_Collider", div=1)))
+                                           stand_z - 0.30, stand_z + 0.30, 0.0, "M_Track_Collider", div=1),
+                                      *long_sleeper_colliders))
 
     # ---------------------------------------------------------------- knopen
     def pos3(p2, y=SLEEPER_TOP):
