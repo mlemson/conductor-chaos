@@ -371,7 +371,7 @@ namespace ConductorChaos.Playground
             bool pulling = requestedMove.y > 0.1f;
             bool firmLedgeGrip = hasLedge && pulling;
             Vector3 moveDirection = facing * new Vector3(requestedMove.x, 0f, requestedMove.y);
-            bool stretchArms = (leftHeld || rightHeld) && !left.HoldingShovel && !right.HoldingShovel;
+            bool stretchArms = (leftHeld || rightHeld) && !left.HoldingAimedTool && !right.HoldingAimedTool;
             if (!trainDrive) trainDrive = FindAnyObjectByType<TrainDrive>();
             Rigidbody trainSupport = grounded ? TrainDrive.FindGuidedSupport(groundHit.rigidbody) :
                 legs != null ? TrainDrive.FindGuidedSupport(legs.SupportBody) : null;
@@ -760,7 +760,7 @@ namespace ConductorChaos.Playground
         {
             if (!airborneTrainSupport) return Vector3.zero;
             if (TrainDrive.FindGuidedSupport(airborneTrainSupport) != airborneTrainSupport ||
-                !IsGrounded(out var below, 2.4f) || TrainDrive.FindGuidedSupport(below.rigidbody) != airborneTrainSupport)
+                !IsGrounded(out _, 2.4f, airborneTrainSupport))
             {
                 airborneTrainSupport = null;
                 return Vector3.zero;
@@ -775,7 +775,7 @@ namespace ConductorChaos.Playground
         private Vector3 TrainVelocityChange(Vector3 velocity) =>
             Vector3.ClampMagnitude(velocity - airborneSupportVelocity, 20f * Time.fixedDeltaTime);
 
-        private bool IsGrounded(out RaycastHit groundHit, float distance = 0.22f)
+        private bool IsGrounded(out RaycastHit groundHit, float distance = 0.22f, Rigidbody requiredSupport = null)
         {
             groundHit = default;
             Vector3 origin = body.position + body.rotation * Vector3.up * 0.28f;
@@ -785,6 +785,7 @@ namespace ConductorChaos.Playground
             {
                 var hit = hits[i];
                 if (hit.collider.transform.IsChildOf(transform) || hit.normal.y <= 0.55f) continue;
+                if (requiredSupport && TrainDrive.FindGuidedSupport(hit.rigidbody) != requiredSupport) continue;
                 bool looseCoal = TrainDrive.IsCoalBody(hit.rigidbody) && !hit.rigidbody.isKinematic;
                 if (groundHit.collider && (looseCoal == bestIsLooseCoal ? hit.distance >= groundHit.distance : looseCoal)) continue;
                 groundHit = hit;
@@ -1007,6 +1008,7 @@ namespace ConductorChaos.Playground
             private Vector3 gripNormal;
             private TrainDrive cabGripTrain;
             private TicketPunch heldPunch;
+            private RepairWrench heldWrench;
             private readonly Collider[] leverOverlaps = new Collider[32];
             private float nextAttempt;
             private float poseHandFocus;
@@ -1020,10 +1022,12 @@ namespace ConductorChaos.Playground
             public Vector3 HandPosition => arm ? arm.TransformPoint(HandOffset) : Vector3.zero;
             public Vector3 AimedHandPosition { get; private set; }
             public float Stretch { get; private set; } = 1f;
-            public bool IsHoldingBody(Rigidbody candidate) => grip && grip.connectedBody == candidate;
-            public bool HoldingShovel => cabGripTrain && cabGripTrain.IsShovelGrip(gripSurface);
+            public bool IsHoldingBody(Rigidbody candidate) => (grip && grip.connectedBody == candidate) ||
+                (heldWrench && heldWrench.IsSpawned && heldWrench.Body == candidate);
+            public bool HoldingAimedTool => (cabGripTrain && cabGripTrain.IsShovelGrip(gripSurface)) ||
+                (heldWrench && heldWrench.IsSpawned);
             public TicketPunch HeldPunch => heldPunch && heldPunch.IsSpawned ? heldPunch : null;
-            public bool HasGrip => grip || HeldPunch;
+            public bool HasGrip => grip || HeldPunch || (heldWrench && heldWrench.IsSpawned);
             public float PushUp(float press, float upSpeed) => cabGripTrain ? 0f
                 : PlaygroundControls.HandPushAcceleration(grip, gripSurface, press, upSpeed);
             public void SlideDown() => PlaygroundControls.SlideWallGrip(grip, gripSurface, ref gripNormal);
@@ -1086,6 +1090,7 @@ namespace ConductorChaos.Playground
                 if (!rigid) return;
                 if (!held) releasedAtCrest = false;
                 if (!held || (heldPunch && !heldPunch.IsSpawned) ||
+                    (heldWrench && !heldWrench.IsSpawned) ||
                     (grip && (!gripSurface || !gripSurface.enabled || !gripSurface.gameObject.activeInHierarchy)) ||
                     (!grip && gripSurface)) Release();
                 bool hasGrip = HasGrip;
@@ -1093,12 +1098,12 @@ namespace ConductorChaos.Playground
                 var otherHandPunch = otherHand.HeldPunch;
                 bool activelyAiming = held || followsCamera;
                 if (!grip) poseHandFocus = handFocus;
-                bool holdingShovel = HoldingShovel;
+                bool holdingAimedTool = HoldingAimedTool;
                 bool holdingPunch = HeldPunch;
                 Vector3 lookDirection = aim * Vector3.forward;
                 float upwardReach = Mathf.InverseLerp(cabinView ? -0.18f : 0.25f, cabinView ? 0.65f : 0.9f, lookDirection.y);
                 float cabinReach = cabinView ? Mathf.Sqrt(upwardReach) : upwardReach;
-                float targetStretch = holdingShovel ? 0.75f : holdingPunch ? 1.45f : stretch ? GripStretch : 1f;
+                float targetStretch = holdingAimedTool ? 0.75f : holdingPunch ? 1.45f : stretch ? GripStretch : 1f;
                 if (!hasGrip) targetStretch = Mathf.Max(targetStretch, Mathf.Lerp(1f, cabinView ? 2.6f : 1.9f, cabinReach));
                 bool pressingPunch = false;
                 Vector3 pressDirection = Vector3.zero;
@@ -1139,7 +1144,7 @@ namespace ConductorChaos.Playground
                 Quaternion aiming = Quaternion.FromToRotation(restDirection, aimInParent) * rest;
                 AimedHandPosition = arm.position + arm.parent.TransformVector(aiming * Vector3.Scale(arm.localScale, HandOffset));
                 // Keep both arms aimed even when their grip buttons are released.
-                Quaternion localTarget = holdingShovel ? Quaternion.FromToRotation(restDirection, Vector3.Slerp(Vector3.down, aimInParent, 0.35f)) * rest
+                Quaternion localTarget = holdingAimedTool ? Quaternion.FromToRotation(restDirection, Vector3.Slerp(Vector3.down, aimInParent, 0.35f)) * rest
                     : Quaternion.Slerp(rest, aiming, activelyAiming ? 1f : Mathf.Lerp(0.75f, 0.95f, upwardAim));
                 bool blocked = false;
                 if (!activelyAiming && collider && collider.enabled && move.sqrMagnitude > 0.01f)
@@ -1211,6 +1216,12 @@ namespace ConductorChaos.Playground
                 {
                     if (!punch.TryHold(parent.GetComponent<PlaygroundPlayer>(), arm)) return false;
                     heldPunch = punch;
+                    return true;
+                }
+                else if (target && target.TryGetComponent<RepairWrench>(out var wrench))
+                {
+                    if (!wrench.TryHold(parent.GetComponent<PlaygroundPlayer>(), arm)) return false;
+                    heldWrench = wrench;
                     return true;
                 }
                 TrainDrive.WakeGrippedCoal(target);
@@ -1380,6 +1391,11 @@ namespace ConductorChaos.Playground
 
             public void Release()
             {
+                if (heldWrench)
+                {
+                    heldWrench.Release(arm);
+                    heldWrench = null;
+                }
                 if (heldPunch)
                 {
                     heldPunch.Release(arm);

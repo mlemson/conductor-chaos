@@ -138,6 +138,7 @@ namespace ConductorChaos.Playground
         {
             vehicle.interpolation = authoritative ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
             if (!vehicle.TryGetComponent<NetworkTransform>(out var sync)) return;
+            sync.UseUnreliableDeltas = true;
             sync.PositionInterpolationType = NetworkTransform.InterpolationTypes.Lerp;
             sync.RotationInterpolationType = NetworkTransform.InterpolationTypes.Lerp;
             sync.PositionLerpSmoothing = false;

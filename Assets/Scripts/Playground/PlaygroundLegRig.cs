@@ -202,9 +202,10 @@ namespace ConductorChaos.Playground
             public bool HasSupport => supportSurface;
             public Rigidbody SupportBody => supportSurface ? supportBody : null;
             private Vector3 SupportPoint => supportBody ? supportBody.transform.TransformPoint(supportAnchor) : supportAnchor;
-            public Vector3 SupportVelocity => supportSurface && supportBody
-                ? supportBody.GetPointVelocity(SupportPoint)
-                : Vector3.zero;
+            public Vector3 SupportVelocity => !supportSurface || !supportBody ? Vector3.zero
+                : TrainDrive.FindGuidedSupport(supportBody) is { } wagon
+                    ? TrainDrive.GuidedBodyVelocity(wagon, SupportPoint)
+                    : supportBody.GetPointVelocity(SupportPoint);
 
             public Leg(Transform bone, Rigidbody torso, bool server)
             {

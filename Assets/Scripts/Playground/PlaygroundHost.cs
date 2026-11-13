@@ -54,6 +54,7 @@ namespace ConductorChaos.Playground
             persistentHost = this;
             manager = GetComponent<NetworkManager>();
             transport = GetComponent<UnityTransport>();
+            manager.NetworkConfig.TickRate = (uint)Mathf.RoundToInt(1f / Time.fixedDeltaTime);
             manager.OnClientConnectedCallback += OnConnected;
             manager.OnClientDisconnectCallback += OnDisconnected;
             manager.OnTransportFailure += OnTransportFailure;
