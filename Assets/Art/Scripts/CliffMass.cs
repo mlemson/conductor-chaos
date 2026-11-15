@@ -22,6 +22,7 @@ namespace ConductorChaos.Art
         public int seed = 1;
 
         [HideInInspector] public float groundSignature;   // editor: herbouwen als de grond eronder verandert
+        [HideInInspector] public int geometryVersion;     // editor: oudere kliffen automatisch opnieuw opbouwen
 
         [SerializeField, HideInInspector] List<Vector2Int> cells = new List<Vector2Int>();
         [SerializeField, HideInInspector] List<int> levels = new List<int>();

@@ -422,18 +422,45 @@ namespace ConductorChaos.EditorTools
             Cross(b - a, p - a) >= -1e-7f && Cross(c - b, p - b) >= -1e-7f && Cross(a - c, p - c) >= -1e-7f;
 
         // ------------------------------------------------------------------ grasbolletjes
+        // Grasbolletjes alleen langs de randen en op kleine stukken: een grote vlakte blijft gewoon gras.
+        // Kans per cel hangt af van de afstand (in cellen) tot de rand van deze trede.
+        static readonly float[] TuftChanceByEdgeDistance = { 0f, 0f, 0.22f, 0.12f, 0.05f };
+
         static void Tufts(Output o, IReadOnlyDictionary<Vector2Int, int> cells, int tier, float top, float cs, int seed)
         {
+            bool In(Vector2Int c) => cells.TryGetValue(c, out var l) && l >= tier;
+            var dist = new Dictionary<Vector2Int, int>();
+            var queue = new Queue<Vector2Int>();
+            foreach (var kv in cells)
+            {
+                if (kv.Value < tier) continue;
+                bool edge = false;
+                for (int dz = -1; dz <= 1 && !edge; dz++)
+                    for (int dx = -1; dx <= 1 && !edge; dx++)
+                        if (!In(new Vector2Int(kv.Key.x + dx, kv.Key.y + dz))) edge = true;
+                if (edge) { dist[kv.Key] = 1; queue.Enqueue(kv.Key); }
+            }
+            int maxD = TuftChanceByEdgeDistance.Length - 1;
+            while (queue.Count > 0)
+            {
+                var c = queue.Dequeue();
+                int d = dist[c];
+                if (d >= maxD + 1) continue;
+                for (int dz = -1; dz <= 1; dz++)
+                    for (int dx = -1; dx <= 1; dx++)
+                    {
+                        var nb = new Vector2Int(c.x + dx, c.y + dz);
+                        if (!In(nb) || dist.ContainsKey(nb)) continue;
+                        dist[nb] = d + 1;
+                        queue.Enqueue(nb);
+                    }
+            }
             foreach (var kv in cells)
             {
                 if (kv.Value != tier) continue;
                 var c = kv.Key;
-                if (Hash(c.x, c.y, 11, seed) > 0.10f) continue;
-                bool interior = true;
-                for (int dz = -1; dz <= 1 && interior; dz++)
-                    for (int dx = -1; dx <= 1 && interior; dx++)
-                        if (!cells.TryGetValue(new Vector2Int(c.x + dx, c.y + dz), out var l) || l < tier) interior = false;
-                if (!interior) continue;
+                if (!dist.TryGetValue(c, out int dc) || dc > maxD) continue;      // midden van een vlakte: geen bolletjes
+                if (Hash(c.x, c.y, 11, seed) >= TuftChanceByEdgeDistance[dc]) continue;
                 float s = 0.20f + Hash(c.x, c.y, 12, seed) * 0.14f;
                 var center = new Vector3((c.x + (Hash(c.x, c.y, 13, seed) - 0.5f) * 0.5f) * cs, top + 0.12f + s * 0.45f,
                                          (c.y + (Hash(c.x, c.y, 14, seed) - 0.5f) * 0.5f) * cs);

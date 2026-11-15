@@ -9,9 +9,27 @@ using UnityEngine.Rendering;
 
 namespace ConductorChaos.EditorTools
 {
+    [InitializeOnLoad]
     public static class CliffMassBuilder
     {
         const string MatDir = "Assets/Art/Materials/Environment";
+        /// <summary>Ophogen als de vorm verandert: kliffen in geopende scenes worden dan vanzelf opnieuw gebouwd.</summary>
+        public const int GeometryVersion = 2;      // 2 = grasbolletjes alleen langs de randen (#223)
+
+        static CliffMassBuilder()
+        {
+            EditorApplication.delayCall += UpgradeOpenScenes;
+            EditorSceneManager.sceneOpened += (s, m) => UpgradeOpenScenes();
+        }
+
+        static void UpgradeOpenScenes()
+        {
+            if (Application.isPlaying) return;
+            int n = 0;
+            foreach (var m in Object.FindObjectsByType<CliffMass>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (m != null && m.geometryVersion < GeometryVersion && m.CellCount > 0) { Rebuild(m); n++; }
+            if (n > 0) Debug.Log($"[Klif Massa] {n} klif(fen) opnieuw gebouwd met de nieuwe vorm.");
+        }
 
         /// <param name="reuse">tijdens een streek steeds dezelfde mesh vullen i.p.v. per stempel een nieuwe</param>
         public static void Rebuild(CliffMass mass, bool collider = true, Mesh reuse = null)
@@ -49,6 +67,7 @@ namespace ConductorChaos.EditorTools
 
             if (collider) UpdateCollider(mass);
             mass.groundSignature = GroundSignature(mass);
+            mass.geometryVersion = GeometryVersion;
             EditorUtility.SetDirty(mf);
             EditorUtility.SetDirty(mass);
             if (!Application.isPlaying && mass.gameObject.scene.IsValid())
