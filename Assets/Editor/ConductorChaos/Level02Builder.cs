@@ -1,15 +1,18 @@
-// Conductor Chaos — bouwt level 2 'Over het ravijn' (issue #224). Menu: Tools > Conductor Chaos > Level 2 bouwen.
-// Bestaat ServiceLevel02 nog niet, dan staat er één melding in de Console (geen pop-up).
+// Conductor Chaos — bouwt level 2 'Langs de kloof' (issue #224, concept 'Cliffside Run'). Menu: Tools > Conductor Chaos >
+// Level 2 bouwen. Bestaat ServiceLevel02 nog niet, dan staat er één melding in de Console (geen pop-up).
 //
 // Werkwijze (herhaalbaar; elke keer een verse kopie):
 //   1. ServiceLevel01 wordt gekopieerd naar ServiceLevel02: trein, perrons, reizigers, vracht, oma, wissel, bel en
 //      gereedschap zijn daarmee al goed ingesteld. Decor en de oude route ertussen gaan eruit.
-//   2. Een nieuwe route wordt stuk voor stuk aan de spoorkit gekoppeld (sockets): klim langs een klifwand, houten brug
-//      over een ravijn met een kapotte rail ervoor, afdaling door het bos, en terug op perronhoogte. Het eindstation
-//      (met stopvak, vrachtvakken en oma's eindpunt) schuift mee naar het einde van de route.
-//   3. Terrein (Unity Terrain met de gestileerde shader) volgt het spoor: vlak onder de rails, taluds, een plateau rond
-//      de brug, het ravijn met een rivier, heuvels verderop. Kliffen zijn CliffMass-objecten (Klif Massa Painter).
-//   4. Bos, rotsen, planten, bergen en wolken onder PaintedProps (zoals de Prop Painter), zodat je verder kunt schilderen.
+//   2. Een nieuwe route wordt stuk voor stuk aan de spoorkit gekoppeld (sockets): door het bos, klimmen door een
+//      insnijding, dan over de rand van een diepe kloof (hek aan de kloofkant, rotswand aan de andere kant), een
+//      kapotte rail vlak voor een stenen boogbrug, over de kloof, weer langs de rand, afdalen door het bos naar het
+//      eindstation (dat met stopvak, vrachtvakken en oma's eindpunt meeschuift).
+//   3. De kloof slingert als een S onder de brug door: eerst rechts van het spoor, dan links. Hij is ~31 m diep, met
+//      getrapte rotswanden (één CliffMass, 13 treden van 2,4 m), richels, rotspilaren, een rivier op de bodem en
+//      watervallen. Terrein (Unity Terrain met de gestileerde shader) ligt vlak op randhoogte en loopt verderop op
+//      naar heuvels rond de vallei; bergen en wolken in de verte.
+//   4. Bos, rotsen, planten op het land, op richels en op de kloofbodem, onder PaintedProps (Prop Painter).
 //   5. Gameplay: alle opdrachten tegelijk + 'Herstel de brugrail', incidenten (steenlawines, spoorschade), langere tijd.
 // Alles wat later in Unity wordt aangepast, blijft gewoon in de scène. Opnieuw bouwen overschrijft ServiceLevel02.
 using System;
@@ -45,8 +48,10 @@ namespace ConductorChaos.EditorTools
 
         const float RailTop = 0.43f;            // sockets liggen op de bovenkant van de rails
         const float StepHeight = 2.4f;          // CliffMass-trede
-        const float TerrainBottom = -16f;       // laagste punt dat het terrein kan hebben (wereld-y)
-        const float TerrainHeight = 64f;
+        const float TerrainBottom = -34f;       // laagste punt dat het terrein kan hebben (wereld-y)
+        const float TerrainHeight = 96f;
+        const int CanyonTiers = 13;             // kloofdiepte in treden van StepHeight (~31 m)
+        const float RiverHalf = 3.4f;           // halve breedte van de rivierbedding
 
         static Level02Builder()
         {
@@ -203,10 +208,12 @@ namespace ConductorChaos.EditorTools
             TerrainData data;
             Transform propsRoot;
 
-            // ravijn
-            Vector3 bridgeMid, bridgeDir, ravineDir;
-            float bridgeArc, bridgePivot, ravineFloor;
-            const float RavineHalfTop = 14f, RavineHalfFloor = 5f, RavineLength = 150f;
+            // kloof
+            Vector3 bridgeStart, bridgeEnd;
+            float deckPivot, rimY, originY, floorY, waterY;
+            Canyon canyon;
+            CliffMass canyonWalls;
+            float RimTop => originY + CanyonTiers * StepHeight;
 
             public LevelContext(Scene scene, StringBuilder log)
             {
@@ -227,15 +234,21 @@ namespace ConductorChaos.EditorTools
                 Progress("Spoor bemonsteren", 0.2f);
                 SampleTrack();
                 MeasureStations(arrivalGroup);
+                Progress("Kloof uitzetten", 0.22f);
+                PlanCanyon();
                 Progress("Terrein maken", 0.25f);
                 BuildTerrain();
-                Progress("Kliffen", 0.55f);
+                Progress("Kloofwanden", 0.55f);
                 propsRoot = Root("PaintedProps").transform;
-                var cliffA = BuildCliff("Klifwand langs de klim", new[] { "climb", "ledgeA" }, left: true, 5.6f, 13.5f, 4.8f, false);
-                var cliffB = BuildCliff("Klifwand na de brug", new[] { "ledgeB" }, left: false, 5.8f, 12f, 4.4f, false);
-                BuildRimOutcrops();
+                BuildCanyonWalls();
+                BuildPillars();
+                Progress("Kliffen", 0.6f);
+                var cliffA = BuildCliff("Klifwand langs de klim", new[] { "climb", "rimA" }, left: true, 5.6f, 13.5f, 4.8f, false);
+                var cliffB = BuildCliff("Klifwand na de brug", new[] { "rimB" }, left: false, 5.8f, 12f, 4.4f, false);
                 BuildScatteredCliffs();
                 Physics.SyncTransforms();
+                BuildWaterfalls();
+                BuildFences();
                 Progress("Gameplay", 0.65f);
                 SetupGameplay(cliffA, cliffB);
                 Progress("Bos en rotsen", 0.72f);
@@ -342,21 +355,20 @@ namespace ConductorChaos.EditorTools
             }
 
             // -------------------------------------------------------------- de route
+            // rimA en rimB liggen in één rechte lijn met de brugrail en de brug: de kloof wordt daaromheen uitgezet.
             static readonly (string prefab, string tag)[] RouteSpec =
             {
                 ("Track_Straight_12m", "meadow"), ("Track_Straight_12m", "meadow"),
                 ("Track_Curve_R20_15_Left", "forest"),
                 ("Track_Straight_12m", "forest"),
                 ("Track_Ramp_Up_18m_Steep", "climb"), ("Track_Ramp_Up_18m_Steep", "climb"),
-                ("Track_Straight_12m", "ledgeA"), ("Track_Straight_12m", "ledgeA"), ("Track_Straight_6m", "ledgeA"),
-                ("Track_Curve_R20_30_Right", "plateau"),
-                ("Track_Straight_6m", "plateau"),
+                ("Track_Straight_12m", "rimA"), ("Track_Straight_12m", "rimA"), ("Track_Straight_12m", "rimA"),
+                ("Track_Straight_12m", "rimA"),
                 ("Track_Broken_6m", "bridgeRail"),
-                ("Track_Bridge_Trestle_6m", "bridge"), ("Track_Bridge_Trestle_6m", "bridge"), ("Track_Bridge_Trestle_6m", "bridge"),
-                ("Track_Bridge_Trestle_6m", "bridge"), ("Track_Bridge_Trestle_6m", "bridge"), ("Track_Bridge_Trestle_6m", "bridge"),
-                ("Track_Straight_6m", "plateau"), ("Track_Straight_12m", "plateau"),
-                ("Track_Curve_R20_30_Left", "plateau"),
-                ("Track_Straight_12m", "ledgeB"), ("Track_Straight_12m", "ledgeB"),
+                ("Track_Bridge_Viaduct_12m", "bridge"), ("Track_Bridge_Viaduct_12m", "bridge"),
+                ("Track_Bridge_Viaduct_12m", "bridge"), ("Track_Bridge_Viaduct_12m", "bridge"),
+                ("Track_Straight_12m", "rimB"), ("Track_Straight_12m", "rimB"), ("Track_Straight_12m", "rimB"),
+                ("Track_Straight_12m", "rimB"),
                 ("Track_Ramp_Down_12m", "descent"), ("Track_Ramp_Down_12m", "descent"),
                 ("Track_Ramp_Down_12m", "descent"), ("Track_Ramp_Down_12m", "descent"),
                 ("Track_Straight_12m", "forest"), ("Track_Straight_12m", "forest"),
@@ -368,13 +380,18 @@ namespace ConductorChaos.EditorTools
 
             void LayRoute(TrackPiece start)
             {
-                var parent = Root("Spoor · ravijnroute").transform;
+                var parent = Root("Spoor · kloofroute").transform;
                 Vector3 p = start.EndPosition, d = start.EndDirection;
                 TrackPiece previous = start;
                 float arc = 0f;
                 foreach (var (prefabName, tag) in RouteSpec)
                 {
                     var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{TrackDir}/{prefabName}.prefab");
+                    if (!prefab && AssetDatabase.LoadAssetAtPath<GameObject>($"{TrackKitPrefabs.ModelDir}/{prefabName}.fbx"))
+                    {
+                        TrackKitPrefabs.Build();               // nieuw model (stenen brug) nog zonder prefab
+                        prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{TrackDir}/{prefabName}.prefab");
+                    }
                     if (!prefab) throw new Exception($"Spoorstuk {prefabName} ontbreekt in {TrackDir}.");
                     var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
                     var piece = go.GetComponent<TrackPiece>();
@@ -452,14 +469,15 @@ namespace ConductorChaos.EditorTools
 
                 var bridges = route.Where(r => r.tag == "bridge").ToList();
                 if (bridges.Count == 0) throw new Exception("Geen brug in de route.");
-                Vector3 a = bridges[0].piece.StartPosition, b = bridges[bridges.Count - 1].piece.EndPosition;
-                bridgeMid = (a + b) * 0.5f;
-                bridgeDir = Flat(b - a);
-                ravineDir = Vector3.Cross(Vector3.up, bridgeDir).normalized;
-                bridgeArc = (bridges[0].arcStart + bridges[bridges.Count - 1].arcEnd) * 0.5f;
-                bridgePivot = bridgeMid.y - RailTop;
-                ravineFloor = bridgePivot - 10.7f;          // brugpoten (10,2 m onder de spoor-pivot) zakken ~0,5 m in de bodem
-                log.AppendLine($"Brug over het ravijn op ({bridgeMid.x:0}, {bridgeMid.z:0}), dek {bridgePivot:0.0} m, bodem {ravineFloor:0.0} m.");
+                bridgeStart = bridges[0].piece.StartPosition;
+                bridgeEnd = bridges[bridges.Count - 1].piece.EndPosition;
+                deckPivot = bridgeStart.y - RailTop;
+                rimY = deckPivot - 0.15f;                                    // land langs de rand, net onder het spoorbed
+                originY = rimY + 0.12f - CanyonTiers * StepHeight;          // kloofwand-top steekt 12 cm boven het land
+                floorY = originY + 0.6f;                                    // wandvoeten zakken in de bodem
+                waterY = floorY + 0.05f;
+                log.AppendLine($"Brug van ({bridgeStart.x:0}, {bridgeStart.z:0}) tot ({bridgeEnd.x:0}, {bridgeEnd.z:0}), dek {deckPivot:0.0} m, " +
+                               $"kloofbodem {floorY:0.0} m.");
             }
 
             void MeasureStations(List<Transform> arrivalGroup)
@@ -503,7 +521,13 @@ namespace ConductorChaos.EditorTools
                     min = Vector3.Min(min, s.rail);
                     max = Vector3.Max(max, s.rail);
                 }
-                const float margin = 95f;
+                // ruim: de kloofuitlopers en de heuvels rond de vallei moeten erop passen
+                foreach (var p in canyon.line)
+                {
+                    min = Vector3.Min(min, p - new Vector3(40f, 0f, 40f));
+                    max = Vector3.Max(max, p + new Vector3(40f, 0f, 40f));
+                }
+                const float margin = 110f;
                 terrainOrigin = new Vector3(Mathf.Floor(min.x - margin), TerrainBottom, Mathf.Floor(min.z - margin));
                 terrainSize = new Vector3(Mathf.Ceil(max.x - min.x + 2 * margin), TerrainHeight, Mathf.Ceil(max.z - min.z + 2 * margin));
                 res = Mathf.Max(terrainSize.x, terrainSize.z) > 420f ? 1025 : 513;
@@ -532,7 +556,7 @@ namespace ConductorChaos.EditorTools
                 AssetDatabase.CreateAsset(data, DataFolder + "/Level02_Terrain.asset");
                 var go = Terrain.CreateTerrainGameObject(data);
                 SceneManager.MoveGameObjectToScene(go, scene);
-                go.name = "Terrein · ravijnvallei";
+                go.name = "Terrein · kloofvallei";
                 go.transform.position = terrainOrigin;
                 terrain = go.GetComponent<Terrain>();
                 terrain.materialTemplate = StylizedTerrainShaderTools.GetOrCreateMaterial();
@@ -541,7 +565,7 @@ namespace ConductorChaos.EditorTools
                 terrain.heightmapPixelError = 1f;
                 terrain.treeDistance = 0f;
                 terrain.detailObjectDistance = 0f;
-                TerrainCliffsEditor.AddTo(terrain);                // steile hellingen (ravijnwanden, taluds) krijgen grond/rots
+                TerrainCliffsEditor.AddTo(terrain);                // steile hellingen (taluds, heuvels) krijgen grond/rots
                 Physics.SyncTransforms();
                 log.AppendLine($"Terrein {terrainSize.x:0} × {terrainSize.z:0} m, heightmap {res}.");
             }
@@ -555,50 +579,50 @@ namespace ConductorChaos.EditorTools
             float Fbm(float x, float z, float ox, float oz) =>
                 Noise(x, z, 90f, ox, oz) * 0.55f + Noise(x, z, 38f, ox + 31f, oz + 7f) * 0.3f + Noise(x, z, 15f, ox + 77f, oz + 51f) * 0.15f;
 
-            // Ravijn-coördinaten: u langs het ravijn (met een slinger), v er dwars op.
-            void RavineCoords(float x, float z, out float u, out float v)
-            {
-                var o = new Vector3(x - bridgeMid.x, 0f, z - bridgeMid.z);
-                u = Vector3.Dot(o, ravineDir);
-                v = Vector3.Dot(o, bridgeDir) - Meander(u);
-            }
-
             float Height(float x, float z, FarField far, float ox, float oz)
             {
                 float dAll = far.Distance(x, z);                                   // afstand tot het dichtstbijzijnde spoor
-                float dHigh = far.DistanceHigh(x, z);                             // tot het hoge deel rond de brug
+                float dHigh = far.DistanceHigh(x, z);                             // tot het hoge deel langs de kloof
                 float n = Fbm(x, z, ox, oz);
                 float away = Smooth(22f, 85f, dAll);
                 // glooiend land, hoger en woester naarmate je verder van het spoor komt
-                float h = (n - 0.45f) * (1.6f + 7.5f * away) + away * 5.5f * Mathf.Pow(Noise(x, z, 60f, ox + 300f, oz + 90f), 2f);
-                // plateau rond de brug: het spoor klimt erop en daalt er weer af
-                float plateau = Smooth(62f, 26f, dHigh);
-                h = Mathf.Lerp(h, Mathf.Max(h, bridgePivot - 0.15f + (n - 0.5f) * 1.2f), plateau);
+                float h = (n - 0.45f) * (1.6f + 8f * away) + away * 7f * Mathf.Pow(Noise(x, z, 60f, ox + 300f, oz + 90f), 2f);
+                // plateau rond het hoge spoor: het spoor klimt erop en daalt er weer af
+                h = Mathf.Lerp(h, Mathf.Max(h, rimY + (n - 0.5f) * 1.6f), Smooth(60f, 24f, dHigh));
+                // al het land rond de kloof ligt minstens op randhoogte
+                float D = canyon.Dist(x, z), half = canyon.Half(x, z);
+                h = Mathf.Lerp(h, Mathf.Max(h, rimY + (n - 0.5f) * 2.4f), Smooth(half + 34f, half + 14f, D));
+                // heuvels langs de buitenrand sluiten de vallei af
+                float edge = Mathf.Min(Mathf.Min(x - terrainOrigin.x, terrainOrigin.x + terrainSize.x - x),
+                                       Mathf.Min(z - terrainOrigin.z, terrainOrigin.z + terrainSize.z - z));
+                h += 26f * Mathf.Pow(Smooth(90f, 0f, edge), 1.4f) * (0.55f + 0.9f * Noise(x, z, 42f, ox + 600f, oz + 200f));
+                // vlak langs de kloofrand: de wanden (CliffMass) sluiten daar precies op aan
+                h = Mathf.Lerp(h, rimY, Smooth(half + 16f, half + 8f, D));
+                bool inCanyon = D < half - 0.5f;
 
-                // ravijn
-                RavineCoords(x, z, out float u, out float v);
-                float along = 1f - Smooth(RavineLength - 35f, RavineLength, Mathf.Abs(u));
-                float other = Smooth(12f, 30f, far.DistanceExcept(x, z, bridgeArc, 34f));   // nooit door ander spoor heen
-                float carveWeight = along * other;
-                if (carveWeight > 0.001f)
-                {
-                    float av = Mathf.Abs(v);
-                    float wall = Mathf.Clamp01((av - RavineHalfFloor) / (RavineHalfTop - RavineHalfFloor));
-                    float floor = ravineFloor - (av < 3.2f ? (1f - av / 3.2f) * 1.1f : 0f);      // rivierbedding
-                    float shaped = Mathf.Lerp(floor, h, Mathf.SmoothStep(0f, 1f, Mathf.Pow(wall, 0.85f)));
-                    h = Mathf.Lerp(h, Mathf.Min(h, shaped), carveWeight);
-                }
-
-                // onder het spoor vlak, met een talud of insnijding naar het land ernaast (niet onder de brug)
-                var near = grid.Nearest(x, z, 14f, s => !s.bridge);
+                // onder het spoor vlak, met een talud of insnijding naar het land ernaast (niet onder de brug, niet in de kloof)
+                var near = inCanyon ? null : grid.Nearest(x, z, 14f, s => !s.bridge);
                 if (near != null)
                 {
                     float d = HorizontalDistance(near.rail, x, z);
-                    // voorbij het eind van een spoorstuk (brugkop): korter talud, zodat het ravijn onder de brug open blijft
+                    // voorbij het eind van een spoorstuk (brughoofd): korter talud
                     float lengthwise = Mathf.Abs((x - near.rail.x) * near.dir.x + (z - near.rail.z) * near.dir.z);
                     d += 1.5f * Mathf.Max(0f, lengthwise - 0.6f);
                     float bed = near.Pivot - 0.03f;
                     h = Mathf.Lerp(bed, h, Smooth(3.4f, 12f, d));
+                }
+                // onder het brugdek: grond altijd onder het dek (bij de brughoofden zakt het dek in de grond)
+                var deck = grid.Nearest(x, z, 6f, s => s.bridge);
+                if (deck != null)
+                    h = Mathf.Lerp(Mathf.Min(h, deck.Pivot - 0.6f), h, Smooth(3.6f, 6f, HorizontalDistance(deck.rail, x, z)));
+
+                // de kloof: onder de wanden diep weg, op de bodem een rivierbedding
+                if (inCanyon)
+                {
+                    float r = canyon.RiverDist(x, z);
+                    float bottom = floorY + 0.25f + Noise(x, z, 9f, ox + 70f, oz + 30f) * 0.5f;
+                    bottom = Mathf.Lerp(waterY - 1.3f, bottom, Smooth(RiverHalf - 0.6f, RiverHalf + 1.2f, r));
+                    h = Mathf.Lerp(h, bottom, Smooth(half - 0.5f, half - 1.6f, D));
                 }
 
                 // rond de stations vlak op perronhoogte
@@ -625,10 +649,19 @@ namespace ConductorChaos.EditorTools
                         float grass = 1f, flowers = 0f, dirt = 0f, stones = 0f, rock = 0f;
                         float d = far.Distance(wx, wz);
                         float f = Noise(wx, wz, 22f, ox + 500f, oz + 500f);
-                        if (d > 7f && f > 0.62f) flowers = Mathf.Clamp01((f - 0.62f) * 6f);
+                        if (d > 7f && f > 0.6f) flowers = Mathf.Clamp01((f - 0.6f) * 6f);
                         if (d > 2.6f && d < 4.6f) dirt = 0.55f;                       // berm naast de bielzen
-                        RavineCoords(wx, wz, out float u, out float v);
-                        if (Mathf.Abs(u) < RavineLength - 20f && Mathf.Abs(v) < RavineHalfFloor + 1.5f) { rock = 0.6f; dirt = 0.4f; grass = 0.2f; }
+                        float D = canyon.Dist(wx, wz), half = canyon.Half(wx, wz);
+                        if (D < half - 0.5f)
+                        {
+                            // kloofbodem: gras met kale plekken, grind en stenen langs de rivier
+                            float r = canyon.RiverDist(wx, wz);
+                            float g = Noise(wx, wz, 7f, ox + 90f, oz + 40f);
+                            dirt = 0.25f + 0.5f * Mathf.Clamp01((0.55f - g) * 3f);
+                            if (r < RiverHalf + 1.6f) { stones = 0.8f; dirt = 0.4f; grass = 0.15f; flowers = 0f; }
+                            else if (r < RiverHalf + 3f) { stones = 0.3f; grass = 0.7f; }
+                        }
+                        else if (D < half + 2.5f) { dirt = Mathf.Max(dirt, 0.35f); flowers = 0f; }   // kale rand langs de kloof
                         foreach (var area in stationAreas)
                             if (DistanceToBox(area, wx, wz) < 3f) { stones = 0.5f; grass = 0.6f; }
                         float sum = grass + flowers + dirt + stones + rock;
@@ -651,11 +684,11 @@ namespace ConductorChaos.EditorTools
             }
 
             // -------------------------------------------------------------- kliffen (CliffMass)
-            CliffMass NewMass(string name, Vector3 at, bool stone, int seed)
+            CliffMass NewMass(string name, Vector3 at, bool stone, int seed, float? y = null)
             {
                 var go = new GameObject(name);
                 go.transform.SetParent(Category("Cliffs"), true);
-                go.transform.SetPositionAndRotation(new Vector3(Mathf.Round(at.x), GroundAt(at), Mathf.Round(at.z)), Quaternion.identity);
+                go.transform.SetPositionAndRotation(new Vector3(Mathf.Round(at.x), y ?? GroundAt(at), Mathf.Round(at.z)), Quaternion.identity);
                 var mass = go.AddComponent<CliffMass>();
                 mass.cellSize = 1f;
                 mass.stepHeight = StepHeight;
@@ -699,24 +732,6 @@ namespace ConductorChaos.EditorTools
                 return mass;
             }
 
-            // Stenen rotspartijen op de randen van het ravijn, ver genoeg van het spoor.
-            void BuildRimOutcrops()
-            {
-                int made = 0;
-                foreach (float side in new[] { -1f, 1f })
-                    foreach (float sign in new[] { -1f, 1f })
-                    {
-                        // dwars op de brug, net voorbij de rand van het ravijn
-                        var center = bridgeMid + ravineDir * sign * (18f + (float)rng.NextDouble() * 10f) + bridgeDir * side * (RavineHalfTop + 6f);
-                        if (grid.Nearest(center.x, center.z, 12f, s => true) != null) continue;
-                        var mass = NewMass("Rotspartij bij het ravijn", center, true, rng.Next(1, 99999));
-                        Blob(mass, center, 4.5f + (float)rng.NextDouble() * 2.5f, 2, 9f);
-                        CliffMassBuilder.Rebuild(mass);
-                        made++;
-                    }
-                log.AppendLine($"Rotspartijen langs het ravijn: {made}.");
-            }
-
             // Een paar losse kliffen in het heuvelland: hoogteverschil en richtpunten in de verte.
             void BuildScatteredCliffs()
             {
@@ -725,7 +740,7 @@ namespace ConductorChaos.EditorTools
                 {
                     var p = new Vector3(terrainOrigin.x + 30f + (float)rng.NextDouble() * (terrainSize.x - 60f), 0f,
                                         terrainOrigin.z + 30f + (float)rng.NextDouble() * (terrainSize.z - 60f));
-                    if (grid.Nearest(p.x, p.z, 24f, s => true) != null || InRavine(p, 8f) || NearStation(p, 20f)) continue;
+                    if (grid.Nearest(p.x, p.z, 24f, s => true) != null || InCanyon(p, 12f) || NearStation(p, 20f)) continue;
                     var mass = NewMass("Klif in het heuvelland", p, rng.NextDouble() < 0.35, rng.Next(1, 99999));
                     Blob(mass, p, 4f + (float)rng.NextDouble() * 4f, 1 + rng.Next(3), 12f);
                     CliffMassBuilder.Rebuild(mass);
@@ -754,12 +769,218 @@ namespace ConductorChaos.EditorTools
                     }
             }
 
-            static float Meander(float u) => 4f * Mathf.Sin(u / 38f) * Mathf.Clamp01(Mathf.Abs(u) / 30f);
+            bool InCanyon(Vector3 p, float extra) => canyon.Dist(p.x, p.z) < canyon.Half(p.x, p.z) + extra;
 
-            bool InRavine(Vector3 p, float extra)
+            // -------------------------------------------------------------- de kloof
+            // Middenlijn: een S onder de brug door. Langs rimA ligt hij op afstand c rechts van het spoor, onder de brug
+            // draait hij in een kwartcirkel om het begin van de brug (straal c) en in een tweede om het eind, langs rimB ligt
+            // hij links. Met c = halve brug kruist hij het spoor precies haaks in het midden van de brug, en staat de rand
+            // overal even ver van het spoor. Aan beide kanten loopt een uitloper van het spoor weg, met een kopwand.
+            void PlanCanyon()
             {
-                RavineCoords(p.x, p.z, out float u, out float v);
-                return Mathf.Abs(u) < RavineLength && Mathf.Abs(v) < RavineHalfTop + extra;
+                var rimA = route.Where(r => r.tag == "rimA").ToList();
+                var rimB = route.Where(r => r.tag == "rimB").ToList();
+                if (rimA.Count == 0 || rimB.Count == 0) throw new Exception("Route mist de stukken langs de kloofrand.");
+                Vector3 a0 = Flat0(rimA[0].piece.StartPosition), b0 = Flat0(bridgeStart), b1 = Flat0(bridgeEnd);
+                Vector3 e = Flat0(rimB[rimB.Count - 1].piece.EndPosition);
+                Vector3 dir = Flat(b1 - b0), right = Vector3.Cross(Vector3.up, dir), left = -right;
+                float c = Vector3.Distance(b0, b1) * 0.5f;
+
+                var pts = new List<Vector3>();
+                var west = Arm(a0 + right * c, -dir, right, 26f, 80f, 38f);
+                west.Reverse();
+                pts.AddRange(west);
+                Segment(pts, a0 + right * c, b0 + right * c);
+                Bend(pts, b0, c, right, dir);
+                Bend(pts, b1, c, -dir, left);
+                Segment(pts, b1 + left * c, e + left * c);
+                pts.AddRange(Arm(e + left * c, dir, left, 26f, 70f, 44f));
+                float westLength = 26f * 80f * Mathf.Deg2Rad + 38f, eastLength = 26f * 70f * Mathf.Deg2Rad + 44f;
+
+                canyon = new Canyon(Resample(pts, 1f), (x, z) =>
+                {
+                    var s = grid.Nearest(x, z, 70f, q => !q.bridge);
+                    return s != null ? HorizontalDistance(s.rail, x, z) : 70f;
+                }, (float)rng.NextDouble() * 100f);
+
+                // watervallen: één in de westelijke kopwand (bron van de rivier), twee in de zijwanden van de uitlopers
+                var line = canyon.line;
+                Vector3 headDir = (line[0] - line[1]).normalized;
+                canyon.AddFall(line[0], headDir, 1.8f, true);
+                foreach (float at in new[] { westLength * 0.45f, canyon.Length - eastLength * 0.5f })
+                {
+                    int i = canyon.IndexAt(at);
+                    var n = canyon.Normal(i);
+                    var track = grid.Nearest(line[i].x, line[i].z, 90f, q => true);
+                    if (track != null && Vector3.Dot(n, Flat0(line[i] - track.rail)) < 0f) n = -n;   // de wand die je vanaf het spoor ziet
+                    canyon.AddFall(line[i], n, 1.5f, false);
+                }
+                canyon.BuildFields();
+                log.AppendLine($"Kloof: {canyon.Length:0} m lang, rand {c - canyon.half[canyon.IndexAt(westLength + 10f)]:0.0} m van het spoor, " +
+                               $"{CanyonTiers * StepHeight:0} m diep, {canyon.falls.Count} watervallen.");
+            }
+
+            static Vector3 Flat0(Vector3 v) => new Vector3(v.x, 0f, v.z);
+
+            static void Segment(List<Vector3> pts, Vector3 a, Vector3 b)
+            {
+                int n = Mathf.Max(1, Mathf.CeilToInt(Vector3.Distance(a, b)));
+                for (int k = 0; k <= n; k++) pts.Add(Vector3.Lerp(a, b, k / (float)n));
+            }
+
+            // Kwartcirkel om 'center' met straal r, van richting 'from' naar richting 'to' (loodrecht op elkaar).
+            static void Bend(List<Vector3> pts, Vector3 center, float r, Vector3 from, Vector3 to)
+            {
+                int n = Mathf.CeilToInt(r * Mathf.PI * 0.5f);
+                for (int k = 0; k <= n; k++)
+                {
+                    float phi = k / (float)n * Mathf.PI * 0.5f;
+                    pts.Add(center + r * (from * Mathf.Cos(phi) + to * Mathf.Sin(phi)));
+                }
+            }
+
+            // Uitloper: vanaf 'start' in richting 'heading', in een boog (straal, graden) naar 'turn' toe, dan rechtdoor.
+            static List<Vector3> Arm(Vector3 start, Vector3 heading, Vector3 turn, float radius, float degrees, float straight)
+            {
+                var pts = new List<Vector3>();
+                var p = start;
+                float arc = radius * degrees * Mathf.Deg2Rad;
+                for (float s = 1f; s <= arc + straight; s += 1f)
+                {
+                    float phi = Mathf.Min(s, arc) / radius;
+                    p += heading * Mathf.Cos(phi) + turn * Mathf.Sin(phi);
+                    pts.Add(p);
+                }
+                return pts;
+            }
+
+            static Vector3[] Resample(List<Vector3> pts, float step)
+            {
+                var clean = new List<Vector3> { pts[0] };
+                foreach (var q in pts) if (Vector3.Distance(q, clean[clean.Count - 1]) > 0.05f) clean.Add(q);
+                var output = new List<Vector3> { clean[0] };
+                float carry = 0f;
+                for (int i = 1; i < clean.Count; i++)
+                {
+                    Vector3 a = clean[i - 1], b = clean[i];
+                    float len = Vector3.Distance(a, b), t = step - carry;
+                    while (t <= len) { output.Add(Vector3.Lerp(a, b, t / len)); t += step; }
+                    carry = len - (t - step);
+                }
+                return output.ToArray();
+            }
+
+            // Eén CliffMass voor alle kloofwanden: getrapt profiel (rand, richels, puin), 13 treden boven de bodem.
+            void BuildCanyonWalls()
+            {
+                var mass = NewMass("Kloofwanden", canyon.line[canyon.line.Length / 2], false, rng.Next(1, 99999), originY);
+                int cells = 0;
+                canyon.Bounds(out int x0, out int z0, out int x1, out int z1);
+                for (int z = z0; z <= z1; z++)
+                {
+                    if ((z & 15) == 0) Progress("Kloofwanden", 0.55f + 0.04f * (z - z0) / Mathf.Max(1, z1 - z0));
+                    for (int x = x0; x <= x1; x++)
+                    {
+                        int level = canyon.Level(x, z, CanyonTiers);
+                        if (level <= 0) continue;
+                        if (grid.Nearest(x, z, 3.2f, s => !s.bridge) != null) continue;      // veiligheid: nooit op het spoor
+                        mass.SetLevel(mass.CellAt(mass.transform.InverseTransformPoint(new Vector3(x, originY, z))), level);
+                        cells++;
+                    }
+                }
+                CliffMassBuilder.Rebuild(mass);
+                canyonWalls = mass;
+                log.AppendLine($"Kloofwanden: {cells} cellen.");
+            }
+
+            // Rotspilaren op de bodem van de wijde uitlopers, weg van het spoor, de rivier en de watervallen.
+            void BuildPillars()
+            {
+                var placed = new List<Vector3>();
+                for (int attempt = 0; attempt < 120 && placed.Count < 4; attempt++)
+                {
+                    int i = rng.Next(4, canyon.line.Length - 4);
+                    if (canyon.nearTrack[i] < 38f) continue;
+                    float radius = 2.6f + (float)rng.NextDouble() * 1.8f;
+                    float offset = RiverHalf + 2.2f + radius;
+                    if (offset + radius > canyon.FloorHalf(i) - 0.8f) continue;
+                    var center = canyon.line[i] + canyon.Normal(i) * (rng.NextDouble() < 0.5 ? -offset : offset);
+                    if (placed.Any(q => Vector3.Distance(q, center) < 16f) || canyon.NearFall(center, radius + 6f)) continue;
+                    var mass = NewMass("Rotspilaar in de kloof", center, true, rng.Next(1, 99999), originY);
+                    int top = CanyonTiers - 2 - rng.Next(6);
+                    float seed = (float)rng.NextDouble() * 100f;
+                    int r = Mathf.CeilToInt(radius + 2f);
+                    for (int dz = -r; dz <= r; dz++)
+                        for (int dx = -r; dx <= r; dx++)
+                        {
+                            var w = new Vector3(Mathf.Round(center.x) + dx, 0f, Mathf.Round(center.z) + dz);
+                            if (canyon.Level(w.x, w.z, CanyonTiers) > 0 || canyon.RiverDist(w.x, w.z) < RiverHalf + 0.8f) continue;
+                            float angle = Mathf.Atan2(w.z - center.z, w.x - center.x);
+                            float edge = radius * (0.8f + 0.4f * Mathf.PerlinNoise(seed + Mathf.Cos(angle) * 1.4f, seed + Mathf.Sin(angle) * 1.4f));
+                            float dist = HorizontalDistance(center, w.x, w.z);
+                            int level = dist < edge * 0.62f ? top : dist < edge ? top - 2 - (Mathf.PerlinNoise(w.x * 0.5f, w.z * 0.5f) > 0.5f ? 1 : 0)
+                                      : dist < edge + 1.1f ? 1 : 0;
+                            if (level > 0) mass.SetLevel(mass.CellAt(mass.transform.InverseTransformPoint(w)), level);
+                        }
+                    CliffMassBuilder.Rebuild(mass);
+                    placed.Add(center);
+                }
+                log.AppendLine($"Rotspilaren in de kloof: {placed.Count}.");
+            }
+
+            void BuildWaterfalls()
+            {
+                var model = Model("Water", "Waterfall_Large");
+                var wall = canyonWalls ? canyonWalls.GetComponent<Collider>() : null;
+                if (!model || !wall) { log.AppendLine("Watervallen overgeslagen (model of wand ontbreekt)."); return; }
+                Physics.SyncTransforms();
+                int made = 0;
+                foreach (var fall in canyon.falls)
+                {
+                    // horizontaal vanuit de kloof naar de wand, een paar meter onder de rand
+                    var from = new Vector3(fall.inside.x, RimTop - 3.5f, fall.inside.z);
+                    if (!wall.Raycast(new Ray(from, fall.dir), out var hit, 80f)) continue;
+                    var foot = hit.point - fall.dir * 0.55f;
+                    float ground = GroundAt(foot);
+                    float height = RimTop + 0.06f - ground;
+                    var go = Place(model, "Water", new Vector3(foot.x, ground, foot.z), Quaternion.LookRotation(-fall.dir).eulerAngles.y,
+                        1f, 1f, 0f, false);
+                    if (!go) continue;
+                    // Waterfall_Large is 4,6 m hoog: alleen in de hoogte rekken, zodat de lip precies op de kloofrand ligt
+                    go.transform.localScale = new Vector3(fall.width, height / 4.6f, fall.width * 0.8f);
+                    go.GetComponent<PaintedProp>().followGround = false;
+                    go.name = fall.head ? "Waterval · bron van de rivier" : "Waterval in de kloofwand";
+                    made++;
+                }
+                log.AppendLine($"Watervallen: {made}.");
+            }
+
+            // Houten hek langs de kloofkant van het spoor, bovenop de rotsrand.
+            void BuildFences()
+            {
+                var fence = AssetDatabase.LoadAssetAtPath<GameObject>($"{EnvDir}/Station/Farm/Farm_Fence_3m.fbx");
+                if (!fence) { log.AppendLine("Hek overgeslagen: Farm_Fence_3m ontbreekt."); return; }
+                Physics.SyncTransforms();
+                int count = 0;
+                foreach (var (tags, right) in new[] { (new[] { "rimA", "bridgeRail" }, true), (new[] { "rimB" }, false) })
+                {
+                    var section = route.Where(r => tags.Contains(r.tag)).ToList();
+                    if (section.Count == 0) continue;
+                    float from = section[0].arcStart + (right ? 1f : 1.5f), to = section[section.Count - 1].arcEnd - (right ? 1.5f : 1f);
+                    // 3,06 m per stuk, om de 3,15 m: palen raken elkaar niet (geen dubbele vlakken)
+                    for (float a = from; a + 3.1f <= to; a += 3.15f)
+                    {
+                        var s = SampleAt(a);
+                        var side = right ? Vector3.Cross(Vector3.up, s.dir) : Vector3.Cross(s.dir, Vector3.up);
+                        var p = s.rail + side * 5.2f;
+                        float y = CliffTop(p, out var top, out _) ? Mathf.Max(top, GroundAt(p)) : GroundAt(p);
+                        // lokale x langs het spoor
+                        float yaw = Quaternion.LookRotation(Vector3.Cross(s.dir, Vector3.up)).eulerAngles.y;
+                        var go = Place(fence, "Fences", new Vector3(p.x, y - 0.03f, p.z), yaw, 1f, 1f, -0.03f, true);
+                        if (go) { go.GetComponent<PaintedProp>().followGround = false; count++; }
+                    }
+                }
+                log.AppendLine($"Hek langs de kloofrand: {count} stukken.");
             }
 
             bool NearStation(Vector3 p, float margin) => stationAreas.Any(a => DistanceToBox(a, p.x, p.z) < margin);
@@ -792,7 +1013,7 @@ namespace ConductorChaos.EditorTools
                 var objSo = new SerializedObject(railObjective);
                 objSo.FindProperty("title").stringValue = "Herstel de brugrail";
                 objSo.FindProperty("instructions").stringValue =
-                    "De rail vlak voor de brug over het ravijn is kapot. Stop ervoor en sla de gele bout vast met de moersleutel, anders ontspoort de trein.";
+                    "De rail vlak voor de stenen brug over de kloof is kapot. Stop ervoor en sla de gele bout vast met de moersleutel, anders ontspoort de trein.";
                 objSo.FindProperty("icon").stringValue = "wrench";
                 objSo.ApplyModifiedPropertiesWithoutUndo();
 
@@ -829,9 +1050,9 @@ namespace ConductorChaos.EditorTools
                 incidentsGo.AddComponent<NetworkObject>();
                 var incidents = incidentsGo.AddComponent<ServiceIncidents>();
                 var rockfalls = new List<ServiceIncidents.Rockfall>();
-                var a = MakeRockfall(incidentsGo.transform, "Steenlawine bij de klim", cliffA, "ledgeA", true);
+                var a = MakeRockfall(incidentsGo.transform, "Steenlawine bij de klim", cliffA, "rimA", true);
                 if (a != null) rockfalls.Add(a);
-                var b = MakeRockfall(incidentsGo.transform, "Steenlawine na de brug", cliffB, "ledgeB", false);
+                var b = MakeRockfall(incidentsGo.transform, "Steenlawine na de brug", cliffB, "rimB", false);
                 if (b != null) rockfalls.Add(b);
                 var damages = new List<ServiceIncidents.TrackDamage>();
                 if (damagePoint)
@@ -858,7 +1079,7 @@ namespace ConductorChaos.EditorTools
                     {
                         var go = (GameObject)PrefabUtility.InstantiatePrefab(sign, scene);
                         go.transform.SetParent(Category("Props"), true);
-                        var side = Vector3.Cross(Vector3.up, railSample.dir);
+                        var side = Vector3.Cross(railSample.dir, Vector3.up);       // bergkant; aan de kloofkant staat het hek
                         var pos = railSample.rail + side * 3.4f;
                         pos.y = GroundAt(pos);
                         go.transform.SetPositionAndRotation(pos, Quaternion.LookRotation(-railSample.dir));
@@ -1049,7 +1270,9 @@ namespace ConductorChaos.EditorTools
                     else
                     {
                         p.y = GroundAt(p);
-                        if (SteepnessAt(p) > 27f || InRavine(p, 1.5f) && p.y < bridgePivot - 2.5f) continue;
+                        if (SteepnessAt(p) > 27f) continue;
+                        // op de kloofbodem wat minder bomen, nooit in de rivierbedding
+                        if (InCanyon(p, 0f) && (canyon.RiverDist(p.x, p.z) < RiverHalf + 1.6f || rng.NextDouble() < 0.4)) continue;
                         y = p.y;
                     }
                     float sink = 0.08f;
@@ -1068,7 +1291,9 @@ namespace ConductorChaos.EditorTools
                     float d = far.Distance(p.x, p.z);
                     if (d < 5.5f || NearStation(p, 6f)) continue;
                     p.y = GroundAt(p);
-                    bool interesting = InRavine(p, 6f) || SteepnessAt(p) > 18f || NearCliff(p, 4f);
+                    if (canyon.RiverDist(p.x, p.z) < RiverHalf + 0.4f) continue;
+                    if (CliffTop(p, out var overhead, out _) && overhead > p.y + 0.3f) continue;      // onder een rotswand
+                    bool interesting = InCanyon(p, 4f) || SteepnessAt(p) > 18f || NearCliff(p, 4f);
                     if (!interesting && rng.NextDouble() > 0.06) continue;
                     var model = rockModels[rng.Next(rockModels.Length)];
                     if (model.name.Contains("Large") && d < 9f) continue;
@@ -1082,15 +1307,17 @@ namespace ConductorChaos.EditorTools
                 var plants = new[] { Model("Plants", "Grass_Tuft_01"), Model("Plants", "Grass_Tuft_02"), Model("Plants", "Flower_Patch_01"), Model("Plants", "Flower_Daisy_01") }
                     .Where(m => m).ToArray();
                 int plantCount = 0;
-                for (int i = 0; i < 9000 && plantCount < 420 && plants.Length > 0; i++)
+                for (int i = 0; i < 14000 && plantCount < 560 && plants.Length > 0; i++)
                 {
                     var p = new Vector3(terrainOrigin.x + (float)rng.NextDouble() * terrainSize.x, 0f, terrainOrigin.z + (float)rng.NextDouble() * terrainSize.z);
                     float d = far.Distance(p.x, p.z);
                     bool station = NearStation(p, 18f) && !NearStation(p, 1f);
-                    if (!(station || (d > 4.5f && d < 28f))) continue;
-                    if (rng.NextDouble() > (station ? 0.6 : 0.18)) continue;
+                    bool canyonFloor = InCanyon(p, -2f) && canyon.RiverDist(p.x, p.z) > RiverHalf + 0.8f;
+                    if (!(station || canyonFloor || (d > 4.5f && d < 28f))) continue;
+                    if (rng.NextDouble() > (station ? 0.6 : canyonFloor ? 0.35 : 0.18)) continue;
                     p.y = GroundAt(p);
-                    if (SteepnessAt(p) > 16f || InRavine(p, 3f)) continue;
+                    if (SteepnessAt(p) > 16f || InCanyon(p, 2f) && !canyonFloor) continue;
+                    if (CliffTop(p, out var overhead, out _) && overhead > p.y + 0.3f) continue;
                     var model = plants[rng.Next(plants.Length)];
                     if (Place(model, "Plants", new Vector3(p.x, p.y - 0.02f, p.z), (float)rng.NextDouble() * 360f, 0.8f + (float)rng.NextDouble() * 0.5f, 1f, -0.02f, false))
                         plantCount++;
@@ -1138,36 +1365,36 @@ namespace ConductorChaos.EditorTools
                 return go;
             }
 
+            // Rivier over de kloofbodem: korte rechthoekige stukken (StylizedWater) langs de rivierlijn. In bochten
+            // overlappen ze een klein beetje; om en om 1,2 cm hoger, zodat er nooit twee vlakken op elkaar liggen.
             void BuildRiver()
             {
                 var surfaceMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Environment/M_Env_WaterSurface.mat");
                 var tint = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Art/Shaders/UnderwaterTint.shader");
-                var parent = Root("Rivier in het ravijn").transform;
-                const float segment = 12f;
-                float reach = RavineLength - 45f;            // daarna loopt de bodem op naar het land
+                var parent = Root("Rivier in de kloof").transform;
+                var river = canyon.river;
+                const int step = 6;                                  // punten liggen 1 m uit elkaar
                 int count = 0;
-                for (float u = -reach; u < reach - 0.01f; u += segment)
+                for (int k = 0; k < river.Count - 1; k += step)
                 {
-                    float uc = u + segment * 0.5f;
-                    // midden en richting van dit stuk volgen de slinger van het ravijn
-                    Vector3 Point(float uu) => bridgeMid + ravineDir * uu + bridgeDir * Meander(uu);
-                    Vector3 a = Point(u), b = Point(u + segment);
+                    Vector3 a = river[k], b = river[Mathf.Min(k + step, river.Count - 1)];
+                    float length = Vector3.Distance(a, b);
+                    if (length < 0.5f) break;
                     var go = new GameObject($"Rivier {count + 1}", typeof(MeshFilter), typeof(MeshRenderer), typeof(BoxCollider));
                     go.layer = 2;                                       // Ignore Raycast, zoals Create Water
                     go.transform.SetParent(parent, false);
-                    var mid = Point(uc);
-                    go.transform.SetPositionAndRotation(new Vector3(mid.x, ravineFloor + 0.55f, mid.z),
+                    var mid = (a + b) * 0.5f;
+                    go.transform.SetPositionAndRotation(new Vector3(mid.x, waterY + ((count & 1) == 0 ? 0f : 0.012f), mid.z),
                         Quaternion.LookRotation(Flat(b - a), Vector3.up));
                     var water = go.AddComponent<StylizedWater>();
-                    // aansluitend, niet overlappend (anders twee doorzichtige vlakken op elkaar)
-                    water.size = new Vector2(2f * (RavineHalfFloor + 0.8f), HorizontalDistance(a, b.x, b.z));
-                    water.depth = 2.2f;
+                    water.size = new Vector2(2f * (RiverHalf + 1.1f), length);
+                    water.depth = 1.6f;
                     water.surfaceMaterial = surfaceMat;
                     water.tintShader = tint;
                     water.Rebuild();
                     count++;
                 }
-                log.AppendLine($"Rivier op de bodem van het ravijn: {count} stukken.");
+                log.AppendLine($"Rivier op de kloofbodem: {count} stukken.");
             }
 
             void BuildBackdrop()
@@ -1264,7 +1491,7 @@ namespace ConductorChaos.EditorTools
             readonly Vector3 origin;
             readonly float step;
             readonly int nx, nz;
-            static readonly string[] HighTags = { "plateau", "bridgeRail", "bridge" };
+            static readonly string[] HighTags = { "rimA", "bridgeRail", "bridge", "rimB" };
 
             public FarField(List<Sample> samples, Vector3 origin, Vector3 size, float step)
             {
@@ -1312,6 +1539,189 @@ namespace ConductorChaos.EditorTools
                 if (!except.TryGetValue(arc, out var f))
                     except[arc] = f = Field(s => s.arc < 0f || Mathf.Abs(s.arc - arc) > window);
                 return Read(f, x, z);
+            }
+        }
+
+        // De kloof: middenlijn (punten 1 m uit elkaar) met per punt de halve breedte tot de rand en het wandprofiel, plus
+        // afstandsvelden (1 m raster) naar de middenlijn en naar de rivierlijn. Level() geeft per cel de wandhoogte in
+        // treden; dezelfde Dist/Half bepalen het terrein, zodat wand en grond precies op elkaar aansluiten.
+        sealed class Canyon
+        {
+            public readonly Vector3[] line;
+            public readonly float[] arc, half, nearTrack, rimBand, w1, w2, w3;
+            public readonly int[] l1, l2, talus;
+            public readonly List<Vector3> river = new List<Vector3>();
+            public readonly List<Fall> falls = new List<Fall>();
+            public float Length => arc[arc.Length - 1];
+            readonly float seed;
+
+            public sealed class Fall
+            {
+                public Vector3 inside, dir, sheer;
+                public float width;
+                public bool head;
+            }
+
+            // velden
+            int gx0, gz0, nx, nz;
+            float[] dist, riverDist;
+            int[] nearest;
+
+            public Canyon(Vector3[] line, Func<float, float, float> trackDistance, float seed)
+            {
+                this.line = line;
+                this.seed = seed;
+                int n = line.Length;
+                arc = new float[n]; half = new float[n]; nearTrack = new float[n];
+                rimBand = new float[n]; w1 = new float[n]; w2 = new float[n]; w3 = new float[n];
+                l1 = new int[n]; l2 = new int[n]; talus = new int[n];
+                for (int i = 1; i < n; i++) arc[i] = arc[i - 1] + Vector3.Distance(line[i - 1], line[i]);
+                for (int i = 0; i < n; i++) nearTrack[i] = trackDistance(line[i].x, line[i].z);
+                float total = arc[n - 1];
+                var raw = new float[n];
+                for (int i = 0; i < n; i++)
+                {
+                    // de rand blijft 4,5 m van het spoor; verder weg breder en grilliger; smal bij de kopwanden
+                    float wild = Smooth(28f, 45f, nearTrack[i]);
+                    float h = 19.5f + wild * (4f + 6f * (Mathf.PerlinNoise(arc[i] / 23f + seed, 3.7f) - 0.5f));
+                    float end = Mathf.Min(arc[i], total - arc[i]);
+                    h *= Mathf.Lerp(0.6f, 1f, Smooth(0f, 34f, end));
+                    raw[i] = Mathf.Min(h, nearTrack[i] - 4.5f);
+                }
+                for (int i = 0; i < n; i++)
+                {
+                    float sum = 0f; int count = 0;
+                    for (int k = Mathf.Max(0, i - 6); k <= Mathf.Min(n - 1, i + 6); k++) { sum += raw[k]; count++; }
+                    half[i] = Mathf.Max(9f, Mathf.Min(sum / count, nearTrack[i] - 4.5f));
+                }
+                for (int i = 0; i < n; i++)
+                {
+                    float N(int k) => Mathf.PerlinNoise(arc[i] / 11f + k * 17.3f + seed, k * 5.1f + 0.5f);
+                    rimBand[i] = 1.9f + 0.7f * N(1);
+                    w1[i] = Mathf.Round(Mathf.Clamp(N(2) * 4.2f - 1f, 0f, 3f));
+                    l1[i] = CanyonTiers - 3 - Mathf.FloorToInt(N(3) * 2.99f);
+                    w2[i] = Mathf.Round(Mathf.Clamp(N(4) * 3.2f - 0.8f, 0f, 2f));
+                    l2[i] = Mathf.Max(3, l1[i] - 3 - Mathf.FloorToInt(N(5) * 2.99f));
+                    w3[i] = 1f + Mathf.Round(N(6) * 1.5f);
+                    talus[i] = N(7) > 0.5f ? 2 : 1;
+                    // de bodem houdt altijd ruimte voor de rivier met oevers
+                    float budget = half[i] - (RiverHalf + 2.5f) - (rimBand[i] + 0.6f);
+                    w1[i] = Mathf.Min(w1[i], Mathf.Max(0f, budget)); budget -= w1[i];
+                    w2[i] = Mathf.Min(w2[i], Mathf.Max(0f, budget)); budget -= w2[i];
+                    w3[i] = Mathf.Min(w3[i], Mathf.Max(0f, budget));
+                }
+                // rivier: de middenlijn, aan de westkant doorgetrokken tot vlak onder de kopwaterval
+                Vector3 back = (line[0] - line[1]).normalized;
+                int extra = Mathf.FloorToInt(half[0] - rimBand[0] - 3f);
+                for (int k = extra; k >= 1; k--) river.Add(line[0] + back * k);
+                river.AddRange(line);
+            }
+
+            public int IndexAt(float at)
+            {
+                int i = Array.BinarySearch(arc, at);
+                return Mathf.Clamp(i < 0 ? ~i : i, 0, line.Length - 1);
+            }
+
+            public Vector3 Normal(int i)
+            {
+                var t = line[Mathf.Min(i + 1, line.Length - 1)] - line[Mathf.Max(i - 1, 0)];
+                t.y = 0f;
+                return Vector3.Cross(Vector3.up, t.normalized);
+            }
+
+            public float FloorHalf(int i) => half[i] - (rimBand[i] + 0.6f + w1[i] + w2[i] + w3[i]);
+
+            public void AddFall(Vector3 inside, Vector3 dir, float width, bool head)
+            {
+                int i = IndexAt(0f);
+                float bestD = float.MaxValue;
+                for (int k = 0; k < line.Length; k++)
+                {
+                    float d = (line[k] - inside).sqrMagnitude;
+                    if (d < bestD) { bestD = d; i = k; }
+                }
+                falls.Add(new Fall { inside = inside, dir = dir.normalized, width = width, head = head,
+                                     sheer = inside + dir.normalized * (half[i] - rimBand[i]) });
+            }
+
+            public bool NearFall(Vector3 p, float radius) =>
+                falls.Any(f => HorizontalDistance(f.sheer, p.x, p.z) < radius);
+
+            public void Bounds(out int x0, out int z0, out int x1, out int z1)
+            {
+                x0 = gx0; z0 = gz0; x1 = gx0 + nx - 1; z1 = gz0 + nz - 1;
+            }
+
+            public void BuildFields()
+            {
+                float maxHalf = half.Max() + 3f;
+                float minX = line.Min(p => p.x), maxX = line.Max(p => p.x), minZ = line.Min(p => p.z), maxZ = line.Max(p => p.z);
+                foreach (var p in river) { minX = Mathf.Min(minX, p.x); maxX = Mathf.Max(maxX, p.x); minZ = Mathf.Min(minZ, p.z); maxZ = Mathf.Max(maxZ, p.z); }
+                gx0 = Mathf.FloorToInt(minX - maxHalf); gz0 = Mathf.FloorToInt(minZ - maxHalf);
+                nx = Mathf.CeilToInt(maxX + maxHalf) - gx0 + 1; nz = Mathf.CeilToInt(maxZ + maxHalf) - gz0 + 1;
+                dist = new float[nx * nz]; riverDist = new float[nx * nz]; nearest = new int[nx * nz];
+                for (int z = 0; z < nz; z++)
+                    for (int x = 0; x < nx; x++)
+                    {
+                        float wx = gx0 + x, wz = gz0 + z, best = float.MaxValue, bestR = float.MaxValue;
+                        int bi = 0;
+                        for (int i = 0; i < line.Length; i++)
+                        {
+                            float dx = line[i].x - wx, dz = line[i].z - wz, d = dx * dx + dz * dz;
+                            if (d < best) { best = d; bi = i; }
+                        }
+                        foreach (var q in river)
+                        {
+                            float dx = q.x - wx, dz = q.z - wz, d = dx * dx + dz * dz;
+                            if (d < bestR) bestR = d;
+                        }
+                        dist[z * nx + x] = Mathf.Sqrt(best);
+                        riverDist[z * nx + x] = Mathf.Sqrt(bestR);
+                        nearest[z * nx + x] = bi;
+                    }
+            }
+
+            float Read(float[] f, float x, float z)
+            {
+                float fx = x - gx0, fz = z - gz0;
+                if (fx < 0f || fz < 0f || fx > nx - 1.001f || fz > nz - 1.001f) return 1e4f;
+                int ix = (int)fx, iz = (int)fz;
+                float tx = fx - ix, tz = fz - iz;
+                return Mathf.Lerp(Mathf.Lerp(f[iz * nx + ix], f[iz * nx + ix + 1], tx),
+                                  Mathf.Lerp(f[(iz + 1) * nx + ix], f[(iz + 1) * nx + ix + 1], tx), tz);
+            }
+
+            public float Dist(float x, float z) => Read(dist, x, z);
+            public float RiverDist(float x, float z) => Read(riverDist, x, z);
+
+            int Nearest(float x, float z)
+            {
+                int ix = Mathf.Clamp(Mathf.RoundToInt(x - gx0), 0, nx - 1), iz = Mathf.Clamp(Mathf.RoundToInt(z - gz0), 0, nz - 1);
+                return nearest[iz * nx + ix];
+            }
+
+            public float Half(float x, float z) => half[Nearest(x, z)];
+
+            /// Wandhoogte (in treden) van de cel op (x, z); 0 = geen wand (land buiten de kloof of de bodem).
+            public int Level(float x, float z, int tiers)
+            {
+                float D = Dist(x, z);
+                if (D > 1e3f) return 0;
+                int i = Nearest(x, z);
+                float t0 = half[i] - D;                       // hoe ver binnen de rand
+                if (t0 < 0f) return 0;
+                // binnenkant van de rand onregelmatig, maar altijd minstens 1,7 m breed (daaronder zakt het terrein weg)
+                float j1 = (Mathf.PerlinNoise(x * 0.29f + 13.1f + seed, z * 0.29f + 7.7f) - 0.5f) * 1.3f;
+                float edge = Mathf.Max(1.7f, rimBand[i] + j1);
+                if (t0 <= edge) return tiers;
+                if (falls.Any(f => HorizontalDistance(f.sheer, x, z) < 7f)) return 0;     // achter een waterval: één rechte wand
+                float t = t0 - edge;
+                float j2 = (Mathf.PerlinNoise(x * 0.37f + 3.9f, z * 0.37f + 21.4f + seed) - 0.5f) * 1.2f;
+                if (w1[i] > 0f && t <= w1[i] + j2) return l1[i];
+                if (w2[i] > 0f && t <= w1[i] + w2[i] + j2 * 0.8f) return l2[i];
+                if (w3[i] > 0f && t <= w1[i] + w2[i] + w3[i] + j2 * 0.6f) return talus[i];
+                return 0;
             }
         }
 
