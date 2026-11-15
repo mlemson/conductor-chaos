@@ -67,6 +67,14 @@ namespace ConductorChaos.Stations
             previewScene = run.gameObject.scene;
             int duration = run.MusicDuration;
             AudioClip clip = GetClip(duration);
+            // Doorlopende muziek: bij extra reistijd, of in langere levels (level 2: 7-10 min) zonder eigen track;
+            // dan loopt de 5-minutenversie door.
+            bool looping = run.LoopMusic;
+            if (!clip && duration > 300)
+            {
+                clip = GetClip(300);
+                looping = true;
+            }
             if (!clip)
             {
                 StopAndReset();
@@ -77,14 +85,14 @@ namespace ConductorChaos.Stations
             // including when they receive the timer a little later than the host.
             double start = run.MusicStartedAt;
             double elapsed = network.ServerTime.Time - start;
-            if (elapsed < -.2 || (!run.LoopMusic && elapsed >= Math.Min(duration, clip.length) - .08))
+            if (elapsed < -.2 || (!looping && elapsed >= Math.Min(duration, clip.length) - .08))
             {
                 StopAndReset();
                 return;
             }
 
             double clipElapsed = Math.Max(0d, elapsed);
-            if (run.LoopMusic && clip.length > 0f) clipElapsed %= clip.length;
+            if (looping && clip.length > 0f) clipElapsed %= clip.length;
             float seek = Mathf.Clamp((float)clipElapsed, 0f, Mathf.Max(0f, clip.length - .1f));
             if (currentRun != run || Math.Abs(currentStart - start) > .05 || source.clip != clip)
             {
@@ -92,7 +100,7 @@ namespace ConductorChaos.Stations
                 currentRun = run;
                 currentStart = start;
                 source.clip = clip;
-                source.loop = run.LoopMusic;
+                source.loop = looping;
                 source.time = seek;
                 source.Play();
                 return;
@@ -115,7 +123,7 @@ namespace ConductorChaos.Stations
 
         private void PlayLeadIn(Scene scene, float volume)
         {
-            if (scene.name is not ("TrainPlayground" or ServiceRun.IntroScene or ServiceRun.FirstLevelScene))
+            if (scene.name != "TrainPlayground" && !ServiceRun.IsServiceScene(scene.name))
             {
                 StopAndReset();
                 return;

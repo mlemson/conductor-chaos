@@ -5,6 +5,8 @@
 //   - "Los plaatsen": elke klik zet precies één object onder de muis (geen strooien).
 //   - Rotsen zakken altijd extra de grond in (percentage van hun hoogte), zodat ze er niet bovenop liggen.
 //   - Elk object krijgt een PaintedProp-markering en zakt/stijgt mee als je het terrein eronder verandert (behalve wolken).
+//   - Losse kliffen stapelen niet meer op elkaar: ze komen naast elkaar op de grond (issue #223).
+//     'Kliffen stapelen' zet het oude gedrag terug. Eén grote, samengevoegde klif: Klif Massa Painter.
 //   - Colliders staan standaard aan (behalve bloemen/gras en de achtergrond); nooit op iets met een Rigidbody.
 // Geschilderde objecten komen onder "PaintedProps/<categorie>" (prefab-instanties, dus aanpassingen aan het model
 // komen overal door). Alles gaat via Undo. Editor-only: statisch decor, geen gameplay/netwerkstatus.
@@ -46,6 +48,7 @@ namespace ConductorChaos.EditorTools
         [SerializeField] bool singleMode;                     // één object per klik, precies onder de muis
         [SerializeField] float rockSink = 0.22f;              // rotsen: extra inzakken als fractie van hun hoogte
         [SerializeField] bool paintOnPainted = true;          // ook óp geschilderde objecten (met collider) schilderen
+        [SerializeField] bool stackCliffs;                    // kliffen óp kliffen (oud gedrag); standaard naast elkaar
         [SerializeField] LayerMask surfaceMask = ~0;
         [SerializeField] string rootName = "PaintedProps";
 
@@ -93,6 +96,20 @@ namespace ConductorChaos.EditorTools
                 if (GUILayout.Button("Pad (keien)")) LoadPreset("Path");
                 if (GUILayout.Button("Bloemen + gras")) LoadPreset("Plants");
                 if (GUILayout.Button("Stenen kliffen")) LoadPreset("StoneCliffs");
+            }
+
+            if (entries.Any(e => e.enabled && e.prefab && CategoryOf(e.prefab) == "Cliffs"))
+            {
+                EditorGUILayout.Space();
+                EditorGUILayout.HelpBox("Grote of brede klif nodig? De Klif Massa Painter voegt alles wat je schildert samen " +
+                                        "tot één klif (Ctrl = hoger, Shift = gummen).", MessageType.Info);
+                bool stonePalette = entries.Any(e => e.enabled && e.prefab && e.prefab.name.EndsWith("_Stone"));
+                if (GUILayout.Button(stonePalette ? "Open Klif Massa Painter (samengevoegde stenen kliffen)"
+                                                  : "Open Klif Massa Painter (samengevoegde kliffen)", GUILayout.Height(24)))
+                    CliffMassPainterWindow.Open(stonePalette);
+                stackCliffs = EditorGUILayout.ToggleLeft(new GUIContent("Losse kliffen stapelen",
+                    "Aan: een klif die je op een andere klif schildert komt er bovenop (oud gedrag). " +
+                    "Uit: kliffen komen naast elkaar op de grond en schuiven in elkaar."), stackCliffs);
             }
 
             EditorGUILayout.Space();
@@ -303,7 +320,19 @@ namespace ConductorChaos.EditorTools
                 if (ev.type == EventType.MouseDown) { Undo.IncrementCurrentGroup(); hasLastDab = false; }
                 if (singleMode && !erase)
                 {
-                    if (ev.type == EventType.MouseDown) PlaceOne(hit, null);
+                    if (ev.type == EventType.MouseDown)
+                    {
+                        var entry = PickEntry();
+                        // geklikt op een losse klif terwijl stapelen uit staat: recht eronder op de grond zetten
+                        if (entry != null && !stackCliffs && CategoryOf(entry.prefab) == "Cliffs" && IsPaintedCliff(hit.collider))
+                        {
+                            var down = new Ray(hit.point + Vector3.up * 200f, Vector3.down);
+                            if (Raycast(down, null, out var ground, true)) hit = ground;
+                            else if (new Plane(Vector3.up, Vector3.zero).Raycast(down, out float d))
+                                hit = new RaycastHit { point = down.GetPoint(d), normal = Vector3.up };
+                        }
+                        PlaceOne(hit, null, entry);
+                    }
                 }
                 else if (!hasLastDab || Vector3.Distance(lastDab, hit.point) >= radius * spacing)
                 {
@@ -338,10 +367,11 @@ namespace ConductorChaos.EditorTools
             return false;
         }
 
-        bool Raycast(Ray ray, HashSet<GameObject> ignore, out RaycastHit best)
+        bool Raycast(Ray ray, HashSet<GameObject> ignore, out RaycastHit best, bool skipCliffs = false)
         {
             best = default;
             var root = GameObject.Find(rootName);
+            var cliffs = skipCliffs && root ? root.transform.Find("Cliffs") : null;
             float bestDist = float.MaxValue;
             bool found = false;
             foreach (var h in Physics.RaycastAll(ray, 10000f, surfaceMask, QueryTriggerInteraction.Ignore))
@@ -349,6 +379,7 @@ namespace ConductorChaos.EditorTools
                 var go = h.collider.gameObject;
                 if (ignore != null && ignore.Any(g => g && go.transform.IsChildOf(g.transform))) continue;
                 if (!paintOnPainted && root && go.transform.IsChildOf(root.transform)) continue;
+                if (cliffs && go.transform.IsChildOf(cliffs)) continue;   // losse klif niet bovenop een andere klif
                 if (h.distance < bestDist) { best = h; bestDist = h.distance; found = true; }
             }
             return found;
@@ -403,12 +434,15 @@ namespace ConductorChaos.EditorTools
             if (root)
                 foreach (Transform cat in root.transform)
                     foreach (Transform t in cat)
-                        if ((t.position - center).sqrMagnitude < (radius + minDistance) * (radius + minDistance)) existing.Add(t.position);
+                        if (!t.GetComponent<ConductorChaos.Art.CliffMass>() &&
+                            (t.position - center).sqrMagnitude < (radius + minDistance) * (radius + minDistance)) existing.Add(t.position);
 
             var created = new HashSet<GameObject>();
             int placed = 0;
             for (int attempt = 0; attempt < perDab * 8 && placed < perDab; attempt++)
             {
+                var entry = PickEntry();
+                bool skipCliffs = entry != null && !stackCliffs && CategoryOf(entry.prefab) == "Cliffs";
                 var a = Rand(0f, Mathf.PI * 2f);
                 var r = radius * Mathf.Sqrt((float)rng.NextDouble());
                 var p = center + new Vector3(Mathf.Cos(a) * r, 0f, Mathf.Sin(a) * r);
@@ -416,7 +450,7 @@ namespace ConductorChaos.EditorTools
                     p = new Vector3(Mathf.Round(p.x / gridSize) * gridSize, p.y, Mathf.Round(p.z / gridSize) * gridSize);
                 var down = new Ray(p + Vector3.up * 200f, Vector3.down);
                 RaycastHit hit;
-                if (!Raycast(down, created, out hit))
+                if (!Raycast(down, created, out hit, skipCliffs))
                 {
                     var plane = new Plane(Vector3.up, new Vector3(0f, center.y, 0f));
                     if (!plane.Raycast(down, out float d)) continue;
@@ -425,7 +459,7 @@ namespace ConductorChaos.EditorTools
                 var flat = new Vector2(hit.point.x, hit.point.z);
                 if (minDistance > 0f && existing.Any(q => (new Vector2(q.x, q.z) - flat).sqrMagnitude < minDistance * minDistance)) continue;
 
-                var go = PlaceOne(hit, created);
+                var go = PlaceOne(hit, created, entry);
                 if (go == null) continue; // steile plek: probeer een andere positie binnen de kwast
                 created.Add(go);
                 existing.Add(go.transform.position);
@@ -433,9 +467,16 @@ namespace ConductorChaos.EditorTools
             }
         }
 
-        GameObject PlaceOne(RaycastHit hit, HashSet<GameObject> created)
+        bool IsPaintedCliff(Collider c)
         {
-            var entry = PickEntry();
+            var root = GameObject.Find(rootName);
+            var cliffs = root ? root.transform.Find("Cliffs") : null;
+            return c != null && cliffs != null && c.transform.IsChildOf(cliffs);
+        }
+
+        GameObject PlaceOne(RaycastHit hit, HashSet<GameObject> created, Entry entry = null)
+        {
+            if (entry == null) entry = PickEntry();
             if (entry == null) { ShowNotification(new GUIContent("Palet is leeg")); return null; }
             string category = CategoryOf(entry.prefab);
             if (category == "Plants")
@@ -517,6 +558,7 @@ namespace ConductorChaos.EditorTools
             foreach (Transform cat in root.transform)
                 foreach (Transform t in cat)
                 {
+                    if (t.GetComponent<ConductorChaos.Art.CliffMass>()) continue;   // grote kliffen: gummen in de Klif Massa Painter
                     var d = t.position - center;
                     d.y = 0f;
                     if (d.sqrMagnitude <= radius * radius) doomed.Add(t.gameObject);

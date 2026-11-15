@@ -8,10 +8,10 @@ namespace ConductorChaos.UI
 {
     internal sealed class ServicePresentation
     {
-        private readonly GameObject modal, hud;
+        private readonly GameObject modal, hud, checklistPanel;
         private readonly Image modalBadge, objectiveIcon;
         private readonly Text kicker, heading, detail, route, actionText, waitText;
-        private readonly Text hudTitle, hudDetail, timerText;
+        private readonly Text hudTitle, hudDetail, timerText, checklist;
         private readonly Button advance, leave;
         private float nextUpdate;
 
@@ -36,6 +36,9 @@ namespace ConductorChaos.UI
             route = Label(card, "Route", 20, ChaosUI.GoldLight, V(.055f, .56f), V(.95f, .67f));
             var paper = ChaosUI.Panel(card, "Opdracht", V(.05f, .25f), V(.95f, .55f), ChaosUI.Paper);
             detail = Label(paper, "Details", 23, ChaosUI.Ink, V(.04f, .08f), V(.96f, .93f), FontStyle.Normal);
+            detail.resizeTextForBestFit = true;          // lange briefing (level 2) krimpt mee in plaats van af te kappen
+            detail.resizeTextMinSize = 14;
+            detail.resizeTextMaxSize = 23;
             advance = ChaosUI.Action(card, "Verder", "Verder", V(.05f, .055f), V(.59f, .195f),
                 ChaosUI.Gold, ChaosUI.Ink, () => ServiceRun.Active?.Continue(), 25, iconKey: "play");
             actionText = advance.GetComponentInChildren<Text>();
@@ -55,6 +58,13 @@ namespace ConductorChaos.UI
             var timer = ChaosUI.Panel(inGame.transform, "Dienstklok", V(.867f, .895f), V(.978f, .966f),
                 ChaosUI.Navy, 2, ChaosUI.Dark);
             timerText = ChaosUI.Label(timer, "Resterende tijd", "", 26, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold);
+            // Level 2+: alle opdrachten tegelijk, als afvinklijst onder de opdrachtkaart.
+            var list = ChaosUI.Panel(inGame.transform, "Checklist", V(.022f, .515f), V(.322f, .775f), ChaosUI.Paper, 2, ChaosUI.Dark);
+            checklist = ChaosUI.Label(list, "Opdrachten", "", 17, ChaosUI.Ink, TextAnchor.UpperLeft, FontStyle.Normal,
+                V(.05f, .04f), V(.96f, .95f));
+            checklist.supportRichText = true;
+            checklistPanel = list.gameObject;
+            checklistPanel.SetActive(false);
             hud = inGame.gameObject;
             hud.SetActive(false);
         }
@@ -92,21 +102,30 @@ namespace ConductorChaos.UI
             bool intro = !loading && run.Introduction;
             modalBadge.color = loading || briefing ? ChaosUI.Paper : won ? ChaosUI.Green : ChaosUI.TrainRed;
             kicker.color = !loading && !briefing && !won ? ChaosUI.Paper : ChaosUI.Ink;
-            kicker.text = loading ? "SAMEN OP REIS" : briefing ? "BRIEFING  /  " + (intro ? "HOOFDSTATION" : "LEVEL 1") :
+            kicker.text = loading ? "SAMEN OP REIS" : briefing ? "BRIEFING  /  " + (intro ? "HOOFDSTATION" : run.LevelLabel) :
                 won ? "DIENST GESLAAGD" : "DIENST AFGEBROKEN";
             heading.text = loading ? "Even geduld…" : briefing && intro ? "Je eerste werkdag" :
-                briefing ? run.Objective?.Title ?? "Eerste dienst" : won ? "Goed gewerkt, conducteurs!" :
+                briefing ? (run.CombinesObjectives ? "Over het ravijn" : run.Objective?.Title ?? "Eerste dienst") :
+                won ? "Goed gewerkt, conducteurs!" :
                 run.OffTrack ? "De trein is ontspoord" : "De tijd is om";
             route.text = loading ? "De crew laadt dezelfde scène." : intro ? "Whistleton  ·  Oefenrit zonder tijdslimiet" :
                 $"{run.Departure.StationName}   →   {run.Arrival.StationName}";
             detail.text = loading ? $"Verbonden crew  ·  {host.PlayerCount}" : briefing
                 ? intro ? "Loop naar het perron, oefen met bagage en de treindeur en rijd een klein stukje. Eén geslaagde handeling telt voor de hele crew."
-                    : $"{run.Objective?.Instructions}\n\nTijdslimiet {FormatTime(ServiceRun.TimeLimit(host.PlayerCount))}. De klok start zodra een teamgenoot het vertrekperron bereikt."
+                    : run.CombinesObjectives
+                        ? $"{CombinedBriefing(run)}\n\nTijdslimiet {FormatTime(run.TimeLimit(host.PlayerCount))}. De klok start op het vertrekperron."
+                        : $"{run.Objective?.Instructions}\n\nTijdslimiet {FormatTime(run.TimeLimit(host.PlayerCount))}. De klok start zodra een teamgenoot het vertrekperron bereikt."
                 : intro ? won ? "De training is afgerond. Jullie eerste dienst kan beginnen." : "Start de training opnieuw."
-                : $"{run.Objective?.Title}   {run.Progress}/{run.Objective?.Target}\nTijd over  {FormatTime(run.TimeLeft)}";
+                : run.CombinesObjectives
+                    ? $"Opdrachten   {run.Progress}/{run.TotalTarget}\nTijd over  {FormatTime(run.TimeLeft)}"
+                    : $"{run.Objective?.Title}   {run.Progress}/{run.Objective?.Target}\nTijd over  {FormatTime(run.TimeLeft)}";
             advance.gameObject.SetActive(!loading && host.IsHost);
             advance.interactable = !loading && run.CanContinue;
-            actionText.text = briefing ? (intro ? "Begin training" : "Begin dienst") : won && intro ? "Naar level 1" : "Opnieuw spelen";
+            string next = won ? ServiceRun.NextScene(run.gameObject.scene.name) : null;
+            bool hasNext = next != null && Application.CanStreamedLevelBeLoaded(next);
+            actionText.text = briefing ? (intro ? "Begin training" : "Begin dienst") :
+                hasNext ? (next == ServiceRun.FirstLevelScene ? "Naar level 1" : next == ServiceRun.SecondLevelScene ? "Naar level 2" : "Volgende dienst") :
+                "Opnieuw spelen";
             waitText.text = loading ? "Wachten op de crew…" : "Wachten op de host…";
             waitText.gameObject.SetActive(!advance.gameObject.activeSelf);
             leave.gameObject.SetActive(true);
@@ -114,6 +133,8 @@ namespace ConductorChaos.UI
 
         private void PresentHud(ServiceRun run)
         {
+            bool combined = run.CombinesObjectives;
+            if (checklistPanel.activeSelf != combined) checklistPanel.SetActive(combined);
             if (run.Introduction)
             {
                 hudTitle.text = "INTRODUCTIE  /  " + ((int)run.CurrentLesson + 1);
@@ -134,10 +155,25 @@ namespace ConductorChaos.UI
                 return;
             }
 
-            hudTitle.text = run.Objective?.Title ?? "Eerste dienst";
-            if (objectiveIcon && run.Objective)
-                objectiveIcon.sprite = ChaosUISpriteCatalog.Find(run.Objective.Icon) ?? ChaosUISpriteCatalog.Find("route");
-            hudDetail.text = NextServiceStep(run);
+            string warning = ServiceIncidents.Active ? ServiceIncidents.Active.Warning : null;
+            if (combined)
+            {
+                hudTitle.text = $"{run.LevelLabel}  ·  {run.Progress}/{run.TotalTarget}";
+                if (objectiveIcon)
+                    objectiveIcon.sprite = ChaosUISpriteCatalog.Find(warning != null ? "warning" : run.Objective ? run.Objective.Icon : "route")
+                                           ?? ChaosUISpriteCatalog.Find("route");
+                hudDetail.text = warning ?? CombinedStep(run);
+                hudDetail.color = warning != null ? ChaosUI.TrainRed : ChaosUI.Ink;
+                checklist.text = Checklist(run);
+            }
+            else
+            {
+                hudTitle.text = run.Objective?.Title ?? "Eerste dienst";
+                if (objectiveIcon && run.Objective)
+                    objectiveIcon.sprite = ChaosUISpriteCatalog.Find(run.Objective.Icon) ?? ChaosUISpriteCatalog.Find("route");
+                hudDetail.text = warning ?? NextServiceStep(run);
+                hudDetail.color = warning != null ? ChaosUI.TrainRed : ChaosUI.Ink;
+            }
             timerText.text = run.TimerRunning ? FormatTime(run.TimeLeft) : "Klaar?";
             timerText.color = run.TimerRunning && run.TimeLeft <= 30 ? ChaosUI.GoldLight : ChaosUI.Paper;
         }
@@ -178,6 +214,81 @@ namespace ConductorChaos.UI
                 return run.Phase == ServiceRun.RunPhase.Departure
                     ? "Neem de moersleutel mee en rijd tot vóór de kapotte wissel."
                     : $"Stop vóór de wissel en tik met de moersleutel tegen de gele bout. ({broken.Hits}/{broken.RequiredHits})";
+            return $"Rijd naar {run.Arrival.StationName} en stop bij de groene stopmarkering.";
+        }
+
+        // ---------------------------------------------------------------- level 2+: alle opdrachten tegelijk
+        private static string CombinedBriefing(ServiceRun run)
+        {
+            var text = new System.Text.StringBuilder("Alles in één rit: ");
+            bool first = true;
+            foreach (var objective in run.ActiveObjectives)
+            {
+                if (!first) text.Append("  ·  ");
+                text.Append(objective.Title);
+                first = false;
+            }
+            text.Append(".\nOnderweg kan het misgaan: rotsen op het spoor, spoorschade en kolen die opraken.");
+            return text.ToString();
+        }
+
+        private static string Checklist(ServiceRun run)
+        {
+            var text = new System.Text.StringBuilder();
+            foreach (var objective in run.ActiveObjectives)
+            {
+                int done = run.ProgressOf(objective);
+                bool complete = done >= objective.Target;
+                if (text.Length > 0) text.Append('\n');
+                text.Append(complete ? "<color=#6E7F5A>■  " : "□  ").Append(objective.Title);
+                if (objective.Target > 1) text.Append($"  {done}/{objective.Target}");
+                if (complete) text.Append("</color>");
+            }
+            return text.ToString();
+        }
+
+        private static bool Done(ServiceRun run, ServiceObjective objective) => run.ProgressOf(objective) >= objective.Target;
+
+        // De belangrijkste volgende stap over alle opdrachten heen, in de volgorde waarin je ze tegenkomt.
+        private static string CombinedStep(ServiceRun run)
+        {
+            var objectives = run.ActiveObjectives;
+            if (run.Phase == ServiceRun.RunPhase.Departure)
+            {
+                if (!run.TimerRunning) return "Loop naar het vertrekperron om de dienstklok te starten.";
+                foreach (var objective in objectives)
+                {
+                    if (objective is ServiceTickets && !Done(run, objective))
+                        return $"Knip de kaartjes op het perron en open de perrondeur voor de reizigers. ({run.ProgressOf(objective)}/{objective.Target})";
+                    if (objective is ServiceCargo && run.AboardOf(objective) < objective.Target)
+                        return objective.Target == 1 ? "Leg de rode koffer in het bagagevak in de wagon."
+                            : $"Zet de kratten in het vrachtvak in de wagon. ({Mathf.Max(0, run.AboardOf(objective))}/{objective.Target} aan boord)";
+                    if (objective is ServiceEscort && run.ProgressOf(objective) == 0)
+                        return run.EscortDoorOpen ? "Pak oma met je handen vast en sleep haar de wagon in." : "Open de wagondeur aan het perron voor oma.";
+                }
+                if (!run.BellRung) return "Alles aan boord? Druk de gele belknop op het vertrekperron omlaag.";
+            }
+            if (run.Phase == ServiceRun.RunPhase.Arrival)
+                foreach (var objective in objectives)
+                {
+                    if (objective is ServiceCargo && !Done(run, objective))
+                        return objective.Target == 1 ? "Zet de rode koffer in het groene bagagevak op het perron."
+                            : $"Zet de kratten in het gele vrachtvak. ({run.ProgressOf(objective)}/{objective.Target} gelost)";
+                    if (objective is ServiceEscort && !Done(run, objective))
+                        return run.EscortDoorOpen ? "Pak oma met je handen vast en breng haar naar het eindperron." : "Open de wagondeur aan het perron voor oma.";
+                }
+            if (!run.DoorsClosed) return "Schuif de zijdeuren aan beide kanten van de wagon dicht.";
+            if (!run.PowerOn) return "Druk op de startknop in de cabine.";
+            if (run.NeedsCoal) return "Het vuur is uit! Open de vuurkist en schep er kolen in.";
+            foreach (var objective in objectives)
+            {
+                if (objective is ServiceRepair repair && !Done(run, objective))
+                    return repair.IsBroken
+                        ? $"Stop vóór de kapotte wissel en tik met de moersleutel tegen de gele bout. ({repair.Hits}/{repair.RequiredHits})"
+                        : "Duw de wisselhendel naar de stand rechtdoor.";
+                if (objective is ServiceTrackRepair rail && !Done(run, objective))
+                    return $"Stop vóór de kapotte rail bij de brug en sla de gele bout vast met de moersleutel. ({rail.Hits}/{rail.RequiredHits})";
+            }
             return $"Rijd naar {run.Arrival.StationName} en stop bij de groene stopmarkering.";
         }
 
