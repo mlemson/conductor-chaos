@@ -7,8 +7,9 @@ using UnityEngine.SceneManagement;
 namespace ConductorChaos.Stations
 {
     /// <summary>
-    /// Client-local soundtrack synchronized to the server-authoritative service timer.
-    /// Plays a short lead-in on entering the menu, introduction or service briefing.
+    /// Client-local soundtrack. Menu, introduction and briefing use a continuous
+    /// looping theme. Timed levels use the server-selected Rustynail Express version,
+    /// followed by Chug Chug Along after that clip has finished.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class ServiceMusic : MonoBehaviour
@@ -16,16 +17,17 @@ namespace ConductorChaos.Stations
         internal const string MusicEnabledKey = "ChaosUI.MusicEnabled";
         internal const string MusicVolumeKey = "ChaosUI.MusicVolume";
         internal const float DefaultMusicVolume = .5f;
-        private const float MusicGain = .7f;
-        private const float LeadInSeconds = 9f;
 
-        private readonly Dictionary<int, AudioClip> clips = new();
-        private readonly HashSet<int> warnedMissing = new();
+        private const float MusicGain = .7f;
+        private const string MenuTrackName = "RustynailExpress2";
+        private const string FollowupTrackName = "ChugChugAlong";
+
+        private readonly Dictionary<string, AudioClip> clips = new();
+        private readonly HashSet<string> warnedMissing = new();
         private AudioSource source;
         private ServiceRun currentRun;
         private double currentStart;
         private bool wasListenerPaused;
-        private Scene previewScene;
 
         private void Awake()
         {
@@ -38,71 +40,121 @@ namespace ConductorChaos.Stations
 
         private void Update()
         {
-            // The existing AudioListener.volume and AudioListener.pause remain master controls.
-            float volume = MusicGain * Mathf.Clamp01(PlayerPrefs.GetFloat(MusicVolumeKey, DefaultMusicVolume));
-            source.volume = volume;
+            // Master volume and master pause remain controlled by PlaygroundMenu.
+            source.volume = MusicGain * Mathf.Clamp01(PlayerPrefs.GetFloat(MusicVolumeKey, DefaultMusicVolume));
             source.mute = PlayerPrefs.GetInt(MusicEnabledKey, 1) == 0;
             if (AudioListener.pause) wasListenerPaused = true;
 
-            var run = ServiceRun.Active;
-            var network = NetworkManager.Singleton;
-            if (run && (run.Phase is ServiceRun.RunPhase.Won or ServiceRun.RunPhase.Failed))
+            ServiceRun run = ServiceRun.Active;
+            string sceneName = run ? run.gameObject.scene.name : SceneManager.GetActiveScene().name;
+            if (sceneName is not ("TrainPlayground" or ServiceRun.IntroScene or ServiceRun.FirstLevelScene))
             {
                 StopAndReset();
                 return;
             }
 
+            // Keep the same intro theme playing across menu, loading, training and
+            // briefing scene changes. The actual level begins at the server timer.
             if (!run || run.Introduction || !run.TimerRunning)
             {
-                PlayLeadIn(run ? run.gameObject.scene : SceneManager.GetActiveScene(), volume);
+                PlayMenuTheme();
                 return;
             }
 
+            NetworkManager network = NetworkManager.Singleton;
             if (!run.IsSpawned || run.MusicDuration <= 0 || !network || !network.IsListening)
             {
-                StopAndReset();
+                PlayMenuTheme();
                 return;
             }
 
-            previewScene = run.gameObject.scene;
-            int duration = run.MusicDuration;
-            AudioClip clip = GetClip(duration);
-            if (!clip)
+            AudioClip levelClip = GetLevelClip(run.MusicDuration);
+            if (!levelClip)
             {
                 StopAndReset();
                 return;
             }
 
-            // NGO ServerTime is synchronized. Clients play at the elapsed position,
-            // including when they receive the timer a little later than the host.
+            // ServerTime lets late-joining clients seek to the matching point.
+            // Do not stop at the deadline: result screens can outlive the timer
+            // and should reach the next song when Rustynail Express finishes.
             double start = run.MusicStartedAt;
             double elapsed = network.ServerTime.Time - start;
-            if (elapsed < -.2 || elapsed >= Math.Min(duration, clip.length) - .08)
+            if (elapsed < 0d)
+            {
+                PlayMenuTheme();
+                return;
+            }
+
+            if (elapsed < levelClip.length)
+            {
+                PlaySynchronized(run, start, levelClip, false,
+                    Mathf.Clamp((float)elapsed, 0f, Mathf.Max(0f, levelClip.length - .01f)));
+                return;
+            }
+
+            AudioClip followup = LoadClip(FollowupTrackName);
+            if (!followup || followup.length <= 0f)
             {
                 StopAndReset();
                 return;
             }
 
-            float seek = Mathf.Clamp((float)Math.Max(0d, elapsed), 0f, Mathf.Max(0f, clip.length - .1f));
-            if (currentRun != run || Math.Abs(currentStart - start) > .05 || source.clip != clip)
+            // Loop the follow-up until the player leaves/restarts the level. Using
+            // server time also gives late clients the same position in this song.
+            float followupTime = (float)((elapsed - levelClip.length) % followup.length);
+            PlaySynchronized(run, start, followup, true, followupTime);
+        }
+
+        private void PlayMenuTheme()
+        {
+            AudioClip menuClip = LoadClip(MenuTrackName);
+            if (!menuClip)
+            {
+                StopAndReset();
+                return;
+            }
+
+            if (currentRun || source.clip != menuClip || !source.loop)
+            {
+                source.Stop();
+                currentRun = null;
+                currentStart = 0d;
+                source.clip = menuClip;
+                source.loop = true;
+                if (!AudioListener.pause) source.Play();
+                return;
+            }
+
+            // The theme does not have a nine-second fade-out. Let the full song
+            // play and loop naturally until the level timer actually starts.
+            if (!AudioListener.pause && !source.isPlaying) source.Play();
+        }
+
+        private void PlaySynchronized(ServiceRun run, double start, AudioClip clip, bool loop, float seek)
+        {
+            bool changed = currentRun != run || Math.Abs(currentStart - start) > .05 ||
+                           source.clip != clip || source.loop != loop;
+            if (changed)
             {
                 source.Stop();
                 currentRun = run;
                 currentStart = start;
                 source.clip = clip;
+                source.loop = loop;
                 source.time = seek;
-                source.Play();
+                if (!AudioListener.pause) source.Play();
                 return;
             }
 
-            // Re-seek after master mute: the level timer continued while audio was paused.
-            // Avoid periodic seeking on compressed MP3s, which can cause audible stutters.
             if (AudioListener.pause) return;
             if (wasListenerPaused)
             {
                 wasListenerPaused = false;
                 source.time = seek;
             }
+
+            // Avoid repeated seeking while a compressed MP3 plays normally.
             if (!source.isPlaying)
             {
                 source.time = seek;
@@ -110,31 +162,8 @@ namespace ConductorChaos.Stations
             }
         }
 
-        private void PlayLeadIn(Scene scene, float volume)
+        private AudioClip GetLevelClip(int duration)
         {
-            if (scene.name is not ("TrainPlayground" or ServiceRun.IntroScene or ServiceRun.FirstLevelScene))
-            {
-                StopAndReset();
-                return;
-            }
-
-            if (previewScene != scene)
-            {
-                StopAndReset();
-                if (AudioListener.pause) return;
-                previewScene = scene;
-                source.clip = GetClip(300);
-                if (source.clip) source.Play();
-            }
-
-            if (!source.clip || AudioListener.pause) return;
-            if (!source.isPlaying || source.time >= LeadInSeconds) StopAndReset();
-            else source.volume = volume * Mathf.Clamp01((LeadInSeconds - source.time) / 2f);
-        }
-
-        private AudioClip GetClip(int duration)
-        {
-            if (clips.TryGetValue(duration, out var cached)) return cached;
             string name = duration switch
             {
                 300 => "RustynailExpress_300",
@@ -143,12 +172,17 @@ namespace ConductorChaos.Stations
                 210 => "RustynailExpress_210",
                 _ => null
             };
-            if (name == null) return null;
+            return name == null ? null : LoadClip(name);
+        }
+
+        private AudioClip LoadClip(string name)
+        {
+            if (clips.TryGetValue(name, out AudioClip cached)) return cached;
 
             AudioClip clip = Resources.Load<AudioClip>("Music/" + name);
-            clips[duration] = clip;
-            if (!clip && warnedMissing.Add(duration))
-                Debug.LogWarning($"Levelmuziek ontbreekt: Assets/Resources/Music/{name}.mp3. Kopieer het audiobestand naar die map.", this);
+            clips[name] = clip;
+            if (!clip && warnedMissing.Add(name))
+                Debug.LogWarning($"Muziek ontbreekt: Assets/Resources/Music/{name}.mp3. Voeg het audiobestand toe aan het Unity-project.", this);
             return clip;
         }
 
@@ -159,8 +193,11 @@ namespace ConductorChaos.Stations
                 source.Stop();
                 source.clip = null;
             }
+
+            source.loop = false;
             currentRun = null;
             currentStart = 0d;
+            wasListenerPaused = false;
         }
 
         private void OnDestroy()
