@@ -465,6 +465,26 @@
         0.92,
         3.0
       ]
+    },
+    "Track_Bridge_Viaduct_12m": {
+      "fbx": "Assets/Art/Models/Environment/Track/Track_Bridge_Viaduct_12m.fbx",
+      "tris": 12044,
+      "length": 12.0,
+      "radius": null,
+      "angleDeg": 0.0,
+      "rise": 0.0,
+      "hill": 0.0,
+      "side": 0,
+      "min": [
+        -0.08,
+        -36.0,
+        -3.25
+      ],
+      "max": [
+        12.55,
+        0.64,
+        3.25
+      ]
     }
   }
 }

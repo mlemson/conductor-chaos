@@ -23,6 +23,8 @@ Assets (Assets/Art/Models/Environment/Track):
                                             Broken_Bits / Fixed_Rail / Repair_Bolt
   Track_Switch_20m_A/B                       wissel (build_switch_kit.py, #214)
   Track_Bridge_Trestle_6m                    houten schraagbrug, poten 10 m lang (laat ze in het terrein zakken)
+  Track_Bridge_Viaduct_12m                   stenen boogbrug (#224): één boog van 10 m met een pijler van 36 m aan het
+                                            begin; stukken achter elkaar geven een viaduct over een diepe kloof
   Prop_WarningSign, Prop_Barrier             waarschuwingsbord en slagboom uit het concept
 
 Gebruik: python ArtSource/Environment/build_track_kit.py
@@ -75,6 +77,9 @@ MATERIALS = {
     "M_Track_Warn": (R["warning"], 0.25, 0.02, {"cells": 0.4, "cellSize": 0.6}),
     "M_Track_Ink": (R["ink"], 0.20, 0.10, {"cells": 0.0}),
     "M_Track_Collider": (R["ui_bg"], 0.0, 0.0, {"cells": 0.0}),
+    # stenen viaduct (#224)
+    "M_Track_Stone": (R["plinth_stone"], 0.05, 0.04, {"cells": 0.9, "cellSize": 0.9, "rim": 0.2, "grime": 0.4}),
+    "M_Track_StoneDark": (R["plinth_stone"], 0.05, -0.14, {"cells": 0.8, "cellSize": 0.8, "rim": 0.2, "grime": 0.5}),
 }
 
 
@@ -471,6 +476,71 @@ def trestle(rng, length=6.0, leg=10.0):
     return path, mk.merge(*parts), col
 
 
+def frustum(x0, x1, z0, z1, y0, y1, grow_x, grow_z, mat):
+    """Afgeknotte balk: bovenkant [x0,x1]x[z0,z1] op y1, onderkant per kant grow_x/grow_z breder op y0."""
+    top = [(x0, y1, z0), (x1, y1, z0), (x1, y1, z1), (x0, y1, z1)]
+    bot = [(x0 - grow_x, y0, z0 - grow_z), (x1 + grow_x, y0, z0 - grow_z), (x1 + grow_x, y0, z1 + grow_z),
+           (x0 - grow_x, y0, z1 + grow_z)]
+    V = np.array(bot + top, float)
+    F = [(0, 1, 2, 3), (4, 7, 6, 5), (0, 4, 5, 1), (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0)]
+    m = mk.Mesh(V, F, [mat] * len(F))
+    m.sharp = True
+    return mk._orient_closed(m)
+
+
+def viaduct(rng, length=12.0, pier=36.0):
+    """Stenen boogbrug zoals het concept (#224). Per stuk: een pijler aan het begin (x 0..2 m) die 36 m de diepte in
+    gaat, daarna een halfronde boog van 10 m met een gesloten borstwering erboven, een stenen dek met grindbed,
+    bielzen en rails, en lage borstweringen langs beide kanten. Het volgende stuk zet zijn pijler precies op het
+    eind van deze boog, dus een rij stukken is één viaduct. Geen vlakken op elkaar: voegen liggen tegen elkaar,
+    sierranden steken net uit."""
+    path = Path(length)
+    parts = [track(path, rng, with_bed=True)]
+    deck_top, deck_bot = -0.10, -1.10
+    half = 2.55
+    parts.append(rbox(0.0, length, deck_bot, deck_top, -half, half, 0.05, "M_Track_Stone"))
+    for sgn in (-1, 1):                                                   # borstwering met dekplaat
+        zi, zo = sgn * 2.25, sgn * half
+        parts.append(rbox(0.0, length, deck_top - 0.02, 0.50, min(zi, zo), max(zi, zo), 0.04, "M_Track_Stone"))
+        zi2, zo2 = sgn * 2.18, sgn * (half + 0.07)
+        parts.append(rbox(0.0, length, 0.46, 0.64, min(zi2, zo2), max(zi2, zo2), 0.04, "M_Track_StoneDark"))
+    # kroonlijst onder het dek
+    # (3 cm binnen de uiteinden: geen eindvlak op het eindvlak van dek en pijler; tussen stukken een smalle voeg)
+    parts.append(rbox(0.03, length - 0.03, deck_bot - 0.30, deck_bot + 0.12, -half - 0.08, half + 0.08, 0.05, "M_Track_StoneDark"))
+    # pijler: smaller boven, breder onder (alleen dwars), x blijft 0..2 m zodat stukken naadloos aansluiten
+    pw, ph = 2.0, 2.30
+    y_top = deck_bot + 0.05
+    parts.append(frustum(0.0, pw, -ph, ph, -pier, y_top, 0.0, 0.95, "M_Track_Stone"))
+    # boog
+    r, xc = (length - pw) / 2, pw + (length - pw) / 2
+    crown = deck_bot - 0.95
+    ys = crown - r                                                       # kämpferhoogte
+    n = 14
+    arc = [(xc - r * math.cos(math.pi * k / n), ys + r * math.sin(math.pi * k / n)) for k in range(n + 1)]
+    spandrel = [(pw, deck_bot + 0.05), (pw, ys)] + arc[1:-1] + [(length, ys), (length, deck_bot + 0.05)]
+    parts.append(mk.prism(spandrel, -2.18, 2.18, 0.03, mat="M_Track_Stone"))
+    # boogrand (voussoirs): steekt net buiten de borstwering en net onder de boog uit
+    ri, ro = r - 0.08, r + 0.55
+    ring = [(xc - ro * math.cos(math.pi * k / n), ys + ro * math.sin(math.pi * k / n)) for k in range(n + 1)]
+    ring += [(xc - ri * math.cos(math.pi * k / n), ys + ri * math.sin(math.pi * k / n)) for k in range(n, -1, -1)]
+    for z0, z1 in ((-2.32, -1.9), (1.9, 2.32)):
+        parts.append(mk.prism(ring, z0, z1, 0.02, mat="M_Track_StoneDark"))
+    # kämpferband op de pijler, net breder dan de pijler op die hoogte
+    t = (y_top - ys) / (y_top + pier)
+    pz = ph + 0.95 * t
+    parts.append(rbox(-0.08, pw + 0.08, ys - 0.42, ys + 0.05, -pz - 0.12, pz + 0.12, 0.04, "M_Track_StoneDark"))
+    m = mk.merge(*parts)
+
+    col = collider_track(path, with_bed=True, extra=[
+        rbox(0.0, length, deck_bot, deck_top, -half, half, 0.0, "M_Track_Collider", div=1),
+        rbox(0.0, length, deck_top, 0.64, 2.2, half + 0.07, 0.0, "M_Track_Collider", div=1),
+        rbox(0.0, length, deck_top, 0.64, -half - 0.07, -2.2, 0.0, "M_Track_Collider", div=1),
+        rbox(0.0, pw, -pier, deck_bot, -ph - 0.5, ph + 0.5, 0.0, "M_Track_Collider", div=1),
+        rbox(pw, length, crown, deck_bot, -2.2, 2.2, 0.0, "M_Track_Collider", div=1),
+    ])
+    return path, m, col
+
+
 def warning_sign(rng):
     """Driehoekig geel waarschuwingsbord met rode rand en een '!' op een houten paal."""
     parts = [rbox(-0.09, 0.09, 0.0, 2.1, -0.09, 0.09, 0.04, "M_Track_BeamDark")]
@@ -528,7 +598,8 @@ def make_scene(name, mesh, col, socks, density, radius, extras=None):
     return sc
 
 
-def build_all():
+def build_all(only=None):
+    """only: lijst met assetnamen om alleen die opnieuw te exporteren (de rest blijft ongewijzigd)."""
     A = {}
     rng = np.random.default_rng([2026, 53])
     for L, tag in ((1.5, "1_5m"), (3.0, "3m"), (6.0, "6m"), (12.0, "12m")):
@@ -556,6 +627,9 @@ def build_all():
         path = Path(radius=20.0, angle_deg=15, side=side)
         m, c = trestle_path(rng, path, spacing=2.6)
         A[f"Track_Bridge_Curve_R20_15_{tag}"] = (path, m, c, sockets(path))
+    rng = np.random.default_rng([2026, 224])
+    p, m, c = viaduct(rng)
+    A["Track_Bridge_Viaduct_12m"] = (p, m, c, sockets(p))
     rng = np.random.default_rng([2026, 87])
     m, c = warning_sign(rng)
     A["Prop_WarningSign"] = (None, m, c, [])
@@ -570,6 +644,8 @@ def build_all():
              for n, (ramp, sm, sh, op) in MATERIALS.items()}
     manifest = {}
     for name, entry in A.items():
+        if only and name not in only:
+            continue
         path, mesh, col, socks = entry[:4]
         sc = make_scene(name, mesh, col, socks, density=700, radius=0.22, extras=entry[4] if len(entry) > 4 else None)
         fbx_rel = f"{MODEL_DIR}/{name}.fbx"
@@ -586,8 +662,13 @@ def build_all():
                           "min": np.round(V.min(0), 3).tolist(), "max": np.round(V.max(0), 3).tolist()}
         print(f"{name:28s} {mesh.tri_count():6d} tris")
     meta = {"gauge": GAUGE, "railTop": RAIL_TOP, "trainPivotAboveTrack": TRAIN_PIVOT_ABOVE_TRACK, "sleeperSpacing": SPACING}
+    if only:                                        # bestaand overzicht aanvullen, niet vervangen
+        kit = os.path.join(EXP_DIR, "TrackKit.json")
+        old = json.load(open(kit, encoding="utf-8")) if os.path.exists(kit) else {"assets": {}}
+        old.setdefault("assets", {}).update(manifest)
+        manifest = old["assets"]
     json.dump({"track": meta, "assets": manifest}, open(os.path.join(EXP_DIR, "TrackKit.json"), "w", encoding="utf-8"), indent=2)
 
 
 if __name__ == "__main__":
-    build_all()
+    build_all(sys.argv[1:] or None)
