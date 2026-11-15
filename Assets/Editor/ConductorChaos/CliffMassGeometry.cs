@@ -62,38 +62,21 @@ namespace ConductorChaos.EditorTools
             for (int tier = 1; tier <= maxLevel; tier++)
             {
                 var loops = Contours(cells, tier, minX, minZ, maxX, maxZ, cellSize);
-                // buitenranden (CCW, oppervlak > 0) met hun gaten (CW)
-                var outers = new List<int>();
-                var holesOf = new Dictionary<int, List<int>>();
-                var areas = new float[loops.Count];
+                float top = tier * stepHeight;
                 for (int i = 0; i < loops.Count; i++)
                 {
-                    areas[i] = Area(loops[i].pts);
-                    if (areas[i] > 0f) { outers.Add(i); holesOf[i] = new List<int>(); }
-                }
-                for (int i = 0; i < loops.Count; i++)
-                {
-                    if (areas[i] >= 0f) continue;
-                    int best = -1;
-                    foreach (int oi in outers)
-                        if (Inside(loops[oi].pts, loops[i].pts[0]) && (best < 0 || areas[oi] < areas[best])) best = oi;
-                    if (best >= 0) holesOf[best].Add(i);
+                    float width = 2f * Mathf.Abs(Area(loops[i].pts)) /
+                                  Mathf.Max(0.01f, Perimeter(loops[i].pts));
+                    float sc = Mathf.Clamp(width / 1.2f, 0.35f, 1f);
+                    BuildLoop(o, loops[i], tier, top, stepHeight, sc, width, seed, ground);
                 }
 
-                float top = tier * stepHeight;
-                var capRings = new Dictionary<int, Vector2[]>();
-                for (int i = 0; i < loops.Count; i++)
-                {
-                    float width = 2f * Mathf.Abs(areas[i]) / Mathf.Max(0.01f, Perimeter(loops[i].pts));
-                    float sc = Mathf.Clamp(width / 1.2f, 0.35f, 1f);
-                    capRings[i] = BuildLoop(o, loops[i], tier, top, stepHeight, sc, width, seed, ground);
-                }
-                foreach (int oi in outers)
-                {
-                    var holes = new List<Vector2[]>();
-                    foreach (int hi in holesOf[oi]) holes.Add(capRings[hi]);
-                    Cap(o, capRings[oi], holes, top + 0.14f, seed);
-                }
+                // Do not triangulate a huge outer loop with a hole through it:
+                // the old ear-clipping fallback filled the *canyon opening*
+                // with a giant grass roof. Tile the occupied tier instead.
+                // This also handles disconnected islands and diagonal saddles.
+                // 1.5 cm lower than the rim's inner ring avoids coplanar z-fighting.
+                CapCells(o, cells, tier, cellSize, top + 0.125f, seed);
                 if (tufts) Tufts(o, cells, tier, top, cellSize, seed);
             }
             return o;
@@ -204,7 +187,6 @@ namespace ConductorChaos.EditorTools
             var P = loop.pts;
             int n = P.Length;
             var fold = new float[n];
-            var tilt = new float[n];
             var drip = new float[n];
             var b = new float[n];          // onderkant van de wand: grond of de lagere trede ervoor
             var inset = new float[n];      // naar binnen waar een lagere trede vóór de wand ligt (grasrichel)
@@ -214,7 +196,6 @@ namespace ConductorChaos.EditorTools
             {
                 int qx = Mathf.RoundToInt(P[k].x * 100f), qz = Mathf.RoundToInt(P[k].y * 100f);
                 fold[k] = (Hash(qx, qz, 1, seed) < 0.5f ? 0.13f : -0.04f) + Hash(qx, qz, 2, seed) * 0.06f - 0.02f;
-                tilt[k] = Hash(qx, qz, 3, seed) * 0.12f - 0.06f;
                 drip[k] = Hash(qx, qz, 4, seed) > 0.45f ? 0.04f + Hash(qx, qz, 5, seed) * 0.12f : 0f;
                 int floor = Mathf.Clamp(loop.outside[k], 0, tier - 1);
                 b[k] = floor == 0 ? (ground != null ? ground(P[k].x, P[k].y) : 0f) : floor * step;
@@ -227,14 +208,34 @@ namespace ConductorChaos.EditorTools
             float[] D(Func<int, float> f) { var d = new float[n]; for (int k = 0; k < n; k++) d[k] = f(k) * sc; return d; }
             float[] Y(Func<int, float> f) { var y = new float[n]; for (int k = 0; k < n; k++) y[k] = f(k); return y; }
 
-            var body = new List<Ring>
+            // A wall can be 31 m tall in level 2. Four long facets make it look
+            // like a single flat slab; split high walls into strata of ~2.4 m.
+            // The first/last rings stay fixed, so the foot and grass rim still join.
+            float lowestFoot = top;
+            for (int k = 0; k < n; k++) lowestFoot = Mathf.Min(lowestFoot, b[k]);
+            int segments = Mathf.Clamp(Mathf.CeilToInt((top - lowestFoot) / 2.4f), 4, 20);
+            var body = new List<Ring>(segments + 1);
+            for (int r = 0; r <= segments; r++)
             {
-                MakeRing(P, D(k => -fold[k] - 0.16f + inset[k]), Y(k => b[k] - 0.30f)),                         // voet, de grond in
-                MakeRing(P, D(k => -fold[k] - 0.06f + inset[k]), Y(k => b[k] + Mathf.Min(0.35f, (top - b[k]) * 0.2f))),
-                MakeRing(P, D(k => -fold[k] * 1.1f + tilt[k] + inset[k]), Y(k => Mathf.Lerp(b[k], top, 0.45f))),
-                MakeRing(P, D(k => -fold[k] * 0.9f + 0.03f + inset[k]), Y(k => Mathf.Lerp(b[k], top, 0.88f))),
-                MakeRing(P, D(k => -fold[k] * 0.5f + 0.10f + inset[k]), Y(k => top - 0.02f)),
-            };
+                float t = r / (float)segments;
+                int ringIndex = r;
+                body.Add(MakeRing(P, D(k =>
+                {
+                    float from = -fold[k] - 0.16f + inset[k];
+                    float to = -fold[k] * 0.5f + 0.10f + inset[k];
+                    float displacement = Mathf.Lerp(from, to, t);
+                    // Interior strata have small deterministic folds; on short
+                    // walls they fade away to avoid folded or inverted geometry.
+                    if (ringIndex > 0 && ringIndex < segments)
+                    {
+                        int qx = Mathf.RoundToInt(P[k].x * 100f), qz = Mathf.RoundToInt(P[k].y * 100f);
+                        float variation = (Hash(qx, qz, 31 + ringIndex * 17, seed) - 0.5f) * 0.28f;
+                        displacement += variation * Mathf.Sin(t * Mathf.PI) *
+                                        Mathf.Clamp01((top - b[k]) / 4f);
+                    }
+                    return displacement;
+                }), Y(k => Mathf.Lerp(b[k] - 0.30f, top - 0.02f, t))));
+            }
             for (int r = 0; r < body.Count; r++)
             {
                 var ring = body[r];
@@ -301,125 +302,87 @@ namespace ConductorChaos.EditorTools
             }
         }
 
-        // ------------------------------------------------------------------ grasdek (veelhoek met gaten)
-        static void Cap(Output o, Vector2[] outer, List<Vector2[]> holes, float y, int seed)
+        // ------------------------------------------------------------------ grass caps (marching squares)
+        // A canyon is a long, often annular contour with a large hole down to
+        // the river. Global ear-clipping was fragile: its fallback could draw
+        // triangles across the hole, producing a flat-topped mesa above the river.
+        //
+        // Triangulate *only* occupied grid cells at this tier. Lower shelves
+        // extend under taller pillars, as with the previous cap, but no empty
+        // canyon grid squares get triangles. Each square is convex (or two
+        // separate triangles at a diagonal saddle), so no
+        // triangle can cross an empty square in the canyon.
+        static void CapCells(Output o, IReadOnlyDictionary<Vector2Int, int> cells,
+                             int tier, float cs, float y, int seed)
         {
-            var poly = MergeHoles(outer, holes);
-            var tris = EarClip(poly);
-            for (int t = 0; t + 2 < tris.Count; t += 3)
+            var squares = new HashSet<Vector2Int>();
+            foreach (var kv in cells)
             {
-                Vector2 p0 = poly[tris[t]], p1 = poly[tris[t + 1]], p2 = poly[tris[t + 2]];
-                // CCW in x/z wijst omlaag in Unity: omdraaien voor een bovenkant
-                Tri(o, SubGrass, V(p0, y), V(p2, y), V(p1, y),
-                    Shade(1f, 0f, p0.x, y, p0.y, seed), Shade(1f, 0f, p2.x, y, p2.y, seed), Shade(1f, 0f, p1.x, y, p1.y, seed));
+                if (kv.Value < tier) continue;
+                for (int dz = 0; dz <= 1; dz++)
+                    for (int dx = 0; dx <= 1; dx++)
+                        squares.Add(new Vector2Int(kv.Key.x - dx, kv.Key.y - dz));
             }
-        }
 
-        static List<Vector2> MergeHoles(Vector2[] outer, List<Vector2[]> holes)
-        {
-            var poly = new List<Vector2>(outer);
-            var sorted = new List<Vector2[]>(holes);
-            sorted.Sort((a, b) => MaxX(b).CompareTo(MaxX(a)));
-            foreach (var hole in sorted)
+            // Stable build order, independent of Dictionary iteration order.
+            var ordered = new List<Vector2Int>(squares);
+            ordered.Sort((a, b) => a.y != b.y ? a.y.CompareTo(b.y) : a.x.CompareTo(b.x));
+
+            foreach (var sq in ordered)
             {
-                if (hole.Length < 3) continue;
-                int hi = 0;
-                for (int i = 1; i < hole.Length; i++) if (hole[i].x > hole[hi].x) hi = i;
-                Vector2 m = hole[hi];
-                // dichtstbijzijnde hoekpunt van de buitenrand dat zonder snijden bereikbaar is
-                int best = -1;
-                float bestD = float.MaxValue;
-                for (int i = 0; i < poly.Count; i++)
+                Vector2[] p =
                 {
-                    float dd = (poly[i] - m).sqrMagnitude;
-                    if (dd >= bestD) continue;
-                    if (SegmentHits(m, poly[i], poly, i) || SegmentHitsAny(m, poly[i], holes, hole, hi)) continue;
-                    best = i; bestD = dd;
+                    new Vector2(sq.x * cs, sq.y * cs),
+                    new Vector2((sq.x + 1) * cs, sq.y * cs),
+                    new Vector2((sq.x + 1) * cs, (sq.y + 1) * cs),
+                    new Vector2(sq.x * cs, (sq.y + 1) * cs)
+                };
+                int mask = 0;
+                for (int i = 0; i < 4; i++)
+                {
+                    var c = new Vector2Int(sq.x + (i == 1 || i == 2 ? 1 : 0),
+                                           sq.y + (i >= 2 ? 1 : 0));
+                    if (cells.TryGetValue(c, out int level) && level >= tier)
+                        mask |= 1 << i;
                 }
-                if (best < 0) best = 0;
-                var merged = new List<Vector2>(poly.Count + hole.Length + 2);
-                for (int i = 0; i <= best; i++) merged.Add(poly[i]);
-                for (int i = 0; i <= hole.Length; i++) merged.Add(hole[(hi + i) % hole.Length]);
-                for (int i = best; i < poly.Count; i++) merged.Add(poly[i]);
-                poly = merged;
-            }
-            return poly;
-        }
+                if (mask == 0) continue;
 
-        static float MaxX(Vector2[] p) { float m = float.MinValue; foreach (var v in p) m = Mathf.Max(m, v.x); return m; }
-
-        static bool SegmentHits(Vector2 a, Vector2 b, List<Vector2> poly, int skipVertex)
-        {
-            int n = poly.Count;
-            for (int i = 0; i < n; i++)
-            {
-                int j = (i + 1) % n;
-                if (i == skipVertex || j == skipVertex) continue;
-                if (Intersect(a, b, poly[i], poly[j])) return true;
-            }
-            return false;
-        }
-
-        static bool SegmentHitsAny(Vector2 a, Vector2 b, List<Vector2[]> holes, Vector2[] own, int ownVertex)
-        {
-            foreach (var h in holes)
-                for (int i = 0; i < h.Length; i++)
+                // Diagonally opposed corners are *not* one polygon: joining
+                // them would fill the empty space between separate shelves.
+                if (mask == 5 || mask == 10)
                 {
-                    int j = (i + 1) % h.Length;
-                    if (h == own && (i == ownVertex || j == ownVertex)) continue;
-                    if (Intersect(a, b, h[i], h[j])) return true;
-                }
-            return false;
-        }
-
-        static bool Intersect(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2)
-        {
-            float d1 = Cross(q2 - q1, p1 - q1), d2 = Cross(q2 - q1, p2 - q1);
-            float d3 = Cross(p2 - p1, q1 - p1), d4 = Cross(p2 - p1, q2 - p1);
-            return ((d1 > 1e-6f && d2 < -1e-6f) || (d1 < -1e-6f && d2 > 1e-6f)) &&
-                   ((d3 > 1e-6f && d4 < -1e-6f) || (d3 < -1e-6f && d4 > 1e-6f));
-        }
-
-        // Oorknippen voor een CCW-veelhoek (gaten zijn al via een brug opgenomen). Valt nooit vast:
-        // vindt hij geen oor meer, dan knipt hij het minst slechte hoekpunt.
-        static List<int> EarClip(List<Vector2> poly)
-        {
-            var idx = new List<int>();
-            for (int i = 0; i < poly.Count; i++) idx.Add(i);
-            var tris = new List<int>();
-            int guard = poly.Count * poly.Count + 16;
-            while (idx.Count > 3 && guard-- > 0)
-            {
-                int n = idx.Count, ear = -1;
-                float bestCross = float.MinValue;
-                int fallback = 0;
-                for (int i = 0; i < n; i++)
-                {
-                    Vector2 a = poly[idx[(i + n - 1) % n]], b = poly[idx[i]], c = poly[idx[(i + 1) % n]];
-                    float cr = Cross(b - a, c - b);
-                    if (cr > bestCross) { bestCross = cr; fallback = i; }
-                    if (cr <= 1e-7f) continue;
-                    bool clean = true;
-                    for (int k = 0; k < n && clean; k++)
+                    for (int i = 0; i < 4; i++)
                     {
-                        if (k == i || k == (i + n - 1) % n || k == (i + 1) % n) continue;
-                        Vector2 p = poly[idx[k]];
-                        if (p == a || p == b || p == c) continue;
-                        if (InTri(p, a, b, c)) clean = false;
+                        if ((mask & (1 << i)) == 0) continue;
+                        Vector2 prev = (p[i] + p[(i + 3) & 3]) * 0.5f;
+                        Vector2 next = (p[i] + p[(i + 1) & 3]) * 0.5f;
+                        CapTriangle(o, p[i], next, prev, y, seed);
                     }
-                    if (clean) { ear = i; break; }
+                    continue;
                 }
-                if (ear < 0) ear = fallback;
-                int m = idx.Count;
-                tris.Add(idx[(ear + m - 1) % m]); tris.Add(idx[ear]); tris.Add(idx[(ear + 1) % m]);
-                idx.RemoveAt(ear);
+
+                // The remaining marching-squares cases have a convex contour.
+                var poly = new List<Vector2>(6);
+                for (int i = 0; i < 4; i++)
+                {
+                    bool inside = (mask & (1 << i)) != 0;
+                    bool nextInside = (mask & (1 << ((i + 1) & 3))) != 0;
+                    if (inside) poly.Add(p[i]);
+                    if (inside != nextInside) poly.Add((p[i] + p[(i + 1) & 3]) * 0.5f);
+                }
+                for (int i = 1; i + 1 < poly.Count; i++)
+                    CapTriangle(o, poly[0], poly[i], poly[i + 1], y, seed);
             }
-            if (idx.Count == 3) { tris.Add(idx[0]); tris.Add(idx[1]); tris.Add(idx[2]); }
-            return tris;
         }
 
-        static bool InTri(Vector2 p, Vector2 a, Vector2 b, Vector2 c) =>
-            Cross(b - a, p - a) >= -1e-7f && Cross(c - b, p - b) >= -1e-7f && Cross(a - c, p - c) >= -1e-7f;
+        static void CapTriangle(Output o, Vector2 a, Vector2 b, Vector2 c, float y, int seed)
+        {
+            // CCW in x/z points downward in Unity: reverse for upward normals.
+            Tri(o, SubGrass, V(a, y), V(c, y), V(b, y),
+                Shade(1f, 0f, a.x, y, a.y, seed),
+                Shade(1f, 0f, c.x, y, c.y, seed),
+                Shade(1f, 0f, b.x, y, b.y, seed));
+        }
 
         // ------------------------------------------------------------------ grasbolletjes
         // Grasbolletjes alleen langs de randen en op kleine stukken: een grote vlakte blijft gewoon gras.
@@ -569,13 +532,6 @@ namespace ConductorChaos.EditorTools
             return l;
         }
 
-        static bool Inside(Vector2[] poly, Vector2 p)
-        {
-            bool c = false;
-            for (int i = 0, j = poly.Length - 1; i < poly.Length; j = i++)
-                if ((poly[i].y > p.y) != (poly[j].y > p.y) &&
-                    p.x < (poly[j].x - poly[i].x) * (p.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x) c = !c;
-            return c;
-        }
+
     }
 }

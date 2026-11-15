@@ -616,13 +616,21 @@ namespace ConductorChaos.EditorTools
                 if (deck != null)
                     h = Mathf.Lerp(Mathf.Min(h, deck.Pivot - 0.6f), h, Smooth(3.6f, 6f, HorizontalDistance(deck.rail, x, z)));
 
-                // de kloof: onder de wanden diep weg, op de bodem een rivierbedding
+                // De CliffMass heeft 13 afzonderlijke grasdekken/terrassen, maar voorheen
+                // stortte de Terrain in slechts 1,1 m van rimY naar de rivierbodem.
+                // Daardoor sneed de grond dwars door de klif of zweefden richels.
+                // Gebruik exact hetzelfde celprofiel als BuildCanyonWalls en leg de
+                // grond iets onder elk grasdek (de rotswand sluit het hoogteverschil).
                 if (inCanyon)
                 {
                     float r = canyon.RiverDist(x, z);
                     float bottom = floorY + 0.25f + Noise(x, z, 9f, ox + 70f, oz + 30f) * 0.5f;
                     bottom = Mathf.Lerp(waterY - 1.3f, bottom, Smooth(RiverHalf - 0.6f, RiverHalf + 1.2f, r));
-                    h = Mathf.Lerp(h, bottom, Smooth(half - 0.5f, half - 1.6f, D));
+                    int wallTier = canyon.Level(x, z, CanyonTiers);
+                    bool nearTrack = grid.Nearest(x, z, 3.2f, s => !s.bridge) != null;
+                    h = wallTier > 0 && !nearTrack
+                        ? Mathf.Min(rimY, originY + wallTier * StepHeight - CliffMassBuilder.TerrainCapClearance)
+                        : nearTrack ? h : bottom;
                 }
 
                 // rond de stations vlak op perronhoogte
