@@ -153,7 +153,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P1 | [#217 Eerste dienst: gezamenlijke briefing, introductie en eerste rit](https://github.com/mlemson/conductor-chaos/issues/217) | Overig | @mlemson | — |
 | P1 | [#220 Nieuwe treinsets aansluiten op TrainDrive](https://github.com/mlemson/conductor-chaos/issues/220) | Overig | @mlemson | — |
 | P1 | [#225 Rustynail Express 2 als doorlopende menu/intro-muziek, Chug Chug Along na leveltrack](https://github.com/mlemson/conductor-chaos/issues/225) | Overig | @mlemson | — |
-| P1 | [#226 Level 2 kloof: CliffMass-wanden en Terrain-terrassen consistent opbouwen](https://github.com/mlemson/conductor-chaos/issues/226) | Overig | @mlemson | — |
+| P1 | [#226 Level 2 kloof: CliffMass-wanden en Terrain-terrassen consistent opbouwen](https://github.com/mlemson/conductor-chaos/issues/226) | Overig | @mlemson | [#227](https://github.com/mlemson/conductor-chaos/pull/227) |
 | P2 | [#149 Herstel preset voor stenen kliffen op hersteltak](https://github.com/mlemson/conductor-chaos/issues/149) | Overig | @mlemson | — |
 | P2 | [#164 Verberg playground-HUD na tien seconden](https://github.com/mlemson/conductor-chaos/issues/164) | Overig | @mlemson | — |
 | P2 | [#208 Gebruik het nieuwe logo in het hoofdmenu](https://github.com/mlemson/conductor-chaos/issues/208) | Overig | @mlemson | — |
