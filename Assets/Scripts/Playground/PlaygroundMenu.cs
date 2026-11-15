@@ -93,7 +93,7 @@ namespace ConductorChaos.Playground
             ChaosUI.VolumeSlider(settingsPanel, V(.36f, .677f), V(.78f, .72f), AudioListener.volume, SetVolume);
             volumeText = ChaosUI.Label(settingsPanel, "Master volume value", Mathf.RoundToInt(AudioListener.volume * 100) + "%", 18, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.8f, .645f), V(.96f, .745f));
 
-            float musicVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(ServiceMusic.MusicVolumeKey, .65f));
+            float musicVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(ServiceMusic.MusicVolumeKey, ServiceMusic.DefaultMusicVolume));
             ChaosUI.Label(settingsPanel, "Music volume", "Muziekvolume", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .515f), V(.34f, .615f));
             ChaosUI.VolumeSlider(settingsPanel, V(.36f, .547f), V(.78f, .59f), musicVolume, SetMusicVolume);
             musicVolumeText = ChaosUI.Label(settingsPanel, "Music volume value", Mathf.RoundToInt(musicVolume * 100) + "%", 18, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.8f, .515f), V(.96f, .615f));

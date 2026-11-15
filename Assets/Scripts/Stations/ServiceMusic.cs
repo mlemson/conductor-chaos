@@ -2,18 +2,22 @@ using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace ConductorChaos.Stations
 {
     /// <summary>
     /// Client-local soundtrack synchronized to the server-authoritative service timer.
-    /// No music is played during the lobby, introduction or briefing.
+    /// Plays a short lead-in on entering the menu, introduction or service briefing.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class ServiceMusic : MonoBehaviour
     {
         internal const string MusicEnabledKey = "ChaosUI.MusicEnabled";
         internal const string MusicVolumeKey = "ChaosUI.MusicVolume";
+        internal const float DefaultMusicVolume = .5f;
+        private const float MusicGain = .7f;
+        private const float LeadInSeconds = 9f;
 
         private readonly Dictionary<int, AudioClip> clips = new();
         private readonly HashSet<int> warnedMissing = new();
@@ -21,6 +25,7 @@ namespace ConductorChaos.Stations
         private ServiceRun currentRun;
         private double currentStart;
         private bool wasListenerPaused;
+        private Scene previewScene;
 
         private void Awake()
         {
@@ -34,20 +39,32 @@ namespace ConductorChaos.Stations
         private void Update()
         {
             // The existing AudioListener.volume and AudioListener.pause remain master controls.
-            source.volume = Mathf.Clamp01(PlayerPrefs.GetFloat(MusicVolumeKey, .65f));
+            float volume = MusicGain * Mathf.Clamp01(PlayerPrefs.GetFloat(MusicVolumeKey, DefaultMusicVolume));
+            source.volume = volume;
             source.mute = PlayerPrefs.GetInt(MusicEnabledKey, 1) == 0;
             if (AudioListener.pause) wasListenerPaused = true;
 
             var run = ServiceRun.Active;
             var network = NetworkManager.Singleton;
-            if (!run || !run.IsSpawned || run.Introduction || !run.TimerRunning ||
-                run.Phase is not (ServiceRun.RunPhase.Departure or ServiceRun.RunPhase.Travelling or ServiceRun.RunPhase.Arrival) ||
-                run.MusicDuration <= 0 || !network || !network.IsListening)
+            if (run && (run.Phase is ServiceRun.RunPhase.Won or ServiceRun.RunPhase.Failed))
             {
                 StopAndReset();
                 return;
             }
 
+            if (!run || run.Introduction || !run.TimerRunning)
+            {
+                PlayLeadIn(run ? run.gameObject.scene : SceneManager.GetActiveScene(), volume);
+                return;
+            }
+
+            if (!run.IsSpawned || run.MusicDuration <= 0 || !network || !network.IsListening)
+            {
+                StopAndReset();
+                return;
+            }
+
+            previewScene = run.gameObject.scene;
             int duration = run.MusicDuration;
             AudioClip clip = GetClip(duration);
             if (!clip)
@@ -91,6 +108,28 @@ namespace ConductorChaos.Stations
                 source.time = seek;
                 source.Play();
             }
+        }
+
+        private void PlayLeadIn(Scene scene, float volume)
+        {
+            if (scene.name is not ("TrainPlayground" or ServiceRun.IntroScene or ServiceRun.FirstLevelScene))
+            {
+                StopAndReset();
+                return;
+            }
+
+            if (previewScene != scene)
+            {
+                StopAndReset();
+                if (AudioListener.pause) return;
+                previewScene = scene;
+                source.clip = GetClip(300);
+                if (source.clip) source.Play();
+            }
+
+            if (!source.clip || AudioListener.pause) return;
+            if (!source.isPlaying || source.time >= LeadInSeconds) StopAndReset();
+            else source.volume = volume * Mathf.Clamp01((LeadInSeconds - source.time) / 2f);
         }
 
         private AudioClip GetClip(int duration)
