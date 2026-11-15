@@ -164,6 +164,12 @@ namespace ConductorChaos.EditorTools
                 affected += SnapOne(prop, marker, category, terrain);
             }
 
+            // Klifmassa's (issue #223) verschuiven niet als geheel: hun voet volgt de grond per hoekpunt.
+            foreach (var mass in UnityEngine.Object.FindObjectsByType<CliffMass>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (mass != null && mass.gameObject.scene == terrain.gameObject.scene && Within(mass.transform.position, min, max) &&
+                    CliffMassBuilder.RebuildIfGroundChanged(mass))
+                    affected++;
+
             return affected;
         }
 
