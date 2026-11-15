@@ -41,9 +41,14 @@ namespace ConductorChaos.Playground
         {
             foreach (var filter in vehicle.GetComponentsInChildren<MeshFilter>(true))
             {
+                if (IsEndDoorLeaf(filter.name))
+                {
+                    EnsureEndDoorCollider(filter);
+                    continue;
+                }
                 if (!NeedsMeshCollider(filter)) continue;
                 var owner = filter.GetComponentInParent<Rigidbody>();
-                if (owner && !owner.isKinematic && !IsEndDoorLeaf(filter.name)) continue;
+                if (owner && !owner.isKinematic) continue;
                 Mesh mesh = filter.sharedMesh;
                 // Imported FBX meshes can be non-readable in Windows builds. Unity tries
                 // to cook the mesh on AddComponent, so check BEFORE adding a MeshCollider.
@@ -59,8 +64,21 @@ namespace ConductorChaos.Playground
 
                 var collider = filter.gameObject.AddComponent<MeshCollider>();
                 collider.sharedMesh = mesh;
-                collider.convex = IsEndDoorLeaf(filter.name);
             }
+        }
+
+        internal static void EnsureEndDoorCollider(MeshFilter filter)
+        {
+            if (!filter.sharedMesh) return;
+            // A sliding leaf needs a solid shape even where the visual mesh cannot be cooked.
+            foreach (var mesh in filter.GetComponents<MeshCollider>())
+                if (!mesh.isTrigger) mesh.enabled = false;
+            var box = System.Array.Find(filter.GetComponents<BoxCollider>(), shape => !shape.isTrigger);
+            if (!box) box = filter.gameObject.AddComponent<BoxCollider>();
+            Bounds bounds = filter.sharedMesh.bounds;
+            box.center = bounds.center;
+            box.size = Vector3.Max(bounds.size, Vector3.one * .02f);
+            box.enabled = true;
         }
 
         void Update()

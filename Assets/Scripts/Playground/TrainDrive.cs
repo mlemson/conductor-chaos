@@ -128,10 +128,20 @@ namespace ConductorChaos.Playground
             public Rigidbody Vehicle;
             public Transform Left, Right;
             public Vector3 LeftRest, RightRest;
-            public Vector3 Center, Slide;
+            public Vector3 Slide;
             public bool Automatic;
             public float Opening, HoldUntil;
             public float NextManualPush;
+
+            public bool HasPlayerNear(Vector3 playerPosition)
+            {
+                Transform frame = Left.parent;
+                Vector3 offset = frame.InverseTransformPoint(playerPosition) - (LeftRest + RightRest) * .5f;
+                Vector3 across = Slide.normalized;
+                Vector3 through = Vector3.Cross(Vector3.up, across);
+                return Mathf.Abs(Vector3.Dot(offset, through)) <= (Automatic ? 2f : 1.65f) &&
+                    Mathf.Abs(Vector3.Dot(offset, across)) <= .85f && offset.y >= -.45f && offset.y <= 2f;
+            }
 
             public void Apply(float opening)
             {
@@ -285,12 +295,25 @@ namespace ConductorChaos.Playground
                 return false;
             }
         }
-        internal bool IsServiceDoorOpen(Transform leaf)
+        internal bool IsServiceDoorOpen(Transform doorway)
         {
             Vector4 offsets = wagonDoorOffsets.Value;
-            for (int i = 0; i < wagonDoors.Length; i++)
-                if (wagonDoors[i]?.Leaf == leaf && Mathf.Abs(offsets[i]) >= .38f) return true;
-            return false;
+            float nearest = float.PositiveInfinity;
+            float clearance = 0f;
+            for (int i = 0; i < wagonDoors.Length; i += 2)
+            {
+                var left = wagonDoors[i];
+                var right = wagonDoors[i + 1];
+                if (left == null || right == null || left.Body == null || right.Body == null ||
+                    left.Leaf.parent != doorway.parent || right.Leaf.parent != doorway.parent) continue;
+                Vector3 center = (left.RestPosition + right.RestPosition) * .5f;
+                float distance = (doorway.localPosition - center).sqrMagnitude;
+                if (distance >= nearest) continue;
+                nearest = distance;
+                clearance = Mathf.Abs(WagonDoorDisplacement(offsets[i]).x) +
+                    Mathf.Abs(WagonDoorDisplacement(offsets[i + 1]).x);
+            }
+            return clearance >= .38f;
         }
         private Quaternion leverRest;
         private float railCenterOffset, rearwardRailSign;
@@ -1139,15 +1162,19 @@ namespace ConductorChaos.Playground
 
         private void PrepareVehicleEndDoors(Rigidbody vehicle)
         {
-            var root = vehicle.transform;
-            if (vehicle.GetComponent<TrainBreakdowns>() || root.Find("EndDoorLeaf_L_Front") || root.Find("EndDoorLeaf_L_Rear"))
-                TrainBreakdowns.EnsureMeshColliders(vehicle.gameObject);
+            var leaves = vehicle.GetComponentsInChildren<MeshFilter>(true);
+            if (vehicle.GetComponent<TrainBreakdowns>()) TrainBreakdowns.EnsureMeshColliders(vehicle.gameObject);
 
             foreach (string end in new[] { "Front", "Rear" })
             {
-                var left = root.Find("EndDoorLeaf_L_" + end);
-                var right = root.Find("EndDoorLeaf_R_" + end);
-                if (!left || !right) continue;
+                var leftMesh = System.Array.Find(leaves, f => f.name == "EndDoorLeaf_L_" + end);
+                var rightMesh = System.Array.Find(leaves, f => f.name == "EndDoorLeaf_R_" + end);
+                if (!leftMesh || !rightMesh) continue;
+                var left = leftMesh.transform;
+                var right = rightMesh.transform;
+                if (left.parent != right.parent) continue;
+                TrainBreakdowns.EnsureEndDoorCollider(leftMesh);
+                TrainBreakdowns.EnsureEndDoorCollider(rightMesh);
                 Vector3 across = left.localPosition - right.localPosition;
                 bool automatic = vehicle.name.StartsWith("Modern", System.StringComparison.Ordinal) ||
                     vehicle.name.StartsWith("Futuristic", System.StringComparison.Ordinal);
@@ -1163,7 +1190,6 @@ namespace ConductorChaos.Playground
                 {
                     Vehicle = vehicle, Left = left, Right = right, Automatic = automatic,
                     LeftRest = left.localPosition, RightRest = right.localPosition,
-                    Center = (left.localPosition + right.localPosition) * 0.5f,
                     Slide = across.normalized * EndDoorTravel
                 });
                 if (IsServer) endDoorsOpen.Add(0);
@@ -1181,8 +1207,7 @@ namespace ConductorChaos.Playground
                     foreach (var player in PlaygroundPlayer.SpawnedPlayers)
                     {
                         if (!player || !player.IsSpawned || player.gameObject.scene != gameObject.scene) continue;
-                        Vector3 local = door.Vehicle.transform.InverseTransformPoint(player.transform.position) - door.Center;
-                        if (Mathf.Abs(local.x) > 1.65f || Mathf.Abs(local.z) > 0.85f || local.y < -0.45f || local.y > 2f) continue;
+                        if (!door.HasPlayerNear(player.transform.position)) continue;
                         nearby = true;
                         break;
                     }
@@ -1201,7 +1226,7 @@ namespace ConductorChaos.Playground
         private void CheckManualEndDoor(int index, EndDoor door)
         {
             bool open = endDoorsOpen[index] != 0;
-            Vector3 slideDirection = door.Vehicle.transform.TransformDirection(door.Slide.normalized);
+            Vector3 slideDirection = door.Left.parent.TransformDirection(door.Slide.normalized);
             for (int side = -1; side <= 1; side += 2)
             {
                 Transform leaf = side > 0 ? door.Left : door.Right;
