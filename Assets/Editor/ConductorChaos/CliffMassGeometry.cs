@@ -73,7 +73,7 @@ namespace ConductorChaos.EditorTools
 
                 // Do not triangulate a huge outer loop with a hole through it:
                 // the old ear-clipping fallback filled the *canyon opening*
-                // with a giant grass roof. Tile the exposed tier instead.
+                // with a giant grass roof. Tile the occupied tier instead.
                 // This also handles disconnected islands and diagonal saddles.
                 CapCells(o, cells, tier, cellSize, top + 0.14f, seed);
                 if (tufts) Tufts(o, cells, tier, top, cellSize, seed);
@@ -306,8 +306,10 @@ namespace ConductorChaos.EditorTools
         // the river. Global ear-clipping was fragile: its fallback could draw
         // triangles across the hole, producing a flat-topped mesa above the river.
         //
-        // Triangulate *only* exposed grid cells at this exact tier. Each square
-        // is convex (or two separate triangles at a diagonal saddle), so no
+        // Triangulate *only* occupied grid cells at this tier. Lower shelves
+        // extend under taller pillars, as with the previous cap, but no empty
+        // canyon grid squares get triangles. Each square is convex (or two
+        // separate triangles at a diagonal saddle), so no
         // triangle can cross an empty square in the canyon.
         static void CapCells(Output o, IReadOnlyDictionary<Vector2Int, int> cells,
                              int tier, float cs, float y, int seed)
@@ -315,7 +317,7 @@ namespace ConductorChaos.EditorTools
             var squares = new HashSet<Vector2Int>();
             foreach (var kv in cells)
             {
-                if (kv.Value != tier) continue;
+                if (kv.Value < tier) continue;
                 for (int dz = 0; dz <= 1; dz++)
                     for (int dx = 0; dx <= 1; dx++)
                         squares.Add(new Vector2Int(kv.Key.x - dx, kv.Key.y - dz));
@@ -339,7 +341,7 @@ namespace ConductorChaos.EditorTools
                 {
                     var c = new Vector2Int(sq.x + (i == 1 || i == 2 ? 1 : 0),
                                            sq.y + (i >= 2 ? 1 : 0));
-                    if (cells.TryGetValue(c, out int level) && level == tier)
+                    if (cells.TryGetValue(c, out int level) && level >= tier)
                         mask |= 1 << i;
                 }
                 if (mask == 0) continue;
