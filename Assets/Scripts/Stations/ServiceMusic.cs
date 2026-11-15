@@ -47,7 +47,7 @@ namespace ConductorChaos.Stations
 
             ServiceRun run = ServiceRun.Active;
             string sceneName = run ? run.gameObject.scene.name : SceneManager.GetActiveScene().name;
-            if (sceneName is not ("TrainPlayground" or ServiceRun.IntroScene or ServiceRun.FirstLevelScene))
+            if (sceneName != "TrainPlayground" && !ServiceRun.IsServiceScene(sceneName))
             {
                 StopAndReset();
                 return;
@@ -68,7 +68,9 @@ namespace ConductorChaos.Stations
                 return;
             }
 
+            // Langere levels (level 2: 7-10 min) hebben geen eigen versie: dan de 5-minutenversie, daarna de vervolgsong.
             AudioClip levelClip = GetLevelClip(run.MusicDuration);
+            if (!levelClip && run.MusicDuration > 300) levelClip = GetLevelClip(300);
             if (!levelClip)
             {
                 StopAndReset();

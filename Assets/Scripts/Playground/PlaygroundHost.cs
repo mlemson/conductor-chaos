@@ -210,7 +210,7 @@ namespace ConductorChaos.Playground
         internal void LoadServiceScene(string scene)
         {
             if (!IsHost || Phase is not (SessionPhase.Lobby or SessionPhase.Playing)) return;
-            if (scene != ServiceRun.IntroScene && scene != ServiceRun.FirstLevelScene) return;
+            if (!ServiceRun.IsServiceScene(scene)) return;
             if (!Application.CanStreamedLevelBeLoaded(scene))
             {
                 Message = "De dienstscène ontbreekt in deze build.";

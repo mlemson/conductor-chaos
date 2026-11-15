@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using ConductorChaos.Playground;
 using Unity.Netcode;
 using UnityEngine;
@@ -10,6 +11,18 @@ namespace ConductorChaos.Stations
     {
         public const string IntroScene = "ServiceIntroduction";
         public const string FirstLevelScene = "ServiceLevel01";
+        public const string SecondLevelScene = "ServiceLevel02";
+
+        /// <summary>Alle dienstscènes in speelvolgorde (introductie, level 1, level 2).</summary>
+        public static readonly string[] ServiceScenes = { IntroScene, FirstLevelScene, SecondLevelScene };
+        public static bool IsServiceScene(string scene) => System.Array.IndexOf(ServiceScenes, scene) >= 0;
+
+        /// <summary>De scène na een gewonnen dienst, of null als dit het laatste level is.</summary>
+        public static string NextScene(string scene)
+        {
+            int index = System.Array.IndexOf(ServiceScenes, scene);
+            return index >= 0 && index + 1 < ServiceScenes.Length ? ServiceScenes[index + 1] : null;
+        }
 
         public enum RunPhase { Loading, Briefing, Training, Departure, Travelling, Arrival, Won, Failed }
         public enum Lesson { Walk, Carry, Ticket, OpenDoor, CloseDoor, Bell, Power, Drive, Finished }
@@ -22,6 +35,12 @@ namespace ConductorChaos.Stations
         [SerializeField] private BoxCollider practiceDrop;
         [SerializeField] private ServiceObjective practiceTicket;
         [SerializeField] private ServiceObjective[] objectives;
+        [Tooltip("Level 2+: alle ingestelde opdrachten tegelijk in plaats van één willekeurige.")]
+        [SerializeField] private bool combineObjectives;
+        [Tooltip("Tekst in de briefing, bv. LEVEL 2.")]
+        [SerializeField] private string levelLabel = "LEVEL 1";
+        [Tooltip("Tijdslimiet per crewgrootte (1, 2, 3, 4+ spelers) in seconden. Leeg = de standaard van level 1.")]
+        [SerializeField] private int[] timeLimits;
 
         private readonly NetworkVariable<RunPhase> phase = new();
         private readonly NetworkVariable<Lesson> lesson = new();
@@ -37,6 +56,12 @@ namespace ConductorChaos.Stations
         private readonly NetworkVariable<bool> doorsClosed = new();
         private readonly NetworkVariable<bool> powerOn = new();
         private readonly NetworkVariable<bool> offTrack = new();
+        // Voortgang per opdracht (index = objectives[]), voor de checklist op alle clients.
+        private readonly NetworkList<int> objectiveProgress = new();
+        // Per opdracht: hoeveel er nu aan boord is (vracht) of 1 = aan boord (oma); -1 = niet van toepassing.
+        private readonly NetworkList<int> objectiveAboard = new();
+        private readonly List<ServiceObjective> activeObjectives = new();
+        private int activeFor = int.MinValue;      // voor welke 'selected' de lijst hierboven is opgebouwd
         private Vector3 initialTrainPosition;
         private float stopSeconds;
         private double resultReadyAt;
@@ -50,7 +75,77 @@ namespace ConductorChaos.Stations
         public ServiceStation Arrival => arrival;
         public RunPhase Phase => phase.Value;
         public Lesson CurrentLesson => lesson.Value;
-        public ServiceObjective Objective => selected.Value >= 0 && selected.Value < (objectives?.Length ?? 0) ? objectives[selected.Value] : null;
+        public bool CombinesObjectives => combineObjectives && !introduction;
+        public string LevelLabel => string.IsNullOrWhiteSpace(levelLabel) ? "LEVEL 1" : levelLabel;
+        internal TrainDrive Train => train;
+
+        /// <summary>Eén opdracht (level 1) of, bij gecombineerde opdrachten, de eerste die nog niet af is.</summary>
+        public ServiceObjective Objective
+        {
+            get
+            {
+                if (!CombinesObjectives)
+                    return selected.Value >= 0 && selected.Value < (objectives?.Length ?? 0) ? objectives[selected.Value] : null;
+                ServiceObjective last = null;
+                foreach (var objective in ActiveObjectives)
+                {
+                    last = objective;
+                    if (ProgressOf(objective) < objective.Target) return objective;
+                }
+                return last;
+            }
+        }
+
+        /// <summary>Alle opdrachten van deze dienst (op server en clients dezelfde volgorde).</summary>
+        public IReadOnlyList<ServiceObjective> ActiveObjectives
+        {
+            get
+            {
+                // Eén keer opbouwen (de opdrachten veranderen niet tijdens een dienst), zodat iemand die de lijst
+                // doorloopt en ondertussen Objective opvraagt nooit een lijst ziet die verandert.
+                int key = CombinesObjectives ? -2 : selected.Value;
+                if (activeFor == key) return activeObjectives;
+                activeFor = key;
+                activeObjectives.Clear();
+                if (objectives == null) return activeObjectives;
+                if (CombinesObjectives)
+                {
+                    foreach (var objective in objectives)
+                        if (objective && objective.IsConfigured) activeObjectives.Add(objective);
+                }
+                else if (selected.Value >= 0 && selected.Value < objectives.Length && objectives[selected.Value])
+                    activeObjectives.Add(objectives[selected.Value]);
+                return activeObjectives;
+            }
+        }
+
+        /// <summary>Voortgang van één opdracht zoals de server die laatst doorgaf.</summary>
+        public int ProgressOf(ServiceObjective objective)
+        {
+            int index = objectives == null ? -1 : System.Array.IndexOf(objectives, objective);
+            if (!CombinesObjectives) return objective && objective == Objective ? progress.Value : 0;
+            return index >= 0 && index < objectiveProgress.Count ? objectiveProgress[index] : 0;
+        }
+
+        /// <summary>Aantal aan boord voor deze opdracht (vracht), of -1 als dat niet bekend is.</summary>
+        public int AboardOf(ServiceObjective objective)
+        {
+            if (!CombinesObjectives) return objective is ServiceCargo ? cargoLoaded.Value : -1;
+            int index = objectives == null ? -1 : System.Array.IndexOf(objectives, objective);
+            return index >= 0 && index < objectiveAboard.Count ? objectiveAboard[index] : -1;
+        }
+
+        public int TotalTarget
+        {
+            get
+            {
+                if (!CombinesObjectives) return Objective ? Objective.Target : 0;
+                int total = 0;
+                foreach (var objective in ActiveObjectives) total += objective.Target;
+                return total;
+            }
+        }
+
         public int Progress => progress.Value;
         public int CargoLoaded => cargoLoaded.Value;
         public int CargoTravelled => cargoTravelled.Value;
@@ -58,7 +153,15 @@ namespace ConductorChaos.Stations
         public bool DoorsClosed => doorsClosed.Value;
         public bool PowerOn => powerOn.Value;
         public bool NeedsCoal => train.HasCoalFurnace && train.FuelFraction <= 0f;
-        public bool EscortDoorOpen => Objective is ServiceEscort escort && train.IsServiceDoorOpen(escort.Doorway);
+        public bool EscortDoorOpen
+        {
+            get
+            {
+                foreach (var objective in ActiveObjectives)
+                    if (objective is ServiceEscort escort) return train.IsServiceDoorOpen(escort.Doorway);
+                return false;
+            }
+        }
         internal bool CanBoardAt(Transform doorway) => train.ServiceSpeed < .22f && train.IsServiceDoorOpen(doorway);
         public bool OffTrack => offTrack.Value;
         public bool TimerRunning => deadline.Value > 0;
@@ -77,7 +180,19 @@ namespace ConductorChaos.Stations
                   TimerRunning && bellRung.Value &&
                   // Loading is a departure checklist item, not a mid-journey
                   // brake. Cargo can move or be unloaded after departure.
-                  (Phase != RunPhase.Departure || (Objective?.ReadyToDepart ?? false))));
+                  (Phase != RunPhase.Departure || ReadyToDepart)));
+
+        // Server: alle opdrachten van deze dienst klaar om te vertrekken (kaartjes geknipt, vracht en oma aan boord).
+        private bool ReadyToDepart
+        {
+            get
+            {
+                if (!CombinesObjectives) return Objective?.ReadyToDepart ?? false;
+                foreach (var objective in ActiveObjectives)
+                    if (!objective.ReadyToDepart) return false;
+                return ActiveObjectives.Count > 0;
+            }
+        }
         internal bool IsTrainingTrain(TrainDrive candidate) => introduction && candidate == train;
 
         public bool IsConfigured => departure && departure.Role == ServiceStation.StationRole.Vertrek &&
@@ -98,13 +213,28 @@ namespace ConductorChaos.Stations
         public override void OnNetworkDespawn()
         {
             if (Active == this) Active = null;
+
             bellRung.OnValueChanged -= PresentBell;
         }
 
         internal bool BeginOnServer()
         {
             if (!IsServer || !IsSpawned || !IsConfigured || Phase != RunPhase.Loading) return false;
-            if (!introduction)
+            if (CombinesObjectives)
+            {
+                selected.Value = -1;
+                objectiveProgress.Clear();
+                objectiveAboard.Clear();
+                foreach (var objective in objectives)
+                {
+                    objectiveProgress.Add(0);
+                    objectiveAboard.Add(-1);
+                    if (objective && objective.IsConfigured) objective.BeginOnServer();
+                }
+                cargoLoaded.Value = 0;
+                cargoTravelled.Value = 0;
+            }
+            else if (!introduction)
             {
                 var eligible = System.Array.FindAll(objectives, o => o && o.IsConfigured);
                 var objective = eligible[Random.Range(0, eligible.Length)];
@@ -129,7 +259,8 @@ namespace ConductorChaos.Stations
             else
             {
                 var host = NetworkManager.GetComponent<PlaygroundHost>();
-                if (host) host.LoadServiceScene(introduction && Phase == RunPhase.Won ? FirstLevelScene : gameObject.scene.name);
+                string next = Phase == RunPhase.Won ? NextScene(gameObject.scene.name) : null;
+                if (host) host.LoadServiceScene(next != null && Application.CanStreamedLevelBeLoaded(next) ? next : gameObject.scene.name);
             }
         }
 
@@ -190,6 +321,12 @@ namespace ConductorChaos.Stations
                 return;
             }
 
+            if (CombinesObjectives)
+            {
+                UpdateCombinedOnServer();
+                return;
+            }
+
             var cargo = Objective as ServiceCargo;
             if (cargo != null)
             {
@@ -225,6 +362,65 @@ namespace ConductorChaos.Stations
             if (cargo != null) cargoTravelled.Value = cargo.TravelledCount;
             progress.Value = Mathf.Clamp(Objective.ReadProgress(docked), 0, Objective.Target);
             if (docked && progress.Value >= Objective.Target) Finish(true);
+        }
+
+        // Level 2+: alle opdrachten tegelijk. Zelfde regels als hierboven, maar winnen pas als alles af is.
+        private void UpdateCombinedOnServer()
+        {
+            var active = ActiveObjectives;
+            ServiceCargo firstCargo = null;
+            foreach (var objective in active)
+                if (objective is ServiceCargo cargo)
+                {
+                    cargo.ObserveLoadingOnServer();
+                    if (!firstCargo) firstCargo = cargo;
+                    SetListValue(objectiveAboard, System.Array.IndexOf(objectives, objective), cargo.AboardCount);
+                }
+            if (firstCargo) cargoLoaded.Value = firstCargo.AboardCount;
+
+            bool docked = false;
+            if (TimerRunning)
+            {
+                if (NetworkManager.ServerTime.Time >= deadline.Value)
+                {
+                    Finish(false);
+                    return;
+                }
+                if (Phase == RunPhase.Departure && !ServiceStation.Contains(departure.TrainStop, train.ServiceRailPosition))
+                    phase.Value = RunPhase.Travelling;
+                bool stopped = ServiceStation.Contains(arrival.TrainStop, train.ServiceRailPosition) && train.ServiceSpeed < .22f;
+                stopSeconds = stopped ? stopSeconds + Time.fixedDeltaTime : 0;
+                docked = stopSeconds >= 1f;
+                if (Phase is RunPhase.Travelling or RunPhase.Arrival)
+                    phase.Value = docked ? RunPhase.Arrival : RunPhase.Travelling;
+                if (train.ServiceSpeed >= .22f)
+                    foreach (var objective in active) objective.ObserveTravelOnServer();
+                if (firstCargo) cargoTravelled.Value = firstCargo.TravelledCount;
+            }
+            else if (CrewAt(departure.Platform))
+            {
+                int duration = TimeLimit(NetworkManager.ConnectedClientsIds.Count);
+                musicDuration.Value = duration;
+                deadline.Value = NetworkManager.ServerTime.Time + duration;
+            }
+
+            int total = 0;
+            bool complete = active.Count > 0;
+            foreach (var objective in active)
+            {
+                int value = Mathf.Clamp(objective.ReadProgress(docked), 0, objective.Target);
+                SetListValue(objectiveProgress, System.Array.IndexOf(objectives, objective), value);
+                total += value;
+                if (value < objective.Target) complete = false;
+            }
+            progress.Value = total;
+            if (TimerRunning && docked && complete) Finish(true);
+        }
+
+        private static void SetListValue(NetworkList<int> list, int index, int value)
+        {
+            if (index < 0 || index >= list.Count || list[index] == value) return;
+            list[index] = value;
         }
 
         private void UpdateTraining()
@@ -278,6 +474,14 @@ namespace ConductorChaos.Stations
             phase.Value = succeeded ? RunPhase.Won : RunPhase.Failed;
         }
 
-        internal static int TimeLimit(int crew) => crew switch { <= 1 => 300, 2 => 270, 3 => 240, _ => 210 };
+        /// <summary>Tijdslimiet voor deze dienst bij een crew van deze grootte (s).</summary>
+        internal int TimeLimit(int crew)
+        {
+            if (timeLimits != null && timeLimits.Length > 0)
+                return Mathf.Max(30, timeLimits[Mathf.Clamp(crew, 1, timeLimits.Length) - 1]);
+            return DefaultTimeLimit(crew);
+        }
+
+        internal static int DefaultTimeLimit(int crew) => crew switch { <= 1 => 300, 2 => 270, 3 => 240, _ => 210 };
     }
 }

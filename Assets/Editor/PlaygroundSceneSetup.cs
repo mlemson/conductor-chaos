@@ -168,6 +168,9 @@ namespace ConductorChaos.Editor
                 $"Assets/Scenes/{ServiceRun.IntroScene}.unity",
                 $"Assets/Scenes/{ServiceRun.FirstLevelScene}.unity"
             };
+            // Level 2 (issue #224) gaat mee zodra hij gebouwd is (Tools > Conductor Chaos > Level 2 bouwen).
+            string second = $"Assets/Scenes/{ServiceRun.SecondLevelScene}.unity";
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(second)) scenes = scenes.Append(second).ToArray();
             if (scenes.Any(path => !AssetDatabase.LoadAssetAtPath<SceneAsset>(path)))
             {
                 Debug.LogError("De lobby, introductie en het eerste level moeten aanwezig zijn om de dienst te bouwen.");
