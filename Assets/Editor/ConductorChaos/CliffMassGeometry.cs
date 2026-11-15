@@ -204,7 +204,6 @@ namespace ConductorChaos.EditorTools
             var P = loop.pts;
             int n = P.Length;
             var fold = new float[n];
-            var tilt = new float[n];
             var drip = new float[n];
             var b = new float[n];          // onderkant van de wand: grond of de lagere trede ervoor
             var inset = new float[n];      // naar binnen waar een lagere trede vóór de wand ligt (grasrichel)
@@ -214,7 +213,6 @@ namespace ConductorChaos.EditorTools
             {
                 int qx = Mathf.RoundToInt(P[k].x * 100f), qz = Mathf.RoundToInt(P[k].y * 100f);
                 fold[k] = (Hash(qx, qz, 1, seed) < 0.5f ? 0.13f : -0.04f) + Hash(qx, qz, 2, seed) * 0.06f - 0.02f;
-                tilt[k] = Hash(qx, qz, 3, seed) * 0.12f - 0.06f;
                 drip[k] = Hash(qx, qz, 4, seed) > 0.45f ? 0.04f + Hash(qx, qz, 5, seed) * 0.12f : 0f;
                 int floor = Mathf.Clamp(loop.outside[k], 0, tier - 1);
                 b[k] = floor == 0 ? (ground != null ? ground(P[k].x, P[k].y) : 0f) : floor * step;
@@ -227,14 +225,34 @@ namespace ConductorChaos.EditorTools
             float[] D(Func<int, float> f) { var d = new float[n]; for (int k = 0; k < n; k++) d[k] = f(k) * sc; return d; }
             float[] Y(Func<int, float> f) { var y = new float[n]; for (int k = 0; k < n; k++) y[k] = f(k); return y; }
 
-            var body = new List<Ring>
+            // A wall can be 31 m tall in level 2. Four long facets make it look
+            // like a single flat slab; split high walls into strata of ~2.4 m.
+            // The first/last rings stay fixed, so the foot and grass rim still join.
+            float lowestFoot = top;
+            for (int k = 0; k < n; k++) lowestFoot = Mathf.Min(lowestFoot, b[k]);
+            int segments = Mathf.Clamp(Mathf.CeilToInt((top - lowestFoot) / 2.4f), 4, 20);
+            var body = new List<Ring>(segments + 1);
+            for (int r = 0; r <= segments; r++)
             {
-                MakeRing(P, D(k => -fold[k] - 0.16f + inset[k]), Y(k => b[k] - 0.30f)),                         // voet, de grond in
-                MakeRing(P, D(k => -fold[k] - 0.06f + inset[k]), Y(k => b[k] + Mathf.Min(0.35f, (top - b[k]) * 0.2f))),
-                MakeRing(P, D(k => -fold[k] * 1.1f + tilt[k] + inset[k]), Y(k => Mathf.Lerp(b[k], top, 0.45f))),
-                MakeRing(P, D(k => -fold[k] * 0.9f + 0.03f + inset[k]), Y(k => Mathf.Lerp(b[k], top, 0.88f))),
-                MakeRing(P, D(k => -fold[k] * 0.5f + 0.10f + inset[k]), Y(k => top - 0.02f)),
-            };
+                float t = r / (float)segments;
+                int ringIndex = r;
+                body.Add(MakeRing(P, D(k =>
+                {
+                    float from = -fold[k] - 0.16f + inset[k];
+                    float to = -fold[k] * 0.5f + 0.10f + inset[k];
+                    float displacement = Mathf.Lerp(from, to, t);
+                    // Interior strata have small deterministic folds; on short
+                    // walls they fade away to avoid folded or inverted geometry.
+                    if (ringIndex > 0 && ringIndex < segments)
+                    {
+                        int qx = Mathf.RoundToInt(P[k].x * 100f), qz = Mathf.RoundToInt(P[k].y * 100f);
+                        float variation = (Hash(qx, qz, 31 + ringIndex * 17, seed) - 0.5f) * 0.28f;
+                        displacement += variation * Mathf.Sin(t * Mathf.PI) *
+                                        Mathf.Clamp01((top - b[k]) / 4f);
+                    }
+                    return displacement;
+                }), Y(k => Mathf.Lerp(b[k] - 0.30f, top - 0.02f, t))));
+            }
             for (int r = 0; r < body.Count; r++)
             {
                 var ring = body[r];
