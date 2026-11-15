@@ -44,9 +44,22 @@ namespace ConductorChaos.Playground
                 if (!NeedsMeshCollider(filter)) continue;
                 var owner = filter.GetComponentInParent<Rigidbody>();
                 if (owner && !owner.isKinematic && !IsEndDoorLeaf(filter.name)) continue;
+                Mesh mesh = filter.sharedMesh;
+                // Imported FBX meshes can be non-readable in Windows builds. Unity tries
+                // to cook the mesh on AddComponent, so check BEFORE adding a MeshCollider.
+                if (!mesh.isReadable)
+                {
+                    // Keep door and control collisions available without requiring
+                    // Read/Write on every visual train mesh.
+                    var box = filter.gameObject.AddComponent<BoxCollider>();
+                    box.center = mesh.bounds.center;
+                    box.size = Vector3.Max(mesh.bounds.size, Vector3.one * 0.02f);
+                    continue;
+                }
+
                 var collider = filter.gameObject.AddComponent<MeshCollider>();
+                collider.sharedMesh = mesh;
                 collider.convex = IsEndDoorLeaf(filter.name);
-                collider.sharedMesh = filter.sharedMesh;
             }
         }
 
