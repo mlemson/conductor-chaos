@@ -75,7 +75,8 @@ namespace ConductorChaos.EditorTools
                 // the old ear-clipping fallback filled the *canyon opening*
                 // with a giant grass roof. Tile the occupied tier instead.
                 // This also handles disconnected islands and diagonal saddles.
-                CapCells(o, cells, tier, cellSize, top + 0.14f, seed);
+                // 1.5 cm lower than the rim's inner ring avoids coplanar z-fighting.
+                CapCells(o, cells, tier, cellSize, top + 0.125f, seed);
                 if (tufts) Tufts(o, cells, tier, top, cellSize, seed);
             }
             return o;
