@@ -20,7 +20,7 @@ namespace ConductorChaos.Stations
         private AudioSource source;
         private ServiceRun currentRun;
         private double currentStart;
-        private float nextSyncCheck;
+        private bool wasListenerPaused;
 
         private void Awake()
         {
@@ -36,6 +36,7 @@ namespace ConductorChaos.Stations
             // The existing AudioListener.volume and AudioListener.pause remain master controls.
             source.volume = Mathf.Clamp01(PlayerPrefs.GetFloat(MusicVolumeKey, .65f));
             source.mute = PlayerPrefs.GetInt(MusicEnabledKey, 1) == 0;
+            if (AudioListener.pause) wasListenerPaused = true;
 
             var run = ServiceRun.Active;
             var network = NetworkManager.Singleton;
@@ -74,23 +75,22 @@ namespace ConductorChaos.Stations
                 source.clip = clip;
                 source.time = seek;
                 source.Play();
-                nextSyncCheck = Time.unscaledTime + 2f;
                 return;
             }
 
-            // When master audio is re-enabled, resync to the current server timer.
+            // Re-seek after master mute: the level timer continued while audio was paused.
+            // Avoid periodic seeking on compressed MP3s, which can cause audible stutters.
             if (AudioListener.pause) return;
+            if (wasListenerPaused)
+            {
+                wasListenerPaused = false;
+                source.time = seek;
+            }
             if (!source.isPlaying)
             {
                 source.time = seek;
                 source.Play();
-                return;
             }
-
-            if (Time.unscaledTime < nextSyncCheck) return;
-            nextSyncCheck = Time.unscaledTime + 2f;
-            if (Mathf.Abs(source.time - seek) > .75f)
-                source.time = seek;
         }
 
         private AudioClip GetClip(int duration)
