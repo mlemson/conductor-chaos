@@ -89,8 +89,6 @@ namespace ConductorChaos.Playground
         private float desiredCameraDistance = PlaygroundControls.DefaultCameraDistance;
         private float smoothFocusY, smoothFocusVelocity;
         private bool hasSmoothFocus;
-        private Vector3 lastClearCameraPosition;
-        private bool hasClearCameraPosition;
         private TrainDrive trainDrive;
         private bool usingCabinCamera;
         private bool usingLookDownCamera;
@@ -137,7 +135,6 @@ namespace ConductorChaos.Playground
             cameraZoomVelocity = 0f;
             cameraObstructedUntil = cameraBodyHiddenUntil = 0f;
             cameraEyeOffset = Vector3.zero;
-            hasClearCameraPosition = false;
             usingCabinCamera = false;
             usingLookDownCamera = false;
             wagonPushDirection = Vector3.zero;
@@ -859,9 +856,10 @@ namespace ConductorChaos.Playground
                 var obstacle = hits[i].collider;
                 if (obstacle.transform.IsChildOf(transform)) continue;
                 bool containsFocus = false;
-                for (int j = 0; j < focusCount; j++)
-                    if (cameraFocusObstacles[j] == obstacle && (obstacle.ClosestPoint(focus) - focus).sqrMagnitude < 0.000001f)
-                    { containsFocus = true; break; }
+                if (obstacle is BoxCollider or SphereCollider or CapsuleCollider or MeshCollider { convex: true })
+                    for (int j = 0; j < focusCount; j++)
+                        if (cameraFocusObstacles[j] == obstacle && (obstacle.ClosestPoint(focus) - focus).sqrMagnitude < 0.000001f)
+                        { containsFocus = true; break; }
                 if (!containsFocus) available = Mathf.Min(available, Mathf.Max(0f, hits[i].distance - 0.025f));
             }
             bool recoveringCamera = Time.unscaledTime < cameraObstructedUntil;
@@ -877,54 +875,17 @@ namespace ConductorChaos.Playground
                 cameraZoomVelocity = 0f;
             }
             Vector3 cameraPosition = focus + direction * cameraDistance;
-            bool clear = CameraPositionClear(cameraPosition, radius);
-            if (!clear)
+            // Keep the camera on the aim axis while retracting around an obstruction.
+            if (!CameraPositionClear(cameraPosition, radius))
             {
                 cameraObstructedUntil = Time.unscaledTime + 0.35f;
-                for (float distance = cameraDistance; distance >= 0f; distance = Mathf.Max(0f, distance - 0.1f))
+                cameraZoomVelocity = 0f;
+                do
                 {
-                    Vector3 candidate = focus + direction * distance;
-                    if (CameraPositionClear(candidate, radius))
-                    {
-                        cameraPosition = candidate;
-                        cameraDistance = distance;
-                        cameraZoomVelocity = 0f;
-                        clear = true;
-                    }
-                    if (clear || distance == 0f) break;
-                }
+                    cameraDistance = Mathf.Max(0f, cameraDistance - 0.1f);
+                    cameraPosition = focus + direction * cameraDistance;
+                } while (cameraDistance > 0f && !CameraPositionClear(cameraPosition, radius));
             }
-            if (!clear && hasClearCameraPosition && (lastClearCameraPosition - focus).sqrMagnitude <= 16f && CameraPositionClear(lastClearCameraPosition, radius) && CameraPathClear(focus, lastClearCameraPosition, radius, focusCount))
-            {
-                cameraPosition = lastClearCameraPosition;
-                clear = true;
-            }
-            if (!clear)
-            {
-                for (int i = 0; i < 8 && !clear; i++)
-                    for (float distance = 0.5f; distance <= 4f; distance += 0.5f)
-                    {
-                        Vector3 alternate = Quaternion.AngleAxis((i / 2 + 1) * (i % 2 == 0 ? 45f : -45f), Vector3.up) * direction;
-                        Vector3 candidate = focus + alternate * distance;
-                        if (!CameraPositionClear(candidate, radius) || !CameraPathClear(focus, candidate, radius, focusCount)) continue;
-                        cameraPosition = candidate;
-                        clear = true;
-                        break;
-                    }
-            }
-            if (clear && hasClearCameraPosition)
-            {
-                Vector3 previousOffset = lastClearCameraPosition - focus;
-                Vector3 targetOffset = cameraPosition - focus;
-                if (targetOffset.sqrMagnitude > previousOffset.sqrMagnitude + 0.01f)
-                {
-                    // Ease outward even when returning from an alternate collision-free angle.
-                    Vector3 candidate = Vector3.MoveTowards(lastClearCameraPosition, cameraPosition, 4f * Time.unscaledDeltaTime);
-                    if (CameraPositionClear(candidate, radius) && CameraPathClear(focus, candidate, radius, focusCount))
-                        cameraPosition = candidate;
-                }
-            }
-            if (clear) { lastClearCameraPosition = cameraPosition; hasClearCameraPosition = true; }
             Vector3 offset = cameraPosition - focus;
             Vector3 viewDirection = offset.sqrMagnitude > 0.0001f ? offset.normalized : direction;
             Vector3 axis = new(Mathf.Abs(viewDirection.x), Mathf.Abs(viewDirection.y), Mathf.Abs(viewDirection.z));
@@ -954,25 +915,6 @@ namespace ConductorChaos.Playground
             if (count == ledgeObstacles.Length) return false;
             for (int i = 0; i < count; i++)
                 if (!ledgeObstacles[i].transform.IsChildOf(transform)) return false;
-            return true;
-        }
-
-        private bool CameraPathClear(Vector3 focus, Vector3 position, float radius, int focusCount)
-        {
-            Vector3 offset = position - focus;
-            if (offset.sqrMagnitude < 0.0001f) return true;
-            int count = Physics.SphereCastNonAlloc(focus, radius, offset.normalized, hits, offset.magnitude, ~0, QueryTriggerInteraction.Ignore);
-            if (count == hits.Length) return false;
-            for (int i = 0; i < count; i++)
-            {
-                var obstacle = hits[i].collider;
-                if (obstacle.transform.IsChildOf(transform)) continue;
-                bool containsFocus = false;
-                for (int j = 0; j < focusCount; j++)
-                    if (cameraFocusObstacles[j] == obstacle && (obstacle.ClosestPoint(focus) - focus).sqrMagnitude < 0.000001f)
-                    { containsFocus = true; break; }
-                if (!containsFocus) return false;
-            }
             return true;
         }
 
