@@ -2,18 +2,18 @@
 
 > **Bron van waarheid:** [GitHub Issues](https://github.com/mlemson/conductor-chaos/issues) en gekoppelde pull requests. Dit is een automatisch gegenereerde momentopname. Wijzig taken in Issues, niet rechtstreeks in dit bestand. Brede epics tellen niet als uitvoertaak.
 
-**Voortgang: 3/108 afgerond (3%)**
+**Voortgang: 3/109 afgerond (3%)**
 
 | 📝 Te doen | 🔧 Bezig | 👀 Review | ⛔ Geblokkeerd | ✅ Klaar |
 | :---: | :---: | :---: | :---: | :---: |
-| 72 | 33 | 0 | 0 | 3 |
+| 72 | 34 | 0 | 0 | 3 |
 
 ## 🗺️ Mijlpalen
 
 ```mermaid
 flowchart LR
     P0["P0 · Technisch fundament + stijltest · 3/26 klaar"]
-    P1["P1 · Eerste speelbare co-opervaring · 0/70 klaar"]
+    P1["P1 · Eerste speelbare co-opervaring · 0/71 klaar"]
     P2["P2 · Bergavontuur en chaos · 0/12 klaar"]
     P0 --> P1 --> P2
 ```
@@ -21,7 +21,7 @@ flowchart LR
 | Fase | Voortgang | Inhoud |
 | :-- | :-- | :-- |
 | **P0** | 🟩⬜⬜⬜⬜⬜⬜⬜⬜⬜ 3/26 | Technisch fundament + stijltest |
-| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/70 | Eerste speelbare co-opervaring |
+| **P1** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/71 | Eerste speelbare co-opervaring |
 | **P2** | ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜ 0/12 | Bergavontuur en chaos |
 
 ## 🧩 Overkoepelende onderwerpen (geen uitvoertaken)
@@ -121,7 +121,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P2 | [#197 Subtiele zwevende stofdeeltjes in de speelwereld](https://github.com/mlemson/conductor-chaos/issues/197) | Overig | — | — |
 | P2 | [#219 Treinsets Diesel jaren '60, Modern Express en Futuristic Express (modellen, dakladder, onderhoudspunten)](https://github.com/mlemson/conductor-chaos/issues/219) | Overig | — | — |
 
-### 🔧 Bezig (33)
+### 🔧 Bezig (34)
 
 | Fase | Taak | Onderdeel | Eigenaar | Pull request |
 | :-- | :-- | :-- | :-- | :-- |
@@ -152,6 +152,7 @@ Deze brede issues zijn verzamelonderwerpen. Kies een gekoppelde kleine taak; ze 
 | P1 | [#206 Losse stationsprops kunnen duwen, trekken en grijpen](https://github.com/mlemson/conductor-chaos/issues/206) | Overig | @mlemson | — |
 | P1 | [#217 Eerste dienst: gezamenlijke briefing, introductie en eerste rit](https://github.com/mlemson/conductor-chaos/issues/217) | Overig | @mlemson | — |
 | P1 | [#220 Nieuwe treinsets aansluiten op TrainDrive](https://github.com/mlemson/conductor-chaos/issues/220) | Overig | @mlemson | — |
+| P1 | [#225 Rustynail Express 2 als doorlopende menu/intro-muziek, Chug Chug Along na leveltrack](https://github.com/mlemson/conductor-chaos/issues/225) | Overig | @mlemson | — |
 | P2 | [#149 Herstel preset voor stenen kliffen op hersteltak](https://github.com/mlemson/conductor-chaos/issues/149) | Overig | @mlemson | — |
 | P2 | [#164 Verberg playground-HUD na tien seconden](https://github.com/mlemson/conductor-chaos/issues/164) | Overig | @mlemson | — |
 | P2 | [#208 Gebruik het nieuwe logo in het hoofdmenu](https://github.com/mlemson/conductor-chaos/issues/208) | Overig | @mlemson | — |
