@@ -16,8 +16,8 @@ namespace ConductorChaos.Playground
         private Screen screen;
         private Canvas canvas;
         private RectTransform logoPanel, mainPanel, pausePanel, lobbyPanel, settingsPanel;
-        private Text volumeText, muteText, cameraBobText;
-        private bool muted;
+        private Text volumeText, muteText, musicVolumeText, musicEnabledText, cameraBobText;
+        private bool muted, musicEnabled;
         private Button playButton, resumeButton, settingsBack;
         private Button hostButton, joinButton, beginButton, leaveButton, copyButton;
         private Text lobbyStatus, lobbyAvailability, lobbyCode;
@@ -49,6 +49,8 @@ namespace ConductorChaos.Playground
             AudioListener.volume = Mathf.Clamp01(PlayerPrefs.GetFloat("ChaosUI.Volume", 0.8f));
             muted = PlayerPrefs.GetInt("ChaosUI.Muted", 0) != 0;
             AudioListener.pause = muted;
+            musicEnabled = PlayerPrefs.GetInt(ServiceMusic.MusicEnabledKey, 1) != 0;
+            gameObject.AddComponent<ServiceMusic>();
             networkHost = FindAnyObjectByType<PlaygroundHost>();
             Build();
             service = new ServicePresentation(transform, networkHost);
@@ -77,28 +79,40 @@ namespace ConductorChaos.Playground
 
             BuildLobby(root);
 
-            settingsPanel = ChaosUI.MenuPanel(root, "Settings", V(.36f, .18f), V(.96f, .78f));
-            RectTransform settingsHeading = ChaosUI.Panel(settingsPanel, "Heading paper", V(.035f, .86f), V(.32f, .98f), ChaosUI.Paper);
+            settingsPanel = ChaosUI.MenuPanel(root, "Settings", V(.36f, .07f), V(.96f, .90f));
+            RectTransform settingsHeading = ChaosUI.Panel(settingsPanel, "Heading paper", V(.035f, .895f), V(.32f, .98f), ChaosUI.Paper);
             ChaosUI.Label(settingsHeading, "Heading", "INSTELLINGEN", 24, ChaosUI.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
-            RectTransform audioTab = ChaosUI.Panel(settingsPanel, "Selected audio tab", V(.035f, .73f), V(.25f, .84f), ChaosUI.Gold);
+            RectTransform audioTab = ChaosUI.Panel(settingsPanel, "Selected audio tab", V(.035f, .77f), V(.25f, .875f), ChaosUI.Gold);
             ChaosUISpriteCatalog.Add(audioTab, "Speaker", "audio", V(.04f, .08f), V(.26f, .92f), ChaosUI.Ink);
             ChaosUI.Label(audioTab, "Label", "Geluid", 18, ChaosUI.Ink, TextAnchor.MiddleCenter,
                 FontStyle.Bold, V(.26f, 0f), V(1f, 1f));
-            ChaosUI.Action(settingsPanel, "Controls tab", "Besturing", V(.26f, .73f), V(.49f, .84f), ChaosUI.Paper, ChaosUI.Ink, null, 16, false, "controls");
-            ChaosUI.Action(settingsPanel, "Accessibility tab", "Toegankelijkheid", V(.50f, .73f), V(.84f, .84f), ChaosUI.Paper, ChaosUI.Ink, null, 15, false, "accessibility");
-            ChaosUI.Label(settingsPanel, "Audio", "MASTER VOLUME", 19, ChaosUI.GoldLight, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .62f), V(.96f, .70f));
-            ChaosUI.Label(settingsPanel, "Volume", "Volume", 20, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .52f), V(.34f, .64f));
-            ChaosUI.VolumeSlider(settingsPanel, V(.36f, .555f), V(.78f, .60f), AudioListener.volume, SetVolume);
-            volumeText = ChaosUI.Label(settingsPanel, "Volume value", Mathf.RoundToInt(AudioListener.volume * 100) + "%", 18, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.8f, .53f), V(.96f, .625f));
-            ChaosUI.Label(settingsPanel, "Sound", "Geluid", 20, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .36f), V(.34f, .48f));
+            ChaosUI.Action(settingsPanel, "Controls tab", "Besturing", V(.26f, .77f), V(.49f, .875f), ChaosUI.Paper, ChaosUI.Ink, null, 16, false, "controls");
+            ChaosUI.Action(settingsPanel, "Accessibility tab", "Toegankelijkheid", V(.50f, .77f), V(.84f, .875f), ChaosUI.Paper, ChaosUI.Ink, null, 15, false, "accessibility");
+
+            ChaosUI.Label(settingsPanel, "Master volume", "Mastervolume", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .645f), V(.34f, .745f));
+            ChaosUI.VolumeSlider(settingsPanel, V(.36f, .677f), V(.78f, .72f), AudioListener.volume, SetVolume);
+            volumeText = ChaosUI.Label(settingsPanel, "Master volume value", Mathf.RoundToInt(AudioListener.volume * 100) + "%", 18, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.8f, .645f), V(.96f, .745f));
+
+            float musicVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(ServiceMusic.MusicVolumeKey, .65f));
+            ChaosUI.Label(settingsPanel, "Music volume", "Muziekvolume", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .515f), V(.34f, .615f));
+            ChaosUI.VolumeSlider(settingsPanel, V(.36f, .547f), V(.78f, .59f), musicVolume, SetMusicVolume);
+            musicVolumeText = ChaosUI.Label(settingsPanel, "Music volume value", Mathf.RoundToInt(musicVolume * 100) + "%", 18, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.8f, .515f), V(.96f, .615f));
+
+            ChaosUI.Label(settingsPanel, "Music", "Muziek", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .395f), V(.34f, .49f));
+            Button musicSwitch = ChaosUI.Action(settingsPanel, "Music switch", musicEnabled ? "Aan" : "Uit",
+                V(.36f, .40f), V(.52f, .485f), ChaosUI.Paper, ChaosUI.Ink, ToggleMusic, 20);
+            musicEnabledText = musicSwitch.GetComponentInChildren<Text>();
+
+            ChaosUI.Label(settingsPanel, "Sound", "Geluid", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .27f), V(.34f, .365f));
             Button soundSwitch = ChaosUI.Action(settingsPanel, "Sound switch", muted ? "Uit" : "Aan",
-                V(.36f, .36f), V(.52f, .48f), ChaosUI.Paper, ChaosUI.Ink, ToggleMute, 23);
+                V(.36f, .275f), V(.52f, .36f), ChaosUI.Paper, ChaosUI.Ink, ToggleMute, 20);
             muteText = soundSwitch.GetComponentInChildren<Text>();
-            ChaosUI.Label(settingsPanel, "Camera motion", "Camerabeweging", 20, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .20f), V(.34f, .32f));
+
+            ChaosUI.Label(settingsPanel, "Camera motion", "Camerabeweging", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .145f), V(.34f, .24f));
             Button cameraBobSwitch = ChaosUI.Action(settingsPanel, "Camera motion switch", PlayerPrefs.GetInt("ChaosUI.CameraBob", 1) != 0 ? "Aan" : "Uit",
-                V(.36f, .20f), V(.52f, .32f), ChaosUI.Paper, ChaosUI.Ink, ToggleCameraBob, 23);
+                V(.36f, .15f), V(.52f, .235f), ChaosUI.Paper, ChaosUI.Ink, ToggleCameraBob, 20);
             cameraBobText = cameraBobSwitch.GetComponentInChildren<Text>();
-            settingsBack = ChaosUI.Action(settingsPanel, "Back", "Terug", V(.69f, .035f), V(.96f, .125f), ChaosUI.Paper, ChaosUI.Ink, ShowLobby, 18, iconKey: "back");
+            settingsBack = ChaosUI.Action(settingsPanel, "Back", "Terug", V(.69f, .025f), V(.96f, .115f), ChaosUI.Paper, ChaosUI.Ink, ShowLobby, 18, iconKey: "back");
 
             pausePanel = ChaosUI.MenuPanel(root, "Pause", V(.35f, .19f), V(.65f, .81f));
             ChaosUI.Label(pausePanel, "Heading", "GEPAUZEERD", 32, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.05f, .8f), V(.95f, .95f));
@@ -248,6 +262,8 @@ namespace ConductorChaos.Playground
                   (inLobby && !networkHost.IsHost ? "\nWachten tot de host start." : ""));
         }
         private void SetVolume(float value) { AudioListener.volume = value; PlayerPrefs.SetFloat("ChaosUI.Volume", value); if (volumeText) volumeText.text = Mathf.RoundToInt(value * 100) + "%"; }
+        private void SetMusicVolume(float value) { value = Mathf.Clamp01(value); PlayerPrefs.SetFloat(ServiceMusic.MusicVolumeKey, value); if (musicVolumeText) musicVolumeText.text = Mathf.RoundToInt(value * 100) + "%"; }
+        private void ToggleMusic() { musicEnabled = !musicEnabled; PlayerPrefs.SetInt(ServiceMusic.MusicEnabledKey, musicEnabled ? 1 : 0); if (musicEnabledText) musicEnabledText.text = musicEnabled ? "Aan" : "Uit"; }
         private void ToggleMute() { muted = !muted; AudioListener.pause = muted; PlayerPrefs.SetInt("ChaosUI.Muted", muted ? 1 : 0); if (muteText) muteText.text = muted ? "Uit" : "Aan"; }
         private void ToggleCameraBob() { bool enabled = PlayerPrefs.GetInt("ChaosUI.CameraBob", 1) == 0; PlayerPrefs.SetInt("ChaosUI.CameraBob", enabled ? 1 : 0); if (cameraBobText) cameraBobText.text = enabled ? "Aan" : "Uit"; }
         private void Unstuck()
