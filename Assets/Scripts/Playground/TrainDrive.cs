@@ -123,9 +123,10 @@ namespace ConductorChaos.Playground
             public float Inward = -1f;
         }
 
-        private sealed class EndDoor
+        internal sealed class EndDoor
         {
             public Rigidbody Vehicle;
+            public GameObject Root;
             public Transform Left, Right;
             public Vector3 LeftRest, RightRest;
             public Vector3 Slide;
@@ -141,6 +142,20 @@ namespace ConductorChaos.Playground
                 Vector3 through = Vector3.Cross(Vector3.up, across);
                 return Mathf.Abs(Vector3.Dot(offset, through)) <= (Automatic ? 2f : 1.65f) &&
                     Mathf.Abs(Vector3.Dot(offset, across)) <= .85f && offset.y >= -.45f && offset.y <= 2f;
+            }
+
+            public bool HasNearbyPlayer()
+            {
+                foreach (var player in PlaygroundPlayer.SpawnedPlayers)
+                    if (player && player.IsSpawned && player.gameObject.scene == Root.scene && HasPlayerNear(player.transform.position))
+                        return true;
+                return false;
+            }
+
+            public bool ShouldOpen(bool nearby)
+            {
+                if (nearby) HoldUntil = Time.time + 0.65f;
+                return nearby || Time.time < HoldUntil;
             }
 
             public void Apply(float opening)
@@ -284,7 +299,16 @@ namespace ConductorChaos.Playground
         internal float ServiceSpeed => displayedSpeed.Value;
         internal Vector3 ServiceRailPosition => transform.TransformPoint(0f, -TrackPiece.RailToTrainPivot, railCenterOffset);
         internal bool ServiceDerailed => derailed;
-        internal bool ServiceDoorsClosed => wagonDoorOffsets.Value.sqrMagnitude < .035f * .035f;
+        internal bool ServiceDoorsClosed
+        {
+            get
+            {
+                Vector4 offsets = wagonDoorOffsets.Value;
+                for (int i = 0; i < wagonDoors.Length; i++)
+                    if (wagonDoors[i] != null && !WagonDoorIsClosed(offsets[i])) return false;
+                return true;
+            }
+        }
         internal bool ServiceDoorOpened
         {
             get
@@ -1162,9 +1186,20 @@ namespace ConductorChaos.Playground
 
         private void PrepareVehicleEndDoors(Rigidbody vehicle)
         {
-            var leaves = vehicle.GetComponentsInChildren<MeshFilter>(true);
-            if (vehicle.GetComponent<TrainBreakdowns>()) TrainBreakdowns.EnsureMeshColliders(vehicle.gameObject);
+            var breakdowns = vehicle.GetComponent<TrainBreakdowns>();
+            if (breakdowns) TrainBreakdowns.EnsureMeshColliders(vehicle.gameObject);
+            foreach (var door in FindEndDoors(vehicle.gameObject))
+            {
+                if (door.Automatic && breakdowns && breakdowns.isActiveAndEnabled) continue;
+                endDoors.Add(door);
+                if (IsServer) endDoorsOpen.Add(0);
+            }
+        }
 
+        internal static IEnumerable<EndDoor> FindEndDoors(GameObject vehicle)
+        {
+            var leaves = vehicle.GetComponentsInChildren<MeshFilter>(true);
+            var body = vehicle.GetComponent<Rigidbody>();
             foreach (string end in new[] { "Front", "Rear" })
             {
                 var leftMesh = System.Array.Find(leaves, f => f.name == "EndDoorLeaf_L_" + end);
@@ -1175,7 +1210,6 @@ namespace ConductorChaos.Playground
                 if (left.parent != right.parent) continue;
                 TrainBreakdowns.EnsureEndDoorCollider(leftMesh);
                 TrainBreakdowns.EnsureEndDoorCollider(rightMesh);
-                Vector3 across = left.localPosition - right.localPosition;
                 bool automatic = vehicle.name.StartsWith("Modern", System.StringComparison.Ordinal) ||
                     vehicle.name.StartsWith("Futuristic", System.StringComparison.Ordinal);
                 if (!automatic && left.TryGetComponent<Renderer>(out var renderer))
@@ -1186,13 +1220,12 @@ namespace ConductorChaos.Playground
                             automatic = true;
                             break;
                         }
-                endDoors.Add(new EndDoor
+                yield return new EndDoor
                 {
-                    Vehicle = vehicle, Left = left, Right = right, Automatic = automatic,
+                    Root = vehicle, Vehicle = body, Left = left, Right = right, Automatic = automatic,
                     LeftRest = left.localPosition, RightRest = right.localPosition,
-                    Slide = across.normalized * EndDoorTravel
-                });
-                if (IsServer) endDoorsOpen.Add(0);
+                    Slide = (left.localPosition - right.localPosition).normalized * EndDoorTravel
+                };
             }
         }
 
@@ -1201,23 +1234,14 @@ namespace ConductorChaos.Playground
             for (int i = 0; i < endDoors.Count; i++)
             {
                 var door = endDoors[i];
-                if (!door.Vehicle || !door.Left || !door.Right) continue;
-                bool nearby = false;
-                if (!derailed && door.Vehicle.gameObject.activeInHierarchy)
-                    foreach (var player in PlaygroundPlayer.SpawnedPlayers)
-                    {
-                        if (!player || !player.IsSpawned || player.gameObject.scene != gameObject.scene) continue;
-                        if (!door.HasPlayerNear(player.transform.position)) continue;
-                        nearby = true;
-                        break;
-                    }
+                if (!door.Root || !door.Left || !door.Right) continue;
+                bool nearby = !derailed && door.Root.activeInHierarchy && door.HasNearbyPlayer();
                 if (!door.Automatic)
                 {
                     if (nearby && Time.time >= door.NextManualPush) CheckManualEndDoor(i, door);
                     continue;
                 }
-                if (nearby) door.HoldUntil = Time.time + 0.65f;
-                byte target = nearby || Time.time < door.HoldUntil ? (byte)1 : (byte)0;
+                byte target = door.ShouldOpen(nearby) ? (byte)1 : (byte)0;
                 if (endDoorsOpen[i] != target) endDoorsOpen[i] = target;
             }
             ApplyEndDoors(Time.fixedDeltaTime);
@@ -1343,6 +1367,7 @@ namespace ConductorChaos.Playground
             Debug.Assert(Mathf.Approximately(MoveWagonDoor(0f, -.04f, true, WagonDoorPanelGrip), -.026f));
             Debug.Assert(Mathf.Approximately(WagonDoorDisplacement(WagonDoorLeadIn * 0.5f).x, 0f));
             Debug.Assert(Mathf.Approximately(WagonDoorDisplacement(WagonDoorTravel).z, -WagonDoorInset));
+            Debug.Assert(WagonDoorIsClosed(WagonDoorLeadIn) && !WagonDoorIsClosed(WagonDoorTravel));
             foreach (var wagon in availableWagons)
             {
                 if (!wagon) continue;
@@ -1447,6 +1472,7 @@ namespace ConductorChaos.Playground
                     break;
                 }
                 panel.Hand = holdingHand;
+                if (!holdingHand && WagonDoorIsClosed(offsets[i])) offsets[i] = 0f;
             }
             if (offsets != wagonDoorOffsets.Value) wagonDoorOffsets.Value = offsets;
             ApplyWagonDoors();
@@ -1454,6 +1480,8 @@ namespace ConductorChaos.Playground
 
         private static float MoveWagonDoor(float offset, float delta, bool opensNegative, float grip = 1f) =>
             Mathf.Clamp(offset + Mathf.Clamp(delta, -0.06f, 0.06f) * grip, opensNegative ? -WagonDoorTravel : 0f, opensNegative ? 0f : WagonDoorTravel);
+
+        private static bool WagonDoorIsClosed(float offset) => Mathf.Abs(WagonDoorDisplacement(offset).x) <= .02f;
 
         private static Vector3 WagonDoorDisplacement(float offset)
         {

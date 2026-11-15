@@ -61,6 +61,8 @@
 
 ## Ontwerpregels
 
+- Fysieke interacties doe je met de handen. Gebruik geen E-knop of andere contexttoets als vervanging voor grijpen, slepen, duwen of bedienen. Oma wordt met de handen in en uit de trein geholpen. Reizigers mogen uit zichzelf instappen zodra hun kaartje fysiek is geknipt en de deur open is.
+
 - De host/server valideert en beslist over gedeelde toestand, inclusief trein, deur, objecten en events; clients sturen intenties, geen vertrouwde uitkomsten. Lokale UI en cosmetische feedback mogen lokaal zijn.
 - **Bij wijzigingen aan gedeelde netwerkstate**: test zo mogelijk exact één relevante interactie op host én remote client. Alleen gelijktijdige verzoeken, late join, disconnect, netwerkstress of zes spelers testen als het issue **die specifieke gedraging** verandert. Meld eerlijk wanneer test ontbreekt.
 - **CRITICAL — REAL DERAILMENT:** de trein moet bij bijvoorbeeld kapotte rails, botsingen of te hoge snelheid **echt fysiek kunnen ontsporen**; dit is geen cutscene of animatie-only. Plan rail-guided normal travel zonder crash-onmogelijk te maken en een host/server-autoritatieve overgang naar dynamische physics. Lees [DERAILMENT_PHYSICS.md](Docs/DERAILMENT_PHYSICS.md) voordat je trein, spoor, koppelingen, spelersphysics of botsingen ontwerpt. Voer geen uitgebreide derailmentsimulatie uit tijdens P0-01: eerst P0, dan een afzonderlijke test.

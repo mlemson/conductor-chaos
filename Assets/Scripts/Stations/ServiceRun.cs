@@ -59,6 +59,7 @@ namespace ConductorChaos.Stations
         public bool PowerOn => powerOn.Value;
         public bool NeedsCoal => train.HasCoalFurnace && train.FuelFraction <= 0f;
         public bool EscortDoorOpen => Objective is ServiceEscort escort && train.IsServiceDoorOpen(escort.Doorway);
+        internal bool CanBoardAt(Transform doorway) => train.ServiceSpeed < .22f && train.IsServiceDoorOpen(doorway);
         public bool OffTrack => offTrack.Value;
         public bool TimerRunning => deadline.Value > 0;
         public int MusicDuration => musicDuration.Value;
@@ -118,7 +119,6 @@ namespace ConductorChaos.Stations
         }
 
         public void Continue() => ContinueRpc();
-        public void AssistPassenger() => AssistPassengerRpc();
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         private void ContinueRpc(RpcParams rpc = default)
@@ -167,19 +167,6 @@ namespace ConductorChaos.Stations
             button.position -= button.up * .055f;
             yield return new WaitForSeconds(.14f);
             if (button) button.localPosition = resting;
-        }
-
-        public bool CanAssistFrom(Vector3 position) => Objective is ServiceEscort escort && EscortDoorOpen &&
-            (Phase == RunPhase.Departure && Progress == 0 || Phase == RunPhase.Arrival && Progress == 1) &&
-            escort.IsNear(position);
-
-        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-        private void AssistPassengerRpc(RpcParams rpc = default)
-        {
-            if (train.ServiceSpeed >= .22f ||
-                !NetworkManager.ConnectedClients.TryGetValue(rpc.Receive.SenderClientId, out var client) ||
-                !client.PlayerObject || !CanAssistFrom(client.PlayerObject.transform.position)) return;
-            ((ServiceEscort)Objective).AssistOnServer(Phase == RunPhase.Arrival);
         }
 
         private void FixedUpdate()

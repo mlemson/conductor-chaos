@@ -77,6 +77,16 @@ namespace ConductorChaos.Playground
             return rigid;
         }
 
+        internal bool WalkToward(Vector3 destination)
+        {
+            Vector3 delta = destination - body.position;
+            Vector3 flat = Vector3.ProjectOnPlane(delta, Vector3.up);
+            if (flat.sqrMagnitude > .008f)
+                body.MoveRotation(Quaternion.RotateTowards(body.rotation, Quaternion.LookRotation(flat), 360f * Time.fixedDeltaTime));
+            body.MovePosition(Vector3.MoveTowards(body.position, destination, .9f * Time.fixedDeltaTime));
+            return delta.sqrMagnitude < .018f * .018f;
+        }
+
         private void FixedUpdate()
         {
             if (!IsSpawned || !IsServer || !body || !leftArm || !rightArm) return;
@@ -87,8 +97,8 @@ namespace ConductorChaos.Playground
                 if (!groundHits[i].collider.transform.IsChildOf(transform) && groundHits[i].normal.y > 0.55f) { grounded = true; break; }
             bool upright = Vector3.Dot(body.rotation * Vector3.up, Vector3.up) > 0.55f;
             bool standing = grounded && upright;
-            body.AddTorque(Vector3.up * (-body.angularVelocity.y * 4f), ForceMode.Acceleration);
-            if (standing)
+            if (!body.isKinematic) body.AddTorque(Vector3.up * (-body.angularVelocity.y * 4f), ForceMode.Acceleration);
+            if (standing && !body.isKinematic)
             {
                 Vector3 tilt = Vector3.Cross(body.rotation * Vector3.up, Vector3.up);
                 body.AddTorque(tilt * 28f - new Vector3(body.angularVelocity.x, 0f, body.angularVelocity.z) * 7f, ForceMode.Acceleration);

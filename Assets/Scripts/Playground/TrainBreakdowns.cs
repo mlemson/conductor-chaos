@@ -1,16 +1,17 @@
 // Conductor Chaos — slijtage aan de trein: af en toe gaat er een onderhoudspunt kapot (dakventilator, stroomafnemer,
 // luik, aspot, remslang) en moet iemand het met de moersleutel repareren (RepairPoint, issue #215).
-// Zet dit op een voertuig van de nieuwe treinsets (Tools > Conductor Chaos > Train Sets doet dat). Zelf geen
-// netwerkstate: alleen de server kiest en roept RepairPoint.ServerBreak aan; de RepairPoint synchroniseert de stand.
+// Zet dit op een voertuig van de nieuwe treinsets (Tools > Conductor Chaos > Train Sets doet dat). Alleen de server kiest een
+// storing. RepairPoint synchroniseert de staat.
 // Nog geen gevolgen voor het rijden (snelheid, licht): dat is een aparte stap.
+using System.Collections.Generic;
 using ConductorChaos.Track;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace ConductorChaos.Playground
 {
-    [DisallowMultipleComponent]
-    public sealed class TrainBreakdowns : MonoBehaviour
+    [DisallowMultipleComponent, RequireComponent(typeof(NetworkObject))]
+    public sealed class TrainBreakdowns : NetworkBehaviour
     {
         [Tooltip("Eerste storing op zijn vroegst na zoveel seconden.")]
         [SerializeField, Min(0f)] float firstAfter = 60f;
@@ -18,6 +19,9 @@ namespace ConductorChaos.Playground
         [SerializeField] Vector2 interval = new Vector2(45f, 110f);
         [Tooltip("Zoveel onderhoudspunten mogen er op dit voertuig tegelijk kapot zijn.")]
         [SerializeField, Range(1, 6)] int maxBroken = 1;
+
+        private readonly NetworkVariable<byte> openEndDoors = new();
+        private readonly List<TrainDrive.EndDoor> automaticDoors = new(2);
 
         RepairPoint[] points;
         float next;
@@ -81,8 +85,51 @@ namespace ConductorChaos.Playground
             box.enabled = true;
         }
 
+        public override void OnNetworkSpawn()
+        {
+            foreach (var door in TrainDrive.FindEndDoors(gameObject))
+                if (door.Automatic) automaticDoors.Add(door);
+            if (IsServer) openEndDoors.Value = 0;
+            else ApplyEndDoors(1f);
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            foreach (var door in automaticDoors)
+                if (door.Left && door.Right) door.Apply(0f);
+            automaticDoors.Clear();
+        }
+
+        private void FixedUpdate()
+        {
+            if (!IsSpawned || !IsServer || automaticDoors.Count == 0) return;
+            byte open = 0;
+            for (int i = 0; i < automaticDoors.Count; i++)
+            {
+                var door = automaticDoors[i];
+                if (!door.Left || !door.Right) continue;
+                var drive = TrainDrive.FindControlOwner(door.Vehicle);
+                if (door.ShouldOpen((!drive || !drive.ServiceDerailed) && door.HasNearbyPlayer())) open |= (byte)(1 << i);
+            }
+            if (openEndDoors.Value != open) openEndDoors.Value = open;
+            ApplyEndDoors(Time.fixedDeltaTime);
+        }
+
+        private void ApplyEndDoors(float deltaTime)
+        {
+            for (int i = 0; i < automaticDoors.Count; i++)
+            {
+                var door = automaticDoors[i];
+                if (!door.Left || !door.Right) continue;
+                float target = (openEndDoors.Value & (1 << i)) != 0 ? 1f : 0f;
+                float opening = Mathf.MoveTowards(door.Opening, target, 3f * deltaTime);
+                if (opening != door.Opening) door.Apply(opening);
+            }
+        }
+
         void Update()
         {
+            if (IsSpawned && !IsServer) ApplyEndDoors(Time.deltaTime);
             var network = NetworkManager.Singleton;
             if (!network || !network.IsServer || points == null || points.Length == 0 || Time.time < next) return;
             next = Time.time + Random.Range(Mathf.Min(interval.x, interval.y), Mathf.Max(interval.x, interval.y));

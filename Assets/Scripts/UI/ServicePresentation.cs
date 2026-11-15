@@ -1,8 +1,6 @@
 using ConductorChaos.Playground;
 using ConductorChaos.Stations;
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -10,7 +8,7 @@ namespace ConductorChaos.UI
 {
     internal sealed class ServicePresentation
     {
-        private readonly GameObject modal, hud, prompt;
+        private readonly GameObject modal, hud;
         private readonly Image modalBadge, objectiveIcon;
         private readonly Text kicker, heading, detail, route, actionText, waitText;
         private readonly Text hudTitle, hudDetail, timerText;
@@ -57,9 +55,6 @@ namespace ConductorChaos.UI
             var timer = ChaosUI.Panel(inGame.transform, "Dienstklok", V(.867f, .895f), V(.978f, .966f),
                 ChaosUI.Navy, 2, ChaosUI.Dark);
             timerText = ChaosUI.Label(timer, "Resterende tijd", "", 26, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold);
-            var bell = ChaosUI.Panel(inGame.transform, "Interactietip", V(.405f, .07f), V(.595f, .126f), ChaosUI.Paper);
-            ChaosUI.Label(bell, "Passagier", "[E]  Help oma", 18, ChaosUI.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
-            prompt = bell.gameObject;
             hud = inGame.gameObject;
             hud.SetActive(false);
         }
@@ -77,14 +72,6 @@ namespace ConductorChaos.UI
             if (hudChanged) hud.SetActive(showHud);
             if (!showModal && !showHud) return;
 
-            if (showHud)
-            {
-                var player = NetworkManager.Singleton ? NetworkManager.Singleton.LocalClient?.PlayerObject : null;
-                bool canAssist = player && run.CanAssistFrom(player.transform.position);
-                if (prompt.activeSelf != canAssist) prompt.SetActive(canAssist);
-                if (canAssist && Cursor.lockState == CursorLockMode.Locked && Keyboard.current?.eKey.wasPressedThisFrame == true)
-                    run.AssistPassenger();
-            }
             if (!modalChanged && !hudChanged && Time.unscaledTime < nextUpdate) return;
             nextUpdate = Time.unscaledTime + .10f;
             if (showModal)
@@ -162,12 +149,12 @@ namespace ConductorChaos.UI
             {
                 if (!run.TimerRunning) return "Loop naar het vertrekperron om de dienstklok te starten.";
                 if (objective is ServiceTickets && run.Progress < objective.Target)
-                    return $"Knip de kaartjes van oma op het perron en de twee reizigers in de wagon. ({run.Progress}/{objective.Target})";
+                    return $"Knip de drie kaartjes op het perron. Open de perrondeur zodat de reizigers kunnen instappen. ({run.Progress}/{objective.Target})";
                 if (objective is ServiceCargo && run.CargoLoaded < objective.Target)
                     return objective.Target == 1 ? "Leg de rode koffer in het bagagevak in de wagon."
                         : $"Zet de kratten in het vrachtvak in de wagon. ({run.CargoLoaded}/{objective.Target} aan boord)";
                 if (objective is ServiceEscort && run.Progress == 0)
-                    return run.EscortDoorOpen ? "Ga naar oma op het perron en druk op E." : "Open de wagondeur aan het perron voor oma.";
+                    return run.EscortDoorOpen ? "Pak oma met je handen vast en sleep haar de wagon in." : "Open de wagondeur aan het perron voor oma.";
                 if (!run.BellRung) return "Druk de gele belknop op het vertrekperron omlaag.";
             }
             if (run.Phase == ServiceRun.RunPhase.Arrival)
@@ -180,11 +167,11 @@ namespace ConductorChaos.UI
                         : $"Zet de kratten in het gele vrachtvak. ({run.Progress}/{objective.Target} gelost)";
                 }
                 if (objective is ServiceEscort && run.Progress < objective.Target)
-                    return run.EscortDoorOpen ? "Ga naar oma en druk op E om haar te helpen uitstappen." : "Open de wagondeur aan het perron voor oma.";
+                    return run.EscortDoorOpen ? "Pak oma met je handen vast en breng haar naar het eindperron." : "Open de wagondeur aan het perron voor oma.";
             }
             if (objective is ServiceRepair repair && run.Progress < objective.Target && !repair.IsBroken)
                 return "Duw de wisselhendel naar de stand rechtdoor.";
-            if (!run.DoorsClosed) return "Schuif de wagondeuren dicht.";
+            if (!run.DoorsClosed) return "Schuif de zijdeuren aan beide kanten van de wagon dicht.";
             if (!run.PowerOn) return "Druk op de startknop in de cabine.";
             if (run.NeedsCoal) return "Open de vuurkist en schep er kolen in.";
             if (objective is ServiceRepair broken && run.Progress < objective.Target)

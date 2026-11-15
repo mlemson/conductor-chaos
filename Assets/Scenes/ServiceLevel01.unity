@@ -7397,7 +7397,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -8406,7 +8406,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.Stations.ServiceEscort
   title: Help oma op reis
-  instructions: Open de perrondeur en druk bij oma op E. Help haar na aankomst ook weer uitstappen.
+  instructions: Open de perrondeur en sleep oma met je handen de wagon in. Breng haar na aankomst naar het eindperron.
   icon: player
   passenger: {fileID: 1086019955}
   outside: {fileID: 511353627}
@@ -11586,7 +11586,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -13652,12 +13652,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.Stations.ServiceTickets
   title: Controleer alle kaartjes
-  instructions: Neem de kaartjestang mee. Knip het kaartje van oma op het perron en van beide reizigers in de wagon.
+  instructions: Knip de drie kaartjes op het perron. Open de perrondeur zodat de twee reizigers zelf kunnen instappen.
   icon: ticket
   passengers:
   - {fileID: 1355513231}
   - {fileID: 367222976}
   - {fileID: 1950000015}
+  boardingPassengers:
+  - {fileID: 1355513231}
+  - {fileID: 367222976}
+  outside: {fileID: 511353627}
+  doorway: {fileID: 1481252533}
+  seat: {fileID: 683290152}
 --- !u!4 &1627204554
 Transform:
   m_ObjectHideFlags: 0
@@ -19479,7 +19485,7 @@ Transform:
   m_GameObject: {fileID: 2000205813}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.85, z: 0}
+  m_LocalPosition: {x: 0, y: 0.85, z: -1.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
