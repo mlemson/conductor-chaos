@@ -58,7 +58,7 @@ namespace ConductorChaos.Stations
         public bool DoorsClosed => doorsClosed.Value;
         public bool PowerOn => powerOn.Value;
         public bool NeedsCoal => train.HasCoalFurnace && train.FuelFraction <= 0f;
-        public bool EscortDoorOpen => Objective is ServiceEscort escort && train.IsServiceDoorOpen(escort.DoorLeaf);
+        public bool EscortDoorOpen => Objective is ServiceEscort escort && train.IsServiceDoorOpen(escort.Doorway);
         public bool OffTrack => offTrack.Value;
         public bool TimerRunning => deadline.Value > 0;
         public int MusicDuration => musicDuration.Value;

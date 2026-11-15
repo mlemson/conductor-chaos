@@ -9,12 +9,13 @@ namespace ConductorChaos.Stations
 
         [SerializeField] private Rigidbody passenger;
         [SerializeField] private Transform outside, doorway, seat, destination;
-        [SerializeField] private Transform doorLeaf;
         private Stage stage;
+        private Rigidbody wagon;
+        private readonly RaycastHit[] floorHits = new RaycastHit[12];
 
         public override int Target => 2;
-        public override bool IsConfigured => passenger && outside && doorway && seat && destination && doorLeaf;
-        public Transform DoorLeaf => doorLeaf;
+        public override bool IsConfigured => passenger && outside && doorway && seat && destination;
+        public Transform Doorway => doorway;
         public override bool ReadyToDepart => stage is Stage.Riding or Stage.Done;
 
         public bool IsNear(Vector3 position) => passenger && (passenger.transform.position - position).sqrMagnitude <= 2.1f * 2.1f;
@@ -25,9 +26,11 @@ namespace ConductorChaos.Stations
                 CharacterFace.OnModel(passenger.transform.GetChild(0));
         }
 
+        public override void BeginOnServer() => wagon = seat.GetComponentInParent<Rigidbody>();
+
         public void AssistOnServer(bool arriving)
         {
-            if (!arriving && stage == Stage.Waiting) stage = Stage.ToDoor;
+            if (!arriving && stage == Stage.Waiting) stage = IsAboard() ? Stage.ToSeat : Stage.ToDoor;
             if (arriving && stage == Stage.Riding) stage = Stage.FromSeat;
         }
 
@@ -35,6 +38,7 @@ namespace ConductorChaos.Stations
         {
             // Oma is a physical passenger you can drag and push. Only while she walks to her seat, rides
             // and walks off again does this script carry her.
+            if (stage == Stage.Waiting && IsAboard()) stage = Stage.ToSeat;
             bool scripted = stage is not (Stage.Waiting or Stage.Done);
             if (passenger.isKinematic != scripted) passenger.isKinematic = scripted;
             switch (stage)
@@ -51,6 +55,18 @@ namespace ConductorChaos.Stations
                 case Stage.ToPlatform when Step(destination.position): stage = Stage.Done; break;
             }
             return stage == Stage.Done ? 2 : stage >= Stage.Riding ? 1 : 0;
+        }
+
+        private bool IsAboard()
+        {
+            if (!wagon || Mathf.Abs(passenger.position.y - seat.position.y) > .45f) return false;
+            Vector3 inward = Vector3.ProjectOnPlane(doorway.position - outside.position, Vector3.up).normalized;
+            if (Vector3.Dot(passenger.position - doorway.position, inward) < .25f) return false;
+            int count = Physics.RaycastNonAlloc(passenger.position + Vector3.up * .25f, Vector3.down, floorHits, .8f,
+                ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+                if (floorHits[i].rigidbody == wagon && floorHits[i].normal.y > .55f) return true;
+            return false;
         }
 
         private bool Step(Vector3 destination)
