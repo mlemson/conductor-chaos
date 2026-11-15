@@ -103,8 +103,10 @@ namespace ConductorChaos.EditorTools
                 EditorGUILayout.Space();
                 EditorGUILayout.HelpBox("Grote of brede klif nodig? De Klif Massa Painter voegt alles wat je schildert samen " +
                                         "tot één klif (Ctrl = hoger, Shift = gummen).", MessageType.Info);
-                if (GUILayout.Button("Open Klif Massa Painter (samengevoegde kliffen)", GUILayout.Height(24)))
-                    CliffMassPainterWindow.Open();
+                bool stonePalette = entries.Any(e => e.enabled && e.prefab && e.prefab.name.EndsWith("_Stone"));
+                if (GUILayout.Button(stonePalette ? "Open Klif Massa Painter (samengevoegde stenen kliffen)"
+                                                  : "Open Klif Massa Painter (samengevoegde kliffen)", GUILayout.Height(24)))
+                    CliffMassPainterWindow.Open(stonePalette);
                 stackCliffs = EditorGUILayout.ToggleLeft(new GUIContent("Losse kliffen stapelen",
                     "Aan: een klif die je op een andere klif schildert komt er bovenop (oud gedrag). " +
                     "Uit: kliffen komen naast elkaar op de grond en schuiven in elkaar."), stackCliffs);

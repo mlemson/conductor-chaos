@@ -7,7 +7,7 @@ namespace ConductorChaos.EditorTools
 {
     [CustomEditor(typeof(CliffMass))]
     [CanEditMultipleObjects]
-    public class CliffMassEditor : Editor
+    public class CliffMassEditor : UnityEditor.Editor   // volledig: het project heeft ook een namespace ConductorChaos.Editor
     {
         public override void OnInspectorGUI()
         {

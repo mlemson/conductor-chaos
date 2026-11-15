@@ -41,6 +41,14 @@ namespace ConductorChaos.EditorTools
         [MenuItem("Conductor Chaos/Art/Klif Massa Painter")]
         public static void Open() => GetWindow<CliffMassPainterWindow>("Klif Massa");
 
+        /// <summary>Openen met rots of steen voorgekozen (vanuit de Prop Painter-presets Kliffen / Stenen kliffen).</summary>
+        public static void Open(bool stoneCliffs)
+        {
+            var w = GetWindow<CliffMassPainterWindow>("Klif Massa");
+            w.stone = stoneCliffs;
+            w.Repaint();
+        }
+
         void OnEnable() { SceneView.duringSceneGui += OnSceneGUI; }
         void OnDisable() { SceneView.duringSceneGui -= OnSceneGUI; }
 
@@ -52,6 +60,16 @@ namespace ConductorChaos.EditorTools
             EditorGUILayout.HelpBox("LMB = klif schilderen (groeit mee met de klif waar je begint)\n" +
                                     "Ctrl+LMB = trede hoger · Shift+LMB = gummen · Shift+Ctrl+LMB = trede lager\n" +
                                     "[ ] = kwastgrootte · Alt = camera", MessageType.None);
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Soort klif", EditorStyles.boldLabel);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Toggle(!stone, "Rode rots", "Button", GUILayout.Height(24))) stone = false;
+                if (GUILayout.Toggle(stone, "Steen", "Button", GUILayout.Height(24))) stone = true;
+            }
+            EditorGUILayout.HelpBox("Nieuwe kliffen krijgen deze soort. Schilder je verder aan een bestaande klif, dan houdt die zijn eigen soort; " +
+                                    "rots en steen worden nooit samengevoegd.", MessageType.None);
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Kwast", EditorStyles.boldLabel);
@@ -73,7 +91,6 @@ namespace ConductorChaos.EditorTools
             }
             cellSize = EditorGUILayout.Slider(new GUIContent("Rastermaat (m)", "Kleiner = fijnere rand, groter = grovere blokken"), cellSize, 0.5f, 2f);
             tufts = EditorGUILayout.ToggleLeft("Grasbolletjes bovenop", tufts);
-            stone = EditorGUILayout.ToggleLeft("Stenen wanden (M_Env_CliffStone)", stone);
 
             EditorGUILayout.Space();
             var sel = Selection.activeGameObject != null ? Selection.activeGameObject.GetComponentInParent<CliffMass>() : null;
@@ -201,7 +218,7 @@ namespace ConductorChaos.EditorTools
                 int c = m.GetLevel(m.CellAt(m.transform.InverseTransformPoint(point)));
                 if (c > centerLevel) { centerMass = m; centerLevel = c; }
                 int t = MaxUnderBrush(m, point);
-                if (t > touchLevel) { touchMass = m; touchLevel = t; }
+                if (t > touchLevel && m.stone == stone) { touchMass = m; touchLevel = t; }   // naast een klif: alleen dezelfde soort laten meegroeien
             }
             var target = centerMass != null ? centerMass : touchMass;
             int baseLevel = centerLevel > 0 ? centerLevel : touchLevel;
@@ -300,6 +317,7 @@ namespace ConductorChaos.EditorTools
         static bool Compatible(CliffMass a, CliffMass b, out int levelShift)
         {
             levelShift = 0;
+            if (a.stone != b.stone) return false;                       // rots en steen blijven aparte kliffen
             if (Mathf.Abs(a.cellSize - b.cellSize) > 0.001f) return false;
             if (Quaternion.Angle(a.transform.rotation, Quaternion.identity) > 0.5f ||
                 Quaternion.Angle(b.transform.rotation, Quaternion.identity) > 0.5f) return false;
