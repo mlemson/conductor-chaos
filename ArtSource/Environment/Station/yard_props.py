@@ -6,9 +6,13 @@ Alles staat op maaiveld (y = 0), pivot midden-onder, +X wijst naar het spoor.
                     Zet het midden 4,0 m uit het hart van het spoor. Bediening op een gietijzeren standaard aan de
                     spoorkant: hendel voor de vulpijp en een rood handwiel voor het water.
   Yard_HoseTap      standpijp met kwartslagkraantje, koppeling en een haspel met opgerolde rode slang.
+  Yard_OilPump      hetzelfde tappunt voor olie: zwart met gele ringen, zwarte slang (#237).
   Prop_HoseNozzle   (map Props) losse spuitmond met trekker: een gewone netwerkprop die je met je handen pakt.
   Yard_HoseSegment  stuk slang van 0,5 m langs +X (pivot aan het begin), voor een slang die in het spel wordt
                     gelegd tussen Point_HoseOut van de kraan en Point_HoseIn van de spuitmond.
+  Prop_Cargo*       (map Props) lading voor de kraan (#238): kist, vaten op een pallet, buizenbundel; elk met
+                    stroppen naar een gele hijsring. Point_Loop = midden van de ring (daar grijpt de haak), Col_Loop =
+                    botsvorm van de ring (ook met de hand te pakken).
   Yard_Crane        handbediende draaikraan: stenen voet met gietijzeren zuil, draaiend bovendeel met machinehuisje,
                     contragewicht, ladder en een gele vakwerkgiek; haak aan een kabel. Bereik 6,6 m vanaf het midden:
                     zet hem 5,5 m uit het hart van het spoor.
@@ -301,6 +305,19 @@ def hose_tap_nodes():
     return nodes
 
 
+def oil_pump_nodes():
+    """Oliepomp (#237): het tappunt in zwart met gele ringen en een zwarte slang; kraantje blijft geel-rood."""
+    remap = {"M_Stn_Navy": "M_Stn_Dark", "M_Stn_Red": "M_Stn_Dark", "M_Stn_Dark": "M_Stn_Metal"}
+    out = []
+    for node in hose_tap_nodes():
+        mesh = node[1]
+        if mesh is not None and node[0] in ("Tap", "Move_Reel"):
+            mesh = mesh.copy()
+            mesh.M = [remap.get(m, m) for m in mesh.M]
+        out.append((node[0], mesh) + tuple(node[2:]))
+    return out
+
+
 def hose_nozzle_nodes():
     """Spuitmond: messing loop langs +X, rode handgreep, trekker; ligt plat genoeg om op te pakken."""
     y = 0.16
@@ -480,7 +497,82 @@ def crane_nodes():
 ASSETS = {
     "Yard_WaterTower": (water_tower_nodes, 160, 0.30),
     "Yard_HoseTap": (hose_tap_nodes, 900, 0.10),
+    "Yard_OilPump": (oil_pump_nodes, 900, 0.10),
     "Yard_HoseSegment": (hose_segment_nodes, 900, 0.05),
     "Yard_Crane": (crane_nodes, 160, 0.30),
 }
-PROPS = {"Prop_HoseNozzle": (hose_nozzle_nodes, 2400, 0.05)}
+# =================================================================== lading met hijslus (#238)
+RING_R, RING_T = 0.12, 0.03
+
+
+def _sling(anchors, ring_y, mat="M_Stn_Sack"):
+    """Stroppen van de ankerpunten naar de onderkant van een staande gele ring; geeft (mesh, ring_mesh, ring_col)."""
+    parts = []
+    bottom = (0.0, ring_y - RING_R + 0.01, 0.0)
+    for a in anchors:
+        parts.append(capsule(a, bottom, 0.022, seg=6, rings=1, mat=mat))
+        parts.append(mk.torus(0.045, 0.012, 10, 5, mat="M_Stn_Yellow").transform(t=a))     # sluiting op het anker
+    ring = mk.torus(RING_R, RING_T, 18, 7, mat="M_Stn_Yellow").transform(R=mk.rot_x(math.pi / 2), t=(0, ring_y, 0))
+    knot = ball(0.05, mat, 10, 6).transform(t=(0.0, ring_y - RING_R - 0.015, 0.0))
+    col = col_box(-RING_R - 0.03, RING_R + 0.03, ring_y - RING_R - 0.05, ring_y + RING_R + 0.03, -0.05, 0.05)
+    return mk.merge(*parts, knot), ring, col
+
+
+def _cargo(body, col, anchors, ring_y):
+    sling, ring, ring_col = _sling(anchors, ring_y)
+    return [("Cargo", mk.merge(body, sling, ring), None, (0, 0, 0), None, True),
+            ("Col_Main", col, None, (0, 0, 0), None, False),
+            ("Col_Loop", ring_col, None, (0, 0, 0), None, False),
+            ("Point_Loop", None, None, (0.0, ring_y, 0.0), None, True)]
+
+
+def cargo_crate_nodes():
+    import station_props as props
+    s = 1.0
+    body, col = props.crate(s)
+    straps = [rbox(-s / 2 - 0.03, s / 2 + 0.03, -0.004, s + 0.025, z - 0.04, z + 0.04, 0.01, "M_Stn_Yellow")
+              for z in (-0.22, 0.22)]
+    anchors = [(sx * 0.40, s + 0.02, sz * 0.40) for sx in (-1, 1) for sz in (-1, 1)]
+    return _cargo(mk.merge(body, *straps), col, anchors, s + 0.62)
+
+
+def cargo_barrels_nodes():
+    import station_props as props
+    parts = []
+    for z in (-0.40, 0.0, 0.40):                                         # pallet: drie balken en dekplanken
+        parts.append(rbox(-0.60, 0.60, 0.0, 0.10, z - 0.06, z + 0.06, 0.015, "M_Stn_TimberDark"))
+    for k in range(7):
+        x = -0.54 + k * 0.18
+        parts.append(rbox(x - 0.075, x + 0.075, 0.10, 0.14, -0.50, 0.50, 0.01, "M_Stn_WoodLight"))
+    brl, _ = props.barrel(0.80, 0.25)
+    for (x, z) in ((-0.28, -0.24), (0.28, -0.24), (-0.28, 0.24), (0.28, 0.24)):
+        parts.append(brl.transform(t=(x, 0.145, z)))
+    for y in (0.40, 0.72):                                               # gele spanband om de vier vaten
+        parts.append(mk.prism(mk.chamfer_poly([(-0.55, -0.49), (0.55, -0.49), (0.55, 0.49), (-0.55, 0.49)], 0.18),
+                              y - 0.03, y + 0.03, c=0.006, mat="M_Stn_Yellow").transform(R=mk.rot_x(-math.pi / 2)))
+    col = mk.merge(col_box(-0.60, 0.60, 0.0, 0.14, -0.50, 0.50), col_box(-0.55, 0.55, 0.14, 0.95, -0.50, 0.50))
+    anchors = [(sx * 0.56, 0.14, sz * 0.46) for sx in (-1, 1) for sz in (-1, 1)]
+    return _cargo(mk.merge(*parts), col, anchors, 1.75)
+
+
+def cargo_pipes_nodes():
+    parts = []
+    L, r = 2.4, 0.09
+    centres = [(0.0, r), (2 * r, r), (-2 * r, r), (r, r + 1.732 * r), (-r, r + 1.732 * r), (0.0, r + 3.464 * r)]
+    for (z, y) in centres:
+        parts.append(cyl(r, L, 12, 0.012, "M_Stn_Navy", axis="x").transform(t=(0, y, z)))
+        for sx in (-1, 1):                                               # donkere binnenkant aan de uiteinden
+            parts.append(disc(r - 0.022, -0.004, 0.016, "M_Stn_Dark", 12, 0.0).transform(R=mk.rot_y(sx * math.pi / 2),
+                                                                                        t=(sx * (L / 2 + 0.001), y, z)))
+    top = r + 3.464 * r + r
+    for x in (-0.75, 0.75):                                              # spanbanden met een oog bovenop
+        parts.append(rbox(x - 0.045, x + 0.045, -0.006, top + 0.012, -3 * r - 0.012, 3 * r + 0.012, 0.012, "M_Stn_Yellow"))
+    col = col_box(-L / 2, L / 2, 0.0, top, -3 * r, 3 * r)
+    anchors = [(x, top + 0.04, 0.0) for x in (-0.75, 0.75)]
+    return _cargo(mk.merge(*parts), col, anchors, top + 0.95)
+
+
+PROPS = {"Prop_HoseNozzle": (hose_nozzle_nodes, 2400, 0.05),
+         "Prop_CargoCrate": (cargo_crate_nodes, 900, 0.10),
+         "Prop_CargoBarrels": (cargo_barrels_nodes, 900, 0.10),
+         "Prop_CargoPipes": (cargo_pipes_nodes, 900, 0.10)}

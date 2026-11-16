@@ -65,7 +65,10 @@ namespace ConductorChaos.EditorTools
             { "Prop_Mug", 0.25f },
             { "Prop_Wrench", 1.2f },
             { "Prop_TicketPunch", 0.5f },
-            { "Prop_HoseNozzle", 1.2f }
+            { "Prop_HoseNozzle", 1.2f },
+            { "Prop_CargoCrate", 60f },        // lading met hijsring voor de kraan (#238)
+            { "Prop_CargoBarrels", 120f },
+            { "Prop_CargoPipes", 90f }
         };
 
         static StationKitPrefabs()
@@ -126,6 +129,7 @@ namespace ConductorChaos.EditorTools
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(model);
                 try
                 {
+                    YardPrefabs.BeforeColliders(go, name);          // spuitmond aan het tappunt (#237)
                     foreach (var t in go.GetComponentsInChildren<Transform>(true))
                     {
                         if (t.name.StartsWith("Col_"))
@@ -172,6 +176,7 @@ namespace ConductorChaos.EditorTools
                     }
                     foreach (var t in go.GetComponentsInChildren<Transform>(true).Where(IsSwingDoor).ToArray())
                         AddSwingDoor(t);
+                    YardPrefabs.AfterColliders(go, name);           // hendels, water/olie, slang (#237)
                     if (signFont) StationSignTools.Attach(go, name, signFont);      // Sign_*: aanpasbare naam (#209)
                     go.name = name;
                     PrefabUtility.SaveAsPrefabAsset(go, $"{outDir}/{name}.prefab");

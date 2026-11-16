@@ -2275,6 +2275,99 @@
         "Pose_Trigger_Released",
         "Pose_Trigger_Pressed"
       ]
+    },
+    "Yard_OilPump": {
+      "fbx": "Assets/Art/Models/Environment/Station/Yard/Yard_OilPump.fbx",
+      "category": "Yard",
+      "tris": 4602,
+      "min": [
+        -0.28,
+        0.0,
+        -0.57
+      ],
+      "max": [
+        1.29,
+        1.22,
+        0.473
+      ],
+      "nodes": [
+        "Yard_OilPump",
+        "Tap",
+        "Col_Main",
+        "Point_HoseOut",
+        "Move_Valve",
+        "Col_Valve",
+        "Move_Reel",
+        "Point_ReelHose",
+        "Pose_Valve_Closed",
+        "Pose_Valve_Open"
+      ]
+    },
+    "Prop_CargoCrate": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_CargoCrate.fbx",
+      "category": "Props",
+      "tris": 1524,
+      "min": [
+        -0.53,
+        -0.004,
+        -0.515
+      ],
+      "max": [
+        0.53,
+        1.768,
+        0.515
+      ],
+      "nodes": [
+        "Prop_CargoCrate",
+        "Cargo",
+        "Col_Main",
+        "Col_Loop",
+        "Point_Loop"
+      ]
+    },
+    "Prop_CargoBarrels": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_CargoBarrels.fbx",
+      "category": "Props",
+      "tris": 7536,
+      "min": [
+        -0.617,
+        0.0,
+        -0.514
+      ],
+      "max": [
+        0.617,
+        1.898,
+        0.514
+      ],
+      "nodes": [
+        "Prop_CargoBarrels",
+        "Cargo",
+        "Col_Main",
+        "Col_Loop",
+        "Point_Loop"
+      ]
+    },
+    "Prop_CargoPipes": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_CargoPipes.fbx",
+      "category": "Props",
+      "tris": 2552,
+      "min": [
+        -1.217,
+        -0.006,
+        -0.282
+      ],
+      "max": [
+        1.217,
+        1.589,
+        0.282
+      ],
+      "nodes": [
+        "Prop_CargoPipes",
+        "Cargo",
+        "Col_Main",
+        "Col_Loop",
+        "Point_Loop"
+      ]
     }
   },
   "station": {

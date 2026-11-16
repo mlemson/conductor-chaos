@@ -135,7 +135,7 @@ namespace ConductorChaos.EditorTools
                 if (!TrainBreakdowns.NeedsMeshCollider(filter)) continue;
                 var collider = Undo.AddComponent<MeshCollider>(filter.gameObject);
                 collider.sharedMesh = filter.sharedMesh;
-                collider.convex = TrainBreakdowns.IsEndDoorLeaf(filter.name);
+                collider.convex = TrainBreakdowns.IsEndDoorLeaf(filter.name) || filter.name == "TankHatch";    // luik scharniert (#237)
                 colliders++;
             }
             foreach (var node in vehicle.GetComponentsInChildren<Transform>(true))
@@ -149,6 +149,14 @@ namespace ConductorChaos.EditorTools
                 // RepairPoint is netwerkstate: het voertuig heeft een NetworkObject nodig (Configure Train voegt de rest toe)
                 if (!vehicle.GetComponent<NetworkObject>()) Undo.AddComponent<NetworkObject>(vehicle);
                 if (!vehicle.GetComponent<TrainBreakdowns>()) Undo.AddComponent<TrainBreakdowns>(vehicle);
+            }
+            // ketelwagon: niveau en soort vloeistof (water/olie), vulluik met de hand open (#237)
+            foreach (var node in vehicle.GetComponentsInChildren<Transform>(true))
+            {
+                if (node.name != "TankLiquid" || vehicle.GetComponent<ConductorChaos.Yard.LiquidTank>()) continue;
+                if (!vehicle.GetComponent<NetworkObject>()) Undo.AddComponent<NetworkObject>(vehicle);
+                Undo.AddComponent<ConductorChaos.Yard.LiquidTank>(vehicle);
+                break;
             }
             EditorUtility.SetDirty(vehicle);
             Debug.Log($"[Train Sets] {vehicle.name}: {colliders} botsvormen, {repairs} onderhoudspunten toegevoegd.", vehicle);
