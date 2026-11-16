@@ -1,8 +1,10 @@
-// Conductor Chaos — problemen onderweg in level 2 (issue #224).
+// Conductor Chaos — problemen onderweg in level 2 en 3 (issues #224, #228).
 //   * Steenlawine: rotsblokken liggen al zichtbaar op de klifrand. Rijdt de trein een triggerzone in, dan rollen ze op
 //     het spoor. TrainDrive stopt voor alles wat op de rails ligt, dus de crew moet uitstappen en ze opzij duwen.
 //   * Spoorschade: een spoorstuk verderop (Track_Broken_6m met RepairPoint) breekt. Wie eroverheen rijdt ontspoort;
-//     stoppen en de bout met de moersleutel vastslaan.
+//     stoppen en de bout met de moersleutel vastslaan. Een spoorschade kan ook een wissel zijn (wisselstoring).
+//   * Wisselwaarschuwing (level 3): nadert de trein een wissel die naar het zijspoor staat, dan zegt de HUD het. Puur
+//     weergave; de stand van de wissel zelf is server-autoritatief (TrackSwitch).
 // De server kiest bij het begin welke incidenten deze run gebeuren, start ze en ziet wanneer ze opgelost zijn.
 // Clients krijgen alleen de status (bitmaskers) en tonen een waarschuwing in de HUD.
 using System;
@@ -39,8 +41,19 @@ namespace ConductorChaos.Stations
             [Range(0f, 1f)] public float chance = 0.6f;
         }
 
+        [Serializable]
+        public sealed class SwitchWarning
+        {
+            [Tooltip("Rijdt de trein (railpositie) hierin terwijl de wissel verkeerd staat, dan waarschuwt de HUD.")]
+            public BoxCollider approach;
+            public TrackSwitch junction;
+            [Tooltip("De hoofdroute loopt over de afbuigende tak.")]
+            public bool mainDiverges;
+        }
+
         [SerializeField] private Rockfall[] rockfalls = Array.Empty<Rockfall>();
         [SerializeField] private TrackDamage[] damages = Array.Empty<TrackDamage>();
+        [SerializeField] private SwitchWarning[] switchWarnings = Array.Empty<SwitchWarning>();
         [Tooltip("Minstens zoveel incidenten per run (willekeurig gekozen als het lot er te weinig gaf).")]
         [SerializeField, Min(0)] private int minimumIncidents = 1;
         [Tooltip("Vliegtijd van een vallend rotsblok tot het spoor (s).")]
@@ -55,11 +68,12 @@ namespace ConductorChaos.Stations
 
         public static ServiceIncidents Active { get; private set; }
 
-        public void Configure(Rockfall[] rockfallSites, TrackDamage[] damageSites, int minimum)
+        public void Configure(Rockfall[] rockfallSites, TrackDamage[] damageSites, int minimum, SwitchWarning[] warnings = null)
         {
             rockfalls = rockfallSites ?? Array.Empty<Rockfall>();
             damages = damageSites ?? Array.Empty<TrackDamage>();
             minimumIncidents = minimum;
+            switchWarnings = warnings ?? Array.Empty<SwitchWarning>();
         }
 
         public override void OnNetworkSpawn()
@@ -86,14 +100,15 @@ namespace ConductorChaos.Stations
             {
                 if (!IsSpawned) return null;
                 int open = triggered.Value & ~resolved.Value;
-                if (open == 0) return null;
                 for (int j = 0; j < damages.Length; j++)
                     if ((open & DamageBit(j)) != 0)
-                        return "Spoorschade verderop! Stop vóór de kapotte rail en sla de gele bout vast met de moersleutel.";
+                        return damages[j]?.repair && damages[j].repair.GetComponent<TrackSwitch>()
+                            ? "Wisselstoring verderop! Stop vóór de wissel en sla de gele bout vast met de moersleutel."
+                            : "Spoorschade verderop! Stop vóór de kapotte rail en sla de gele bout vast met de moersleutel.";
                 for (int i = 0; i < rockfalls.Length; i++)
                     if ((open & RockBit(i)) != 0)
                         return "Steenlawine op het spoor! Stop, stap uit en duw de rotsblokken van de rails.";
-                return null;
+                return WrongSwitchAhead() ? "Wissel verderop staat naar het zijspoor! Stop en duw de hendel naar de andere kant." : null;
             }
         }
 
@@ -106,6 +121,18 @@ namespace ConductorChaos.Stations
                 for (; open != 0; open &= open - 1) n++;
                 return n;
             }
+        }
+
+        // Alleen weergave: trein (gesynchroniseerde transform) in de naderingszone en wissel (NetworkVariable) verkeerd.
+        private bool WrongSwitchAhead()
+        {
+            var run = ServiceRun.Active;
+            if (switchWarnings.Length == 0 || !run || !run.Train) return false;
+            Vector3 rail = run.Train.ServiceRailPosition;
+            foreach (var w in switchWarnings)
+                if (w?.junction && w.approach && w.junction.IsDiverging != w.mainDiverges && ServiceStation.Contains(w.approach, rail))
+                    return true;
+            return false;
         }
 
         private static int RockBit(int i) => 1 << i;

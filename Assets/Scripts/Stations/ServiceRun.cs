@@ -12,9 +12,10 @@ namespace ConductorChaos.Stations
         public const string IntroScene = "ServiceIntroduction";
         public const string FirstLevelScene = "ServiceLevel01";
         public const string SecondLevelScene = "ServiceLevel02";
+        public const string ThirdLevelScene = "ServiceLevel03";
 
-        /// <summary>Alle dienstscènes in speelvolgorde (introductie, level 1, level 2).</summary>
-        public static readonly string[] ServiceScenes = { IntroScene, FirstLevelScene, SecondLevelScene };
+        /// <summary>Alle dienstscènes in speelvolgorde (introductie, level 1, 2, 3).</summary>
+        public static readonly string[] ServiceScenes = { IntroScene, FirstLevelScene, SecondLevelScene, ThirdLevelScene };
         public static bool IsServiceScene(string scene) => System.Array.IndexOf(ServiceScenes, scene) >= 0;
 
         /// <summary>De scène na een gewonnen dienst, of null als dit het laatste level is.</summary>

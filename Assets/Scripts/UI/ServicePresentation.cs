@@ -124,7 +124,8 @@ namespace ConductorChaos.UI
             string next = won ? ServiceRun.NextScene(run.gameObject.scene.name) : null;
             bool hasNext = next != null && Application.CanStreamedLevelBeLoaded(next);
             actionText.text = briefing ? (intro ? "Begin training" : "Begin dienst") :
-                hasNext ? (next == ServiceRun.FirstLevelScene ? "Naar level 1" : next == ServiceRun.SecondLevelScene ? "Naar level 2" : "Volgende dienst") :
+                hasNext ? (next == ServiceRun.FirstLevelScene ? "Naar level 1" : next == ServiceRun.SecondLevelScene ? "Naar level 2" :
+                    next == ServiceRun.ThirdLevelScene ? "Naar level 3" : "Volgende dienst") :
                 "Opnieuw spelen";
             waitText.text = loading ? "Wachten op de crew…" : "Wachten op de host…";
             waitText.gameObject.SetActive(!advance.gameObject.activeSelf);
@@ -228,7 +229,11 @@ namespace ConductorChaos.UI
                 text.Append(objective.Title);
                 first = false;
             }
-            text.Append(".\nOnderweg kan het misgaan: rotsen op het spoor, spoorschade en kolen die opraken.");
+            bool switches = false;
+            foreach (var objective in run.ActiveObjectives) switches |= objective is ServiceSwitchRoute;
+            text.Append(switches
+                ? ".\nOnderweg kan het misgaan: wissels die naar een zijspoor staan, rotsen op het spoor, spoorschade en kolen die opraken."
+                : ".\nOnderweg kan het misgaan: rotsen op het spoor, spoorschade en kolen die opraken.");
             return text.ToString();
         }
 
@@ -286,8 +291,10 @@ namespace ConductorChaos.UI
                     return repair.IsBroken
                         ? $"Stop vóór de kapotte wissel en tik met de moersleutel tegen de gele bout. ({repair.Hits}/{repair.RequiredHits})"
                         : "Duw de wisselhendel naar de stand rechtdoor.";
-                if (objective is ServiceTrackRepair rail && !Done(run, objective))
+                if (objective is ServiceTrackRepair rail && !Done(run, objective) && rail.IsBroken)
                     return $"Stop vóór de kapotte rail bij de brug en sla de gele bout vast met de moersleutel. ({rail.Hits}/{rail.RequiredHits})";
+                if (objective is ServiceSwitchRoute && !Done(run, objective))
+                    return $"Wissels staan naar een zijspoor: stop ervoor en duw de hendel met je hand om. ({run.ProgressOf(objective)}/{objective.Target})";
             }
             return $"Rijd naar {run.Arrival.StationName} en stop bij de groene stopmarkering.";
         }
