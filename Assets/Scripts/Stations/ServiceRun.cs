@@ -29,6 +29,7 @@ namespace ConductorChaos.Stations
         public enum Lesson { Walk, Carry, Ticket, OpenDoor, CloseDoor, Bell, Power, Drive, Finished }
 
         [SerializeField] private bool introduction;
+        [SerializeField, Min(0)] private int extraTravelSeconds;
         [SerializeField] private ServiceStation departure;
         [SerializeField] private ServiceStation arrival;
         [SerializeField] private TrainDrive train;
@@ -167,7 +168,8 @@ namespace ConductorChaos.Stations
         public bool OffTrack => offTrack.Value;
         public bool TimerRunning => deadline.Value > 0;
         public int MusicDuration => musicDuration.Value;
-        public double MusicStartedAt => TimerRunning && MusicDuration > 0 ? deadline.Value - MusicDuration : 0d;
+        internal bool LoopMusic => extraTravelSeconds > 0;
+        public double MusicStartedAt => TimerRunning && MusicDuration > 0 ? deadline.Value - MusicDuration - extraTravelSeconds : 0d;
         internal bool CanContinue => Phase == RunPhase.Briefing ||
             (Phase is RunPhase.Won or RunPhase.Failed) && NetworkManager.ServerTime.Time >= resultReadyAt;
         public int TimeLeft => Phase is RunPhase.Won or RunPhase.Failed ? resultTime.Value :
@@ -341,7 +343,7 @@ namespace ConductorChaos.Stations
                 {
                     int duration = TimeLimit(NetworkManager.ConnectedClientsIds.Count);
                     musicDuration.Value = duration;
-                    deadline.Value = NetworkManager.ServerTime.Time + duration;
+                    deadline.Value = NetworkManager.ServerTime.Time + duration + extraTravelSeconds;
                 }
                 progress.Value = Mathf.Clamp(Objective.ReadProgress(false), 0, Objective.Target);
                 return;
@@ -402,7 +404,7 @@ namespace ConductorChaos.Stations
             {
                 int duration = TimeLimit(NetworkManager.ConnectedClientsIds.Count);
                 musicDuration.Value = duration;
-                deadline.Value = NetworkManager.ServerTime.Time + duration;
+                deadline.Value = NetworkManager.ServerTime.Time + duration + extraTravelSeconds;
             }
 
             int total = 0;

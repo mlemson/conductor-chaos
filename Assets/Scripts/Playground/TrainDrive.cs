@@ -15,6 +15,7 @@ namespace ConductorChaos.Playground
         [SerializeField] private float startDistance;
         [SerializeField] private float maximumSpeed = 6f;
         [SerializeField] private float acceleration = 2f;
+        [SerializeField, Min(1f)] private float secondsPerFuelUnit = 35f;
         [SerializeField] private Rigidbody[] availableWagons = System.Array.Empty<Rigidbody>();
         private readonly NetworkVariable<bool> powered = new(false);
         private readonly NetworkVariable<bool> buttonDown = new(false);
@@ -624,7 +625,7 @@ namespace ConductorChaos.Playground
             bool needsFuel = canStoke && !(service && service.IsTrainingTrain(this));
             bool canDrive = powered.Value && (!needsFuel || fuel.Value > 0f) && (!service || service.AllowsMotion(this));
             if (canDrive && needsFuel)
-                fuel.Value = Mathf.Max(0f, fuel.Value - Mathf.Abs(throttle.Value) * Time.fixedDeltaTime / 35f);
+                fuel.Value = Mathf.Max(0f, fuel.Value - Mathf.Abs(throttle.Value) * Time.fixedDeltaTime / secondsPerFuelUnit);
             speed = Mathf.MoveTowards(speed, canDrive ? throttle.Value * maximumSpeed : 0f, acceleration * Time.fixedDeltaTime);
             var oldTrack = track;
             float oldDistance = distance;
