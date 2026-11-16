@@ -313,6 +313,8 @@ namespace ConductorChaos.EditorTools
                 FindCore();
                 Progress("Oud decor opruimen", 0.08f);
                 ClearScenery();
+                int marks = ServiceMarkerTools.ReplaceIn(scene, log);        // doelvakken en bakens als echte modellen (#229)
+                if (marks > 0) log.AppendLine($"Doelvakken en bakens vernieuwd: {marks}.");
                 Progress("Nieuwe route leggen", 0.12f);
                 var arrivalGroup = SplitTrack(out var routeStart, out var arrivalFirst);
                 departureY = routeStart.EndPosition.y - RailTop;
