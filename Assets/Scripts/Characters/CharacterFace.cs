@@ -46,9 +46,9 @@ namespace ConductorChaos.Characters
         bool pendingSecond;
         float timer;
         int blinksLeft;
-        Transform gazeRoot, gazeEye;
-        Transform leftPupil, rightPupil;
-        Quaternion leftPupilRest, rightPupilRest;
+        Transform gazeRoot, gazeEye, gazeOtherEye;
+        PupilPose leftPupil, rightPupil;
+        Vector2 gazeAngles;
         RaycastHit[] gazeHits;
         PlaygroundPlayer gazeTarget;
         float nextGazeCheck;
@@ -128,13 +128,12 @@ namespace ConductorChaos.Characters
             Apply();
             if (!GetComponentInParent<PlaygroundPlayer>())
             {
-                leftPupil = Find("Pupil_L");
-                rightPupil = Find("Pupil_R");
-                if (leftPupil) leftPupilRest = leftPupil.localRotation;
-                if (rightPupil) rightPupilRest = rightPupil.localRotation;
+                leftPupil = new PupilPose(Find("Pupil_L"));
+                rightPupil = new PupilPose(Find("Pupil_R"));
                 gazeEye = Find("Eye_L");
-                if (!gazeEye) gazeEye = Find("Eye_R");
-                if (gazeEye && (leftPupil || rightPupil))
+                gazeOtherEye = Find("Eye_R");
+                if (!gazeEye) gazeEye = gazeOtherEye;
+                if (gazeEye && (leftPupil.Exists || rightPupil.Exists))
                 {
                     var owner = GetComponentInParent<NetworkObject>();
                     gazeRoot = owner ? owner.transform : transform;
@@ -151,8 +150,9 @@ namespace ConductorChaos.Characters
         void OnDisable()
         {
             if (blinking) EndBlink();
-            if (leftPupil) leftPupil.localRotation = leftPupilRest;
-            if (rightPupil) rightPupil.localRotation = rightPupilRest;
+            leftPupil.SetTurn(Quaternion.identity);
+            rightPupil.SetTurn(Quaternion.identity);
+            gazeAngles = Vector2.zero;
             gazeTarget = null;
             nextGazeCheck = 0f;
         }
@@ -166,27 +166,41 @@ namespace ConductorChaos.Characters
                 gazeTarget = FindVisiblePlayer();
             }
 
-            Vector3 direction = gazeTarget && gazeTarget.IsSpawned
-                ? transform.InverseTransformDirection((Head(gazeTarget) - gazeEye.position).normalized)
-                : Vector3.zero;
-            Quaternion turn = Quaternion.Euler(-direction.y * 16f, direction.x * 24f, 0f);
-            float blend = 1f - Mathf.Exp(-12f * Time.deltaTime);
-            if (leftPupil) leftPupil.localRotation = Quaternion.Slerp(leftPupil.localRotation, turn * leftPupilRest, blend);
-            if (rightPupil) rightPupil.localRotation = Quaternion.Slerp(rightPupil.localRotation, turn * rightPupilRest, blend);
+            Vector2 angles = Vector2.zero;
+            if (TryGetGazeOffset(out var offset))
+            {
+                Vector3 local = gazeRoot.InverseTransformDirection(offset);
+                angles.x = Mathf.Clamp(Mathf.Atan2(local.x, local.z) * Mathf.Rad2Deg, -31f, 31f);
+                angles.y = Mathf.Clamp(Mathf.Atan2(-local.y, new Vector2(local.x, local.z).magnitude) * Mathf.Rad2Deg, -19f, 19f);
+            }
+            gazeAngles = Vector2.Lerp(gazeAngles, angles, 1f - Mathf.Exp(-12f * Time.deltaTime));
+            Quaternion turn = Quaternion.Euler(gazeAngles.y, gazeAngles.x, 0f);
+            leftPupil.SetTurn(turn);
+            rightPupil.SetTurn(turn);
+        }
+
+        Vector3 EyePosition => gazeOtherEye ? (gazeEye.position + gazeOtherEye.position) * .5f : gazeEye.position;
+
+        internal bool TryGetGazeOffset(out Vector3 offset)
+        {
+            offset = gazeEye && gazeTarget && gazeTarget.IsSpawned ? Head(gazeTarget) - EyePosition : Vector3.zero;
+            return offset.sqrMagnitude > .0025f;
         }
 
         PlaygroundPlayer FindVisiblePlayer()
         {
             PlaygroundPlayer closest = null;
             float distanceLimit = 5f;
+            Vector3 eyes = EyePosition;
             foreach (var player in PlaygroundPlayer.SpawnedPlayers)
             {
                 if (!player || !player.IsSpawned || player.gameObject.scene != gameObject.scene) continue;
-                Vector3 offset = Head(player) - gazeEye.position;
+                Vector3 offset = Head(player) - eyes;
                 float distance = offset.magnitude;
-                if (distance < .05f || distance >= distanceLimit || Vector3.Dot(transform.forward, offset) < distance * .5f)
+                float minDot = distance < 1.8f ? -.12f : .25f;
+                if (distance < .05f || distance >= distanceLimit || Vector3.Dot(gazeRoot.forward, offset) < distance * minDot)
                     continue;
-                int hits = Physics.RaycastNonAlloc(gazeEye.position, offset / distance, gazeHits, distance, ~0, QueryTriggerInteraction.Ignore);
+                int hits = Physics.RaycastNonAlloc(eyes, offset / distance, gazeHits, distance, ~0, QueryTriggerInteraction.Ignore);
                 bool blocked = hits == gazeHits.Length;
                 for (int i = 0; i < hits && !blocked; i++)
                 {
@@ -201,6 +215,45 @@ namespace ConductorChaos.Characters
         }
 
         static Vector3 Head(PlaygroundPlayer player) => player.transform.position + player.transform.up * .86f;
+
+        readonly struct PupilPose
+        {
+            readonly Transform pupil;
+            readonly Vector3 restPosition, meshCenter, eyeCenter, eyeRadii, restOnSphere;
+            readonly Quaternion restRotation;
+
+            public bool Exists => pupil;
+
+            public PupilPose(Transform pupil)
+            {
+                this.pupil = pupil;
+                restPosition = pupil ? pupil.localPosition : Vector3.zero;
+                restRotation = pupil ? pupil.localRotation : Quaternion.identity;
+                meshCenter = eyeCenter = eyeRadii = restOnSphere = Vector3.zero;
+                if (!pupil || !pupil.TryGetComponent<MeshFilter>(out var pupilMesh) || !pupilMesh.sharedMesh ||
+                    !pupil.parent || !pupil.parent.TryGetComponent<MeshFilter>(out var eyeMesh) || !eyeMesh.sharedMesh)
+                    return;
+
+                meshCenter = Vector3.Scale(pupilMesh.sharedMesh.bounds.center, pupil.localScale);
+                Bounds eyeBounds = eyeMesh.sharedMesh.bounds;
+                eyeCenter = eyeBounds.center;
+                eyeRadii = eyeBounds.extents;
+                Vector3 center = restPosition + restRotation * meshCenter - eyeCenter;
+                if (Mathf.Min(eyeRadii.x, eyeRadii.y, eyeRadii.z) > .001f)
+                    restOnSphere = new Vector3(center.x / eyeRadii.x, center.y / eyeRadii.y, center.z / eyeRadii.z);
+            }
+
+            public void SetTurn(Quaternion turn)
+            {
+                if (!pupil) return;
+                Quaternion rotation = turn * restRotation;
+                Vector3 position = restPosition;
+                // The pupil pivot is at the eye centre, but the eye is a flattened sphere.
+                if (restOnSphere != Vector3.zero)
+                    position = eyeCenter + Vector3.Scale(eyeRadii, turn * restOnSphere) - rotation * meshCenter;
+                pupil.SetLocalPositionAndRotation(position, rotation);
+            }
+        }
 
         void Update()
         {

@@ -52,7 +52,14 @@ namespace ConductorChaos.Stations
             }
         }
 
-        internal int BoardingTarget => boardingPassengers?.Length ?? 0;
+        internal void AssignWrongTicket()
+        {
+            if (!IsConfigured || passengers.Length < 2) return;
+            passengers[Random.Range(0, passengers.Length)].ServerSetWrong();
+            Debug.Assert(Target == passengers.Length - 1, "De dienst heeft precies één verkeerd kaartje.", this);
+        }
+
+        internal int BoardingTarget => CountValid(boardingPassengers);
         internal int BoardedCount
         {
             get
@@ -65,8 +72,17 @@ namespace ConductorChaos.Stations
             }
         }
 
-        public override int Target => passengers?.Length ?? 0;
-        public override bool IsConfigured => Target > 0 && System.Array.TrueForAll(passengers, ticket => ticket);
+        private static int CountValid(PassengerTicket[] tickets)
+        {
+            int count = 0;
+            if (tickets != null)
+                foreach (var ticket in tickets)
+                    if (ticket && !ticket.IsWrong) count++;
+            return count;
+        }
+
+        public override int Target => CountValid(passengers);
+        public override bool IsConfigured => passengers is { Length: > 0 } && System.Array.TrueForAll(passengers, ticket => ticket);
         public override bool ReadyToDepart => ReadProgress(false) >= Target;
 
         public override int ReadProgress(bool trainStoppedAtDestination)

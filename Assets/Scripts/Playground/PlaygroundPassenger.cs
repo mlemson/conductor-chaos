@@ -17,6 +17,8 @@ namespace ConductorChaos.Playground
         private ConfigurableJoint leftShoulder, rightShoulder;
         private CapsuleCollider leftCollider, rightCollider;
         private PlaygroundLegRig legs;
+        private CharacterFace face;
+        private Vector3 waitingForward;
         private float nextPose;
         private float fallenSince = -1f;
         private const float GetUpDelay = 1.2f;
@@ -33,7 +35,8 @@ namespace ConductorChaos.Playground
                     if (part.name == "Arm_R") right = part;
                 }
             if (!model || !left || !right) { Debug.LogError("Passenger model or arm anchors missing.", this); return; }
-            CharacterFace.OnModel(model);
+            face = CharacterFace.OnModel(model);
+            waitingForward = transform.forward;
             leftArmVisual = left;
             rightArmVisual = right;
             leftArm = MakeArm(left, out leftShoulder, out leftCollider);
@@ -97,7 +100,11 @@ namespace ConductorChaos.Playground
                 if (!groundHits[i].collider.transform.IsChildOf(transform) && groundHits[i].normal.y > 0.55f) { grounded = true; break; }
             bool upright = Vector3.Dot(body.rotation * Vector3.up, Vector3.up) > 0.55f;
             bool standing = grounded && upright;
-            if (!body.isKinematic) body.AddTorque(Vector3.up * (-body.angularVelocity.y * 4f), ForceMode.Acceleration);
+            if (!body.isKinematic)
+            {
+                float turn = standing && body.linearVelocity.sqrMagnitude < .09f ? GazeTurn() : 0f;
+                body.AddTorque(Vector3.up * (turn - body.angularVelocity.y * 4f), ForceMode.Acceleration);
+            }
             if (standing && !body.isKinematic)
             {
                 Vector3 tilt = Vector3.Cross(body.rotation * Vector3.up, Vector3.up);
@@ -122,6 +129,21 @@ namespace ConductorChaos.Playground
             leftArmPose.Value = leftArm.transform.localRotation;
             rightArmPose.Value = rightArm.transform.localRotation;
             if (legs != null) { leftLegPose.Value = legs.LeftRotation; rightLegPose.Value = legs.RightRotation; }
+        }
+
+        private float GazeTurn()
+        {
+            if (!face || !face.TryGetGazeOffset(out var offset) || offset.sqrMagnitude > 9f) return 0f;
+            foreach (var player in PlaygroundPlayer.SpawnedPlayers)
+                if (player && (player.TryGetControlHand(body, out _, out _, out _) ||
+                    player.TryGetControlHand(leftArm, out _, out _, out _) ||
+                    player.TryGetControlHand(rightArm, out _, out _, out _))) return 0f;
+
+            float bearing = Vector3.SignedAngle(waitingForward, Vector3.ProjectOnPlane(offset, Vector3.up), Vector3.up);
+            if (Mathf.Abs(bearing) > 110f) return 0f;
+            Vector3 wanted = Quaternion.AngleAxis(Mathf.Clamp(bearing, -24f, 24f), Vector3.up) * waitingForward;
+            float error = Vector3.SignedAngle(Vector3.ProjectOnPlane(body.rotation * Vector3.forward, Vector3.up), wanted, Vector3.up);
+            return Mathf.Clamp(error * Mathf.Deg2Rad * 8f, -3f, 3f);
         }
 
         private void LateUpdate()

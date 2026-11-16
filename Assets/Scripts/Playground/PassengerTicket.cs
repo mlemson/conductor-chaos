@@ -1,8 +1,10 @@
 // Conductor Chaos — reiziger met een treinkaartje (issue #216). De reiziger houdt het kaartje omhoog in zijn
 // (fysieke, wiebelende) rechterhand; met de kaartjestang (TicketPunch) tik je er een gaatje in. Daarna laat hij de arm
-// zakken en kijkt blij. De server beslist of er geknipt is; iedereen ziet het gaatje en het gezicht.
+// zakken. De server beslist of het kaartje geldig is en verwerkt een knip voor de hele ploeg.
 // Werkt naast PlaygroundPassenger (die maakt de armen fysiek op de server).
 using ConductorChaos.Characters;
+using ConductorChaos.Stations;
+using ConductorChaos.Track;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -20,66 +22,115 @@ namespace ConductorChaos.Playground
 
         readonly NetworkVariable<bool> punched = new NetworkVariable<bool>(false);
 
-        Transform arm, ticket, hole;
-        static readonly Vector3 TicketGrip = new(0f, -0.33f, 0.05f);
-        BoxCollider ticketCollider;
+        readonly NetworkVariable<bool> wrong = new(false);
+        static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
+
+        Transform arm, ticket, modelTicket, hole;
+        BoxCollider ticketCollider, modelTicketCollider;
         ConfigurableJoint shoulder;
         CharacterFace face;
         bool armRaised;
         Quaternion armRest;
 
-        public bool IsPunched => punched.Value;
+        internal bool IsWrong => wrong.Value;
+        public bool IsPunched => punched.Value && !IsWrong;
 
         public void Configure(GameObject prefab) => ticketPrefab = prefab;
 
-        internal bool IsTicketCollider(Collider candidate) => ticketCollider && candidate == ticketCollider;
+        internal bool CanCut(Collider candidate) => IsSpawned && !punched.Value &&
+            (candidate == ticketCollider || candidate == modelTicketCollider);
+
+        internal void ServerSetWrong()
+        {
+            if (IsServer && IsSpawned) wrong.Value = true;
+        }
 
         public override void OnNetworkSpawn()
         {
             Transform model = transform.childCount > 0 ? transform.GetChild(0) : null;
-            if (model)
-                foreach (var t in model.GetComponentsInChildren<Transform>(true))
-                    if (t.name == "Arm_R") arm = t;
+            arm = model ? RepairPoint.FindDeep(model, "Arm_R") : null;
             if (!arm || !ticketPrefab) { Debug.LogWarning("PassengerTicket: Arm_R of kaartjesmodel ontbreekt.", this); return; }
-            armRest = arm.localRotation;                       // de stand waarin het schoudergewricht begint
+            armRest = arm.localRotation;
             face = CharacterFace.OnModel(model);
 
-            ticket = Instantiate(ticketPrefab, arm).transform;
+            modelTicket = RepairPoint.FindDeep(arm, "Prop_Ticket");
+            Transform hand = RepairPoint.FindDeep(arm, "Hand_R");
+            Quaternion hold = Quaternion.Euler(8f, 0f, -32f);
+            ticket = Instantiate(ticketPrefab, hand ? hand : arm).transform;
             ticket.name = "Ticket";
-            LateUpdate();
+            ticket.localRotation = hold;
+            // The inner edge is in the palm, with the printed end and punch area sticking out.
+            ticket.localPosition = (hand ? Vector3.zero : Vector3.down * .21f) +
+                new Vector3(0f, -.035f, .05f) + hold * Vector3.right * .035f;
             foreach (var c in ticket.GetComponentsInChildren<Collider>(true)) Destroy(c);
-            hole = ConductorChaos.Track.RepairPoint.FindDeep(ticket, "Ticket_Hole");
+            hole = RepairPoint.FindDeep(ticket, "Ticket_Hole");
             if (IsServer)
             {
-                ticketCollider = ticket.gameObject.AddComponent<BoxCollider>();
-                ticketCollider.size = new Vector3(0.14f, 0.075f, 0.012f);
-                ticketCollider.isTrigger = true;
                 punched.Value = false;
+                wrong.Value = false;
+                ticketCollider = AddTicketCollider(ticket);
+                if (modelTicket) modelTicketCollider = AddTicketCollider(modelTicket);
             }
+            wrong.OnValueChanged += OnWrongChanged;
             punched.OnValueChanged += OnPunched;
+            ShowTicket();
             ShowPunched(punched.Value);
         }
 
-        void LateUpdate()
+        static BoxCollider AddTicketCollider(Transform card)
         {
-            if (!ticket || !arm) return;
-            // Keep the printed face visible even when the physical wrist twists.
-            ticket.SetPositionAndRotation(arm.TransformPoint(TicketGrip) + transform.forward * .055f,
-                Quaternion.LookRotation(transform.forward, transform.up));
+            var collider = card.gameObject.AddComponent<BoxCollider>();
+            collider.isTrigger = true;
+            if (card.TryGetComponent<MeshFilter>(out var filter) && filter.sharedMesh)
+            {
+                Bounds bounds = filter.sharedMesh.bounds;
+                collider.center = bounds.center;
+                collider.size = Vector3.Max(bounds.size, Vector3.one * .012f);
+            }
+            else collider.size = new Vector3(.14f, .075f, .012f);
+            return collider;
+        }
+
+        void OnWrongChanged(bool before, bool now) => ShowTicket();
+
+        void ShowTicket()
+        {
+            if (modelTicket)
+            {
+                modelTicket.gameObject.SetActive(IsWrong);
+                ticket.gameObject.SetActive(!IsWrong);
+                return;
+            }
+
+            // The dark-blue stub remains the visual cue for valid tickets.
+            var renderer = ticket.GetComponentInChildren<MeshRenderer>();
+            if (!renderer) return;
+            renderer.SetPropertyBlock(null);
+            if (!IsWrong) return;
+            var block = new MaterialPropertyBlock();
+            block.SetColor(BaseColor, new Color32(197, 77, 62, 255));
+            renderer.SetPropertyBlock(block);
         }
 
         public override void OnNetworkDespawn()
         {
+            wrong.OnValueChanged -= OnWrongChanged;
             punched.OnValueChanged -= OnPunched;
+            CancelInvoke(nameof(Smile));
             if (shoulder && armRaised) shoulder.slerpDrive = new JointDrive();
+            armRaised = false;
             if (ticket) Destroy(ticket.gameObject);
+            if (modelTicketCollider) Destroy(modelTicketCollider);
+            if (modelTicket) modelTicket.gameObject.SetActive(true);
         }
 
-        /// <summary>Server: het kaartje is geknipt.</summary>
-        public void ServerPunch()
+        internal bool ServerPunch()
         {
-            if (!IsServer || punched.Value) return;
+            if (!IsServer || !IsSpawned || punched.Value) return false;
+            var run = ServiceRun.Active;
+            if (IsWrong && run && run.gameObject.scene == gameObject.scene && !run.TryApplyWrongTicketPenalty()) return false;
             punched.Value = true;
+            return true;
         }
 
         /// <summary>Server: een nieuw (ongeknipt) kaartje, bijvoorbeeld voor de volgende rit.</summary>
@@ -96,9 +147,12 @@ namespace ConductorChaos.Playground
 
         void ShowPunched(bool now)
         {
-            if (hole) ConductorChaos.Track.RepairPoint.Show(hole, now);
-            if (face) face.SetExpression(now ? EyeState.Closed : EyeState.Open, now ? MouthShape.Happy : MouthShape.Neutral);
-            if (now && face) Invoke(nameof(Smile), 1.2f);
+            if (hole) RepairPoint.Show(hole, now && !IsWrong);
+            if (!face) return;
+            CancelInvoke(nameof(Smile));
+            face.SetExpression(now && !IsWrong ? EyeState.Closed : EyeState.Open,
+                now ? (IsWrong ? MouthShape.Flat : MouthShape.Happy) : MouthShape.Neutral);
+            if (now && !IsWrong) Invoke(nameof(Smile), 1.2f);
         }
 
         void Smile()

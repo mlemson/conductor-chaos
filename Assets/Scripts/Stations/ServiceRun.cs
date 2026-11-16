@@ -53,7 +53,9 @@ namespace ConductorChaos.Stations
         private readonly NetworkVariable<int> progress = new();
         private readonly NetworkVariable<int> cargoLoaded = new();
         private readonly NetworkVariable<int> cargoTravelled = new();
+        internal const int WrongTicketPenaltySeconds = 10;
         private readonly NetworkVariable<double> deadline = new();
+        private readonly NetworkVariable<int> ticketPenalty = new();
         // The server freezes the crew's selected soundtrack duration when the timer starts.
         private readonly NetworkVariable<int> musicDuration = new();
         private readonly NetworkVariable<int> resultTime = new();
@@ -179,7 +181,14 @@ namespace ConductorChaos.Stations
         internal bool CanContinue => Phase == RunPhase.Briefing ||
             (Phase is RunPhase.Won or RunPhase.Failed) && NetworkManager.ServerTime.Time >= resultReadyAt;
         public int TimeLeft => Phase is RunPhase.Won or RunPhase.Failed ? resultTime.Value :
-            Mathf.Max(0, Mathf.CeilToInt((float)(deadline.Value - NetworkManager.ServerTime.Time)));
+            Mathf.Max(0, Mathf.CeilToInt((float)(deadline.Value - ticketPenalty.Value - NetworkManager.ServerTime.Time)));
+
+        internal bool TryApplyWrongTicketPenalty()
+        {
+            if (!IsServer || Phase is not (RunPhase.Departure or RunPhase.Travelling or RunPhase.Arrival)) return false;
+            ticketPenalty.Value += WrongTicketPenaltySeconds;
+            return true;
+        }
 
         // Only the campaign's train is subject to the departure checklist.
         internal bool AllowsMotion(TrainDrive candidate) => candidate != train ||
@@ -231,6 +240,9 @@ namespace ConductorChaos.Stations
         internal bool BeginOnServer()
         {
             if (!IsServer || !IsSpawned || !IsConfigured || Phase != RunPhase.Loading) return false;
+            if (!introduction)
+                foreach (var objective in objectives)
+                    if (objective is ServiceTickets tickets) tickets.AssignWrongTicket();
             if (CombinesObjectives)
             {
                 selected.Value = -1;
@@ -381,7 +393,7 @@ namespace ConductorChaos.Stations
                 progress.Value = Mathf.Clamp(Objective.ReadProgress(false), 0, Objective.Target);
                 return;
             }
-            if (NetworkManager.ServerTime.Time >= deadline.Value)
+            if (TimeLeft == 0)
             {
                 Finish(false);
                 return;
@@ -419,7 +431,7 @@ namespace ConductorChaos.Stations
             bool docked = false;
             if (TimerRunning)
             {
-                if (NetworkManager.ServerTime.Time >= deadline.Value)
+                if (TimeLeft == 0)
                 {
                     Finish(false);
                     return;

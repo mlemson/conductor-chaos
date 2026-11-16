@@ -114,7 +114,7 @@ namespace ConductorChaos.UI
                 ? intro ? "Loop naar het perron, oefen met bagage en de treindeur en rijd een klein stukje. Eén geslaagde handeling telt voor de hele crew."
                     : run.CombinesObjectives
                         ? $"{CombinedBriefing(run)}\n\nTijdslimiet {FormatTime(run.TimeLimit(host.PlayerCount))}. De klok start op het vertrekperron."
-                        : $"{run.Objective?.Instructions}\n\nTijdslimiet {FormatTime(run.TimeLimit(host.PlayerCount))}. De klok start zodra een teamgenoot het vertrekperron bereikt."
+                        : $"{(run.Objective is ServiceTickets ? TicketInstructions : run.Objective?.Instructions)}\n\nTijdslimiet {FormatTime(run.TimeLimit(host.PlayerCount))}. De klok start zodra een teamgenoot het vertrekperron bereikt."
                 : intro ? won ? "De training is afgerond. Jullie eerste dienst kan beginnen." : "Start de training opnieuw."
                 : run.CombinesObjectives
                     ? $"Opdrachten   {run.Progress}/{run.TotalTarget}\nTijd over  {FormatTime(run.TimeLeft)}"
@@ -186,7 +186,7 @@ namespace ConductorChaos.UI
             {
                 if (!run.TimerRunning) return "Loop naar het vertrekperron om de dienstklok te starten.";
                 if (objective is ServiceTickets && run.Progress < objective.Target)
-                    return $"Knip de drie kaartjes op het perron. Open de perrondeur zodat de reizigers kunnen instappen. ({run.Progress}/{objective.Target})";
+                    return $"Knip de crème kaartjes met de donkerblauwe strook. Open de perrondeur zodat de reizigers kunnen instappen. ({run.Progress}/{objective.Target})";
                 if (objective is ServiceCargo && run.CargoLoaded < objective.Target)
                     return objective.Target == 1 ? "Leg de rode koffer in het bagagevak in de wagon."
                         : $"Zet de kratten in het vrachtvak in de wagon. ({run.CargoLoaded}/{objective.Target} aan boord)";
@@ -219,14 +219,18 @@ namespace ConductorChaos.UI
         }
 
         // ---------------------------------------------------------------- level 2+: alle opdrachten tegelijk
+        private static string TicketInstructions => $"Knip de crème kaartjes met de donkerblauwe strook. " +
+            $"Een verkeerd kaartje knippen kost {ServiceRun.WrongTicketPenaltySeconds} seconden. Open de perrondeur voor de reizigers.";
+
         private static string CombinedBriefing(ServiceRun run)
         {
             var text = new System.Text.StringBuilder("Opdrachten voor deze rit: ");
-            bool first = true;
+            bool first = true, checksTickets = false;
             foreach (var objective in run.ActiveObjectives)
             {
                 if (!first) text.Append("  ·  ");
                 text.Append(objective.Title);
+                checksTickets |= objective is ServiceTickets;
                 first = false;
             }
             bool switches = false;
@@ -234,6 +238,7 @@ namespace ConductorChaos.UI
             text.Append(switches
                 ? ".\nOnderweg kan het misgaan: wissels die naar een zijspoor staan, rotsen op het spoor, spoorschade en kolen die opraken."
                 : ".\nOnderweg kan het misgaan: rotsen op het spoor, spoorschade en kolen die opraken.");
+            if (checksTickets) text.AppendLine().Append(TicketInstructions);
             return text.ToString();
         }
 
@@ -266,7 +271,7 @@ namespace ConductorChaos.UI
                     if (objective is ServiceTickets tickets)
                     {
                         if (!Done(run, objective))
-                            return $"Knip de kaartjes op het perron en open de perrondeur voor de reizigers. ({run.ProgressOf(objective)}/{objective.Target})";
+                            return $"Knip de crème kaartjes met de donkerblauwe strook. ({run.ProgressOf(objective)}/{objective.Target})";
                         if (run.RotatesDepartureObjectives && run.AboardOf(objective) < tickets.BoardingTarget)
                             return $"Laat de perrondeur open tot de reizigers zijn ingestapt. ({Mathf.Max(0, run.AboardOf(objective))}/{tickets.BoardingTarget})";
                     }

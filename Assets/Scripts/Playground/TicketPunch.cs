@@ -111,8 +111,7 @@ namespace ConductorChaos.Playground
             for (int i = 0; i < count; i++)
             {
                 var ticket = contacts[i].GetComponentInParent<PassengerTicket>();
-                if (!ticket || !ticket.IsSpawned || ticket.IsPunched || !ticket.IsTicketCollider(contacts[i])) continue;
-                ticket.ServerPunch();
+                if (!ticket || !ticket.CanCut(contacts[i]) || !ticket.ServerPunch()) continue;
                 cutThisSqueeze = true;
                 PlayCutRpc(tip);
                 break;
