@@ -73,6 +73,14 @@ MATERIALS = {
     # hoofdstation met briefingruimte (issue #207): pannendak, routebord en kluisjes, gemeten in het concept
     "M_Stn_RoofRed": (R["roof_terracotta"], 0.10, 0.00, {"cells": 0.7, "cellSize": 0.9, "rim": 0.25}),
     "M_Stn_RoofRedDark": (R["roof_terracotta"], 0.10, -0.30, {"cells": 0.6, "cellSize": 0.9}),
+    # stationsvarianten (#231)
+    "M_Stn_RoofBrown": (R["wagon_brown"], 0.10, 0.00, {"cells": 0.7, "cellSize": 0.9, "rim": 0.25}),
+    "M_Stn_RoofBrownDark": (R["wagon_brown"], 0.10, -0.30, {"cells": 0.6, "cellSize": 0.9}),
+    "M_Stn_RoofGreen": (R["chalk_green"], 0.10, 0.10, {"cells": 0.7, "cellSize": 0.9, "rim": 0.25}),
+    "M_Stn_RoofGreenDark": (R["chalk_green"], 0.10, -0.30, {"cells": 0.6, "cellSize": 0.9}),
+    "M_Stn_PlasterRose": (R["mustache_cream"], 0.05, 0.10, {"cells": 0.5, "cellSize": 1.0, "grime": 0.45, "paint": 1.2}),
+    "M_Stn_PlasterSand": (R["safari_hat"], 0.05, 0.00, {"cells": 0.5, "cellSize": 1.0, "grime": 0.45, "paint": 1.2}),
+    "M_Stn_TimberRich": (R["leather"], 0.10, 0.10, {"cells": 0.6, "cellSize": 0.5, "grime": 0.35}),
     "M_Stn_Chalk": (R["chalk_green"], 0.05, 0.00, {"cells": 0.5, "cellSize": 0.8, "grime": 0.2}),
     "M_Stn_ChalkDark": (R["chalk_green"], 0.05, -0.35, {"cells": 0.3}),
     "M_Stn_Locker": (R["locker_blue"], 0.25, 0.05, PAINT),

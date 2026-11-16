@@ -1797,6 +1797,335 @@
         "Service_BellPost",
         "Mesh"
       ]
+    },
+    "Service_ZoneMark_Cargo": {
+      "fbx": "Assets/Art/Models/Environment/Station/Service/Service_ZoneMark_Cargo.fbx",
+      "category": "Service",
+      "tris": 6168,
+      "min": [
+        -1.6,
+        0.004,
+        -0.85
+      ],
+      "max": [
+        1.6,
+        0.03,
+        0.85
+      ],
+      "nodes": [
+        "Service_ZoneMark_Cargo",
+        "Mesh"
+      ]
+    },
+    "Service_ZoneMark_Luggage": {
+      "fbx": "Assets/Art/Models/Environment/Station/Service/Service_ZoneMark_Luggage.fbx",
+      "category": "Service",
+      "tris": 6630,
+      "min": [
+        -1.25,
+        0.004,
+        -0.85
+      ],
+      "max": [
+        1.25,
+        0.023,
+        0.85
+      ],
+      "nodes": [
+        "Service_ZoneMark_Luggage",
+        "Mesh"
+      ]
+    },
+    "Service_ZoneMark_Practice": {
+      "fbx": "Assets/Art/Models/Environment/Station/Service/Service_ZoneMark_Practice.fbx",
+      "category": "Service",
+      "tris": 5286,
+      "min": [
+        -0.875,
+        0.004,
+        -0.625
+      ],
+      "max": [
+        0.875,
+        0.023,
+        0.625
+      ],
+      "nodes": [
+        "Service_ZoneMark_Practice",
+        "Mesh"
+      ]
+    },
+    "Service_StopMarker": {
+      "fbx": "Assets/Art/Models/Environment/Station/Service/Service_StopMarker.fbx",
+      "category": "Service",
+      "tris": 3928,
+      "min": [
+        -0.111,
+        0.0,
+        -0.111
+      ],
+      "max": [
+        0.43,
+        1.425,
+        0.111
+      ],
+      "nodes": [
+        "Service_StopMarker",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Service_SwitchMarker": {
+      "fbx": "Assets/Art/Models/Environment/Station/Service/Service_SwitchMarker.fbx",
+      "category": "Service",
+      "tris": 1568,
+      "min": [
+        -0.111,
+        0.0,
+        -0.111
+      ],
+      "max": [
+        0.425,
+        1.075,
+        0.111
+      ],
+      "nodes": [
+        "Service_SwitchMarker",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Farm_WheatField_6x3m": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_WheatField_6x3m.fbx",
+      "category": "Farm",
+      "tris": 9608,
+      "min": [
+        -3.0,
+        -0.0,
+        -1.5
+      ],
+      "max": [
+        3.0,
+        1.154,
+        1.5
+      ],
+      "nodes": [
+        "Farm_WheatField_6x3m",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Farm_WheatField_12x6m": {
+      "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_WheatField_12x6m.fbx",
+      "category": "Farm",
+      "tris": 45352,
+      "min": [
+        -6.0,
+        -0.0,
+        -3.0
+      ],
+      "max": [
+        6.0,
+        1.146,
+        3.0
+      ],
+      "nodes": [
+        "Farm_WheatField_12x6m",
+        "Mesh",
+        "Col_Main"
+      ]
+    },
+    "Station_Building_Small": {
+      "fbx": "Assets/Art/Models/Environment/Station/Station_Building_Small.fbx",
+      "category": "Building",
+      "tris": 29806,
+      "min": [
+        -3.537,
+        -0.0,
+        -5.23
+      ],
+      "max": [
+        3.537,
+        7.426,
+        0.76
+      ],
+      "nodes": [
+        "Station_Building_Small",
+        "Walls",
+        "Plinth",
+        "Openings",
+        "Roof",
+        "Interior",
+        "RoofFrame",
+        "Facade",
+        "Door",
+        "Col_Door",
+        "Hinge_Door_Closed",
+        "Hinge_Door_Open",
+        "Col_Main",
+        "Light_Lantern_L",
+        "Light_Lantern_R",
+        "Light_Hall_1",
+        "Light_Hall_2",
+        "Spawn_Ticket",
+        "Sign_Name",
+        "Sign_Name_Icon",
+        "Sign_Name_Text",
+        "Loose_Stool_TicketOffice",
+        "Col_Stool_TicketOffice_1",
+        "Loose_Bench_Back",
+        "Col_Bench_Back_1",
+        "Col_Bench_Back_2",
+        "Loose_PottedPlant_WaitingRoom",
+        "Col_PottedPlant_WaitingRoom_1",
+        "Loose_Suitcase_WaitingRoom",
+        "Col_Suitcase_WaitingRoom_1"
+      ],
+      "floor": 1.05,
+      "footprint": [
+        -2.8,
+        2.8,
+        -4.6,
+        0.0
+      ]
+    },
+    "Station_Building_Large": {
+      "fbx": "Assets/Art/Models/Environment/Station/Station_Building_Large.fbx",
+      "category": "Building",
+      "tris": 49742,
+      "min": [
+        -7.892,
+        -0.0,
+        -7.83
+      ],
+      "max": [
+        5.136,
+        9.191,
+        0.76
+      ],
+      "nodes": [
+        "Station_Building_Large",
+        "Walls",
+        "Plinth",
+        "Openings",
+        "Roof",
+        "LeanTo",
+        "Interior",
+        "RoofFrame",
+        "Facade",
+        "Door",
+        "Col_Door",
+        "Hinge_Door_Closed",
+        "Hinge_Door_Open",
+        "Col_Main",
+        "Light_Lantern_L",
+        "Light_Lantern_R",
+        "Light_Hall_1",
+        "Light_Hall_2",
+        "Spawn_Ticket",
+        "Sign_Name",
+        "Sign_Name_Icon",
+        "Sign_Name_Text",
+        "Loose_Stool_TicketOffice",
+        "Col_Stool_TicketOffice_1",
+        "Loose_Bench_Back",
+        "Col_Bench_Back_1",
+        "Col_Bench_Back_2",
+        "Loose_Bench_Side",
+        "Col_Bench_Side_1",
+        "Col_Bench_Side_2",
+        "Loose_PottedPlant_WaitingRoom",
+        "Col_PottedPlant_WaitingRoom_1",
+        "Loose_Suitcase_WaitingRoom",
+        "Col_Suitcase_WaitingRoom_1",
+        "Loose_Bench_Canopy",
+        "Col_Bench_Canopy_1",
+        "Col_Bench_Canopy_2",
+        "Loose_Barrel_Canopy",
+        "Col_Barrel_Canopy_1",
+        "Loose_Barrel_Small",
+        "Col_Barrel_Small_1",
+        "Loose_CrateStack_Canopy",
+        "Col_CrateStack_Canopy_1",
+        "Col_CrateStack_Canopy_2",
+        "Col_CrateStack_Canopy_3"
+      ],
+      "floor": 1.05,
+      "footprint": [
+        -7.4,
+        4.4,
+        -7.2,
+        0.0
+      ]
+    },
+    "Station_Building_Green": {
+      "fbx": "Assets/Art/Models/Environment/Station/Station_Building_Green.fbx",
+      "category": "Building",
+      "tris": 43458,
+      "min": [
+        -6.692,
+        -0.0,
+        -6.03
+      ],
+      "max": [
+        3.936,
+        7.784,
+        0.76
+      ],
+      "nodes": [
+        "Station_Building_Green",
+        "Walls",
+        "Plinth",
+        "Openings",
+        "Roof",
+        "LeanTo",
+        "Interior",
+        "RoofFrame",
+        "Facade",
+        "Door",
+        "Col_Door",
+        "Hinge_Door_Closed",
+        "Hinge_Door_Open",
+        "Col_Main",
+        "Light_Lantern_L",
+        "Light_Lantern_R",
+        "Light_Hall_1",
+        "Light_Hall_2",
+        "Spawn_Ticket",
+        "Sign_Name",
+        "Sign_Name_Icon",
+        "Sign_Name_Text",
+        "Loose_Stool_TicketOffice",
+        "Col_Stool_TicketOffice_1",
+        "Loose_Bench_Back",
+        "Col_Bench_Back_1",
+        "Col_Bench_Back_2",
+        "Loose_Bench_Side",
+        "Col_Bench_Side_1",
+        "Col_Bench_Side_2",
+        "Loose_PottedPlant_WaitingRoom",
+        "Col_PottedPlant_WaitingRoom_1",
+        "Loose_Suitcase_WaitingRoom",
+        "Col_Suitcase_WaitingRoom_1",
+        "Loose_Bench_Canopy",
+        "Col_Bench_Canopy_1",
+        "Col_Bench_Canopy_2",
+        "Loose_Barrel_Canopy",
+        "Col_Barrel_Canopy_1",
+        "Loose_Barrel_Small",
+        "Col_Barrel_Small_1",
+        "Loose_CrateStack_Canopy",
+        "Col_CrateStack_Canopy_1",
+        "Col_CrateStack_Canopy_2",
+        "Col_CrateStack_Canopy_3"
+      ],
+      "floor": 1.05,
+      "footprint": [
+        -6.2,
+        3.2,
+        -5.4,
+        0.0
+      ]
     }
   },
   "station": {
@@ -2285,6 +2614,118 @@
       "opts": {
         "cells": 0.6,
         "cellSize": 0.9
+      }
+    },
+    "M_Stn_RoofBrown": {
+      "ramp": [
+        "#503330",
+        "#995F53",
+        "#A3685D",
+        "#B27261",
+        "#BB8472"
+      ],
+      "smoothness": 0.1,
+      "rampShift": 0.0,
+      "opts": {
+        "cells": 0.7,
+        "cellSize": 0.9,
+        "rim": 0.25
+      }
+    },
+    "M_Stn_RoofBrownDark": {
+      "ramp": [
+        "#503330",
+        "#995F53",
+        "#A3685D",
+        "#B27261",
+        "#BB8472"
+      ],
+      "smoothness": 0.1,
+      "rampShift": -0.3,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.9
+      }
+    },
+    "M_Stn_RoofGreen": {
+      "ramp": [
+        "#4F5F3A",
+        "#576840",
+        "#5B6C41",
+        "#5E6F41",
+        "#647544"
+      ],
+      "smoothness": 0.1,
+      "rampShift": 0.1,
+      "opts": {
+        "cells": 0.7,
+        "cellSize": 0.9,
+        "rim": 0.25
+      }
+    },
+    "M_Stn_RoofGreenDark": {
+      "ramp": [
+        "#4F5F3A",
+        "#576840",
+        "#5B6C41",
+        "#5E6F41",
+        "#647544"
+      ],
+      "smoothness": 0.1,
+      "rampShift": -0.3,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.9
+      }
+    },
+    "M_Stn_PlasterRose": {
+      "ramp": [
+        "#DABDAE",
+        "#E1C5B5",
+        "#E4C9B8",
+        "#E7CCBD",
+        "#EBD1C1"
+      ],
+      "smoothness": 0.05,
+      "rampShift": 0.1,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 1.0,
+        "grime": 0.45,
+        "paint": 1.2
+      }
+    },
+    "M_Stn_PlasterSand": {
+      "ramp": [
+        "#C2925E",
+        "#DDAC73",
+        "#EFBF86",
+        "#F4C892",
+        "#FCD8A4"
+      ],
+      "smoothness": 0.05,
+      "rampShift": 0.0,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 1.0,
+        "grime": 0.45,
+        "paint": 1.2
+      }
+    },
+    "M_Stn_TimberRich": {
+      "ramp": [
+        "#693B2E",
+        "#774332",
+        "#804936",
+        "#8F5039",
+        "#B46D4B"
+      ],
+      "smoothness": 0.1,
+      "rampShift": 0.1,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.5,
+        "grime": 0.35
       }
     },
     "M_Stn_Chalk": {

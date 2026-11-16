@@ -6,6 +6,7 @@ en conventies.
 
 Uitvoer:
   Assets/Art/Models/Environment/Station/Station_Building.fbx
+  Assets/Art/Models/Environment/Station/Station_Building_Small/Large/Green.fbx   (varianten, #231)
   Assets/Art/Models/Environment/Station/Station_Main.fbx             (hoofdstation met briefingruimte)
   Assets/Art/Models/Environment/SignGlyphs/StationGlyphs.fbx + .json   (bordletters voor aanpasbare namen, #209)
   Assets/Art/Models/Environment/Station/Platform/Platform_*.fbx      (zelfde pivot als een spoorstuk)
@@ -28,6 +29,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import main_station as main_station  # noqa: E402
 import farm_props as farm  # noqa: E402
 import bell_props as bell  # noqa: E402
+import service_markers as markers  # noqa: E402
 import main_station_props as mprops  # noqa: E402
 import station_building as building  # noqa: E402
 import station_platform as platform  # noqa: E402
@@ -145,9 +147,9 @@ def build_farm(manifest):
         export(name, "Farm", make(), density=density, radius=radius, manifest=manifest)
 
 
-def build_service(manifest):
-    """Vertrekbel op het perron (bel + paal), voor de dienstregeling."""
-    for name, (make, density, radius) in bell.ASSETS.items():
+def build_service(manifest, only=None):
+    """Vertrekbel op het perron (bel + paal), vloermarkeringen en bakens (#229), voor de dienstregeling."""
+    for name, (make, density, radius) in {**bell.ASSETS, **markers.ASSETS}.items():
         export(name, "Service", make(), density=density, radius=radius, manifest=manifest)
 
 
@@ -182,7 +184,18 @@ def build_building(manifest):
            extra={"floor": building.FL, "footprint": [building.LX, building.HW, -building.D, 0.0]})
 
 
-ALL = ("props", "briefing", "tools", "farm", "service", "platform", "building", "main", "glyphs")
+def build_building_variant(manifest, name):
+    """Stationsvarianten (#231): andere maat/indeling en kleuren, zelfde opbouw als Station_Building."""
+    nodes, info = building.build_variant(name, np.random.default_rng([2026, 1821]))
+    export(name, None, nodes, density=170, radius=0.30, manifest=manifest, extra=info)
+
+
+def build_building_variants(manifest):
+    for name in building.VARIANTS:
+        build_building_variant(manifest, name)
+
+
+ALL = ("props", "briefing", "tools", "farm", "service", "platform", "building", "variants", "main", "glyphs")
 
 
 def main(which=ALL):
@@ -203,6 +216,8 @@ def main(which=ALL):
         build_platform(manifest, tactile=False)
     if "building" in which:
         build_building(manifest)
+    if "variants" in which:
+        build_building_variants(manifest)
     if "main" in which:
         build_main(manifest)
     if "glyphs" in which:

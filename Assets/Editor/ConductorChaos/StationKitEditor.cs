@@ -34,7 +34,10 @@ namespace ConductorChaos.EditorTools
         const string ExampleScene = "Assets/Scenes/Art/StationExample.unity";
         static readonly Color LampColor = new Color(1.0f, 0.85f, 0.55f);
         static readonly string[] Moving = { "Door", "Door_L", "Door_R", "Boom" };
-        static readonly string[] Buildings = { "Station_Building", "Station_Main" };
+        // gebouwen met losse inventaris en draaideuren: het stationnetje, zijn varianten (#231) en het hoofdstation
+        static bool IsBuilding(string name) => name.StartsWith("Station_Building") || name == "Station_Main";
+        static IEnumerable<string> Buildings => AssetDatabase.FindAssets("t:Model", new[] { ModelDir })
+            .Select(g => Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(g))).Where(IsBuilding);
         const string LoosePrefix = "Loose_";
         const string HingePrefix = "Hinge_";
 
@@ -115,7 +118,7 @@ namespace ConductorChaos.EditorTools
                 float mass = 0f;
                 bool movable = sub == "Props" && MovableMasses.TryGetValue(name, out mass);
                 if (movableOnly && !(movable && NeedsPhysics(name)) &&
-                    !(Buildings.Contains(name) && NeedsBuildingPhysics(name))) continue;
+                    !(IsBuilding(name) && NeedsBuildingPhysics(name))) continue;
                 var outDir = string.IsNullOrEmpty(sub) ? PrefabDir : $"{PrefabDir}/{sub}";
                 EnsureFolder(outDir);
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(model);

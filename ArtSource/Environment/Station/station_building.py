@@ -11,6 +11,9 @@ Iets groter dan op het conceptblad zodat je naar binnen kunt (personages zijn ~1
   * rechts een raam met bloembak, achter een raam en een rond gevelraampje, schoorsteen op het rechterdakvlak
 Pivot: midden van de voorgevel op maaiveld (y = 0); voorkant kijkt naar +Z (draai 180 graden naar het spoor).
 Zet de voorgevel tegen de achterrand van het perron (5,15 m uit het hart van het spoor).
+
+Varianten (issue #231): configure() zet maat, dakhelling, luifel, extra ramen en kleuren; zonder argumenten is het
+precies het gewone stationnetje. Zie VARIANTS onderaan.
 """
 import math
 
@@ -22,34 +25,47 @@ import station_props as props
 from station_platform import plan_slab
 
 FL = PLATFORM_TOP                 # vloerhoogte binnen = perronhoogte
-HW = 3.2                          # halve breedte hal (buitenmaat)
-D = 5.4                           # diepte hal (buitenmaat), voorgevel op z = 0
 T = 0.24                          # wanddikte
-EAVE = FL + 3.0                   # bovenkant zijwanden
-PITCH = 40 * DEG
-RIDGE_WALL = EAVE + HW * math.tan(PITCH)
-YB = FL - 0.30                    # onderkant wanden (in de plint)
-PLINTH = FL + 0.40                # bovenkant stenen plint buiten
-
-DOOR = (0.75, 2.05, FL + 1.55)    # voordeur: x0, x1, aanzet boog
-WIN = (-2.05, -0.75, FL + 0.85, FL + 1.55)   # loket: x0, x1, onderkant, aanzet boog
-SIDE_DOOR = (3.10, 4.30, FL + 1.50)          # deur naar de luifel, in u = -z van de linkerwand
-RIGHT_WIN = (2.15, 3.25, FL + 1.00, FL + 2.05)
-BACK_WIN = (0.85, 1.95, FL + 1.00, FL + 2.05)
-
-# dak
 ROOF_OVER_SIDE = 0.65
 ROOF_OVER_END = 0.60
 ROOF_THICK = 0.16
-ROOF_HALF = HW + ROOF_OVER_SIDE
-ROOF_RISE = ROOF_HALF * math.tan(PITCH)
-ROOF_Y0 = EAVE - ROOF_OVER_SIDE * math.tan(PITCH) + ROOF_THICK / math.cos(PITCH)
-ROOF_L = D + 2 * ROOF_OVER_END
-ROOF_TOP_RIDGE = ROOF_Y0 + ROOF_RISE
+L_PITCH = 14 * DEG
 
-# luifel
-LX = -HW - 3.0                    # buitenkant luifelvloer
-LPOST_X = LX + 0.28
+
+def configure(hw=3.2, d=5.4, wall=3.0, pitch_deg=40.0, lean_to=True, chimney=True, front_windows=False,
+              lantern_x=2.62, back_bench=(1.40, 1.8), side_bench=True, suitcase_x=0.15):
+    """Maat en indeling van het gebouw (buitenmaat 2*hw x d, wandhoogte boven de vloer, dakhelling). De standaard-
+    waarden geven precies het gewone stationnetje (#182). Alle afgeleide maten worden hier opnieuw berekend."""
+    global HW, D, EAVE, PITCH, RIDGE_WALL, YB, PLINTH, DOOR, WIN, SIDE_DOOR, RIGHT_WIN, LEFT_WIN, BACK_WIN
+    global ROOF_HALF, ROOF_RISE, ROOF_Y0, ROOF_L, ROOF_TOP_RIDGE, LX, LPOST_X, L_TOP_AT_GUTTER, OPT
+    HW, D = hw, d                     # halve breedte hal (buitenmaat), diepte (voorgevel op z = 0)
+    EAVE = FL + wall                  # bovenkant zijwanden
+    PITCH = pitch_deg * DEG
+    RIDGE_WALL = EAVE + HW * math.tan(PITCH)
+    YB = FL - 0.30                    # onderkant wanden (in de plint)
+    PLINTH = FL + 0.40                # bovenkant stenen plint buiten
+    DOOR = (0.75, 2.05, FL + 1.55)    # voordeur: x0, x1, aanzet boog
+    WIN = (-2.05, -0.75, FL + 0.85, FL + 1.55)   # loket: x0, x1, onderkant, aanzet boog
+    sd = D - 1.70                                # deur naar de luifel, in u = -z van de linkerwand
+    SIDE_DOOR = (round(sd - 0.60, 6), round(sd + 0.60, 6), FL + 1.50)
+    RIGHT_WIN = (round(D / 2 - 0.55, 6), round(D / 2 + 0.55, 6), FL + 1.00, FL + 2.05)
+    LEFT_WIN = RIGHT_WIN                         # alleen zonder luifel
+    BACK_WIN = (0.85, 1.95, FL + 1.00, FL + 2.05)
+    # dak
+    ROOF_HALF = HW + ROOF_OVER_SIDE
+    ROOF_RISE = ROOF_HALF * math.tan(PITCH)
+    ROOF_Y0 = EAVE - ROOF_OVER_SIDE * math.tan(PITCH) + ROOF_THICK / math.cos(PITCH)
+    ROOF_L = D + 2 * ROOF_OVER_END
+    ROOF_TOP_RIDGE = ROOF_Y0 + ROOF_RISE
+    # luifel
+    LX = -HW - 3.0                    # buitenkant luifelvloer
+    LPOST_X = LX + 0.28
+    L_TOP_AT_GUTTER = EAVE - 0.69     # bovenkant luifeldak waar het onder de hoofddakgoot doorloopt
+    OPT = dict(lean_to=lean_to, chimney=chimney, front_windows=front_windows, lantern_x=lantern_x,
+               back_bench=back_bench, side_bench=side_bench, suitcase_x=suitcase_x)
+
+
+configure()
 
 
 def _furniture():
@@ -60,8 +76,6 @@ def _furniture():
             ("Barrel_Small", props.barrel(0.70, 0.29), mk.rot_y(1.1), (LX + 0.95, FL, -D + 0.62)),
             ("CrateStack_Canopy", props.crate_stack(split_colliders=True), mk.rot_y(0.5 * math.pi + 0.15),
              (LX + 1.05, FL, -D + 1.75))]
-L_PITCH = 14 * DEG
-L_TOP_AT_GUTTER = 3.36            # bovenkant luifeldak waar het onder de hoofddakgoot doorloopt (x = -3.85)
 
 
 def roof_y_under(x):
@@ -81,16 +95,30 @@ def back_slab(outline, holes, z0, z1, c=0.03, mat="M_Stn_Plaster"):
 # ------------------------------------------------------------------ wanden & vakwerk
 def walls():
     parts = []
-    front = slab(wall_outline(-HW, HW, YB, EAVE, [DOOR], RIDGE_WALL), [arch_loop(WIN[0], WIN[1], WIN[2], WIN[3])],
-                 -T, 0.0, 0.03, "M_Stn_Plaster")
+    front_holes = [arch_loop(WIN[0], WIN[1], WIN[2], WIN[3])]
+    for (x0, x1, y0, y1) in _front_windows():
+        front_holes.append(rounded_rect_loop(x0, x1, y0, y1, 0.06, 2))
+    front = slab(wall_outline(-HW, HW, YB, EAVE, [DOOR], RIDGE_WALL), front_holes, -T, 0.0, 0.03, "M_Stn_Plaster")
     back = slab(wall_outline(-HW, HW, YB, EAVE, [], RIDGE_WALL),
                 [rounded_rect_loop(BACK_WIN[0], BACK_WIN[1], BACK_WIN[2], BACK_WIN[3], 0.06, 2),
                  circle_loop(0.0, EAVE + 1.25, 0.36, 20)], -D, -D + T, 0.03, "M_Stn_Plaster")
     right = side_slab(wall_outline(T, D - T, YB, EAVE), [rounded_rect_loop(RIGHT_WIN[0], RIGHT_WIN[1], RIGHT_WIN[2],
                                                                           RIGHT_WIN[3], 0.06, 2)], HW - T, HW)
-    left = side_slab(wall_outline(T, D - T, YB, EAVE, [SIDE_DOOR]), [], -HW, -HW + T)
+    if OPT["lean_to"]:
+        left = side_slab(wall_outline(T, D - T, YB, EAVE, [SIDE_DOOR]), [], -HW, -HW + T)
+    else:
+        left = side_slab(wall_outline(T, D - T, YB, EAVE), [rounded_rect_loop(LEFT_WIN[0], LEFT_WIN[1], LEFT_WIN[2],
+                                                                              LEFT_WIN[3], 0.06, 2)], -HW, -HW + T)
     parts += [front, back, right, left]
     return mk.merge(*parts)
+
+
+def _front_windows():
+    """Extra ramen in de voorgevel (grote variant): links van het loket en rechts van de deur."""
+    if not OPT["front_windows"]:
+        return []
+    y0, y1 = FL + 1.00, FL + 2.05
+    return [(-HW + 0.65, -HW + 1.55, y0, y1), (HW - 1.55, HW - 0.65, y0, y1)]
 
 
 def timber_frame():
@@ -113,10 +141,11 @@ def timber_frame():
         parts.append(capsule((xs * (HW - 0.10), EAVE - 1.05, 0.08), (xs * (HW - 0.95), EAVE - 0.22, 0.08), 0.075,
                              mat="M_Stn_Timber", seg=6, rings=1))
     # topgevel: twee stijlen naast de klok en schuine schoren naar de hoeken
+    k = HW / 3.2                                         # topgevel schaalt mee met de breedte
     for xs in (-1, 1):
-        x = xs * 1.30
+        x = xs * 1.30 * k
         parts.append(rbox(x - 0.10, x + 0.10, EAVE, roof_y_under(x) + 0.05, -0.04, 0.09, 0.03, "M_Stn_Timber"))
-        parts.append(capsule((xs * 2.55, EAVE + 0.05, 0.05), (xs * 1.40, EAVE + 0.95, 0.05), 0.07, mat="M_Stn_Timber",
+        parts.append(capsule((xs * 2.55 * k, EAVE + 0.05, 0.05), (xs * 1.40 * k, EAVE + 0.95, 0.05), 0.07, mat="M_Stn_Timber",
                              seg=6, rings=1))
     # windveren (boeiboord) langs de dakrand voor en achter
     for zc, z0, z1 in ((ROOF_OVER_END, ROOF_OVER_END - 0.12, ROOF_OVER_END + 0.02),
@@ -166,8 +195,8 @@ def plinth(rng):
         run((-HW - 0.06, 0.06), (HW + 0.06, 0.06), (0, 1), i, y0, y1, skip=[(0, DOOR[0], DOOR[1])])
         run((HW + 0.06, -D - 0.06), (-HW - 0.06, -D - 0.06), (0, -1), i, y0, y1)
         run((HW + 0.06, 0.06), (HW + 0.06, -D - 0.06), (1, 0), i, y0, y1, ext=-0.12)
-        run((-HW - 0.06, -D - 0.06), (-HW - 0.06, 0.06), (-1, 0), i, y0, y1, skip=[(1, -SIDE_DOOR[1], -SIDE_DOOR[0])],
-            ext=-0.12)
+        run((-HW - 0.06, -D - 0.06), (-HW - 0.06, 0.06), (-1, 0), i, y0, y1,
+            skip=[(1, -SIDE_DOOR[1], -SIDE_DOOR[0])] if OPT["lean_to"] else [], ext=-0.12)
     # drempel voor de voordeur: ligt op de onderste laag, vult de onderbreking in de plint precies en steekt 4 cm
     # voor de plint uit (geen voorvlak in hetzelfde vlak als de plint)
     parts.append(rbox(DOOR[0] - 0.14, DOOR[1] + 0.14, FL - 0.02, FL + 0.015, -T - 0.04, 0.20, 0.015, "M_Stn_PavingLight"))
@@ -185,8 +214,9 @@ def floor():
         x = x1
         k += 1
     # deurdorpel naar de luifel
-    u0, u1 = SIDE_DOOR[0], SIDE_DOOR[1]
-    parts.append(rbox(-HW - 0.10, -HW + T + 0.02, FL - 0.20, FL + 0.012, -u1 - 0.08, -u0 + 0.08, 0.02, "M_Stn_PavingLight"))
+    if OPT["lean_to"]:
+        u0, u1 = SIDE_DOOR[0], SIDE_DOOR[1]
+        parts.append(rbox(-HW - 0.10, -HW + T + 0.02, FL - 0.20, FL + 0.012, -u1 - 0.08, -u0 + 0.08, 0.02, "M_Stn_PavingLight"))
     return mk.merge(*parts)
 
 
@@ -261,7 +291,8 @@ def door_leaf():
 
 # ------------------------------------------------------------------ dak
 def main_roof():
-    roof, col = props.gable_roof(ROOF_L, 2 * ROOF_HALF, ROOF_Y0, ROOF_RISE, ridge_axis="z", rows=9)
+    roof, col = props.gable_roof(ROOF_L, 2 * ROOF_HALF, ROOF_Y0, ROOF_RISE, ridge_axis="z",
+                                 rows=max(5, int(round(9 * ROOF_RISE / math.cos(PITCH) / (3.85 * math.tan(40 * DEG) / math.cos(40 * DEG))))))
     roof = roof.transform(t=(0, 0, -D / 2))
     col = col.transform(t=(0, 0, -D / 2))
     parts = [roof]
@@ -270,8 +301,10 @@ def main_roof():
     parts.append(mk.lathe([(0.0, 0.0), (0.16, 0.0), (0.22, 0.10), (0.24, 0.24), (0.0, 0.24)], 10, mat="M_Stn_Timber")
                  .transform(t=(0.0, ROOF_TOP_RIDGE + 0.12, z - 0.10)))
     parts.append(ball(0.26, "M_Stn_Yellow", 20, 12).transform(t=(0.0, ROOF_TOP_RIDGE + 0.58, z - 0.10)))
+    if not OPT["chimney"]:
+        return mk.merge(*parts), col
     # schoorsteen op het rechterdakvlak
-    cx, cz = 1.75, -3.92
+    cx, cz = 1.75 * HW / 3.2, -3.92 * D / 5.4
     y_roof = ROOF_TOP_RIDGE - cx * math.tan(PITCH)
     parts.append(rbox(cx - 0.34, cx + 0.34, y_roof - 1.2, y_roof + 1.35, cz - 0.34, cz + 0.34, 0.06, "M_Stn_Stone"))
     for k, y in enumerate(np.arange(y_roof - 0.2, y_roof + 1.3 - 0.32, 0.34)):       # niet tot in de kap
@@ -331,7 +364,8 @@ def lean_to(rng):
         q0, q1 = p0 - e * ext_s[0], p1 + e * ext_s[1]          # één doorlopend vlak
         poly = [tuple(q0 - n * 0.16), tuple(q1 - n * 0.16), tuple(q1 + n * 0.06), tuple(q0 + n * 0.06)]
         parts.append(plan_slab(poly, 0.0, FL - 0.11, 0.02, "M_Stn_Stone"))
-        cuts = [0.0] + list(np.arange(0.76, L - 0.2, 0.76)) + [L]
+        # (geen voeg zo dicht bij het eind dat het laatste, ingekorte randstuk wegvalt)
+        cuts = [0.0] + [c for c in np.arange(0.76, L - 0.2, 0.76) if c < L - 0.2 - max(0.0, -ext_t[1])] + [L]
         for a, b in zip(cuts[:-1], cuts[1:]):
             q0, q1 = p0 + e * (a - (ext_t[0] if a == 0 else 0)), p0 + e * (b + (ext_t[1] if b == L else 0))
             poly = [tuple(q0 - n * 0.36), tuple(q1 - n * 0.36), tuple(q1 + n * 0.08), tuple(q0 + n * 0.08)]
@@ -373,7 +407,7 @@ def lean_to(rng):
                 parts.append(capsule((LPOST_X, beam_bot - 0.55, z + dz * 0.1), (LPOST_X, beam_bot + 0.06, z + dz),
                                      0.065, mat="M_Stn_Timber", seg=6, rings=1))
     sign, _s = props.hanging_sign(0.62, 0.48, 0.28)
-    xs = -4.65                                           # aan de voorste dwarsbalk, naar het perron gericht
+    xs = LX + 1.55                                       # aan de voorste dwarsbalk, naar het perron gericht
     y_wall = top_at(x_in) - ROOF_THICK / math.cos(L_PITCH) - 0.26
     y_sign = beam_bot + (y_wall - beam_bot) * (xs - (LPOST_X - 0.14)) / (x_in - (LPOST_X - 0.14))
     parts.append(sign.transform(t=(xs, y_sign + 0.01, post_z[0])))
@@ -381,6 +415,11 @@ def lean_to(rng):
 
 
 # ------------------------------------------------------------------ interieur
+def _truss_z():
+    """Bindbalken (met hanglampen) op een derde en twee derde van de diepte (gewoon station: -1,80 en -3,60)."""
+    return (round(-D / 3, 6), round(-2 * D / 3, 6))
+
+
 def interior():
     parts, cols, loose = [], [], []
     xi0, xi1 = -HW + T, HW - T
@@ -390,7 +429,8 @@ def interior():
         parts.append(rbox(a, b, FL, FL + 0.82, zi1 - 0.04, zi1, 0.015, "M_Stn_TimberDark"))
     parts.append(rbox(xi0, xi1, FL, FL + 0.82, zi0, zi0 + 0.04, 0.015, "M_Stn_TimberDark"))
     parts.append(rbox(xi1 - 0.04, xi1, FL, FL + 0.82, zi0 + 0.04, zi1 - 0.04, 0.015, "M_Stn_TimberDark"))   # stoot tegen voor/achter
-    for (a, b) in ((T + 0.04, SIDE_DOOR[0] - 0.08), (SIDE_DOOR[1] + 0.08, D - T - 0.04)):
+    spans = ((T + 0.04, SIDE_DOOR[0] - 0.08), (SIDE_DOOR[1] + 0.08, D - T - 0.04)) if OPT["lean_to"] else ((T + 0.04, D - T - 0.04),)
+    for (a, b) in spans:
         parts.append(rbox(xi0, xi0 + 0.04, FL, FL + 0.82, -b, -a, 0.015, "M_Stn_TimberDark"))
     # loket: L-vormige toonbank met doorgang in de hoek
     za, zb = -1.98, -1.74
@@ -413,9 +453,11 @@ def interior():
     loose += props.loose_prop("Stool_TicketOffice", mk.merge(*stool),
                               col_box(-0.19, 0.19, 0, 0.58, -0.19, 0.19), (-1.55, FL, -0.85))
     # wachtruimte: twee banken, vertrekbord, plant, koffer
-    loose += props.loose_prop("Bench_Back", *props.bench(1.8, split_colliders=True), (1.40, FL, zi0 + 0.42))
-    loose += props.loose_prop("Bench_Side", *props.bench(1.6, split_colliders=True),
-                              (xi1 - 0.42, FL, -3.20), mk.rot_y(-math.pi / 2))
+    bx, bl = OPT["back_bench"]
+    loose += props.loose_prop("Bench_Back", *props.bench(bl, split_colliders=True), (bx, FL, zi0 + 0.42))
+    if OPT["side_bench"]:
+        loose += props.loose_prop("Bench_Side", *props.bench(1.6, split_colliders=True),
+                                  (xi1 - 0.42, FL, -3.20), mk.rot_y(-math.pi / 2))
     board, _ = props.timetable()
     # alleen het bord + klokje (zonder poten) aan de achterwand
     keep = [i for i, f in enumerate(board.F) if board.V[list(f), 1].min() > 0.86]
@@ -429,10 +471,10 @@ def interior():
                               col_box(-0.25, 0.25, 0, 0.88, -0.25, 0.25), (xi1 - 0.38, FL, zi0 + 0.38))
     case = props.suitcase(0.56, 0.42, 0.22, "M_Stn_Red", strap="M_Stn_TimberDark")
     loose += props.loose_prop("Suitcase_WaitingRoom", case,
-                              col_box(-0.28, 0.28, 0, 0.49, -0.12, 0.12), (0.15, FL, zi0 + 0.55), mk.rot_y(0.3))
+                              col_box(-0.28, 0.28, 0, 0.49, -0.12, 0.12), (OPT["suitcase_x"], FL, zi0 + 0.55), mk.rot_y(0.3))
     # bindbalken met makelaars naar de nokbalk, en twee hanglampen (eigen knoop 'RoofFrame')
     truss = []
-    for z in (-1.80, -3.60):
+    for z in _truss_z():
         truss.append(rbox(-HW, HW, EAVE - 0.05, EAVE + 0.22, z - 0.12, z + 0.12, 0.04, "M_Stn_Timber"))
         truss.append(rbox(-0.10, 0.10, EAVE + 0.22, roof_y_under(0.0), z - 0.10, z + 0.10, 0.03, "M_Stn_Timber"))
         for xs in (-1, 1):
@@ -456,7 +498,7 @@ def facade():
     parts.append(props.clock(0.56, 0.12).transform(t=(0.0, EAVE + 1.42, 0.05)))
     # wandlantaarns naast loket en deur
     wl, _ = props.wall_lantern()
-    for x in (-2.62, 2.62):
+    for x in (-OPT["lantern_x"], OPT["lantern_x"]):
         parts.append(wl.transform(t=(x, FL + 1.62, 0.0)))
     # bloembak onder het rechterraam (op twee steunen)
     pl, _ = props.planter(1.25, seed=11)
@@ -467,6 +509,10 @@ def facade():
                              mat="M_Stn_Navy", seg=6, rings=1))
     # vensters
     parts.append(_side_window(RIGHT_WIN, HW - T, HW))
+    if not OPT["lean_to"]:                               # zonder luifel een raam in de linkerwand (gespiegeld)
+        parts.append(_side_window(LEFT_WIN, HW - T, HW).transform(s=(-1, 1, 1)))
+    for (x0, x1, y0, y1) in _front_windows():
+        parts.append(window_unit(x0, x1, y0, y1, -T, 0.0))
     back = window_unit(BACK_WIN[0], BACK_WIN[1], BACK_WIN[2], BACK_WIN[3], -T, 0.0)
     parts.append(back.transform(R=mk.rot_y(math.pi), t=(BACK_WIN[0] + BACK_WIN[1], 0, -D)))
     # rond gevelraampje achter
@@ -476,9 +522,10 @@ def facade():
             rbox(-0.03, 0.03, -0.34, 0.34, -T / 2 - 0.018, -T / 2 + 0.018, 0.008, "M_Stn_Navy")]     # dunner: kruist
     parts.append(mk.merge(ring, glass, *bars).transform(R=mk.rot_y(math.pi), t=(0, EAVE + 1.25, -D)))
     # kozijn van de zijdeur naar de luifel
-    u0, u1, us = SIDE_DOOR
-    fr = slab(arch_band(u0, u1, FL - 0.01, us, 0.14, 14), [], -0.02, 0.08, 0.025, "M_Stn_Timber")
-    parts.append(fr.transform(s=(1, 1, -1)).transform(R=mk.rot_y(math.pi / 2), t=(-HW, 0, 0)))
+    if OPT["lean_to"]:
+        u0, u1, us = SIDE_DOOR
+        fr = slab(arch_band(u0, u1, FL - 0.01, us, 0.14, 14), [], -0.02, 0.08, 0.025, "M_Stn_Timber")
+        parts.append(fr.transform(s=(1, 1, -1)).transform(R=mk.rot_y(math.pi / 2), t=(-HW, 0, 0)))
     return mk.merge(*parts), sign
 
 
@@ -498,10 +545,11 @@ def build(rng):
     tw = ticket_window()
     df = door_frame()
     roof, roof_col = main_roof()
-    lean, lean_col = lean_to(rng)
+    lean, lean_col = lean_to(rng) if OPT["lean_to"] else (None, None)
     inter, truss, inter_cols, loose = interior()
-    for name, (mesh, colliders), rotation, position in _furniture():
-        loose += props.loose_prop(name, mesh, colliders, position, rotation)
+    if OPT["lean_to"]:
+        for name, (mesh, colliders), rotation, position in _furniture():
+            loose += props.loose_prop(name, mesh, colliders, position, rotation)
     fac, sign = facade()
     leaf, leaf_col = door_leaf()
 
@@ -509,10 +557,13 @@ def build(rng):
     # muren (dicht, behalve deuren; het loket blijft dicht voor de botsing)
     cols += [col_box(-HW, DOOR[0], FL, EAVE, -T, 0.0), col_box(DOOR[1], HW, FL, EAVE, -T, 0.0),
              col_box(DOOR[0], DOOR[1], DOOR[2] + 0.62, EAVE, -T, 0.0),
-             col_box(-HW, HW, FL, EAVE, -D, -D + T), col_box(HW - T, HW, FL, EAVE, -D, 0.0),
-             col_box(-HW, -HW + T, FL, EAVE, -SIDE_DOOR[0], 0.0), col_box(-HW, -HW + T, FL, EAVE, -D, -SIDE_DOOR[1]),
-             col_box(-HW, -HW + T, SIDE_DOOR[2] + 0.58, EAVE, -SIDE_DOOR[1], -SIDE_DOOR[0])]
-    cols += [roof_col, lean_col] + inter_cols
+             col_box(-HW, HW, FL, EAVE, -D, -D + T), col_box(HW - T, HW, FL, EAVE, -D, 0.0)]
+    if OPT["lean_to"]:
+        cols += [col_box(-HW, -HW + T, FL, EAVE, -SIDE_DOOR[0], 0.0), col_box(-HW, -HW + T, FL, EAVE, -D, -SIDE_DOOR[1]),
+                 col_box(-HW, -HW + T, SIDE_DOOR[2] + 0.58, EAVE, -SIDE_DOOR[1], -SIDE_DOOR[0])]
+    else:
+        cols.append(col_box(-HW, -HW + T, FL, EAVE, -D, 0.0))
+    cols += [roof_col] + ([lean_col] if lean_col is not None else []) + inter_cols
     cols.append(col_box(WIN[0] - 0.22, WIN[1] + 0.22, WIN[2] - 0.06, WIN[2] + 0.05, 0.0, 0.34))
     col = mk.merge(*cols)
 
@@ -523,16 +574,55 @@ def build(rng):
         ("Plinth", mk.merge(pl, fl), None, (0, 0, 0), None, True),
         ("Openings", mk.merge(tw, df), None, (0, 0, 0), None, True),
         ("Roof", roof, None, (0, 0, 0), None, True),
-        ("LeanTo", lean, None, (0, 0, 0), None, True),
+        *([("LeanTo", lean, None, (0, 0, 0), None, True)] if lean is not None else []),
         ("Interior", inter, None, (0, 0, 0), None, True),
         ("RoofFrame", truss, None, (0, 0, 0), None, True),
         ("Facade", fac, None, (0, 0, 0), None, True),
         *props.swing_door("Door", leaf, leaf_col, hinge, -98, -96),      # staat open; draait tussen dicht en open
         ("Col_Main", col, None, (0, 0, 0), None, False),
-        ("Light_Lantern_L", None, None, (-2.62, FL + 1.85, 0.30), None, True),
-        ("Light_Lantern_R", None, None, (2.62, FL + 1.85, 0.30), None, True),
-        ("Light_Hall_1", None, None, (0.65, EAVE - 0.85, -1.80), None, True),
-        ("Light_Hall_2", None, None, (0.65, EAVE - 0.85, -3.60), None, True),
+        ("Light_Lantern_L", None, None, (-OPT["lantern_x"], FL + 1.85, 0.30), None, True),
+        ("Light_Lantern_R", None, None, (OPT["lantern_x"], FL + 1.85, 0.30), None, True),
+        ("Light_Hall_1", None, None, (0.65, EAVE - 0.85, _truss_z()[0]), None, True),
+        ("Light_Hall_2", None, None, (0.65, EAVE - 0.85, _truss_z()[1]), None, True),
         ("Spawn_Ticket", None, None, (-1.40, FL, -0.75), None, True),
     ] + sign + loose
     return nodes
+
+
+# ------------------------------------------------------------------ varianten (issue #231)
+# naam: (configure-argumenten, materialen die vervangen worden, korte omschrijving)
+VARIANTS = {
+    "Station_Building_Small": (
+        dict(hw=2.8, d=4.6, wall=2.8, pitch_deg=42.0, lean_to=False, lantern_x=2.42, back_bench=(0.90, 1.4),
+             side_bench=False, suitcase_x=-0.90),
+        {"M_Stn_Roof": "M_Stn_RoofRed", "M_Stn_RoofDark": "M_Stn_RoofRedDark", "M_Stn_Plaster": "M_Stn_PlasterRose"},
+        "klein halte-station: 5,6 x 4,6 m, rode dakpannen, lichte muren, raam in beide zijgevels, geen luifel"),
+    "Station_Building_Large": (
+        dict(hw=4.4, d=7.2, wall=3.4, pitch_deg=40.0, lean_to=True, front_windows=True, lantern_x=2.45),
+        {"M_Stn_Roof": "M_Stn_RoofBrown", "M_Stn_RoofDark": "M_Stn_RoofBrownDark", "M_Stn_Plaster": "M_Stn_PlasterSand",
+         "M_Stn_Timber": "M_Stn_TimberRich"},
+        "groot station: 8,8 x 7,2 m, bruin dak, zandkleurige muren, donker vakwerk, extra ramen in de voorgevel, luifel"),
+    "Station_Building_Green": (
+        dict(),
+        {"M_Stn_Roof": "M_Stn_RoofGreen", "M_Stn_RoofDark": "M_Stn_RoofGreenDark"},
+        "gewone maat met een groen dak"),
+}
+
+
+def build_variant(name, rng):
+    """Knopenlijst voor een variant; zet de configuratie daarna terug naar het gewone station."""
+    kw, remap, _ = VARIANTS[name]
+    configure(**kw)
+    try:
+        nodes = build(rng)
+    finally:
+        info = {"floor": FL, "footprint": [LX if OPT["lean_to"] else -HW, HW, -D, 0.0]}
+        configure()
+    out = []
+    for node in nodes:
+        mesh = node[1]
+        if mesh is not None and not node[0].startswith("Col_"):
+            mesh = mesh.copy()
+            mesh.M = [remap.get(m, m) for m in mesh.M]
+        out.append((node[0], mesh) + tuple(node[2:]))
+    return out, info
