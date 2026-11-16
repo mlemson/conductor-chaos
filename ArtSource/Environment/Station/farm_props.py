@@ -11,6 +11,8 @@
     Farm_Wheelbarrow  kruiwagen (leeg; _Hay met hooibaal, _Grain met graanzak)
     Farm_Scarecrow    vrolijke vogelverschrikker
     Farm_Wheat_*      graanveld in modules: Straight_3m, Edge_3m, Corner, Harvested_3m (raster van 1,5 m)
+    Farm_WheatField_* compleet graanveld als één model (6 x 3 m en 12 x 6 m, issue #230): akkerbed met aarden rand,
+                      rijen graan met aren erboven, een trekkerspoor in het midden en klaprozen langs de rand
     Farm_FieldPath_3m veldpad · Farm_WheatSheaf graanbos · Farm_GrainSacks graanzakken · Farm_FieldSign veldbord
 
 Elke functie geeft de knopenlijst voor export() terug: (naam, mesh, parent, pivot, rotatie, zichtbaar). Pivot
@@ -491,6 +493,84 @@ def wheat_field(kind="straight", seed=1):
     return _nodes(mk.merge(*parts), cols)
 
 
+def _row_mass(x0, x1, rng, h=0.50, w=0.44):
+    """Dichte onderkant van een graanrij: een lage, bolle wal met bulten (donker aan de voet, goud bovenin)."""
+    prof = [(-w / 2, 0.0), (w / 2, 0.0), (w * 0.48, h * 0.18), (w * 0.38, h * 0.48), (w * 0.20, h * 0.80), (0.0, h),
+            (-w * 0.20, h * 0.80), (-w * 0.38, h * 0.48), (-w * 0.48, h * 0.18)]
+    nx = max(8, int((x1 - x0) / 0.16))
+    m = mk.extrude_profile(prof, x0, x1, nx=nx, round0=0.20, round1=0.20, rings=3,
+                           mat_fn=lambda i: STEM if i in (0, 1, 8) else WHEAT)
+    seed = int(rng.integers(1, 10_000))
+    up = m.V[:, 1] > 0.02
+    k = (m.V[up, 1] / h)
+    bumps = mk.fbm(m.V[up] * np.array([2.6, 1.0, 1.0]), 1.0, 2, seed) - 0.5
+    m.V[up, 1] += bumps * 0.30 * k
+    side = np.sign(m.V[up, 2])
+    m.V[up, 2] += side * (mk.fbm(m.V[up] * np.array([3.1, 1.4, 1.0]), 1.0, 2, seed + 7) - 0.5) * 0.14 * np.sin(np.pi * np.clip(k, 0, 1))
+    m.sharp = True
+    return m
+
+
+def _field_stalk(rng, h):
+    """Lichte halm voor een heel veld: driekantige steel + aar (geen bladeren; die zitten in de wal)."""
+    stem = mk.lathe([(0.0, 0.0), (0.022, 0.0), (0.016, h - 0.22), (0.0, h - 0.20)], 3, mat=STEM)
+    ear = wheat_ear(rng.uniform(0.32, 0.40), rng.uniform(0.070, 0.085), WHEAT).transform(
+        R=mk.rot_x(rng.uniform(0.04, 0.30)), t=(0, h - 0.27, 0))
+    return mk.merge(stem, ear).transform(R=mk.rot_y(rng.uniform(0, 6.28)) @ mk.rot_x(rng.uniform(-0.08, 0.08)))
+
+
+def _poppy(rng):
+    h = rng.uniform(0.42, 0.58)
+    stem = mk.lathe([(0.0, 0.0), (0.014, 0.0), (0.010, h), (0.0, h + 0.01)], 3, mat=STEM)
+    head = ball(0.085, "M_Stn_Red", 10, 6, sy=0.5).transform(t=(0, h + 0.03, 0))
+    eye = ball(0.030, "M_Stn_Dark", 6, 4, sy=0.7).transform(t=(0, h + 0.06, 0))
+    return mk.merge(stem, head, eye).transform(R=mk.rot_y(rng.uniform(0, 6.28)) @ mk.rot_x(rng.uniform(-0.25, 0.25)))
+
+
+def wheat_field_whole(L, W, seed=1, row_pitch=0.5, stalk_pitch=0.21):
+    """Compleet graanveld van L x W m als één model. Pivot midden-onder, rijen langs X, trekkerspoor in het midden.
+    Botsvorm alleen voor het akkerbed: door het graan loop je heen, net als bij de modules."""
+    rng = np.random.default_rng([2026, 230, seed])
+    rim = 0.18
+    parts = []
+    outer = rounded_rect_loop(-L / 2, L / 2, -W / 2, W / 2, 0.35, 3)
+    inner = rounded_rect_loop(-L / 2 + rim, L / 2 - rim, -W / 2 + rim, W / 2 - rim, 0.22, 3)
+    bed_loop = rounded_rect_loop(-L / 2 + rim - 0.01, L / 2 - rim + 0.01, -W / 2 + rim - 0.01, W / 2 - rim + 0.01, 0.23, 3)
+    # aarden rand (iets hoger dan het bed) en het bed zelf; het bed steekt 1 cm onder de rand door (geen naad)
+    parts.append(_xz(slab([(x, -z) for x, z in outer], [[(x, -z) for x, z in inner]], 0.0, BED_H + 0.035, 0.03, DIRT)))
+    parts.append(_xz(slab([(x, -z) for x, z in bed_loop], [], 0.0, BED_H, 0.02, SOIL)))
+    # rijen; de middelste rij(en) open als trekkerspoor
+    n_rows = max(2, int((W - 2 * rim - 0.30) / row_pitch) + 1)
+    zs = [-(n_rows - 1) * row_pitch / 2 + k * row_pitch for k in range(n_rows)]
+    track = min(range(n_rows), key=lambda k: abs(zs[k])) if W >= 2.5 else -1
+    x0, x1 = -L / 2 + rim + 0.18, L / 2 - rim - 0.18
+    for k, z in enumerate(zs):
+        if k == track:
+            continue
+        parts.append(_row_mass(x0, x1, rng).transform(t=(0, BED_H - 0.02, z + rng.uniform(-0.03, 0.03))))
+        x = x0 + 0.10
+        while x < x1 - 0.08:
+            hgt = rng.uniform(0.80, 0.98)
+            parts.append(_field_stalk(rng, hgt - 0.24).transform(
+                t=(x + rng.uniform(-0.05, 0.05), BED_H + 0.22, z + rng.uniform(-0.12, 0.12))))
+            x += stalk_pitch * rng.uniform(0.85, 1.15)
+    # wielsporen in het trekkerspoor (iets lager dan... nee: plat op het bed, 1 cm hoger dan het bed, eigen kleur)
+    if track >= 0:
+        for dz in (-0.17, 0.17):
+            rut = rounded_rect_loop(x0 + 0.2, x1 - 0.2, zs[track] + dz - 0.06, zs[track] + dz + 0.06, 0.05, 2)
+            parts.append(_xz(slab([(x, -z) for x, z in rut], [], BED_H - 0.02, BED_H + 0.008, 0.006, DIRT)))
+    # klaprozen langs de rand, tussen de buitenste rijen
+    for _ in range(int(L * W / 4) + 3):
+        edge = rng.integers(4)
+        if edge < 2:
+            px, pz = rng.uniform(x0, x1), (zs[0] - 0.24) if edge == 0 else (zs[-1] + 0.24)
+        else:
+            px, pz = (x0 - 0.05) if edge == 2 else (x1 + 0.05), rng.uniform(zs[0], zs[-1])
+        parts.append(_poppy(rng).transform(t=(px, BED_H - 0.01, pz + rng.uniform(-0.05, 0.05))))
+    cols = [col_box(-L / 2, L / 2, 0.0, BED_H + 0.035, -W / 2, W / 2)]
+    return _nodes(mk.merge(*parts), cols)
+
+
 def field_path(L=3.0, W=1.0):
     """Smal veldpad: aangestampte aarde met een graskant aan weerszijden en een paar keitjes. Vlak (4-6 cm)."""
     rng = np.random.default_rng(77)
@@ -566,6 +646,8 @@ ASSETS = {
     "Farm_Wheat_Edge_3m": (lambda: wheat_field("edge", 2), 500, 0.10),
     "Farm_Wheat_Corner": (lambda: wheat_field("corner", 3), 500, 0.10),
     "Farm_Wheat_Harvested_3m": (lambda: wheat_field("harvested", 4), 500, 0.10),
+    "Farm_WheatField_6x3m": (lambda: wheat_field_whole(6.0, 3.0, 1), 300, 0.12),
+    "Farm_WheatField_12x6m": (lambda: wheat_field_whole(12.0, 6.0, 2), 200, 0.14),
     "Farm_FieldPath_3m": (field_path, 600, 0.12),
     "Farm_WheatSheaf": (wheat_sheaf, 900, 0.12),
     "Farm_GrainSacks": (grain_sacks, 900, 0.12),
