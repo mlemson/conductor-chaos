@@ -39,6 +39,7 @@ namespace ConductorChaos.EditorTools
         static readonly (string name, string folder, float front, float rear)[] Freight =
         {
             ("TankWagon_Blockout", "TankWagon", 3.6f, 3.6f), ("CargoWagon_Blockout", "CargoWagon", 3.6f, 3.6f),
+            ("ContainerWagon_Blockout", "ContainerWagon", 3.6f, 3.6f),
         };
 
         // extra rijtuigversies: diesel met zijdeuren, modern en futuristisch zonder zijdeuren
@@ -70,7 +71,7 @@ namespace ConductorChaos.EditorTools
         [MenuItem("Tools/Conductor Chaos/Train Sets/Place Futuristic Express Set")]
         static void PlaceFuturistic() => Place("Futuristic Express", Futuristic);
 
-        [MenuItem("Tools/Conductor Chaos/Train Sets/Place Freight Wagons (tank + cargo)")]
+        [MenuItem("Tools/Conductor Chaos/Train Sets/Place Freight Wagons (tank + cargo + container)")]
         static void PlaceFreight() => Place("Freight wagons", Freight);
 
         [MenuItem("Tools/Conductor Chaos/Train Sets/Place Coach Variants (doors / no doors)")]

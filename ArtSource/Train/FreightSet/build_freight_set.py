@@ -11,9 +11,16 @@ CargoWagon_Blockout — moderne gesloten goederenwagon (schuifwandwagen): blauwe
   lichtgrijs dak, binnen doorloopbaar langs kratten, gele ladder op de perronkant naar het dak.
   Onderhoudspunten: `RepairPoint_DoorLatch` (grendelkast), `RepairPoint_AxleBox`, `RepairPoint_BrakeHose`.
 
+ContainerWagon_Blockout — platte wagon met een open container (issue #234): rode bak met ribben, een gele rand bovenop,
+  hoekstukken met gele hijsogen en gele twistlocks op de vloer. De container is een eigen knoop `Container` (pivot
+  midden-onder, op de twistlocks) die een kraan er los af kan tillen; `Point_Lift_1..4` = de hijsogen,
+  `Point_Lift` = midden boven de bak (enkele haak), `Zone_Cargo` = midden van de binnenruimte (5,94 x 1,25 x 2,28 m,
+  vloer 0,10 boven de onderkant). Binnen en buiten een laddertje om in en uit de bak te klimmen.
+  Onderhoudspunten: `RepairPoint_AxleBox`, `RepairPoint_BrakeHose`.
+
 Zelfde maatvoering en koppelingen als de andere wagons (zie train_kit.py). Geen bedrijfslogo's.
 
-Uitvoer: Assets/Art/Models/Train/{TankWagon,CargoWagon}/*.fbx en ArtSource/Exports/*.glb
+Uitvoer: Assets/Art/Models/Train/{TankWagon,CargoWagon,ContainerWagon}/*.fbx en ArtSource/Exports/*.glb
 """
 import math
 import os
@@ -35,6 +42,9 @@ COLORS = {
     "Crate": ("crate", 2, 0.15, 0.0),
     "Deck": ("metal", 1, 0.25, 0.0, {"paint": 1.2}),
     "Liquid": ("water", 1, 0.70, 0.0, {"cells": 0.0, "grime": 0.0}),
+    "Container": ("train_red", 2, 0.25, 0.0, {"paint": 1.4}),
+    "ContainerLow": ("train_red", 0, 0.25, -0.05, {"paint": 1.2}),
+    "ContainerIn": ("train_red", 1, 0.15, -0.25, {"paint": 0.8}),
 }
 R, CY = 1.14, 1.44            # ketelstraal en hartlijn
 TOP = CY + R                  # bovenkant ketel
@@ -164,10 +174,108 @@ def build_cargo():
     return c
 
 
-def main():
-    build_tank().export("TankWagon", "FreightSet")
-    build_cargo().export("CargoWagon", "FreightSet")
+CT = (3.05, 1.35, 1.22, 0.08, 0.10)      # container: halve lengte, hoogte, halve breedte, wanddikte, vloerdikte
+CY0 = 0.16                                # onderkant container (op de twistlocks)
+
+
+def _container(c):
+    """Open container in eigen maat (pivot midden-onder)."""
+    hx, h, hz, t, fl = CT
+    cm, lo, it = c.m("Container"), c.m("ContainerLow"), c.m("Interact")
+    r = 0.04
+    parts = [mk.hollow_box((-hx, hx, 0.0, h, -hz, hz), (-hx + t, hx - t, fl, h, -hz + t, hz - t),
+                           [(1, 1, -hx + r, hx - r, -hz + r, hz - r, -hx + t, hx - t, -hz + t, hz - t)],
+                           radius=r, step=0.30, div=2, mat=cm, inner_mat=c.m("ContainerIn"))]
+    # vloer van planken binnenin, 1 cm boven de bodem van de bak
+    parts.append(box(-hx + t + 0.01, hx - t - 0.01, fl - 0.02, fl + 0.01, -hz + t + 0.01, hz - t - 0.01, 0.006, c.m("Floor")))
+    # gele bovenrand: steekt 6 mm over de binnenwand en 4 cm buiten de buitenwand
+    rim = mk.frame_ring(-hx + t + 0.006, hx - t - 0.006, -(hz - t - 0.006), hz - t - 0.006, t + 0.046, h - 0.04, h + 0.07,
+                        0.025, mat=it)
+    parts.append(rim.transform(R=mk.rot_x(-math.pi / 2)))
+    # ribben op de lange zijden en de kopse kanten
+    for sz in (-1, 1):
+        for k in range(14):
+            x = -hx + 0.42 + k * 0.40
+            parts.append(box(x - 0.045, x + 0.045, 0.14, h - 0.06, sz * hz - 0.01 if sz > 0 else -hz - 0.025,
+                             hz + 0.025 if sz > 0 else -hz + 0.01, 0.012, lo))
+    for sx in (-1, 1):
+        for zz in (-0.70, 0.0, 0.70):
+            if sx > 0 and zz == 0.0:
+                continue                                          # daar zit de ladder
+            parts.append(box(sx * hx - 0.01 if sx > 0 else -hx - 0.025, hx + 0.025 if sx > 0 else -hx + 0.01, 0.14,
+                             h - 0.06, zz - 0.045, zz + 0.045, 0.012, lo))
+    # hoekstijlen en hoekstukken met hijsogen
+    eyes = []
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            x0, x1 = sorted((sx * (hx - 0.12), sx * (hx + 0.02)))
+            z0, z1 = sorted((sz * (hz - 0.12), sz * (hz + 0.02)))
+            parts.append(box(x0, x1, 0.02, h - 0.05, z0, z1, 0.02, lo))
+            x0, x1 = sorted((sx * (hx - 0.16), sx * (hx + 0.03)))
+            z0, z1 = sorted((sz * (hz - 0.16), sz * (hz + 0.03)))
+            parts.append(box(x0, x1, -0.02, 0.14, z0, z1, 0.02, c.m("Trim")))
+            ex, ez = sx * (hx - 0.10), sz * (hz - 0.10)
+            parts.append(box(ex - 0.07, ex + 0.07, h + 0.06, h + 0.10, ez - 0.05, ez + 0.05, 0.015, c.m("Trim")))
+            eye = mk.torus(0.065, 0.02, 12, 6, mat=it).transform(R=mk.rot_x(math.pi / 2), t=(ex, h + 0.15, ez))
+            parts.append(eye)
+            eyes.append((ex, h + 0.15, ez))
+    # ladders: buiten op de voorkop (+X), binnen tegen de achterkop (-X)
+    for (x, ys) in ((hx + 0.07, (0.18, 0.48, 0.78, 1.08)), (-hx + t + 0.06, (0.40, 0.70, 1.00))):
+        for dz in (-0.20, 0.20):
+            parts.append(tk.tube((x, ys[0] - 0.12, dz), (x, h + 0.30, dz), 0.026, it))
+            xb = hx + 0.005 if x > 0 else -hx + t - 0.005
+            for y in (ys[0], h - 0.20):
+                parts.append(box(*sorted((x, xb)), y - 0.02, y + 0.02, dz - 0.02, dz + 0.02, 0.006, c.m("Metal")))
+        for y in ys:
+            parts.append(tk.tube((x, y, -0.20), (x, y, 0.20), 0.02, it))
+    return mk.merge(*parts), eyes
+
+
+def build_container():
+    c = tk.Car("ContainerWagon_Blockout", "ContainerWagon", "Freight", 7.2)
+    c.materials(COLORS)
+    L = c.L
+    tr, it = c.m("Trim"), c.m("Interact")
+    deck = [box(-L / 2, L / 2, 0.0, 0.12, ZC - 1.25, ZC + 1.25, 0.04, c.m("Deck"))]
+    for sz in (-1, 1):
+        za, zb = sorted((ZC + sz * 1.18, ZC + sz * 1.29))
+        deck.append(box(-L / 2 + 0.10, L / 2 - 0.10, -0.02, 0.10, za, zb, 0.02, c.m("BodyLow")))
+        za, zb = sorted((ZC + sz * 1.285, ZC + sz * 1.30))
+        deck.append(box(-L / 2 + 0.30, L / 2 - 0.30, 0.02, 0.07, za, zb, 0.008, c.m("Yellow")))
+    for sg in (-1, 1):
+        xa, xb = sorted((sg * (L / 2 - 0.09), sg * L / 2))
+        for (za, zb) in ((ZC - 1.22, ZC - 0.50), (ZC + 0.50, ZC + 1.22)):      # doorgang in het midden blijft vrij
+            deck.append(box(xa, xb, 0.10, 0.62, za, zb, 0.03, tr))
+        xa, xb = sorted((sg * (L / 2 - 0.12), sg * (L / 2 + 0.16)))
+        deck.append(box(xa, xb, -0.06, 0.34, ZC - 0.30, ZC + 0.30, 0.05, tr, div=2))
+    hx, h, hz = CT[0], CT[1], CT[2]
+    for sx in (-1, 1):                                                   # twistlocks onder de hoekstukken
+        for sz in (-1, 1):
+            x, z = sx * (hx - 0.065), ZC + sz * (hz - 0.065)
+            deck.append(box(x - 0.05, x + 0.05, 0.10, 0.19, z - 0.04, z + 0.04, 0.015, it))
+    c.add("Deck", mk.merge(*deck))
+    cont, eyes = _container(c)
+    c.add("Container", cont, (0.0, CY0, ZC))
+    for i, (ex, ey, ez) in enumerate(eyes, 1):
+        c.add(f"Point_Lift_{i}", None, (ex, ey, ez), parent="Container")
+    c.add("Point_Lift", None, (0.0, h + 0.15, 0.0), parent="Container")
+    c.add("Zone_Cargo", None, (0.0, CT[4] + (h - CT[4]) / 2, 0.0), parent="Container")
+    c.underframe((-2.30, 2.30))
+    c.axle_box("AxleBox", -2.30)
+    c.add("Ends", c.hose("BrakeHose", 1, dz=0.86))
+    c.couplers(-L / 2 - 0.12, L / 2 + 0.12)
+    c.finish()
+    return c
+
+
+def main(which=("tank", "cargo", "container")):
+    if "tank" in which:
+        build_tank().export("TankWagon", "FreightSet")
+    if "cargo" in which:
+        build_cargo().export("CargoWagon", "FreightSet")
+    if "container" in which:
+        build_container().export("ContainerWagon", "FreightSet")
 
 
 if __name__ == "__main__":
-    main()
+    main(tuple(sys.argv[1:]) or ("tank", "cargo", "container"))
