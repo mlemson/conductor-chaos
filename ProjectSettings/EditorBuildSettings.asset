@@ -18,6 +18,9 @@ EditorBuildSettings:
     path: Assets/Scenes/ServiceLevel02.unity
     guid: c381662a3c411d44d969052bb93b3623
   - enabled: 1
+    path: Assets/Scenes/ServiceLevel03.unity
+    guid: 6894e0e0c6992414b873714dd55d30b7
+  - enabled: 1
     path: Assets/Scenes/ChaosMenuPreview.unity
     guid: 1243e31e1ac0e3341aa4db720511402a
   m_configObjects: {}

@@ -8,7 +8,7 @@
 //      uitgezet; het terrein volgt het spoor (insnijdingen, taluds), ligt vlak op randhoogte langs de kloven en loopt
 //      naar de rand op tot een ring van rotswanden met hoogvlaktes erachter. Losse rotsplateaus in de vallei.
 //   4. Bos, rotsen, planten (ook op klifplateaus, richels en de kloofbodem), hekken langs de kloofranden, bergen en wolken.
-//   5. Gameplay: alle opdrachten van level 1 tegelijk + brugrails + 'Zet de wissels goed', incidenten, tijdslimieten.
+//   5. Gameplay: vertrekopdrachten + brugrails + 'Zet de wissels goed', incidenten, tijdslimieten.
 // Alles wat later in Unity wordt aangepast, blijft in de scène; opnieuw bouwen overschrijft het level.
 using System;
 using System.Collections.Generic;
@@ -90,6 +90,7 @@ namespace ConductorChaos.EditorTools
             public CliffSpec[] cliffs;
             public RailSpec[] rails;
             public DamageSpec[] damages;
+            public bool rotateDepartureObjectives;
             public bool switchFaults;            // wissels op de hoofdroute kunnen onderweg storen
             public int minimumIncidents = 1;
             public int[] timeLimits;
@@ -1345,6 +1346,7 @@ namespace ConductorChaos.EditorTools
                 }
 
                 runSo.FindProperty("combineObjectives").boolValue = true;
+                runSo.FindProperty("rotateDepartureObjectives").boolValue = spec.rotateDepartureObjectives;
                 runSo.FindProperty("levelLabel").stringValue = spec.label;
                 var limits = runSo.FindProperty("timeLimits");
                 limits.arraySize = spec.timeLimits.Length;
@@ -1354,7 +1356,7 @@ namespace ConductorChaos.EditorTools
                 var titles = new List<string>();
                 for (int i = 0; i < list.arraySize; i++)
                     if (list.GetArrayElementAtIndex(i).objectReferenceValue is ServiceObjective o) titles.Add(o.Title);
-                log.AppendLine("Opdrachten (alle tegelijk): " + string.Join(", ", titles) + ".");
+                log.AppendLine("Ingestelde opdrachten: " + string.Join(", ", titles) + ".");
 
                 // extra moersleutels: er zijn meer plekken om te repareren
                 var wrench = AssetDatabase.LoadAssetAtPath<GameObject>($"{PropDir}/Prop_Wrench.prefab");
@@ -1390,7 +1392,7 @@ namespace ConductorChaos.EditorTools
                     Dirty(point);
                     damages.Add(new ServiceIncidents.TrackDamage
                     {
-                        name = d.name, trigger = Trigger(incidentsGo.transform, "Trigger " + d.name.ToLowerInvariant(), placed.arcStart - 58f),
+                        name = d.name, trigger = spec.rotateDepartureObjectives ? null : Trigger(incidentsGo.transform, "Trigger " + d.name.ToLowerInvariant(), placed.arcStart - 58f),
                         repair = point, chance = d.chance,
                     });
                 }
@@ -1410,7 +1412,7 @@ namespace ConductorChaos.EditorTools
                     approach = Trigger(incidentsGo.transform, "Nadering wissel " + j.tag, j.arc - 24f, 40f),
                     junction = j.sw, mainDiverges = j.mainDiverges,
                 }).ToArray();
-                incidents.Configure(rockfalls.ToArray(), damages.ToArray(), spec.minimumIncidents, warnings);
+                incidents.Configure(rockfalls.ToArray(), damages.ToArray(), spec.minimumIncidents, warnings, spec.rotateDepartureObjectives);
                 EditorUtility.SetDirty(incidents);
                 log.AppendLine($"Incidenten: {rockfalls.Count} steenlawines, {damages.Count} spoorschade/wisselstoringen " +
                                $"(minstens {spec.minimumIncidents} per rit), {warnings.Length} wisselwaarschuwingen.");
@@ -1713,8 +1715,7 @@ namespace ConductorChaos.EditorTools
                 return go;
             }
 
-            // Rivier over de kloofbodem: korte rechthoekige stukken (StylizedWater) langs de rivierlijn. In bochten
-            // overlappen ze een klein beetje; om en om 1,2 cm hoger, zodat er nooit twee vlakken op elkaar liggen.
+            // Korte stukken delen hun oevers op de naden, ook als de rivier van richting verandert.
             void BuildRiver(Canyon canyon)
             {
                 var surfaceMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Environment/M_Env_WaterSurface.mat");
@@ -1734,16 +1735,17 @@ namespace ConductorChaos.EditorTools
                     go.layer = 2;                                       // Ignore Raycast, zoals Create Water
                     go.transform.SetParent(group, false);
                     var mid = (a + b) * 0.5f;
-                    go.transform.SetPositionAndRotation(new Vector3(mid.x, canyon.waterY + ((count & 1) == 0 ? 0f : 0.012f), mid.z),
+                    go.transform.SetPositionAndRotation(new Vector3(mid.x, canyon.waterY, mid.z),
                         Quaternion.LookRotation(Flat(b - a), Vector3.up));
                     var water = go.AddComponent<StylizedWater>();
                     water.size = new Vector2(2f * (canyon.riverHalf + 1.1f), length);
                     water.depth = Mathf.Min(1.6f, canyon.riverHalf * 0.5f + 0.4f);
                     water.surfaceMaterial = surfaceMat;
                     water.tintShader = tint;
-                    water.Rebuild();
+                    water.joinRiverSections = true;
                     count++;
                 }
+                foreach (Transform section in group) section.GetComponent<StylizedWater>().Rebuild();
                 log.AppendLine($"{canyon.spec.name}: rivier van {count} stukken.");
             }
 

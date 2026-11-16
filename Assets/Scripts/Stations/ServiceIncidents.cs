@@ -56,6 +56,8 @@ namespace ConductorChaos.Stations
         [SerializeField] private SwitchWarning[] switchWarnings = Array.Empty<SwitchWarning>();
         [Tooltip("Minstens zoveel incidenten per run (willekeurig gekozen als het lot er te weinig gaf).")]
         [SerializeField, Min(0)] private int minimumIncidents = 1;
+        [Tooltip("Kies één kapotte rail uit alle ingestelde locaties. Wisselstoringen blijven los daarvan.")]
+        [SerializeField] private bool oneRandomRailFailure;
         [Tooltip("Vliegtijd van een vallend rotsblok tot het spoor (s).")]
         [SerializeField, Min(0.3f)] private float fallTime = 1.15f;
 
@@ -68,11 +70,12 @@ namespace ConductorChaos.Stations
 
         public static ServiceIncidents Active { get; private set; }
 
-        public void Configure(Rockfall[] rockfallSites, TrackDamage[] damageSites, int minimum, SwitchWarning[] warnings = null)
+        public void Configure(Rockfall[] rockfallSites, TrackDamage[] damageSites, int minimum, SwitchWarning[] warnings = null, bool randomRail = false)
         {
             rockfalls = rockfallSites ?? Array.Empty<Rockfall>();
             damages = damageSites ?? Array.Empty<TrackDamage>();
             minimumIncidents = minimum;
+            oneRandomRailFailure = randomRail;
             switchWarnings = warnings ?? Array.Empty<SwitchWarning>();
         }
 
@@ -150,7 +153,7 @@ namespace ConductorChaos.Stations
             for (int i = 0; i < rockfalls.Length && i < 16; i++)
                 if (Due(RockBit(i), rockfalls[i]?.trigger, rail)) StartRockfall(i);
             for (int j = 0; j < damages.Length && j < 15; j++)
-                if (Due(DamageBit(j), damages[j]?.trigger, rail)) StartDamage(j);
+                if (DamageDue(j, rail)) StartDamage(j);
 
             if (Time.time < nextCheck) return;
             nextCheck = Time.time + 0.25f;
@@ -165,11 +168,21 @@ namespace ConductorChaos.Stations
         private bool Due(int bit, BoxCollider trigger, Vector3 rail) =>
             (planned.Value & bit) != 0 && (triggered.Value & bit) == 0 && trigger && ServiceStation.Contains(trigger, rail);
 
-        // Server: welke incidenten gebeuren er deze run? Altijd minstens 'minimumIncidents'.
+        private bool DamageDue(int index, Vector3 rail)
+        {
+            var site = damages[index];
+            if (site?.trigger) return Due(DamageBit(index), site.trigger, rail);
+            const float warningDistance = 48f;
+            int bit = DamageBit(index);
+            return oneRandomRailFailure && site?.repair && (planned.Value & bit) != 0 &&
+                (triggered.Value & bit) == 0 && (site.repair.transform.position - rail).sqrMagnitude <= warningDistance * warningDistance;
+        }
+
+        // De server trekt precies één locatie voor de kapotte rail en loot overige incidenten apart.
         private void Plan()
         {
             planMade = true;
-            int mask = 0, possible = 0;
+            int mask = 0, possible = 0, railSites = 0;
             for (int i = 0; i < rockfalls.Length && i < 16; i++)
             {
                 if (!Usable(rockfalls[i])) continue;
@@ -178,16 +191,29 @@ namespace ConductorChaos.Stations
             }
             for (int j = 0; j < damages.Length && j < 15; j++)
             {
-                if (damages[j] == null || !damages[j].trigger || !damages[j].repair) continue;
-                possible |= DamageBit(j);
-                if (UnityEngine.Random.value < damages[j].chance) mask |= DamageBit(j);
+                var site = damages[j];
+                if (site == null || !site.repair) continue;
+                int bit = DamageBit(j);
+                if (oneRandomRailFailure && !site.repair.GetComponent<TrackSwitch>())
+                {
+                    railSites |= bit;
+                    continue;
+                }
+                if (!site.trigger) continue;
+                possible |= bit;
+                if (UnityEngine.Random.value < site.chance) mask |= bit;
             }
-            for (int guard = 0; guard < 32 && CountBits(mask) < minimumIncidents && (possible & ~mask) != 0; guard++)
-            {
-                int bit = 1 << UnityEngine.Random.Range(0, 31);
-                if ((possible & bit) != 0) mask |= bit;
-            }
+            if (railSites != 0) mask |= PickBit(railSites);
+            while (CountBits(mask) < minimumIncidents && (possible & ~mask) != 0)
+                mask |= PickBit(possible & ~mask);
             planned.Value = mask;
+        }
+
+        private static int PickBit(int mask)
+        {
+            int skip = UnityEngine.Random.Range(0, CountBits(mask));
+            for (int i = 0; i < skip; i++) mask &= mask - 1;
+            return mask & -mask;
         }
 
         private static bool Usable(Rockfall site) => site != null && site.trigger && site.site && site.rocks != null &&

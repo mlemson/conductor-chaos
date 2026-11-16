@@ -52,6 +52,19 @@ namespace ConductorChaos.Stations
             }
         }
 
+        internal int BoardingTarget => boardingPassengers?.Length ?? 0;
+        internal int BoardedCount
+        {
+            get
+            {
+                int count = 0;
+                if (stages != null)
+                    foreach (var stage in stages)
+                        if (stage == Boarding.Riding) count++;
+                return count;
+            }
+        }
+
         public override int Target => passengers?.Length ?? 0;
         public override bool IsConfigured => Target > 0 && System.Array.TrueForAll(passengers, ticket => ticket);
         public override bool ReadyToDepart => ReadProgress(false) >= Target;

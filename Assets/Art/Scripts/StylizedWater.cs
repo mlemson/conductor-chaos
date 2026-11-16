@@ -26,6 +26,8 @@ namespace ConductorChaos.Art
         [Tooltip("Grootte van de facetten op het oppervlak (m).")]
         [Range(0.5f, 4f)] public float facetSize = 1.4f;
         public Material surfaceMaterial;
+        [Tooltip("Laat de uiteinden aansluiten op de aangrenzende rivierstukken onder dezelfde ouder.")]
+        public bool joinRiverSections;
 
         [Header("Zinken")]
         [Tooltip("Opwaartse kracht als deel van de zwaartekracht. Onder 1 zak je langzaam weg.")]
@@ -42,6 +44,7 @@ namespace ConductorChaos.Art
         internal static readonly List<StylizedWater> Active = new List<StylizedWater>();
 
         Mesh mesh;
+        Vector3 startLeft, startRight, endLeft, endRight;
         readonly HashSet<Rigidbody> pushed = new HashSet<Rigidbody>();
 
         public float SurfaceY => transform.position.y;
@@ -50,7 +53,7 @@ namespace ConductorChaos.Art
         public bool Contains(Vector3 world)
         {
             var l = transform.InverseTransformPoint(world);
-            return Mathf.Abs(l.x) <= size.x * 0.5f && Mathf.Abs(l.z) <= size.y * 0.5f && l.y <= 0f && l.y >= -depth;
+            return l.y <= 0f && l.y >= -depth && ContainsHorizontal(l);
         }
 
         void OnEnable()
@@ -71,7 +74,26 @@ namespace ConductorChaos.Art
 #if UNITY_EDITOR
         void OnValidate()
         {
-            UnityEditor.EditorApplication.delayCall += () => { if (this != null && isActiveAndEnabled) Rebuild(); };
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                if (this != null && isActiveAndEnabled) RebuildNeighbours();
+            };
+        }
+
+        void Update()
+        {
+            if (Application.isPlaying || !joinRiverSections || !transform.hasChanged) return;
+            transform.hasChanged = false;
+            RebuildNeighbours();
+        }
+
+        void RebuildNeighbours()
+        {
+            Rebuild();
+            var before = Neighbour(-1);
+            var after = Neighbour(1);
+            if (before && before.joinRiverSections) before.Rebuild();
+            if (after && after.joinRiverSections) after.Rebuild();
         }
 #endif
 
@@ -81,6 +103,17 @@ namespace ConductorChaos.Art
             var box = GetComponent<BoxCollider>();
             var center = new Vector3(0f, -depth * 0.5f, 0f);
             var extent = new Vector3(size.x, depth, size.y);
+            if (joinRiverSections)
+            {
+                BuildEdge(-1, out startLeft, out startRight);
+                BuildEdge(1, out endLeft, out endRight);
+                Vector3 min = Vector3.Min(Vector3.Min(startLeft, startRight), Vector3.Min(endLeft, endRight));
+                Vector3 max = Vector3.Max(Vector3.Max(startLeft, startRight), Vector3.Max(endLeft, endRight));
+                center.x = (min.x + max.x) * .5f;
+                center.z = (min.z + max.z) * .5f;
+                extent.x = max.x - min.x;
+                extent.z = max.z - min.z;
+            }
             if (!box.isTrigger) box.isTrigger = true;
             if (box.center != center) box.center = center;
             if (box.size != extent) box.size = extent;
@@ -95,6 +128,49 @@ namespace ConductorChaos.Art
             if (mf.sharedMesh != mesh) mf.sharedMesh = mesh;
             BuildSurface();
         }
+
+        StylizedWater Neighbour(int offset)
+        {
+            var parent = transform.parent;
+            int index = transform.GetSiblingIndex() + offset;
+            return parent && index >= 0 && index < parent.childCount
+                ? parent.GetChild(index).GetComponent<StylizedWater>() : null;
+        }
+
+        void BuildEdge(int end, out Vector3 left, out Vector3 right)
+        {
+            Vector3 point = transform.TransformPoint(0f, 0f, end * size.y * .5f);
+            Vector3 lateral = transform.right;
+            float halfWidth = size.x * Mathf.Abs(transform.lossyScale.x) * .5f;
+            var neighbour = Neighbour(end);
+            if (neighbour && neighbour.joinRiverSections && neighbour.isActiveAndEnabled)
+            {
+                var other = neighbour.transform;
+                Vector3 joint = other.TransformPoint(0f, 0f, -end * neighbour.size.y * .5f);
+                if ((point - joint).sqrMagnitude <= 1f && Vector3.Dot(lateral, other.right) > -.5f)
+                {
+                    point = (point + joint) * .5f;
+                    Vector3 bisector = (lateral + other.right).normalized;
+                    float otherWidth = neighbour.size.x * Mathf.Abs(other.lossyScale.x) * .5f;
+                    halfWidth = (halfWidth + otherWidth) * .5f / Mathf.Max(.5f, Vector3.Dot(bisector, lateral));
+                    lateral = bisector;
+                }
+            }
+            left = transform.InverseTransformPoint(point - lateral * halfWidth);
+            right = transform.InverseTransformPoint(point + lateral * halfWidth);
+        }
+
+        bool ContainsHorizontal(Vector3 local)
+        {
+            if (!joinRiverSections)
+                return Mathf.Abs(local.x) <= size.x * .5f && Mathf.Abs(local.z) <= size.y * .5f;
+
+            // The trigger's box covers the four corners. Reject the dry triangles outside the actual shape.
+            return Inside(startLeft, startRight, local) && Inside(startRight, endRight, local) &&
+                Inside(endRight, endLeft, local) && Inside(endLeft, startLeft, local);
+        }
+
+        static bool Inside(Vector3 a, Vector3 b, Vector3 p) => Vector3.Cross(b - a, p - a).y <= .0001f;
 
         void BuildSurface()
         {
@@ -113,7 +189,15 @@ namespace ConductorChaos.Art
                         z += (Mathf.PerlinNoise(i * 0.47f, j * 0.69f + 8.1f) - 0.5f) * cz * 0.5f;
                     }
                     float y = edge ? 0f : (Mathf.PerlinNoise(x * 0.6f + 11f, z * 0.6f + 5f) - 0.5f) * 0.06f;
-                    grid[j * (nx + 1) + i] = new Vector3(x, y, z);
+                    if (joinRiverSections)
+                    {
+                        float u = (x + size.x * .5f) / size.x;
+                        float v = (z + size.y * .5f) / size.y;
+                        grid[j * (nx + 1) + i] = Vector3.Lerp(
+                            Vector3.Lerp(startLeft, startRight, u),
+                            Vector3.Lerp(endLeft, endRight, u), v) + Vector3.up * y;
+                    }
+                    else grid[j * (nx + 1) + i] = new Vector3(x, y, z);
                 }
 
             var verts = new List<Vector3>(nx * nz * 6);
@@ -153,7 +237,9 @@ namespace ConductorChaos.Art
         {
             var rb = other.attachedRigidbody;
             // kinematische bodies (clients, bewegende trein) niet: die volgen de autoritatieve simulatie
-            if (rb == null || rb.isKinematic || !pushed.Add(rb)) return;
+            if (rb == null || rb.isKinematic ||
+                (joinRiverSections && !ContainsHorizontal(transform.InverseTransformPoint(rb.worldCenterOfMass))) ||
+                !pushed.Add(rb)) return;
             float under = SurfaceY - rb.worldCenterOfMass.y;
             float k = Mathf.Clamp01((under + 0.3f) / 0.6f);           // zacht van 'net aan het oppervlak' naar 'onder'
             if (k <= 0f) return;

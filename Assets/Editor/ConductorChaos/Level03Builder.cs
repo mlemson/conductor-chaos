@@ -6,6 +6,7 @@
 // wisselstoringen gebeuren. Het bouwen zelf staat in CliffLevelBuilder.
 using ConductorChaos.Stations;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using static ConductorChaos.EditorTools.CliffLevelBuilder;
 
@@ -113,6 +114,14 @@ namespace ConductorChaos.EditorTools
             extraWrenches = 2,
             mesas = 16,
         };
+
+        [MenuItem("Tools/Conductor Chaos/Level 3 openen")]
+        public static void OpenSavedLevel()
+        {
+            const string path = "Assets/Scenes/" + ServiceRun.ThirdLevelScene + ".unity";
+            if (EditorApplication.isPlayingOrWillChangePlaymode || !AssetDatabase.LoadAssetAtPath<SceneAsset>(path)) return;
+            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) EditorSceneManager.OpenScene(path);
+        }
 
         [MenuItem("Tools/Conductor Chaos/Level 3 bouwen")]
         public static void BuildMenu() => CliffLevelBuilder.BuildMenu(Spec);

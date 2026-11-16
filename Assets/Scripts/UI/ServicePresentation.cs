@@ -215,13 +215,13 @@ namespace ConductorChaos.UI
                 return run.Phase == ServiceRun.RunPhase.Departure
                     ? "Neem de moersleutel mee en rijd tot vóór de kapotte wissel."
                     : $"Stop vóór de wissel en tik met de moersleutel tegen de gele bout. ({broken.Hits}/{broken.RequiredHits})";
-            return $"Rijd naar {run.Arrival.StationName} en stop bij de groene stopmarkering.";
+            return $"Rijd naar {run.Arrival.StationName} en zet de trein stil langs het eindperron.";
         }
 
         // ---------------------------------------------------------------- level 2+: alle opdrachten tegelijk
         private static string CombinedBriefing(ServiceRun run)
         {
-            var text = new System.Text.StringBuilder("Alles in één rit: ");
+            var text = new System.Text.StringBuilder("Opdrachten voor deze rit: ");
             bool first = true;
             foreach (var objective in run.ActiveObjectives)
             {
@@ -263,8 +263,13 @@ namespace ConductorChaos.UI
                 if (!run.TimerRunning) return "Loop naar het vertrekperron om de dienstklok te starten.";
                 foreach (var objective in objectives)
                 {
-                    if (objective is ServiceTickets && !Done(run, objective))
-                        return $"Knip de kaartjes op het perron en open de perrondeur voor de reizigers. ({run.ProgressOf(objective)}/{objective.Target})";
+                    if (objective is ServiceTickets tickets)
+                    {
+                        if (!Done(run, objective))
+                            return $"Knip de kaartjes op het perron en open de perrondeur voor de reizigers. ({run.ProgressOf(objective)}/{objective.Target})";
+                        if (run.RotatesDepartureObjectives && run.AboardOf(objective) < tickets.BoardingTarget)
+                            return $"Laat de perrondeur open tot de reizigers zijn ingestapt. ({Mathf.Max(0, run.AboardOf(objective))}/{tickets.BoardingTarget})";
+                    }
                     if (objective is ServiceCargo && run.AboardOf(objective) < objective.Target)
                         return objective.Target == 1 ? "Leg de rode koffer in het bagagevak in de wagon."
                             : $"Zet de kratten in het vrachtvak in de wagon. ({Mathf.Max(0, run.AboardOf(objective))}/{objective.Target} aan boord)";
@@ -296,7 +301,7 @@ namespace ConductorChaos.UI
                 if (objective is ServiceSwitchRoute && !Done(run, objective))
                     return $"Wissels staan naar een zijspoor: stop ervoor en duw de hendel met je hand om. ({run.ProgressOf(objective)}/{objective.Target})";
             }
-            return $"Rijd naar {run.Arrival.StationName} en stop bij de groene stopmarkering.";
+            return $"Rijd naar {run.Arrival.StationName} en zet de trein stil langs het eindperron.";
         }
 
         private static string FormatTime(int seconds) => $"{seconds / 60}:{seconds % 60:00}";

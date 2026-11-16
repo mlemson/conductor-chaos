@@ -39,6 +39,8 @@ namespace ConductorChaos.Stations
         [SerializeField] private ServiceObjective[] objectives;
         [Tooltip("Level 2+: alle ingestelde opdrachten tegelijk in plaats van één willekeurige.")]
         [SerializeField] private bool combineObjectives;
+        [Tooltip("Kies per rit twee of drie opdrachten op het vertrekperron.")]
+        [SerializeField] private bool rotateDepartureObjectives;
         [Tooltip("Tekst in de briefing, bv. LEVEL 2.")]
         [SerializeField] private string levelLabel = "LEVEL 1";
         [Tooltip("Tijdslimiet per crewgrootte (1, 2, 3, 4+ spelers) in seconden. Leeg = de standaard van level 1.")]
@@ -47,6 +49,7 @@ namespace ConductorChaos.Stations
         private readonly NetworkVariable<RunPhase> phase = new();
         private readonly NetworkVariable<Lesson> lesson = new();
         private readonly NetworkVariable<int> selected = new(-1);
+        private readonly NetworkVariable<int> objectiveSelection = new(-1);
         private readonly NetworkVariable<int> progress = new();
         private readonly NetworkVariable<int> cargoLoaded = new();
         private readonly NetworkVariable<int> cargoTravelled = new();
@@ -78,6 +81,7 @@ namespace ConductorChaos.Stations
         public RunPhase Phase => phase.Value;
         public Lesson CurrentLesson => lesson.Value;
         public bool CombinesObjectives => combineObjectives && !introduction;
+        internal bool RotatesDepartureObjectives => CombinesObjectives && rotateDepartureObjectives;
         public string LevelLabel => string.IsNullOrWhiteSpace(levelLabel) ? "LEVEL 1" : levelLabel;
         internal TrainDrive Train => train;
 
@@ -105,15 +109,17 @@ namespace ConductorChaos.Stations
             {
                 // Eén keer opbouwen (de opdrachten veranderen niet tijdens een dienst), zodat iemand die de lijst
                 // doorloopt en ondertussen Objective opvraagt nooit een lijst ziet die verandert.
-                int key = CombinesObjectives ? -2 : selected.Value;
+                int key = CombinesObjectives ? objectiveSelection.Value : selected.Value;
                 if (activeFor == key) return activeObjectives;
                 activeFor = key;
                 activeObjectives.Clear();
                 if (objectives == null) return activeObjectives;
                 if (CombinesObjectives)
                 {
-                    foreach (var objective in objectives)
-                        if (objective && objective.IsConfigured) activeObjectives.Add(objective);
+                    for (int i = 0; i < objectives.Length; i++)
+                        if (objectives[i] && objectives[i].IsConfigured &&
+                            (!RotatesDepartureObjectives || (i < 32 && (key & (1 << i)) != 0)))
+                            activeObjectives.Add(objectives[i]);
                 }
                 else if (selected.Value >= 0 && selected.Value < objectives.Length && objectives[selected.Value])
                     activeObjectives.Add(objectives[selected.Value]);
@@ -192,7 +198,9 @@ namespace ConductorChaos.Stations
             {
                 if (!CombinesObjectives) return Objective?.ReadyToDepart ?? false;
                 foreach (var objective in ActiveObjectives)
-                    if (!objective.ReadyToDepart) return false;
+                    if (!objective.ReadyToDepart ||
+                        (RotatesDepartureObjectives && objective is ServiceTickets tickets && tickets.BoardedCount < tickets.BoardingTarget))
+                        return false;
                 return ActiveObjectives.Count > 0;
             }
         }
@@ -226,14 +234,15 @@ namespace ConductorChaos.Stations
             if (CombinesObjectives)
             {
                 selected.Value = -1;
+                if (RotatesDepartureObjectives) objectiveSelection.Value = PickDepartureObjectives();
                 objectiveProgress.Clear();
                 objectiveAboard.Clear();
-                foreach (var objective in objectives)
+                for (int i = 0; i < objectives.Length; i++)
                 {
                     objectiveProgress.Add(0);
                     objectiveAboard.Add(-1);
-                    if (objective && objective.IsConfigured) objective.BeginOnServer();
                 }
+                foreach (var objective in ActiveObjectives) objective.BeginOnServer();
                 cargoLoaded.Value = 0;
                 cargoTravelled.Value = 0;
             }
@@ -249,6 +258,30 @@ namespace ConductorChaos.Stations
             initialTrainPosition = train.transform.position;
             phase.Value = RunPhase.Briefing;
             return true;
+        }
+
+        private int PickDepartureObjectives()
+        {
+            var pool = new List<int>(3);
+            int mask = 0;
+            for (int i = 0; i < Mathf.Min(32, objectives.Length); i++)
+            {
+                var objective = objectives[i];
+                if (!objective || !objective.IsConfigured) continue;
+                if (objective is ServiceTickets or ServiceEscort || objective is ServiceCargo && objective.Target > 1)
+                    pool.Add(i);
+                else if (objective is not (ServiceCargo or ServiceRepair or ServiceTrackRepair))
+                    mask |= 1 << i;
+            }
+
+            int count = Mathf.Min(pool.Count, Random.Range(2, 4));
+            for (int i = 0; i < count; i++)
+            {
+                int pick = Random.Range(0, pool.Count);
+                mask |= 1 << pool[pick];
+                pool.RemoveAt(pick);
+            }
+            return mask;
         }
 
         public void Continue() => ContinueRpc();
@@ -379,6 +412,8 @@ namespace ConductorChaos.Stations
                     if (!firstCargo) firstCargo = cargo;
                     SetListValue(objectiveAboard, System.Array.IndexOf(objectives, objective), cargo.AboardCount);
                 }
+                else if (RotatesDepartureObjectives && objective is ServiceTickets tickets)
+                    SetListValue(objectiveAboard, System.Array.IndexOf(objectives, objective), tickets.BoardedCount);
             if (firstCargo) cargoLoaded.Value = firstCargo.AboardCount;
 
             bool docked = false;

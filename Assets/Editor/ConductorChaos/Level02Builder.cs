@@ -73,13 +73,14 @@ namespace ConductorChaos.EditorTools
                 new CliffSpec { name = "Klifwand boven de richel", tags = new[] { "ledge" }, left = true, from = 5.8f, to = 13f, above = 5.2f, rockfall = "Steenlawine op de richel" },
                 new CliffSpec { name = "Insnijding bij de afdaling", tags = new[] { "descent" }, left = true, from = 5.4f, to = 10f, above = 3.2f, stone = true },
             },
-            rails = new[]
+            damages = new[]
             {
-                new RailSpec { tag = "bridgeRail", title = "Herstel de brugrail",
-                    instructions = "De rail vlak voor de stenen brug over de kloof is kapot. Stop ervoor en sla de gele bout vast met de moersleutel, anders ontspoort de trein." },
+                new DamageSpec { tag = "bridgeRail", name = "Spoorschade voor de stenen brug" },
+                new DamageSpec { tag = "damage", name = "Spoorschade in het bos" },
             },
-            damages = new[] { new DamageSpec { tag = "damage", name = "Spoorschade in het bos", chance = 0.6f } },
-            minimumIncidents = 1,
+            rotateDepartureObjectives = true,
+            switchFaults = true,
+            minimumIncidents = 2,
             timeLimits = new[] { 660, 600, 540, 480 },
             extraWrenches = 1,
             mesas = 10,
