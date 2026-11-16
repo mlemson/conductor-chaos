@@ -58,6 +58,7 @@ namespace ConductorChaos.Stations
         private readonly NetworkVariable<int> ticketPenalty = new();
         // The server freezes the crew's selected soundtrack duration when the timer starts.
         private readonly NetworkVariable<int> musicDuration = new();
+        private readonly NetworkVariable<double> musicStart = new();
         private readonly NetworkVariable<int> resultTime = new();
         private readonly NetworkVariable<bool> bellRung = new();
         private readonly NetworkVariable<bool> doorsClosed = new();
@@ -176,8 +177,7 @@ namespace ConductorChaos.Stations
         public bool OffTrack => offTrack.Value;
         public bool TimerRunning => deadline.Value > 0;
         public int MusicDuration => musicDuration.Value;
-        internal bool LoopMusic => extraTravelSeconds > 0;
-        public double MusicStartedAt => TimerRunning && MusicDuration > 0 ? deadline.Value - MusicDuration - extraTravelSeconds : 0d;
+        public double MusicStartedAt => musicStart.Value;
         internal bool CanContinue => Phase == RunPhase.Briefing ||
             (Phase is RunPhase.Won or RunPhase.Failed) && NetworkManager.ServerTime.Time >= resultReadyAt;
         public int TimeLeft => Phase is RunPhase.Won or RunPhase.Failed ? resultTime.Value :
@@ -386,9 +386,7 @@ namespace ConductorChaos.Stations
             {
                 if (CrewAt(departure.Platform))
                 {
-                    int duration = TimeLimit(NetworkManager.ConnectedClientsIds.Count);
-                    musicDuration.Value = duration;
-                    deadline.Value = NetworkManager.ServerTime.Time + duration + extraTravelSeconds;
+                    StartTimer();
                 }
                 progress.Value = Mathf.Clamp(Objective.ReadProgress(false), 0, Objective.Target);
                 return;
@@ -449,9 +447,7 @@ namespace ConductorChaos.Stations
             }
             else if (CrewAt(departure.Platform))
             {
-                int duration = TimeLimit(NetworkManager.ConnectedClientsIds.Count);
-                musicDuration.Value = duration;
-                deadline.Value = NetworkManager.ServerTime.Time + duration + extraTravelSeconds;
+                StartTimer();
             }
 
             int total = 0;
@@ -525,7 +521,21 @@ namespace ConductorChaos.Stations
         }
 
         /// <summary>Tijdslimiet voor deze dienst bij een crew van deze grootte (s).</summary>
-        internal int TimeLimit(int crew)
+        private void StartTimer()
+        {
+            int crew = NetworkManager.ConnectedClientsIds.Count;
+            bool soloLevelOne = IsSoloLevelOne(crew);
+            double now = NetworkManager.ServerTime.Time;
+            musicStart.Value = now;
+            musicDuration.Value = soloLevelOne ? 300 : BaseTimeLimit(crew);
+            deadline.Value = now + TimeLimit(crew);
+        }
+
+        private bool IsSoloLevelOne(int crew) => crew <= 1 && gameObject.scene.name == FirstLevelScene;
+
+        internal int TimeLimit(int crew) => IsSoloLevelOne(crew) ? 300 : BaseTimeLimit(crew) + extraTravelSeconds;
+
+        private int BaseTimeLimit(int crew)
         {
             if (timeLimits != null && timeLimits.Length > 0)
                 return Mathf.Max(30, timeLimits[Mathf.Clamp(crew, 1, timeLimits.Length) - 1]);

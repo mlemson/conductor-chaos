@@ -139,9 +139,18 @@ namespace ConductorChaos.EditorTools
                             if (mr != null) mr.enabled = false;
                             if (mf != null && mf.sharedMesh != null)
                             {
-                                var col = t.gameObject.AddComponent<MeshCollider>();
-                                col.convex = movable || t.parent.name.StartsWith(LoosePrefix) || IsSwingDoor(t.parent);
-                                col.sharedMesh = mf.sharedMesh;
+                                if (name == "Yard_Crane" && ConductorChaos.Yard.YardCrane.IsLeverCollider(t.name))
+                                {
+                                    var box = t.gameObject.AddComponent<BoxCollider>();
+                                    box.center = mf.sharedMesh.bounds.center;
+                                    box.size = mf.sharedMesh.bounds.size;
+                                }
+                                else
+                                {
+                                    var col = t.gameObject.AddComponent<MeshCollider>();
+                                    col.convex = movable || t.parent.name.StartsWith(LoosePrefix) || IsSwingDoor(t.parent);
+                                    col.sharedMesh = mf.sharedMesh;
+                                }
                             }
                         }
                         else if (t.name.StartsWith("Light_") && t.GetComponent<Light>() == null)

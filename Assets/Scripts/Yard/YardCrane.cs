@@ -23,6 +23,8 @@ namespace ConductorChaos.Yard
         private float pickedAt, landedFor;
         private bool readyToCatch = true, lifted;
 
+        public static bool IsLeverCollider(string name) => name is "Col_Lever_Slew" or "Col_Lever_Hoist";
+
         private void Awake()
         {
             slew = Find("Move_Slew");
@@ -55,7 +57,7 @@ namespace ConductorChaos.Yard
             {
                 if (!filter.name.StartsWith("Col_", System.StringComparison.Ordinal)) continue;
                 if (filter.TryGetComponent<MeshRenderer>(out var renderer)) renderer.enabled = false;
-                if (!filter.sharedMesh || filter.GetComponent<Collider>()) continue;
+                if (!filter.sharedMesh || filter.GetComponent<Collider>() || IsLeverCollider(filter.name)) continue;
                 var collider = filter.gameObject.AddComponent<MeshCollider>();
                 collider.sharedMesh = filter.sharedMesh;
             }
@@ -205,7 +207,19 @@ namespace ConductorChaos.Yard
         private HandLever CreateLever(string name)
         {
             var node = Find("Move_Lever_" + name);
-            foreach (var collider in node.GetComponentsInChildren<MeshCollider>(true)) collider.convex = true;
+            var marker = Find("Col_Lever_" + name);
+            if (marker && !marker.GetComponent<BoxCollider>() && marker.TryGetComponent<MeshFilter>(out var filter) && filter.sharedMesh)
+            {
+                if (marker.TryGetComponent<MeshCollider>(out var mesh))
+                {
+                    mesh.enabled = false;
+                    mesh.sharedMesh = null;
+                    Destroy(mesh);
+                }
+                var box = marker.gameObject.AddComponent<BoxCollider>();
+                box.center = filter.sharedMesh.bounds.center;
+                box.size = filter.sharedMesh.bounds.size;
+            }
             var body = AddKinematicBody(node);
             body.mass = 4f;
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;

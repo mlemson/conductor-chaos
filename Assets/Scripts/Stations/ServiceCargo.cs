@@ -16,7 +16,6 @@ namespace ConductorChaos.Stations
         private readonly HashSet<Rigidbody> travelled = new();
         private readonly Dictionary<Rigidbody, Collider[]> pieceColliders = new();
 
-        private readonly Dictionary<Rigidbody, Vector3> lastBayVelocity = new();
         private readonly RaycastHit[] supportHits = new RaycastHit[16];
 
         public override int Target => pieces?.Length ?? 0;
@@ -31,7 +30,6 @@ namespace ConductorChaos.Stations
             aboard.Clear();
             travelled.Clear();
             pieceColliders.Clear();
-            lastBayVelocity.Clear();
             foreach (var piece in pieces)
                 if (piece) pieceColliders[piece] = piece.GetComponentsInChildren<Collider>();
         }
@@ -43,11 +41,7 @@ namespace ConductorChaos.Stations
             var wagon = cargoBay ? TrainDrive.FindGuidedSupport(cargoBay.attachedRigidbody) : null;
             foreach (var piece in pieces)
             {
-                if (!piece || !Overlaps(cargoBay, piece))
-                {
-                    if (piece) lastBayVelocity.Remove(piece);
-                    continue;
-                }
+                if (!piece || !Overlaps(cargoBay, piece)) continue;
                 aboard.Add(piece);
                 CarryRestingCargo(piece, wagon);
             }
@@ -55,24 +49,18 @@ namespace ConductorChaos.Stations
 
         private void CarryRestingCargo(Rigidbody piece, Rigidbody wagon)
         {
-            if (!wagon || piece.isKinematic || !HasWagonFloor(piece, wagon))
-            {
-                lastBayVelocity.Remove(piece);
+            if (!wagon || piece.isKinematic || piece.angularVelocity.sqrMagnitude > 16f || !HasWagonFloor(piece, wagon))
                 return;
-            }
             foreach (var player in PlaygroundPlayer.SpawnedPlayers)
-                if (player.TryGetControlHand(piece, out _, out _, out _))
-                {
-                    lastBayVelocity.Remove(piece);
-                    return;
-                }
+                if (player && player.TryGetControlHand(piece, out _, out _, out _)) return;
 
-            Vector3 velocity = TrainDrive.GuidedBodyVelocity(wagon, piece.worldCenterOfMass);
-            if (lastBayVelocity.TryGetValue(piece, out var previous) &&
-                (piece.linearVelocity - previous).sqrMagnitude < 0.6f * 0.6f)
-                piece.AddForce(Vector3.ClampMagnitude(velocity - previous, 12f * Time.fixedDeltaTime),
-                    ForceMode.VelocityChange);
-            lastBayVelocity[piece] = velocity;
+            Vector3 floorVelocity = TrainDrive.GuidedBodyVelocity(wagon, piece.worldCenterOfMass);
+            Vector3 slip = floorVelocity - piece.linearVelocity;
+            Vector3 up = wagon.rotation * Vector3.up;
+            Vector3 horizontalSlip = Vector3.ProjectOnPlane(slip, up);
+            // A shove, a hard curve or loss of floor contact can still send the luggage sliding.
+            if (horizontalSlip.sqrMagnitude > 1f || Mathf.Abs(Vector3.Dot(slip, up)) > .8f) return;
+            piece.AddForce(Vector3.ClampMagnitude(horizontalSlip, 7f * Time.fixedDeltaTime), ForceMode.VelocityChange);
         }
 
         private bool HasWagonFloor(Rigidbody piece, Rigidbody wagon)
@@ -83,10 +71,11 @@ namespace ConductorChaos.Stations
             foreach (var collider in colliders)
                 if (collider && collider.enabled && !collider.isTrigger)
                     bottom = Mathf.Min(bottom, collider.bounds.min.y);
-            int count = Physics.RaycastNonAlloc(center, Vector3.down, supportHits, center.y - bottom + 0.10f,
+            int count = Physics.SphereCastNonAlloc(center, .09f, Vector3.down, supportHits, center.y - bottom + .08f,
                 ~0, QueryTriggerInteraction.Ignore);
+            Vector3 up = wagon.rotation * Vector3.up;
             for (int i = 0; i < count; i++)
-                if (supportHits[i].rigidbody == wagon && supportHits[i].normal.y > 0.55f) return true;
+                if (supportHits[i].rigidbody == wagon && Vector3.Dot(supportHits[i].normal, up) > .65f) return true;
             return false;
         }
 

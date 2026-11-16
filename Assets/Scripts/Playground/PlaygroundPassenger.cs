@@ -14,6 +14,9 @@ namespace ConductorChaos.Playground
         private readonly RaycastHit[] groundHits = new RaycastHit[24];
         private Rigidbody body, leftArm, rightArm;
         private Transform leftArmVisual, rightArmVisual;
+        private Pose leftArmRest, rightArmRest;
+        private bool boarding;
+        private float boardingStride;
         private ConfigurableJoint leftShoulder, rightShoulder;
         private CapsuleCollider leftCollider, rightCollider;
         private PlaygroundLegRig legs;
@@ -22,6 +25,22 @@ namespace ConductorChaos.Playground
         private float nextPose;
         private float fallenSince = -1f;
         private const float GetUpDelay = 1.2f;
+
+        private void Awake()
+        {
+            if (name != "RailMechanic" || transform.childCount == 0 || !GetComponent<PassengerTicket>()) return;
+            // Older service scenes have a mechanic authored in this passenger slot.
+            var model = Resources.Load<GameObject>("ServiceBusinessTraveler");
+            if (!model) { Debug.LogError("Vervangend reizigersmodel ontbreekt.", this); return; }
+            Transform previous = transform.GetChild(0);
+            var replacement = Instantiate(model, transform, false).transform;
+            replacement.SetLocalPositionAndRotation(previous.localPosition, previous.localRotation);
+            replacement.localScale = previous.localScale;
+            replacement.SetSiblingIndex(0);
+            previous.gameObject.SetActive(false);
+            Destroy(previous.gameObject);
+            name = "BusinessTraveler";
+        }
 
         public override void OnNetworkSpawn()
         {
@@ -39,6 +58,10 @@ namespace ConductorChaos.Playground
             waitingForward = transform.forward;
             leftArmVisual = left;
             rightArmVisual = right;
+            leftArmRest = new Pose(left.localPosition, left.localRotation);
+            rightArmRest = new Pose(right.localPosition, right.localRotation);
+            boarding = false;
+            boardingStride = 0f;
             leftArm = MakeArm(left, out leftShoulder, out leftCollider);
             rightArm = MakeArm(right, out rightShoulder, out rightCollider);
             if (leftCollider && rightCollider) Physics.IgnoreCollision(leftCollider, rightCollider);
@@ -80,19 +103,57 @@ namespace ConductorChaos.Playground
             return rigid;
         }
 
+        internal void BeginBoarding()
+        {
+            boarding = true;
+            body.isKinematic = true;
+            ReleaseArm(leftArm, leftShoulder, leftCollider, leftArmRest);
+            ReleaseArm(rightArm, rightShoulder, rightCollider, rightArmRest);
+            leftArmPose.Value = leftArmRest.rotation;
+            rightArmPose.Value = rightArmRest.rotation;
+            legs?.EndPassengerPhysics();
+            PoseLegs(0f, 0f);
+        }
+
+        private static void ReleaseArm(Rigidbody arm, ConfigurableJoint shoulder, CapsuleCollider collider, Pose rest)
+        {
+            if (!arm) return;
+            if (collider) { collider.enabled = false; Destroy(collider); }
+            if (shoulder) Destroy(shoulder);
+            arm.interpolation = RigidbodyInterpolation.None;
+            arm.isKinematic = true;
+            arm.transform.SetLocalPositionAndRotation(rest.position, rest.rotation);
+            Destroy(arm);
+        }
+
+        internal void PoseSeated() => PoseLegs(-72f, -72f);
+
+        private void PoseLegs(float left, float right)
+        {
+            if (legs == null) return;
+            legs.PosePassenger(left, right);
+            leftLegPose.Value = legs.LeftRotation;
+            rightLegPose.Value = legs.RightRotation;
+        }
+
         internal bool WalkToward(Vector3 destination)
         {
-            Vector3 delta = destination - body.position;
+            Vector3 from = body.position;
+            Vector3 delta = destination - from;
             Vector3 flat = Vector3.ProjectOnPlane(delta, Vector3.up);
             if (flat.sqrMagnitude > .008f)
                 body.MoveRotation(Quaternion.RotateTowards(body.rotation, Quaternion.LookRotation(flat), 360f * Time.fixedDeltaTime));
-            body.MovePosition(Vector3.MoveTowards(body.position, destination, .9f * Time.fixedDeltaTime));
+            Vector3 next = Vector3.MoveTowards(from, destination, .9f * Time.fixedDeltaTime);
+            body.MovePosition(next);
+            boardingStride += (next - from).magnitude * 12f;
+            float swing = Mathf.Sin(boardingStride) * 18f;
+            PoseLegs(swing, -swing);
             return delta.sqrMagnitude < .018f * .018f;
         }
 
         private void FixedUpdate()
         {
-            if (!IsSpawned || !IsServer || !body || !leftArm || !rightArm) return;
+            if (!IsSpawned || !IsServer || boarding || !body || !leftArm || !rightArm) return;
             bool grounded = false;
             int count = Physics.SphereCastNonAlloc(body.position + Vector3.up * 0.3f, 0.16f, Vector3.down,
                 groundHits, 0.34f, ~0, QueryTriggerInteraction.Ignore);

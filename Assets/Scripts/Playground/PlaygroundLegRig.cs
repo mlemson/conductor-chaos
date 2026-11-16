@@ -141,6 +141,18 @@ namespace ConductorChaos.Playground
             return left.HasSupport || right.HasSupport;
         }
 
+        public void EndPassengerPhysics()
+        {
+            left.EndPhysics();
+            right.EndPhysics();
+        }
+
+        public void PosePassenger(float leftAngle, float rightAngle)
+        {
+            left.Pose(leftAngle);
+            right.Pose(rightAngle);
+        }
+
         public void ReleaseSupport()
         {
             left.ReleaseSupport();
@@ -190,6 +202,7 @@ namespace ConductorChaos.Playground
         {
             private readonly Transform bone;
             private readonly Quaternion rest;
+            private readonly Vector3 restPosition;
             private readonly Rigidbody rigid;
             private readonly CapsuleCollider collider;
             private readonly ConfigurableJoint hip;
@@ -211,6 +224,7 @@ namespace ConductorChaos.Playground
             {
                 this.bone = bone;
                 rest = bone.localRotation;
+                restPosition = bone.localPosition;
                 if (!server) return;
                 rigid = bone.gameObject.AddComponent<Rigidbody>();
                 rigid.mass = 0.45f;
@@ -302,13 +316,28 @@ namespace ConductorChaos.Playground
                 if (bone) bone.localRotation = Quaternion.Slerp(bone.localRotation, pose, 15f * Time.deltaTime);
             }
 
-            public void Dispose()
+            public void EndPhysics()
             {
                 ReleaseSupport();
                 if (hip) Object.Destroy(hip);
-                if (collider) Object.Destroy(collider);
-                if (rigid) Object.Destroy(rigid);
-                if (bone) bone.localRotation = rest;
+                if (collider) { collider.enabled = false; Object.Destroy(collider); }
+                if (rigid)
+                {
+                    rigid.interpolation = RigidbodyInterpolation.None;
+                    rigid.isKinematic = true;
+                    Object.Destroy(rigid);
+                }
+            }
+
+            public void Pose(float angle)
+            {
+                if (bone) bone.SetLocalPositionAndRotation(restPosition, rest * Quaternion.Euler(angle, 0f, 0f));
+            }
+
+            public void Dispose()
+            {
+                EndPhysics();
+                Pose(0f);
             }
         }
     }

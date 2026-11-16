@@ -178,7 +178,7 @@ namespace ConductorChaos.Playground
                 Quaternion local = Quaternion.Inverse(rest) * world * rest;
                 shoulder.rotationDriveMode = RotationDriveMode.Slerp;
                 shoulder.slerpDrive = new JointDrive { positionSpring = armSpring, positionDamper = 3f, maximumForce = 400f };
-                shoulder.targetRotation = Quaternion.Inverse(local);
+                shoulder.targetRotation = Quaternion.Inverse(Quaternion.RotateTowards(Quaternion.identity, local, 65f));
             }
             else
             {

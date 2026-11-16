@@ -26,7 +26,7 @@ namespace ConductorChaos.Editor
                 Debug.LogError("Playground player missing or passengers already exist; no scene changes were made.");
                 return;
             }
-            string[] models = { "ElderlyPassenger", "Tourist", "RailMechanic" };
+            string[] models = { "ElderlyPassenger", "Tourist", "BusinessTraveler" };
             foreach (string name in models)
             {
                 string path = $"Assets/Art/Models/Characters/{name}/{name}.fbx";

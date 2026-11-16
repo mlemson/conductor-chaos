@@ -23,7 +23,7 @@ namespace ConductorChaos.Stations
         private const string FollowupTrackName = "ChugChugAlong";
 
         private readonly Dictionary<string, AudioClip> clips = new();
-        private readonly HashSet<string> warnedMissing = new();
+
         private AudioSource source;
         private ServiceRun currentRun;
         private double currentStart;
@@ -36,6 +36,10 @@ namespace ConductorChaos.Stations
             source.loop = false;
             source.spatialBlend = 0f;
             source.priority = 128;
+
+            WarmUp(MenuTrackName);
+            WarmUp(FollowupTrackName);
+            foreach (int duration in new[] { 210, 240, 270, 300 }) WarmUp(LevelTrackName(duration));
         }
 
         private void Update()
@@ -69,11 +73,10 @@ namespace ConductorChaos.Stations
             }
 
             // Langere levels (level 2: 7-10 min) hebben geen eigen versie: dan de 5-minutenversie, daarna de vervolgsong.
-            AudioClip levelClip = GetLevelClip(run.MusicDuration);
-            if (!levelClip && run.MusicDuration > 300) levelClip = GetLevelClip(300);
+            AudioClip levelClip = ReadyClip(LevelTrackName(run.MusicDuration));
             if (!levelClip)
             {
-                StopAndReset();
+                if (!currentRun) PlayMenuTheme();
                 return;
             }
 
@@ -95,12 +98,8 @@ namespace ConductorChaos.Stations
                 return;
             }
 
-            AudioClip followup = LoadClip(FollowupTrackName);
-            if (!followup || followup.length <= 0f)
-            {
-                StopAndReset();
-                return;
-            }
+            AudioClip followup = ReadyClip(FollowupTrackName);
+            if (!followup) return;
 
             // Loop the follow-up until the player leaves/restarts the level. Using
             // server time also gives late clients the same position in this song.
@@ -110,12 +109,8 @@ namespace ConductorChaos.Stations
 
         private void PlayMenuTheme()
         {
-            AudioClip menuClip = LoadClip(MenuTrackName);
-            if (!menuClip)
-            {
-                StopAndReset();
-                return;
-            }
+            AudioClip menuClip = ReadyClip(MenuTrackName);
+            if (!menuClip) return;
 
             if (currentRun || source.clip != menuClip || !source.loop)
             {
@@ -144,7 +139,7 @@ namespace ConductorChaos.Stations
                 currentStart = start;
                 source.clip = clip;
                 source.loop = loop;
-                source.time = seek;
+                if (seek > .15f) source.time = seek;
                 if (!AudioListener.pause) source.Play();
                 return;
             }
@@ -164,28 +159,26 @@ namespace ConductorChaos.Stations
             }
         }
 
-        private AudioClip GetLevelClip(int duration)
+        private static string LevelTrackName(int duration) => duration is 210 or 240 or 270
+            ? $"RustynailExpress_{duration}" : "RustynailExpress_300";
+
+        private AudioClip ReadyClip(string name) => clips.TryGetValue(name, out var clip) &&
+            clip && clip.loadState == AudioDataLoadState.Loaded && clip.length > 0f ? clip : null;
+
+        private void WarmUp(string name)
         {
-            string name = duration switch
+            var request = Resources.LoadAsync<AudioClip>("Music/" + name);
+            request.completed += _ =>
             {
-                300 => "RustynailExpress_300",
-                270 => "RustynailExpress_270",
-                240 => "RustynailExpress_240",
-                210 => "RustynailExpress_210",
-                _ => null
+                if (!this) return;
+                if (request.asset is not AudioClip clip)
+                {
+                    Debug.LogWarning($"Muziek ontbreekt: Assets/Resources/Music/{name}.mp3.", this);
+                    return;
+                }
+                clips[name] = clip;
+                if (clip.loadState == AudioDataLoadState.Unloaded) clip.LoadAudioData();
             };
-            return name == null ? null : LoadClip(name);
-        }
-
-        private AudioClip LoadClip(string name)
-        {
-            if (clips.TryGetValue(name, out AudioClip cached)) return cached;
-
-            AudioClip clip = Resources.Load<AudioClip>("Music/" + name);
-            clips[name] = clip;
-            if (!clip && warnedMissing.Add(name))
-                Debug.LogWarning($"Muziek ontbreekt: Assets/Resources/Music/{name}.mp3. Voeg het audiobestand toe aan het Unity-project.", this);
-            return clip;
         }
 
         private void StopAndReset()

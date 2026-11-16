@@ -9,7 +9,10 @@ using ConductorChaos.Animals;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEditor;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace ConductorChaos.EditorTools
 {
@@ -120,9 +123,7 @@ namespace ConductorChaos.EditorTools
                         if (mr) mr.enabled = false;
                     }
                     else if (hasCollider) continue;
-                    var col = filter.gameObject.AddComponent<MeshCollider>();
-                    col.sharedMesh = filter.sharedMesh;
-                    col.convex = true;
+                    AddHayBaleCollider(filter.gameObject);
                     hasCollider = true;
                 }
                 var body = go.AddComponent<Rigidbody>();
@@ -141,6 +142,33 @@ namespace ConductorChaos.EditorTools
             {
                 Object.DestroyImmediate(go);
             }
+        }
+        internal static BoxCollider AddHayBaleCollider(GameObject target)
+        {
+            var box = target.AddComponent<BoxCollider>();
+            box.center = new Vector3(0f, .208f, 0f);
+            box.size = new Vector3(.84f, .4f, .52f);
+            return box;
+        }
+    }
+
+    internal sealed class HayBaleSceneBuild : IProcessSceneWithReport
+    {
+        public int callbackOrder => 0;
+
+        public void OnProcessScene(Scene scene, BuildReport report)
+        {
+            if (report == null) return;
+            // Older scenes contain the baked collider directly on the imported visual.
+            foreach (var root in scene.GetRootGameObjects())
+                foreach (var lure in root.GetComponentsInChildren<AnimalLure>(true))
+                    foreach (var hull in lure.GetComponentsInChildren<MeshCollider>(true))
+                    {
+                        if (!hull.sharedMesh || hull.sharedMesh.name != "HayBale") continue;
+                        var box = AnimalPrefabs.AddHayBaleCollider(hull.gameObject);
+                        box.sharedMaterial = hull.sharedMaterial;
+                        Object.DestroyImmediate(hull);
+                    }
         }
     }
 }

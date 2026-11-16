@@ -6,7 +6,7 @@ namespace ConductorChaos.Stations
 {
     public sealed class ServiceTickets : ServiceObjective
     {
-        private enum Boarding { Waiting, ToDoor, ThroughDoor, ToSeat, Riding }
+        private enum Boarding { Waiting, ToDoor, ThroughDoor, ToAisle, ToRow, Riding }
 
         [SerializeField] private PassengerTicket[] passengers;
         [SerializeField] private PassengerTicket[] boardingPassengers;
@@ -17,38 +17,48 @@ namespace ConductorChaos.Stations
 
         private void FixedUpdate()
         {
-            if (!outside || !doorway || !seat || !NetworkManager.Singleton || !NetworkManager.Singleton.IsServer) return;
+            if (!outside || !doorway || !seat || stages == null || !NetworkManager.Singleton || !NetworkManager.Singleton.IsServer) return;
             var run = ServiceRun.Active;
             if (!run || run.gameObject.scene != gameObject.scene) return;
+            Transform wagon = seat.parent;
+            bool busy = System.Array.Exists(stages, stage => stage is not (Boarding.Waiting or Boarding.Riding));
             for (int i = 0; i < stages.Length; i++)
             {
                 var ticket = boardingPassengers[i];
                 if (!ticket || !ticket.IsSpawned || !ticket.IsPunched) continue;
                 var passenger = ticket.GetComponent<PlaygroundPassenger>();
                 var body = ticket.GetComponent<Rigidbody>();
-                Vector3 seatPosition = seat.position + seat.parent.right * (i == 0 ? -.6f : 1.3f);
+                // RegionalWagon aisle z = -1.3, seat top y = .50.
+                float row = i == 0 ? -1.70f : 1.45f;
+                Vector3 aisle = wagon.TransformPoint(doorway.localPosition.x, .13f, -1.30f);
+                Vector3 rowEntry = wagon.TransformPoint(row, .13f, -1.30f);
+                Vector3 seatPosition = wagon.TransformPoint(row, .26f, -2.04f);
+                Quaternion seatRotation = Quaternion.LookRotation(wagon.right * (i == 0 ? -1f : 1f), wagon.up);
                 switch (stages[i])
                 {
-                    case Boarding.Waiting when run.CanBoardAt(doorway):
-                        body.isKinematic = true;
+                    case Boarding.Waiting when !busy && run.CanBoardAt(doorway):
+                        passenger.BeginBoarding();
                         stages[i] = Boarding.ToDoor;
+                        busy = true;
                         break;
-                    case Boarding.ToDoor when passenger.WalkToward(outside.position) && run.CanBoardAt(doorway):
+                    case Boarding.ToDoor when run.CanBoardAt(doorway) && passenger.WalkToward(outside.position):
                         stages[i] = Boarding.ThroughDoor;
                         break;
-                    case Boarding.ThroughDoor when passenger.WalkToward(doorway.position):
-                        stages[i] = Boarding.ToSeat;
+                    case Boarding.ThroughDoor when run.CanBoardAt(doorway) && passenger.WalkToward(doorway.position):
+                        stages[i] = Boarding.ToAisle;
                         break;
-                    case Boarding.ToSeat when passenger.WalkToward(seatPosition):
+                    case Boarding.ToAisle when passenger.WalkToward(aisle):
+                        stages[i] = Boarding.ToRow;
+                        break;
+                    case Boarding.ToRow when passenger.WalkToward(rowEntry):
+                        passenger.PoseSeated();
                         stages[i] = Boarding.Riding;
-                        break;
+                        goto case Boarding.Riding;
                     case Boarding.Riding:
                         body.MovePosition(seatPosition);
-                        body.MoveRotation(seat.rotation);
+                        body.MoveRotation(seatRotation);
                         break;
                 }
-                // Send one traveller through the narrow doorway at a time.
-                if (stages[i] is not (Boarding.Waiting or Boarding.Riding)) break;
             }
         }
 
