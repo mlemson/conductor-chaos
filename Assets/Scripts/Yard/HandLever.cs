@@ -56,6 +56,8 @@ namespace ConductorChaos.Yard
             springBack = returnToFrom;
         }
 
+        internal void PresentAngle(float angle) => transform.localRotation = restRotation * Quaternion.AngleAxis(angle, axis);
+
         public static float TwistAngle(Quaternion q, Vector3 axis)
         {
             Vector3 v = new(q.x, q.y, q.z);

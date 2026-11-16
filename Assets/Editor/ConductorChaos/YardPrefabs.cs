@@ -4,7 +4,7 @@
 //                    (PoseFollower) en er komt water uit zodra de pijp omlaag is en het wiel open (LiquidSource).
 //   Yard_HoseTap     kraantje met de hand open (kwartslag); een losse spuitmond (Loose_HoseNozzle) hangt aan een
 //   Yard_OilPump     slang van 12 m (HoseLine) en spuit water, of olie bij de oliepomp.
-// De kraan (Yard_Crane) krijgt nog geen bediening.
+// Yard_Crane gebruikt twee hendels en een fysieke haak voor lading met een hijsring.
 using ConductorChaos.Yard;
 using Unity.Netcode;
 using Unity.Netcode.Components;
@@ -36,7 +36,12 @@ namespace ConductorChaos.EditorTools
         /// <summary>Na de botsvormen en de losse props: hendels, vloeistof en slang.</summary>
         public static void AfterColliders(GameObject go, string name)
         {
-            if (name == "Yard_WaterTower")
+            if (name == "Yard_Crane")
+            {
+                go.AddComponent<NetworkObject>();
+                go.AddComponent<YardCrane>();
+            }
+            else if (name == "Yard_WaterTower")
             {
                 var valve = MakeLever(go, "Valve");
                 var spoutLever = MakeLever(go, "Lever_Spout");
