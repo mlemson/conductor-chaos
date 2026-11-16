@@ -12,6 +12,7 @@ Uitvoer:
   Assets/Art/Models/Environment/Station/Platform/Platform_*.fbx      (zelfde pivot als een spoorstuk)
   Assets/Art/Models/Environment/Station/Props/Prop_*.fbx             (pivot midden-onder, voorkant +Z)
   Assets/Art/Models/Environment/Station/Farm/Farm_*.fbx              (boerderijdecor, zie farm_props.py)
+  Assets/Art/Models/Environment/Station/Yard/Yard_*.fbx              (watertoren, tappunt, kraan; zie yard_props.py)
   Assets/Art/Materials/Environment/Station/M_Stn_*.mat
   ArtSource/Exports/Environment/Station/*.glb + StationKit.json
 Col_*-knopen zijn verborgen botsvormen; de prefabbouwer in Unity (Conductor Chaos > Art > Station) maakt er
@@ -30,6 +31,7 @@ import main_station as main_station  # noqa: E402
 import farm_props as farm  # noqa: E402
 import bell_props as bell  # noqa: E402
 import service_markers as markers  # noqa: E402
+import yard_props as yard  # noqa: E402
 import main_station_props as mprops  # noqa: E402
 import station_building as building  # noqa: E402
 import station_platform as platform  # noqa: E402
@@ -153,6 +155,14 @@ def build_service(manifest, only=None):
         export(name, "Service", make(), density=density, radius=radius, manifest=manifest)
 
 
+def build_yard(manifest):
+    """Emplacement (#232, #233, #235): watertoren, tappunt met slang, draaikraan; spuitmond als losse prop."""
+    for name, (make, density, radius) in yard.ASSETS.items():
+        export(name, "Yard", make(), density=density, radius=radius, manifest=manifest)
+    for name, (make, density, radius) in yard.PROPS.items():
+        export(name, "Props", make(), density=density, radius=radius, manifest=manifest)
+
+
 def build_main(manifest):
     export("Station_Main", None, main_station.build(), density=170, radius=0.30, manifest=manifest,
            extra={"floor": main_station.FL, "footprint": [main_station.CX0, main_station.WX1, -main_station.HD, 0.0],
@@ -195,7 +205,7 @@ def build_building_variants(manifest):
         build_building_variant(manifest, name)
 
 
-ALL = ("props", "briefing", "tools", "farm", "service", "platform", "building", "variants", "main", "glyphs")
+ALL = ("props", "briefing", "tools", "farm", "service", "yard", "platform", "building", "variants", "main", "glyphs")
 
 
 def main(which=ALL):
@@ -210,6 +220,8 @@ def main(which=ALL):
         build_farm(manifest)
     if "service" in which:
         build_service(manifest)
+    if "yard" in which:
+        build_yard(manifest)
     if "platform" in which:
         build_platform(manifest)
     if "platform" in which or "platform-no-stripe" in which:

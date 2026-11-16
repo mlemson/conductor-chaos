@@ -39,6 +39,7 @@ namespace ConductorChaos.EditorTools
         static IEnumerable<string> Buildings => AssetDatabase.FindAssets("t:Model", new[] { ModelDir })
             .Select(g => Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(g))).Where(IsBuilding);
         const string LoosePrefix = "Loose_";
+        const string MovePrefix = "Move_";      // bewegend onderdeel voor latere gameplay (hendel, kraan, haak, #232-#235)
         const string HingePrefix = "Hinge_";
 
         /// <summary>Draaiend blad uit het model: heeft de knopen Hinge_&lt;naam&gt;_Closed en Hinge_&lt;naam&gt;_Open naast zich.</summary>
@@ -63,7 +64,8 @@ namespace ConductorChaos.EditorTools
             { "Prop_Bell", 0.35f },
             { "Prop_Mug", 0.25f },
             { "Prop_Wrench", 1.2f },
-            { "Prop_TicketPunch", 0.5f }
+            { "Prop_TicketPunch", 0.5f },
+            { "Prop_HoseNozzle", 1.2f }
         };
 
         static StationKitPrefabs()
@@ -157,7 +159,8 @@ namespace ConductorChaos.EditorTools
                     {
                         bool moving = movable;
                         for (var p = t; !moving && p != null && p != go.transform.parent; p = p.parent)
-                            if (Moving.Contains(p.name) || p.name.StartsWith(LoosePrefix) || IsSwingDoor(p)) { moving = true; break; }
+                            if (Moving.Contains(p.name) || p.name.StartsWith(LoosePrefix) || p.name.StartsWith(MovePrefix) ||
+                                IsSwingDoor(p)) { moving = true; break; }
                         GameObjectUtility.SetStaticEditorFlags(t.gameObject, moving ? (StaticEditorFlags)0 : flags);
                     }
                     if (movable) AddPhysics(go, name, mass, inLocalSpace: false);

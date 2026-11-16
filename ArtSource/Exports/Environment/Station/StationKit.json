@@ -2126,6 +2126,155 @@
         -5.4,
         0.0
       ]
+    },
+    "Yard_WaterTower": {
+      "fbx": "Assets/Art/Models/Environment/Station/Yard/Yard_WaterTower.fbx",
+      "category": "Yard",
+      "tris": 7996,
+      "min": [
+        -1.824,
+        -0.032,
+        -1.832
+      ],
+      "max": [
+        3.156,
+        7.93,
+        1.824
+      ],
+      "nodes": [
+        "Yard_WaterTower",
+        "Tower",
+        "Col_Main",
+        "Col_Railing",
+        "Move_Spout",
+        "Col_Spout",
+        "Point_WaterOut",
+        "Move_Lever_Spout",
+        "Col_Lever_Spout",
+        "Move_Valve",
+        "Col_Valve",
+        "Move_Gauge",
+        "Pose_Spout_Up",
+        "Pose_Spout_Down",
+        "Pose_Lever_Spout_Up",
+        "Pose_Lever_Spout_Down",
+        "Pose_Valve_Closed",
+        "Pose_Valve_Open",
+        "Pose_Gauge_Full",
+        "Pose_Gauge_Empty"
+      ]
+    },
+    "Yard_HoseTap": {
+      "fbx": "Assets/Art/Models/Environment/Station/Yard/Yard_HoseTap.fbx",
+      "category": "Yard",
+      "tris": 4602,
+      "min": [
+        -0.28,
+        0.0,
+        -0.57
+      ],
+      "max": [
+        1.29,
+        1.22,
+        0.473
+      ],
+      "nodes": [
+        "Yard_HoseTap",
+        "Tap",
+        "Col_Main",
+        "Point_HoseOut",
+        "Move_Valve",
+        "Col_Valve",
+        "Move_Reel",
+        "Point_ReelHose",
+        "Pose_Valve_Closed",
+        "Pose_Valve_Open"
+      ]
+    },
+    "Yard_HoseSegment": {
+      "fbx": "Assets/Art/Models/Environment/Station/Yard/Yard_HoseSegment.fbx",
+      "category": "Yard",
+      "tris": 96,
+      "min": [
+        -0.035,
+        -0.035,
+        -0.035
+      ],
+      "max": [
+        0.535,
+        0.035,
+        0.035
+      ],
+      "nodes": [
+        "Yard_HoseSegment",
+        "Hose"
+      ]
+    },
+    "Yard_Crane": {
+      "fbx": "Assets/Art/Models/Environment/Station/Yard/Yard_Crane.fbx",
+      "category": "Yard",
+      "tris": 8192,
+      "min": [
+        -1.83,
+        0.0,
+        -1.507
+      ],
+      "max": [
+        6.96,
+        8.8,
+        1.632
+      ],
+      "nodes": [
+        "Yard_Crane",
+        "Base",
+        "Col_Main",
+        "Move_Slew",
+        "Col_Slew",
+        "Col_Railing",
+        "Col_Jib",
+        "Point_Operator",
+        "Cable",
+        "Move_Hook",
+        "Col_Hook",
+        "Point_HookTip",
+        "Move_Lever_Slew",
+        "Col_Lever_Slew",
+        "Pose_Lever_Slew_Neutral",
+        "Pose_Lever_Slew_Forward",
+        "Pose_Lever_Slew_Back",
+        "Move_Lever_Hoist",
+        "Col_Lever_Hoist",
+        "Pose_Lever_Hoist_Neutral",
+        "Pose_Lever_Hoist_Forward",
+        "Pose_Lever_Hoist_Back",
+        "Pose_Hook_Top",
+        "Pose_Hook_Bottom"
+      ]
+    },
+    "Prop_HoseNozzle": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_HoseNozzle.fbx",
+      "category": "Props",
+      "tris": 1204,
+      "min": [
+        -0.291,
+        0.007,
+        -0.042
+      ],
+      "max": [
+        0.235,
+        0.202,
+        0.042
+      ],
+      "nodes": [
+        "Prop_HoseNozzle",
+        "Nozzle",
+        "Col_Main",
+        "Move_Trigger",
+        "Point_WaterOut",
+        "Point_HoseIn",
+        "Pose_Trigger_Released",
+        "Pose_Trigger_Pressed"
+      ]
     }
   },
   "station": {
