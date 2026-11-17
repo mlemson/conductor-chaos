@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using ConductorChaos.Playground;
+using ConductorChaos.Track;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -85,6 +86,9 @@ namespace ConductorChaos.Stations
         private int activeFor = int.MinValue;      // voor welke 'selected' de lijst hierboven is opgebouwd
         private Vector3 initialTrainPosition;
         private float stopSeconds;
+        private int breakdownsRemaining;
+        private float breakdownDelay;
+        private Vector2 breakdownInterval;
         private double resultReadyAt;
         private BoxCollider bellButton;
         private AudioClip bellSound;
@@ -244,6 +248,19 @@ namespace ConductorChaos.Stations
         public override void OnNetworkSpawn()
         {
             Active = this;
+            if (IsServer)
+            {
+                var (limit, first, interval) = gameObject.scene.name switch
+                {
+                    FirstLevelScene => (1, new Vector2(15f, 24f), Vector2.zero),
+                    SecondLevelScene => (3, new Vector2(12f, 20f), new Vector2(22f, 35f)),
+                    ThirdLevelScene => (7, new Vector2(6f, 12f), new Vector2(10f, 18f)),
+                    _ => (0, Vector2.zero, Vector2.zero)
+                };
+                breakdownsRemaining = limit;
+                breakdownDelay = Random.Range(first.x, first.y);
+                breakdownInterval = interval;
+            }
             if (departure && departure.DepartureBell) bellButton = departure.DepartureBell.GetComponent<BoxCollider>();
             bellSound = Resources.Load<AudioClip>("ServiceDepartureBell");
             bellRung.OnValueChanged += PresentBell;
@@ -433,6 +450,8 @@ namespace ConductorChaos.Stations
                 return;
             }
 
+            if (Phase == RunPhase.Travelling) UpdateTrainBreakdowns();
+
             if (CombinesObjectives)
             {
                 UpdateCombinedOnServer();
@@ -532,6 +551,30 @@ namespace ConductorChaos.Stations
             }
             progress.Value = total;
             if (TimerRunning && docked && complete) Finish(true);
+        }
+
+        private void UpdateTrainBreakdowns()
+        {
+            if (breakdownsRemaining <= 0) return;
+            breakdownDelay -= Time.fixedDeltaTime;
+            if (breakdownDelay > 0f) return;
+
+            var candidates = new List<RepairPoint>();
+            if (train.TryGetComponent<TrainBreakdowns>(out var locomotive))
+                locomotive.AddBreakablePoints(candidates);
+            foreach (var wagon in train.CoupledWagons)
+                if (wagon && wagon.TryGetComponent<TrainBreakdowns>(out var breakdowns))
+                    breakdowns.AddBreakablePoints(candidates);
+
+            if (candidates.Count == 0)
+            {
+                breakdownDelay = 5f;
+                return;
+            }
+
+            candidates[Random.Range(0, candidates.Count)].ServerBreak();
+            breakdownsRemaining--;
+            breakdownDelay = Random.Range(breakdownInterval.x, breakdownInterval.y);
         }
 
         private bool HasLeftDeparture => (train.transform.position - initialTrainPosition).sqrMagnitude > 1f &&

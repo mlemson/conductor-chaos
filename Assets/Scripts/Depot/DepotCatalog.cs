@@ -106,16 +106,16 @@ namespace ConductorChaos.Depot
         public static readonly LevelInfo[] Levels =
         {
             new LevelInfo { Index = 0, Scene = ServiceRun.IntroScene, Label = "INTRO", Name = "Je eerste werkdag", Photo = "Whistleton",
-                Summary = "Oefenen op Whistleton: bagage, kaartjes, deur en vertrekbel. Geen tijdslimiet.", Distance = "Korte oefenrit", Difficulty = 1,
+                Summary = "Oefen de bediening zonder tijdslimiet.", Distance = "Korte oefenrit", Difficulty = 1,
                 Highlights = new[] { "Briefingruimte", "Oefenen met de crew" } },
             new LevelInfo { Index = 1, Scene = ServiceRun.FirstLevelScene, Label = "LEVEL 1", Name = "Eerste dienst", Photo = "Bumblewick",
-                Summary = "Eén opdracht per rit: oma begeleiden, kaartjes knippen, de rode koffer, kratten of de wissel.", Distance = "Korte rit", Difficulty = 2,
+                Summary = "Eén opdracht per rit.", Distance = "Korte rit", Difficulty = 2,
                 Highlights = new[] { "Emplacement met kraan", "Wissel kan kapot" } },
             new LevelInfo { Index = 2, Scene = ServiceRun.SecondLevelScene, Label = "LEVEL 2", Name = "Langs de kloof", Photo = "Puddleford",
-                Summary = "Alle opdrachten tegelijk, plus de brugrail en de wissels. Onderweg minstens één incident.", Distance = "± 690 m", Difficulty = 3,
+                Summary = "Meerdere opdrachten en incidenten onderweg.", Distance = "± 690 m", Difficulty = 3,
                 Highlights = new[] { "Diepe kloof", "Stenen boogbrug" } },
             new LevelInfo { Index = 3, Scene = ServiceRun.ThirdLevelScene, Label = "LEVEL 3", Name = "Over de hoogvlakte", Photo = "Craggleton",
-                Summary = "Vier wissels, twee kapotte brugrails en elke rit meerdere incidenten.", Distance = "± 1,1 km", Difficulty = 4,
+                Summary = "Vier wissels, kapotte brugrails en veel storingen.", Distance = "± 1,1 km", Difficulty = 4,
                 Highlights = new[] { "Viaduct van 72 m", "Steile afdaling" } },
         };
 

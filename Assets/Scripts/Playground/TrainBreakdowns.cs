@@ -3,6 +3,8 @@
 // Zet dit op een voertuig van de nieuwe treinsets (Tools > Conductor Chaos > Train Sets doet dat). Alleen de server kiest een
 // storing. RepairPoint synchroniseert de staat.
 // Nog geen gevolgen voor het rijden (snelheid, licht): dat is een aparte stap.
+using System.Collections.Generic;
+using ConductorChaos.Stations;
 using ConductorChaos.Track;
 using Unity.Netcode;
 using UnityEngine;
@@ -26,11 +28,13 @@ namespace ConductorChaos.Playground
 
         RepairPoint[] points;
         float next;
+        bool serviceVehicle;
 
         void Start()
         {
             EnsureMeshColliders(gameObject);
             points = GetComponentsInChildren<RepairPoint>(true);
+            serviceVehicle = ServiceRun.IsServiceScene(gameObject.scene.name);
             next = Time.time + firstAfter + Random.Range(0f, Mathf.Max(0f, interval.x));
         }
 
@@ -137,23 +141,23 @@ namespace ConductorChaos.Playground
         void Update()
         {
             if (IsSpawned && !IsServer) PresentDoors();
-            var network = NetworkManager.Singleton;
-            if (!network || !network.IsServer || points == null || points.Length == 0 || Time.time < next) return;
+            if (serviceVehicle || !IsSpawned || !IsServer || points == null || points.Length == 0 || Time.time < next) return;
             next = Time.time + Random.Range(Mathf.Min(interval.x, interval.y), Mathf.Max(interval.x, interval.y));
-            int broken = 0, intact = 0;
+            var candidates = new List<RepairPoint>();
+            AddBreakablePoints(candidates);
+            if (candidates.Count > 0) candidates[Random.Range(0, candidates.Count)].ServerBreak();
+        }
+
+        internal void AddBreakablePoints(List<RepairPoint> candidates)
+        {
+            if (!IsSpawned || !IsServer || !isActiveAndEnabled || points == null) return;
+            int broken = 0;
             foreach (var point in points)
-            {
-                if (!point || !point.IsSpawned) continue;
-                if (point.IsBroken) broken++;
-                else intact++;
-            }
-            if (broken >= maxBroken || intact == 0) return;
-            int pick = Random.Range(0, intact);
+                if (point && point.IsSpawned && point.IsBroken && ++broken >= maxBroken) return;
+
             foreach (var point in points)
-            {
-                if (!point || !point.IsSpawned || point.IsBroken) continue;
-                if (pick-- == 0) { point.ServerBreak(); return; }
-            }
+                if (point && point.IsSpawned && point.isActiveAndEnabled && !point.IsBroken)
+                    candidates.Add(point);
         }
     }
 }
