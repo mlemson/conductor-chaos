@@ -445,6 +445,8 @@ namespace ConductorChaos.Playground
             // Keep some steering when the torso touches uneven ground but neither foot probe finds support.
             float movementAcceleration = grounded || supported ? acceleration * (supported ? (sprinting ? 1.35f : 1f) : 0.45f)
                 : acceleration * (sprinting ? 0.45f : 0.2f);
+            // Winter (#243): op ijs (IceSurface) minder grip, dus trager remmen en draaien; in de trein nooit.
+            if (grounded && !trainSupport) movementAcceleration *= ConductorChaos.Nature.IceSurface.GripOn(groundHit.collider);
             Vector3 change = Vector3.ClampMagnitude(new Vector3(target.x - current.x, 0f, target.z - current.z), movementAcceleration * Time.fixedDeltaTime);
             if (climbing || hanging) change = Vector3.zero;
             else if (!jumping || !trainSupport) body.AddForce(change, ForceMode.VelocityChange);

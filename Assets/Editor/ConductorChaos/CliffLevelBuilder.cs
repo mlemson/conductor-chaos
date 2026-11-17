@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Text;
 using ConductorChaos.Art;
 using ConductorChaos.Playground;
+using ConductorChaos.Nature;
 using ConductorChaos.Stations;
 using ConductorChaos.Track;
 using Unity.Netcode;
@@ -97,6 +98,7 @@ namespace ConductorChaos.EditorTools
             public int extraWrenches = 1;
             public int mesas = 10;
             public bool cliffRing = true;
+            public bool winter;                  // sneeuwlevel (#242): sneeuwgrond, besneeuwde bomen/kliffen, ijs, kou (#243)
         }
 
         public static Step S(string prefab, string tag, float grade = 0f) => new Step { prefab = prefab, tag = tag, grade = grade };
@@ -118,6 +120,7 @@ namespace ConductorChaos.EditorTools
         const string TrackDir = "Assets/Art/Prefabs/Track";
         const string EnvDir = "Assets/Art/Models/Environment";
         const string PropDir = "Assets/Art/Prefabs/Station/Props";
+        const string WinterRoot = "Winterdecor";
         const float RailTop = 0.43f;            // sockets liggen op de bovenkant van de rails
         const float StepHeight = 2.4f;          // CliffMass-trede
         const float RimClear = 4.5f;            // de kloofrand blijft zo ver van het spoor
@@ -345,6 +348,7 @@ namespace ConductorChaos.EditorTools
                 SetupGameplay();
                 Progress("Bos en rotsen", 0.72f);
                 PlantNature();
+                if (spec.winter) DressWinter();
                 Progress("Water en achtergrond", 0.9f);
                 foreach (var c in canyons) BuildRiver(c);
                 BuildBackdrop();
@@ -376,6 +380,7 @@ namespace ConductorChaos.EditorTools
                     bool decor = n.StartsWith("Tree_") || n.StartsWith("Hill_Grass") || n.StartsWith("Farm_") || n == "Grasland" ||
                                  n.StartsWith("Bush_") || n.StartsWith("Rock_") || n == "PaintedProps" || n.StartsWith("Landroute") ||
                                  n.StartsWith("Cloud_") || n.StartsWith("Mountain_") || n.StartsWith("Grass_") || n.StartsWith("Flower_") ||
+                                 n == NatureDresser.RootName || n == WinterRoot ||
                                  root.GetComponentInChildren<Terrain>(true);
                     bool parkedTrain = n.Contains("_Blockout") && root != train.gameObject && !IsConsist(root);
                     if (!decor && !parkedTrain) continue;
@@ -797,7 +802,7 @@ namespace ConductorChaos.EditorTools
                 float longest = Mathf.Max(terrainSize.x, terrainSize.z);
                 res = longest > 820f ? 2049 : longest > 420f ? 1025 : 513;
 
-                var layers = StylizedTerrainTools.EnsureLayers();
+                var layers = spec.winter ? StylizedTerrainTools.EnsureWinterLayers() : StylizedTerrainTools.EnsureLayers();
                 data = new TerrainData { heightmapResolution = res, alphamapResolution = longest > 820f ? 2048 : 1024 };
                 data.size = terrainSize;
                 data.terrainLayers = layers;
@@ -1012,6 +1017,7 @@ namespace ConductorChaos.EditorTools
                 mass.cellSize = 1f;
                 mass.stepHeight = StepHeight;
                 mass.stone = stone;
+                mass.snow = spec.winter;
                 mass.tufts = true;
                 mass.seed = seed;
                 go.AddComponent<PaintedProp>().followGround = false;
@@ -1249,6 +1255,7 @@ namespace ConductorChaos.EditorTools
                     go.transform.localScale = new Vector3(fall.width, height / 4.6f, fall.width * 0.8f);
                     go.GetComponent<PaintedProp>().followGround = false;
                     go.name = fall.head ? "Waterval · bron van de rivier" : "Waterval in de kloofwand";
+                    if (spec.winter) Freeze(go);
                     made++;
                 }
                 log.AppendLine($"{canyon.spec.name}: {made} watervallen.");
@@ -1486,8 +1493,8 @@ namespace ConductorChaos.EditorTools
                 siteMarker.SetParent(group, false);
                 siteMarker.SetPositionAndRotation(site.rail, Quaternion.LookRotation(site.dir));
 
-                var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{EnvDir}/Rocks/Rock_Medium_01.fbx");
-                if (!model) throw new Exception("Rock_Medium_01.fbx ontbreekt.");
+                var model = AssetDatabase.LoadAssetAtPath<GameObject>(spec.winter ? $"{EnvDir}/Winter/Snow_Pile_Track.fbx" : $"{EnvDir}/Rocks/Rock_Medium_01.fbx");
+                if (!model) throw new Exception(spec.winter ? "Snow_Pile_Track.fbx ontbreekt." : "Rock_Medium_01.fbx ontbreekt.");
                 var rocks = new List<Rigidbody>();
                 var landing = new List<Transform>();
                 for (int k = 0; k < 3; k++)
@@ -1497,7 +1504,8 @@ namespace ConductorChaos.EditorTools
                     // klaar op de klifrand: recht boven de wand, iets naar binnen
                     var perch = s.rail + side * (from + 1.6f);
                     float top = TopOf(perch, cliff);
-                    var rock = MakeRock(rockRoot, $"{name} · blok {k + 1}", model, new Vector3(perch.x, top, perch.z), 0.85f + 0.12f * k);
+                    var rock = MakeRock(rockRoot, $"{name} · {(spec.winter ? "sneeuw" : "blok")} {k + 1}", model, new Vector3(perch.x, top, perch.z),
+                        spec.winter ? 0.6f + 0.08f * k : 0.85f + 0.12f * k);
                     rocks.Add(rock);
                     var land = new GameObject($"Landing {k + 1}").transform;
                     land.SetParent(group, false);
@@ -1578,7 +1586,13 @@ namespace ConductorChaos.EditorTools
 
             void PlantNature()
             {
-                var trees = new (GameObject model, float weight, float clearance)[]
+                var trees = spec.winter ? new (GameObject model, float weight, float clearance)[]
+                {
+                    (Model("Winter", "Tree_Pine_Snow_Medium"), 1.0f, 6.5f),
+                    (Model("Winter", "Tree_Pine_Snow_Large"), 0.7f, 7.5f),
+                    (Model("Winter", "Tree_Pine_Snow_Small"), 0.9f, 5.5f),
+                    (Model("Trees", "Tree_Birch_01"), 0.15f, 7f),
+                } : new (GameObject model, float weight, float clearance)[]
                 {
                     (Model("Trees", "Tree_Pine_Medium_01"), 1.0f, 6.5f),
                     (Model("Trees", "Tree_Pine_Large_01"), 0.65f, 7.5f),
@@ -1632,7 +1646,8 @@ namespace ConductorChaos.EditorTools
                 }
 
                 // rotsen bij klifvoeten en kloofranden
-                var rockModels = new[] { Model("Rocks", "Rock_Small_01"), Model("Rocks", "Rock_Medium_01"), Model("Rocks", "Rock_Large_01") }
+                var rockModels = (spec.winter ? new[] { Model("Rocks", "Rock_Small_01"), Model("Winter", "Rock_Snow_Medium"), Model("Winter", "Rock_Snow_Large") }
+                    : new[] { Model("Rocks", "Rock_Small_01"), Model("Rocks", "Rock_Medium_01"), Model("Rocks", "Rock_Large_01") })
                     .Where(m => m).ToArray();
                 int rocks = 0, maxRocks = Mathf.RoundToInt(Mathf.Clamp(area / 2500f, 140f, 360f));
                 for (int i = 0; i < maxRocks * 20 && rocks < maxRocks && rockModels.Length > 0; i++)
@@ -1654,7 +1669,8 @@ namespace ConductorChaos.EditorTools
                 }
 
                 // gras en bloemen op vlakke stukken langs het spoor, rond de stations en op de kloofbodem (geen colliders)
-                var plants = new[] { Model("Plants", "Grass_Tuft_01"), Model("Plants", "Grass_Tuft_02"), Model("Plants", "Flower_Patch_01"), Model("Plants", "Flower_Daisy_01") }
+                var plants = (spec.winter ? new[] { Model("Winter", "Snow_Drift_01"), Model("Winter", "Snow_Drift_01"), Model("Winter", "Snow_Drift_02"), Model("Plants", "Grass_Tuft_01") }
+                    : new[] { Model("Plants", "Grass_Tuft_01"), Model("Plants", "Grass_Tuft_02"), Model("Plants", "Flower_Patch_01"), Model("Plants", "Flower_Daisy_01") })
                     .Where(m => m).ToArray();
                 int plantCount = 0, maxPlants = Mathf.RoundToInt(Mathf.Clamp(area / 600f, 560f, 1200f));
                 for (int i = 0; i < maxPlants * 25 && plantCount < maxPlants && plants.Length > 0; i++)
@@ -1740,13 +1756,123 @@ namespace ConductorChaos.EditorTools
                     var water = go.AddComponent<StylizedWater>();
                     water.size = new Vector2(2f * (canyon.riverHalf + 1.1f), length);
                     water.depth = Mathf.Min(1.6f, canyon.riverHalf * 0.5f + 0.4f);
-                    water.surfaceMaterial = surfaceMat;
+                    water.surfaceMaterial = spec.winter ? IceMaterial() ?? surfaceMat : surfaceMat;
+                    if (spec.winter) MakeIce(go, water.size, canyon.waterY);
                     water.tintShader = tint;
                     water.joinRiverSections = true;
                     count++;
                 }
                 foreach (Transform section in group) section.GetComponent<StylizedWater>().Rebuild();
                 log.AppendLine($"{canyon.spec.name}: rivier van {count} stukken.");
+            }
+
+            // -------------------------------------------------------------- winter (#242, #243)
+            Material IceMaterial() => AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Environment/M_Env_Ice.mat");
+
+            // Bevroren waterval: alles ijs.
+            void Freeze(GameObject go)
+            {
+                var ice = IceMaterial();
+                if (!ice) return;
+                foreach (var r in go.GetComponentsInChildren<Renderer>(true))
+                    r.sharedMaterials = Enumerable.Repeat(ice, r.sharedMaterials.Length).ToArray();
+            }
+
+            // Bevroren rivier: een dichte ijsvloer om op te lopen (glad), geen drijfvermogen.
+            void MakeIce(GameObject section, Vector2 size, float y)
+            {
+                var water = section.GetComponent<StylizedWater>();
+                if (water) water.buoyancy = 0f;
+                var ice = new GameObject("IJsvloer");
+                ice.layer = 0;
+                ice.transform.SetParent(section.transform, false);
+                var box = ice.AddComponent<BoxCollider>();
+                box.center = new Vector3(0f, -0.04f, 0f);
+                box.size = new Vector3(size.x, 0.08f, size.y);
+                ice.AddComponent<IceSurface>();
+            }
+
+            void DressWinter()
+            {
+                var winter = Root(WinterRoot).transform;
+                var level = new GameObject("Kou en sneeuwval");
+                level.transform.SetParent(winter, false);
+                level.AddComponent<WinterLevel>();
+                level.AddComponent<Snowfall>();
+                // warme stationshal, gladde perrons
+                int warm = 0, slippery = 0;
+                foreach (var t in scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Transform>(true)).ToArray())
+                {
+                    var go = t.gameObject;
+                    if (!PrefabUtility.IsAnyPrefabInstanceRoot(go)) continue;
+                    if (go.name.StartsWith("Station_Building") || go.name.StartsWith("Station_Main"))
+                    {
+                        var rs = go.GetComponentsInChildren<Renderer>();
+                        if (rs.Length == 0) continue;
+                        var b = rs[0].bounds;
+                        foreach (var r in rs) b.Encapsulate(r.bounds);
+                        var zone = new GameObject($"Warm · {go.name}");
+                        zone.transform.SetParent(winter, false);
+                        zone.transform.position = b.center;
+                        zone.AddComponent<BoxCollider>().size = b.size * 0.92f;
+                        zone.AddComponent<WarmZone>();
+                        warm++;
+                    }
+                    else if (go.name.StartsWith("Platform_") && !go.GetComponent<IceSurface>())
+                    {
+                        go.AddComponent<IceSurface>();
+                        slippery++;
+                    }
+                }
+                // decor: sneeuwpop bij elk station, houthakkershutten langs de route, een bevroren meertje
+                var snowman = Model("Winter", "Snowman_01");
+                var cabin = Model("Winter", "Cabin_01");
+                var lake = Model("Winter", "Frozen_Lake_01");
+                int men = 0, cabins = 0, lakes = 0;
+                foreach (var area in stationAreas)
+                    for (int k = 0; k < 40 && snowman; k++)
+                    {
+                        var c = area.bounds.center;
+                        float a = (float)rng.NextDouble() * Mathf.PI * 2f, r = area.bounds.extents.magnitude * 0.6f + 6f + (float)rng.NextDouble() * 6f;
+                        var p = new Vector3(c.x + Mathf.Cos(a) * r, 0f, c.z + Mathf.Sin(a) * r);
+                        if (far.Distance(p.x, p.z) < 5f || NearStation(p, 3f)) continue;
+                        p.y = GroundAt(p);
+                        if (SteepnessAt(p) > 12f) continue;
+                        var go = Place(snowman, "Winter", p + Vector3.down * 0.05f, (float)rng.NextDouble() * 360f, 1f, 1f, -0.05f, true);
+                        if (go) { go.transform.SetParent(winter, true); men++; break; }
+                    }
+                for (int k = 0; k < 600 && cabins < 3 && cabin; k++)
+                {
+                    var p = new Vector3(terrainOrigin.x + (float)rng.NextDouble() * terrainSize.x, 0f, terrainOrigin.z + (float)rng.NextDouble() * terrainSize.z);
+                    float d = far.Distance(p.x, p.z);
+                    if (d < 16f || d > 40f || NearStation(p, 20f) || InCanyon(p, 6f)) continue;
+                    p.y = GroundAt(p);
+                    if (SteepnessAt(p) > 8f || CliffTop(p, out _, out _)) continue;
+                    var go = Place(cabin, "Winter", p + Vector3.down * 0.1f, (float)rng.NextDouble() * 360f, 1f, 1f, -0.1f, true);
+                    if (!go) continue;
+                    go.transform.SetParent(winter, true);
+                    var smoke = new GameObject("Schoorsteenrook");
+                    smoke.transform.SetParent(go.transform, false);
+                    smoke.transform.localPosition = new Vector3(1.05f, 4.6f, -0.5f);
+                    smoke.AddComponent<ChimneyPuffs>();
+                    cabins++;
+                }
+                for (int k = 0; k < 800 && lakes < 1 && lake; k++)
+                {
+                    var p = new Vector3(terrainOrigin.x + (float)rng.NextDouble() * terrainSize.x, 0f, terrainOrigin.z + (float)rng.NextDouble() * terrainSize.z);
+                    float d = far.Distance(p.x, p.z);
+                    if (d < 22f || d > 70f || NearStation(p, 30f) || InCanyon(p, 10f)) continue;
+                    p.y = GroundAt(p);
+                    if (SteepnessAt(p) > 4f || CliffTop(p, out _, out _)) continue;
+                    var go = Place(lake, "Winter", p + Vector3.up * 0.01f, (float)rng.NextDouble() * 360f, 1.2f, 1f, 0.01f, true);
+                    if (!go) continue;
+                    go.transform.SetParent(winter, true);
+                    go.AddComponent<IceSurface>();
+                    lakes++;
+                }
+                if (RenderSettings.fog) RenderSettings.fogColor = new Color(0.78f, 0.82f, 0.94f);
+                log.AppendLine($"Winter: kou en sneeuwval aan, {warm} warme stationshallen, {slippery} gladde perronstukken, " +
+                               $"{men} sneeuwpoppen, {cabins} hutten, {lakes} bevroren meer.");
             }
 
             void BuildBackdrop()

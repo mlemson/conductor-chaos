@@ -117,6 +117,9 @@ namespace ConductorChaos.Depot
             new LevelInfo { Index = 3, Scene = ServiceRun.ThirdLevelScene, Label = "LEVEL 3", Name = "Over de hoogvlakte", Photo = "Craggleton",
                 Summary = "Vier wissels, kapotte brugrails en veel storingen.", Distance = "± 1,1 km", Difficulty = 4,
                 Highlights = new[] { "Viaduct van 72 m", "Steile afdaling" } },
+            new LevelInfo { Index = 4, Scene = ServiceRun.FourthLevelScene, Label = "LEVEL 4", Name = "Over de pas", Photo = "Frostbury",
+                Summary = "Sneeuw op het spoor en reizigers die bevriezen in de kou.", Distance = "± 900 m", Difficulty = 5,
+                Highlights = new[] { "Sneeuwlawines", "Bevroren rivier" } },
         };
 
         /// <summary>Treinstel voor een nieuwe speler. Niets is verplicht: alles mag in of op elke wagon mee.</summary>

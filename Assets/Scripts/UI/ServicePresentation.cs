@@ -188,7 +188,7 @@ namespace ConductorChaos.UI
             bool hasNext = next != null && Application.CanStreamedLevelBeLoaded(next);
             actionText.text = briefing ? (intro ? "Begin training" : "Begin dienst") :
                 hasNext ? (next == ServiceRun.FirstLevelScene ? "Naar level 1" : next == ServiceRun.SecondLevelScene ? "Naar level 2" :
-                    next == ServiceRun.ThirdLevelScene ? "Naar level 3" : "Volgende dienst") :
+                    next == ServiceRun.ThirdLevelScene ? "Naar level 3" : next == ServiceRun.FourthLevelScene ? "Naar level 4" : "Volgende dienst") :
                 "Opnieuw spelen";
             waitText.text = loading ? "Wachten op de crew…" : "Wachten op de host…";
             waitText.gameObject.SetActive(!advance.gameObject.activeSelf);
@@ -230,7 +230,7 @@ namespace ConductorChaos.UI
             }
 
             string warning = run.SteamWarning ?? (ServiceIncidents.Active ? ServiceIncidents.Active.Warning : null) ?? SuitcaseWarning(run) ??
-                             BreakdownNotice.For(run);
+                             ColdWarning() ?? BreakdownNotice.For(run);
             if (warningPanel.activeSelf != (warning != null)) warningPanel.SetActive(warning != null);
             if (warning != null) warningText.text = warning;
             foreach (var objective in run.ActiveObjectives)
@@ -240,6 +240,29 @@ namespace ConductorChaos.UI
             string step = run.CombinesObjectives ? CombinedStep(run) : NextServiceStep(run);
             objectiveCard.Show(run.LevelLabel, icon, run.TimerRunning ? FormatTime(run.TimeLeft) : "Klaar?",
                 run.TimerRunning && run.TimeLeft <= 30, step, rows);
+        }
+
+        // Winter (#243): alleen melden dat het koud is of dat iemand bevroren is, niet wat je moet doen.
+        private static readonly System.Collections.Generic.List<PlaygroundPassenger> passengers = new();
+        private static float nextPassengerScan;
+
+        private static string ColdWarning()
+        {
+            if (!ConductorChaos.Nature.WinterLevel.Active) return null;
+            if (Time.unscaledTime > nextPassengerScan)
+            {
+                nextPassengerScan = Time.unscaledTime + 1f;
+                passengers.Clear();
+                passengers.AddRange(Object.FindObjectsByType<PlaygroundPassenger>());
+            }
+            bool chilly = false;
+            foreach (var passenger in passengers)
+            {
+                if (!passenger || !passenger.IsSpawned) continue;
+                if (passenger.IsFrozen) return "Reiziger bevroren";
+                chilly |= passenger.Cold >= .7f;
+            }
+            return chilly ? "Reizigers krijgen het koud" : null;
         }
 
         private static string SuitcaseWarning(ServiceRun run)

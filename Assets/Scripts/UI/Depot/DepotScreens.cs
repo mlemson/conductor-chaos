@@ -255,54 +255,56 @@ namespace ConductorChaos.UI.Depot
             var levels = DepotCatalog.Levels;
             int next = 1;
             while (next < levels.Length - 1 && DepotProgress.LevelEverWon(next)) next++;
+            float cw = (1552f - 16f * (levels.Length - 1)) / levels.Length;      // kaartbreedte: past bij elk aantal levels
             for (int i = 0; i < levels.Length; i++)
             {
                 var info = levels[i];
                 int index = i;
                 bool available = Application.CanStreamedLevelBeLoaded(info.Scene);
                 bool selected = selectedLevel == i;
-                float x = 24 + i * 392;
-                var card = DepotUi.Panel(stage, "Level " + info.Label, x, 150, 376, 580, DepotUi.PanelFace, selected ? ChaosUI.Gold : DepotUi.Edge, selected ? 3 : 2);
-                var photo = DepotUi.Panel(card, "Foto", 12, 12, 352, 232, DepotUi.Inset);
+                float x = 24 + i * (cw + 16);
+                var card = DepotUi.Panel(stage, "Level " + info.Label, x, 150, cw, 580, DepotUi.PanelFace, selected ? ChaosUI.Gold : DepotUi.Edge, selected ? 3 : 2);
+                var photo = DepotUi.Panel(card, "Foto", 12, 12, cw - 24, 232, DepotUi.Inset);
                 photo.gameObject.AddComponent<RectMask2D>();
                 var texture = Resources.Load<Texture2D>("Routes/" + info.Photo);
                 if (texture)
                 {
-                    var raw = DepotUi.Box(photo, "Stationsfoto", 0, 0, 352, 232).gameObject.AddComponent<RawImage>();
+                    var raw = DepotUi.Box(photo, "Stationsfoto", 0, 0, cw - 24, 232).gameObject.AddComponent<RawImage>();
                     raw.texture = texture;
                     raw.raycastTarget = false;
-                    float aspect = (float)texture.width / texture.height, target = 352f / 232f;
+                    float aspect = (float)texture.width / texture.height, target = (cw - 24f) / 232f;
                     raw.uvRect = aspect > target ? new Rect((1f - target / aspect) / 2f, 0f, target / aspect, 1f)
                         : new Rect(0f, (1f - aspect / target) / 2f, 1f, aspect / target);
                     if (!available) raw.color = new Color(.45f, .43f, .45f, 1f);
                 }
                 DepotUi.Chip(card, info.Label, 22, 22, ChaosUI.Paper, ChaosUI.Ink, null, 14, 28);
-                if (!available) DepotUi.Chip(card, "Niet in deze build", 354, 22, ChaosUI.Slate, ChaosUI.Paper, "warning", 13, 30, true);
-                else if (i > 0 && DepotProgress.LevelEverWon(i)) DepotUi.Chip(card, "Gehaald", 354, 22, ChaosUI.Green, DepotUi.GreenText, "ready", 13, 30, true);
-                else if (i == next) DepotUi.Chip(card, "Volgende", 354, 22, ChaosUI.Gold, ChaosUI.Ink, null, 13, 30, true);
+                if (!available) DepotUi.Chip(card, "Niet in deze build", cw - 22, 22, ChaosUI.Slate, ChaosUI.Paper, "warning", 13, 30, true);
+                else if (i > 0 && DepotProgress.LevelEverWon(i)) DepotUi.Chip(card, "Gehaald", cw - 22, 22, ChaosUI.Green, DepotUi.GreenText, "ready", 13, 30, true);
+                else if (i == next) DepotUi.Chip(card, "Volgende", cw - 22, 22, ChaosUI.Gold, ChaosUI.Ink, null, 13, 30, true);
 
-                DepotUi.Txt(card, info.Name, 20, 254, 336, 40, 30, ChaosUI.Paper, true);
+                DepotUi.Txt(card, info.Name, 20, 254, cw - 40, 40, cw < 340 ? 26 : 30, ChaosUI.Paper, true);
                 string from = ServiceStationName(i, false), to = ServiceStationName(i, true);
-                DepotUi.Txt(card, string.IsNullOrEmpty(to) ? from : $"{from} → {to}", 20, 298, 336, 24, 17, ChaosUI.Paper);
-                DepotUi.Txt(card, "Moeilijkheid", 20, 340, 112, 22, 14, ChaosUI.Muted);
-                DepotUi.Segments(card, 128, 345, 108, 12, info.Difficulty, 4);
+                DepotUi.Txt(card, string.IsNullOrEmpty(to) ? from : $"{from} → {to}", 20, 298, cw - 40, 24, 17, ChaosUI.Paper);
+                bool roomy = cw >= 340f;
+                if (roomy) DepotUi.Txt(card, "Moeilijkheid", 20, 340, 112, 22, 14, ChaosUI.Muted);
+                DepotUi.Segments(card, roomy ? 128 : 20, 345, roomy ? 108 : 100, 12, info.Difficulty, 5);
                 if (i >= 2)
-                    DepotUi.Txt(card, info.Distance, 246, 340, 110, 22, 14, ChaosUI.Muted, false, TextAnchor.MiddleRight);
-                DepotUi.Txt(card, info.Summary, 20, 380, 336, 52, 16, ChaosUI.Muted, false, TextAnchor.UpperLeft);
+                    DepotUi.Txt(card, info.Distance, cw - 130, 340, 110, 22, 14, ChaosUI.Muted, false, TextAnchor.MiddleRight);
+                DepotUi.Txt(card, info.Summary, 20, 380, cw - 40, 52, cw < 340 ? 15 : 16, ChaosUI.Muted, false, TextAnchor.UpperLeft);
                 int best = DepotProgress.BestSecondsLeft(i);
                 if (i > 0 && best >= 0)
                 {
                     DepotUi.Icon(card, "speed-gauge", 18, 452, 28);
-                    DepotUi.Txt(card, $"Record · {DepotUi.Time(best)} over", 52, 452, 300, 28, 15, ChaosUI.Paper);
+                    DepotUi.Txt(card, $"Record · {DepotUi.Time(best)} over", 52, 452, cw - 76, 28, 15, ChaosUI.Paper);
                 }
                 if (i > 0)
                 {
                     var unlock = UnlockForLevel(i);
                     if (unlock != null)
                     {
-                        DepotUi.Panel(card, "Vrijspelen", 12, 508, 352, 60, DepotUi.Background);
+                        DepotUi.Panel(card, "Vrijspelen", 12, 508, cw - 24, 60, DepotUi.Background);
                         DepotUi.Icon(card, "key", 22, 520, 34);
-                        DepotUi.Txt(card, unlock, 64, 508, 290, 60, 13, ChaosUI.Muted);
+                        DepotUi.Txt(card, unlock, 64, 508, cw - 86, 60, 13, ChaosUI.Muted);
                     }
                 }
                 if (available) DepotUi.Hit(card, () => { selectedLevel = index; Render(); });

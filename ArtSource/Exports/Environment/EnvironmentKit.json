@@ -2685,6 +2685,25 @@
         "cellSize": 0.3
       }
     },
+    "M_Env_IceShell": {
+      "base": "#ADD7ED",
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "rampShift": 0.35,
+      "smoothness": 0.6,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.55,
+        "edge": 0.0,
+        "opacity": 0.5,
+        "noShadow": true
+      }
+    },
     "M_Env_Window": {
       "base": "#FDDB78",
       "ramp": [

@@ -65,6 +65,8 @@ def materials(R):
         "M_Env_Scarf": (R["hoodie_red"][2], R["hoodie_red"], 0.05, 0.0, {"cells": 0.0}),
         "M_Env_Log": (R["interior_wood"][2], R["interior_wood"], 0.05, -0.02, {"cells": 0.5, "cellSize": 0.5}),
         "M_Env_Chimney": (R["cliff"][2], R["cliff"], 0.05, -0.10, {"cells": 0.6, "cellSize": 0.3}),
+        "M_Env_IceShell": (R["water"][4], R["water"], 0.60, 0.35, {"cells": 0.0, "rim": 0.55, "edge": 0.0, "opacity": 0.5,
+                                                                    "noShadow": True}),
         "M_Env_Window": (R["accent_yellow"][4], R["accent_yellow"], 0.05, 0.15, {"cells": 0.0, "emissive": 0.55}),
     }
 

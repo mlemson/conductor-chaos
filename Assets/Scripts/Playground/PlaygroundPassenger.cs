@@ -1,4 +1,5 @@
 using ConductorChaos.Characters;
+using ConductorChaos.Nature;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -12,6 +13,11 @@ namespace ConductorChaos.Playground
         private readonly NetworkVariable<Quaternion> leftLegPose = new(Quaternion.identity);
         private readonly NetworkVariable<Quaternion> rightLegPose = new(Quaternion.identity);
         private readonly RaycastHit[] groundHits = new RaycastHit[24];
+        // Winter (#243): hoe koud (0..100) en of de reiziger bevroren is. De server rekent, iedereen toont het ijs.
+        private readonly NetworkVariable<byte> coldPercent = new();
+        private readonly NetworkVariable<bool> frozen = new();
+        private float cold;
+        private GameObject iceShell;
         private Rigidbody body, leftArm, rightArm;
         private Transform leftArmVisual, rightArmVisual;
         private Pose leftArmRest, rightArmRest;
@@ -25,6 +31,11 @@ namespace ConductorChaos.Playground
         private float nextPose;
         private float fallenSince = -1f;
         private const float GetUpDelay = 1.2f;
+
+        /// <summary>Bevroren: staat stijf als een blok ijs, stapt niet in en moet eerst naar de warmte.</summary>
+        internal bool IsFrozen => IsSpawned && frozen.Value;
+        /// <summary>Hoe koud (0..1), zoals de server het doorgeeft.</summary>
+        internal float Cold => coldPercent.Value / 100f;
 
         private void Awake()
         {
@@ -66,6 +77,8 @@ namespace ConductorChaos.Playground
             rightArm = MakeArm(right, out rightShoulder, out rightCollider);
             if (leftCollider && rightCollider) Physics.IgnoreCollision(leftCollider, rightCollider);
             legs = PlaygroundLegRig.Create(model, body, IsServer);
+            frozen.OnValueChanged += OnFrozenChanged;
+            if (frozen.Value) ShowFrozen(true);
             if (IsServer)
             {
                 // Passengers stand on their own balance: they can be dragged, pushed over and get back up.
@@ -151,16 +164,58 @@ namespace ConductorChaos.Playground
             return delta.sqrMagnitude < .018f * .018f;
         }
 
+        private void OnFrozenChanged(bool before, bool now) => ShowFrozen(now);
+
+        private void ShowFrozen(bool on)
+        {
+            if (!iceShell && on) iceShell = IceShell.For(transform);
+            if (iceShell) iceShell.SetActive(on);
+        }
+
+        // Server: buiten in de kou loopt de kou op, in de warmte (WarmZone, of een wagon met dichte deuren) zakt hij.
+        private void UpdateCold()
+        {
+            var winter = WinterLevel.Active;
+            if (!winter || !body) return;
+            float rate;
+            if (WarmZone.Contains(body.position)) rate = -1f / winter.ThawSeconds;
+            else
+            {
+                var train = TrainUnder();
+                rate = !train ? 1f / winter.FreezeSeconds
+                    : train.ServiceDoorsClosed ? -1f / winter.ThawSeconds : winter.OpenDoorFactor / winter.FreezeSeconds;
+            }
+            cold = Mathf.Clamp01(cold + rate * Time.fixedDeltaTime);
+            if (!frozen.Value && cold >= 1f) frozen.Value = true;
+            else if (frozen.Value && cold <= .55f) frozen.Value = false;
+            byte percent = (byte)Mathf.RoundToInt(cold * 100f);
+            if (Mathf.Abs(percent - coldPercent.Value) >= 2 || (percent == 0) != (coldPercent.Value == 0)) coldPercent.Value = percent;
+        }
+
+        private TrainDrive TrainUnder()
+        {
+            int count = Physics.RaycastNonAlloc(body.position + Vector3.up * .4f, Vector3.down, groundHits, 1.3f, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+            {
+                var hit = groundHits[i].rigidbody;
+                if (hit && hit != body && !hit.transform.IsChildOf(transform) && TrainDrive.IsTrainBody(hit))
+                    return TrainDrive.FindControlOwner(hit);
+            }
+            return null;
+        }
+
         private void FixedUpdate()
         {
-            if (!IsSpawned || !IsServer || boarding || !body || !leftArm || !rightArm) return;
+            if (!IsSpawned || !IsServer) return;
+            UpdateCold();
+            if (boarding || !body || !leftArm || !rightArm) return;
             bool grounded = false;
             int count = Physics.SphereCastNonAlloc(body.position + Vector3.up * 0.3f, 0.16f, Vector3.down,
                 groundHits, 0.34f, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
                 if (!groundHits[i].collider.transform.IsChildOf(transform) && groundHits[i].normal.y > 0.55f) { grounded = true; break; }
             bool upright = Vector3.Dot(body.rotation * Vector3.up, Vector3.up) > 0.55f;
-            bool standing = grounded && upright;
+            bool standing = grounded && upright && !frozen.Value;          // bevroren: stijf, geen evenwicht meer
             if (!body.isKinematic)
             {
                 float turn = standing && body.linearVelocity.sqrMagnitude < .09f ? GazeTurn() : 0f;
@@ -174,7 +229,7 @@ namespace ConductorChaos.Playground
             }
             else legs?.ReleaseSupport();
             // Knocked over and left alone: after a moment the passenger rolls back onto their feet.
-            if (upright || body.isKinematic) fallenSince = -1f;
+            if (upright || body.isKinematic || frozen.Value) fallenSince = -1f;
             else if (fallenSince < 0f)
             {
                 if (body.linearVelocity.sqrMagnitude < 0.6f * 0.6f) fallenSince = Time.time;   // wait until they lie still
@@ -217,6 +272,7 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkDespawn()
         {
+            frozen.OnValueChanged -= OnFrozenChanged;
             legs?.Dispose();
             legs = null;
             if (leftShoulder) Destroy(leftShoulder);

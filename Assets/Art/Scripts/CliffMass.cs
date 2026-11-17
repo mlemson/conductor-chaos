@@ -18,6 +18,8 @@ namespace ConductorChaos.Art
         public bool tufts = true;
         [Tooltip("Stenen klifwanden (M_Env_CliffStone) i.p.v. de rode rots.")]
         public bool stone;
+        [Tooltip("Winter (#242): sneeuw in plaats van gras op de bovenkant en de plukjes.")]
+        public bool snow;
         [Tooltip("Variatie in facetten en bolletjes.")]
         public int seed = 1;
 

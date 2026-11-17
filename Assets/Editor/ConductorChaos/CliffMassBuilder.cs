@@ -60,8 +60,8 @@ namespace ConductorChaos.EditorTools
             var mats = new[]
             {
                 Load(mass.stone ? "M_Env_CliffStone" : "M_Env_Cliff"),
-                Load("M_Env_Grass"),
-                Load("M_Env_Bush"),
+                Load(mass.snow ? "M_Env_SnowSoft" : "M_Env_Grass"),
+                Load(mass.snow ? "M_Env_SnowSoft" : "M_Env_Bush"),
             };
             if (!SameMaterials(mr.sharedMaterials, mats)) mr.sharedMaterials = mats;
 

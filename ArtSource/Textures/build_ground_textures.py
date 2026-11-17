@@ -217,6 +217,46 @@ FLAT = {
 }
 
 
+# Winter (#242): zelfde vijf rollen als de gewone lagen (gras, gras+bloemen, grond, stenen pad, rots), maar besneeuwd.
+# Het warme zonlicht van Terrain Lit trekt wit naar crème; een koele winst houdt de sneeuw blauwig wit.
+SNOW_GAIN = np.array([0.96, 0.99, 1.05])
+
+
+def snow_speckles(img, count, color, rmin=2.0, rmax=5.0):
+    for _ in range(count):
+        cx, cy = rng.uniform(0, N, 2)
+        r = rng.uniform(rmin, rmax)
+        stamp(img, cx, cy, lambda X, Y: (r - np.hypot(X, Y)) / 1.0, color, r + 1)
+    return img
+
+
+def snowy_dirt():
+    """Aangestampte sneeuw op de berm: grond die in plekken door de sneeuw heen komt."""
+    ground = dirt()
+    snow = flat("cloud_snow", 0.62, 0.86, cells=81, facet=0.03) * SNOW_GAIN
+    v = pnoise(140) + 0.35 * pnoise(40)
+    m = np.clip((v - 0.32) * 2.6, 0, 1)[..., None]            # 1 = grond zichtbaar
+    return snow * (1 - m) + ground * m
+
+
+def snowy_stones():
+    ids, edge, vec, n = voronoi(64, 0.55)
+    tone = rng.uniform(0.35, 0.75, n)[ids]
+    img = ramp("metal", tone)
+    snow = ramp("cloud_snow", 0.85 + 0.1 * pnoise(60))
+    m = np.clip((9.0 - edge) / 3.0, 0, 1)[..., None]            # sneeuw in de voegen
+    return img * (1 - m) + snow * m
+
+
+WINTER = {
+    "T_Winter_Snow": lambda: flat("cloud_snow", 0.74, 0.96, cells=81, facet=0.03) * SNOW_GAIN,
+    "T_Winter_SnowShade": lambda: flat("cloud_snow", 0.36, 0.60, cells=81, facet=0.03) * SNOW_GAIN,
+    "T_Winter_SnowDirt": lambda: snowy_dirt(),
+    "T_Winter_SnowStones": lambda: snowy_stones(),
+    "T_Winter_Rock": lambda: snow_speckles(rock(), 260, rgb(R["cloud_snow"][4]), 2.0, 6.0),
+}
+
+
 def save(name, img):
     rel = f"{OUT}/{name}.png"
     path = os.path.join(ROOT, rel)
@@ -249,7 +289,15 @@ def main():
     for k, (name, make) in enumerate(FLAT.items()):
         seeded(100 + k)
         save(name, make())
+    for k, (name, make) in enumerate(WINTER.items()):
+        seeded(200 + k)
+        save(name, make())
 
 
 if __name__ == "__main__":
-    main()
+    if sys.argv[1:] == ["winter"]:                         # alleen de wintertexturen
+        for k, (name, make) in enumerate(WINTER.items()):
+            rng = np.random.default_rng([38, 200 + k])
+            save(name, make())
+    else:
+        main()

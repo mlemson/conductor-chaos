@@ -43,6 +43,18 @@ namespace ConductorChaos.EditorTools
             ("T_Flat_Snow", "TL_Flat_Snow", 10f),
         };
 
+        // winter (#242): dezelfde vijf rollen als Defs (gras, gras+bloemen, grond, stenen pad, rots), maar besneeuwd
+        static readonly (string tex, string layer, float tile)[] WinterDefs =
+        {
+            ("T_Winter_Snow", "TL_Winter_Snow", 10f),
+            ("T_Winter_SnowShade", "TL_Winter_SnowShade", 10f),
+            ("T_Winter_SnowDirt", "TL_Winter_SnowDirt", 6f),
+            ("T_Winter_SnowStones", "TL_Winter_SnowStones", 3f),
+            ("T_Winter_Rock", "TL_Winter_Rock", 6f),
+        };
+
+        public static TerrainLayer[] EnsureWinterLayers() => EnsureLayers(WinterDefs);
+
         static void EnsureFolder(string path)
         {
             if (AssetDatabase.IsValidFolder(path)) return;

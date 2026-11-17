@@ -75,7 +75,8 @@ namespace ConductorChaos.Stations
                 Quaternion seatRotation = Quaternion.LookRotation(wagon.right * (row < 0f ? -1f : 1f), wagon.up);
                 switch (stages[i])
                 {
-                    case Boarding.Waiting when !busy && (extra < 0 || run.Phase == ServiceRun.RunPhase.Departure) && run.CanBoardAt(doorway):
+                    case Boarding.Waiting when !busy && (extra < 0 || run.Phase == ServiceRun.RunPhase.Departure) && run.CanBoardAt(doorway) &&
+                        !passenger.IsFrozen:
                         passenger.BeginBoarding();
                         stages[i] = Boarding.ToDoor;
                         busy = true;
