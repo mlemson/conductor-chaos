@@ -824,6 +824,829 @@
       "materials": [
         "M_Env_Cloud"
       ]
+    },
+    "Tree_Oak_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Oak_01.fbx",
+      "tris": 576,
+      "min": [
+        -2.029,
+        -0.151,
+        -2.101
+      ],
+      "max": [
+        2.266,
+        5.5,
+        2.08
+      ],
+      "materials": [
+        "M_Env_LeafOak",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Oak_Autumn_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Oak_Autumn_01.fbx",
+      "tris": 576,
+      "min": [
+        -2.183,
+        -0.151,
+        -2.121
+      ],
+      "max": [
+        2.108,
+        5.365,
+        2.083
+      ],
+      "materials": [
+        "M_Env_LeafAutumn",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Oak_Autumn_02": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Oak_Autumn_02.fbx",
+      "tris": 576,
+      "min": [
+        -2.175,
+        -0.151,
+        -2.071
+      ],
+      "max": [
+        2.031,
+        5.398,
+        2.123
+      ],
+      "materials": [
+        "M_Env_LeafAutumnRed",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Birch_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Birch_01.fbx",
+      "tris": 620,
+      "min": [
+        -1.17,
+        -0.152,
+        -1.04
+      ],
+      "max": [
+        1.143,
+        6.08,
+        1.034
+      ],
+      "materials": [
+        "M_Env_BirchBark",
+        "M_Env_Dark",
+        "M_Env_LeafBirch"
+      ]
+    },
+    "Tree_Birch_Autumn_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Birch_Autumn_01.fbx",
+      "tris": 620,
+      "min": [
+        -1.136,
+        -0.152,
+        -0.984
+      ],
+      "max": [
+        1.251,
+        5.728,
+        1.062
+      ],
+      "materials": [
+        "M_Env_BirchBark",
+        "M_Env_Dark",
+        "M_Env_LeafBirchAutumn"
+      ]
+    },
+    "Tree_Willow_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Willow_01.fbx",
+      "tris": 800,
+      "min": [
+        -1.824,
+        -0.187,
+        -1.904
+      ],
+      "max": [
+        1.832,
+        5.21,
+        1.892
+      ],
+      "materials": [
+        "M_Env_Trunk",
+        "M_Env_Willow"
+      ]
+    },
+    "Bush_Round_02": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Bush_Round_02.fbx",
+      "tris": 256,
+      "min": [
+        -0.866,
+        0.029,
+        -0.585
+      ],
+      "max": [
+        0.825,
+        1.14,
+        0.673
+      ],
+      "materials": [
+        "M_Env_Bush"
+      ]
+    },
+    "Bush_Berry_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Bush_Berry_01.fbx",
+      "tris": 1048,
+      "min": [
+        -0.75,
+        -0.002,
+        -0.599
+      ],
+      "max": [
+        0.771,
+        1.063,
+        0.557
+      ],
+      "materials": [
+        "M_Env_Berry",
+        "M_Env_Bush"
+      ]
+    },
+    "Bush_Blossom_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Bush_Blossom_01.fbx",
+      "tris": 1036,
+      "min": [
+        -0.84,
+        0.02,
+        -0.666
+      ],
+      "max": [
+        0.806,
+        1.19,
+        0.734
+      ],
+      "materials": [
+        "M_Env_FlowerPink",
+        "M_Env_LeafBirch"
+      ]
+    },
+    "Bush_Hedge_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Bush_Hedge_01.fbx",
+      "tris": 256,
+      "min": [
+        -1.296,
+        0.08,
+        -0.373
+      ],
+      "max": [
+        1.319,
+        0.945,
+        0.399
+      ],
+      "materials": [
+        "M_Env_Bush"
+      ]
+    },
+    "Fern_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Fern_01.fbx",
+      "tris": 4794,
+      "min": [
+        -0.746,
+        0.0,
+        -0.625
+      ],
+      "max": [
+        0.694,
+        0.414,
+        0.803
+      ],
+      "materials": [
+        "M_Env_Fern",
+        "M_Env_Moss"
+      ]
+    },
+    "Fern_02": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Fern_02.fbx",
+      "tris": 4794,
+      "min": [
+        -1.097,
+        0.0,
+        -0.879
+      ],
+      "max": [
+        0.866,
+        0.474,
+        0.908
+      ],
+      "materials": [
+        "M_Env_Fern",
+        "M_Env_Moss"
+      ]
+    },
+    "Mushroom_Red_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Mushroom_Red_01.fbx",
+      "tris": 258,
+      "min": [
+        -0.113,
+        0.0,
+        -0.118
+      ],
+      "max": [
+        0.12,
+        0.258,
+        0.118
+      ],
+      "materials": [
+        "M_Env_MushroomRed",
+        "M_Env_MushroomStem",
+        "M_Env_Petal"
+      ]
+    },
+    "Mushroom_Cluster_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Mushroom_Cluster_01.fbx",
+      "tris": 570,
+      "min": [
+        -0.211,
+        -0.006,
+        -0.169
+      ],
+      "max": [
+        0.191,
+        0.241,
+        0.162
+      ],
+      "materials": [
+        "M_Env_MushroomBrown",
+        "M_Env_MushroomStem"
+      ]
+    },
+    "FlowerBed_Round_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/FlowerBed_Round_01.fbx",
+      "tris": 2267,
+      "min": [
+        -0.847,
+        0.0,
+        -0.833
+      ],
+      "max": [
+        0.833,
+        0.618,
+        0.847
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_Dirt",
+        "M_Env_FlowerBlue",
+        "M_Env_FlowerHeart",
+        "M_Env_FlowerPink",
+        "M_Env_PathStone",
+        "M_Env_PathStoneMid",
+        "M_Env_Petal",
+        "M_Env_Stem",
+        "M_Env_Tulip",
+        "M_Env_TulipYellow"
+      ]
+    },
+    "FlowerBed_Long_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/FlowerBed_Long_01.fbx",
+      "tris": 1337,
+      "min": [
+        -1.2,
+        0.0,
+        -0.3
+      ],
+      "max": [
+        1.2,
+        0.778,
+        0.3
+      ],
+      "materials": [
+        "M_Env_Dirt",
+        "M_Env_FlowerBlue",
+        "M_Env_FlowerHeart",
+        "M_Env_FlowerPink",
+        "M_Env_Plank",
+        "M_Env_Stem",
+        "M_Env_Tulip",
+        "M_Env_TulipYellow"
+      ]
+    },
+    "Flower_Tulips_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Flower_Tulips_01.fbx",
+      "tris": 671,
+      "min": [
+        -0.319,
+        -0.001,
+        -0.227
+      ],
+      "max": [
+        0.184,
+        0.471,
+        0.281
+      ],
+      "materials": [
+        "M_Env_FlowerPink",
+        "M_Env_Stem",
+        "M_Env_Tulip",
+        "M_Env_TulipYellow"
+      ]
+    },
+    "Flower_Wild_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/Flower_Wild_01.fbx",
+      "tris": 684,
+      "min": [
+        -0.328,
+        -0.02,
+        -0.498
+      ],
+      "max": [
+        0.35,
+        0.336,
+        0.349
+      ],
+      "materials": [
+        "M_Env_Bush",
+        "M_Env_FlowerBlue",
+        "M_Env_FlowerHeart",
+        "M_Env_FlowerPink",
+        "M_Env_Petal",
+        "M_Env_Stem",
+        "M_Env_TulipYellow"
+      ]
+    },
+    "Log_Fallen_01": {
+      "category": "Wood",
+      "fbx": "Assets/Art/Models/Environment/Wood/Log_Fallen_01.fbx",
+      "tris": 832,
+      "min": [
+        -2.02,
+        -0.069,
+        -0.333
+      ],
+      "max": [
+        2.02,
+        1.086,
+        0.444
+      ],
+      "materials": [
+        "M_Env_LogCut",
+        "M_Env_Moss",
+        "M_Env_MushroomBrown",
+        "M_Env_MushroomStem",
+        "M_Env_Trunk"
+      ]
+    },
+    "Log_Fallen_02": {
+      "category": "Wood",
+      "fbx": "Assets/Art/Models/Environment/Wood/Log_Fallen_02.fbx",
+      "tris": 466,
+      "min": [
+        -1.12,
+        -0.056,
+        -0.271
+      ],
+      "max": [
+        1.12,
+        0.541,
+        0.271
+      ],
+      "materials": [
+        "M_Env_LogCut",
+        "M_Env_Moss",
+        "M_Env_Trunk"
+      ]
+    },
+    "Stump_01": {
+      "category": "Wood",
+      "fbx": "Assets/Art/Models/Environment/Wood/Stump_01.fbx",
+      "tris": 410,
+      "min": [
+        -0.616,
+        -0.05,
+        -0.616
+      ],
+      "max": [
+        0.616,
+        0.436,
+        0.616
+      ],
+      "materials": [
+        "M_Env_LogCut",
+        "M_Env_Moss",
+        "M_Env_MushroomRed",
+        "M_Env_MushroomStem",
+        "M_Env_Petal",
+        "M_Env_Trunk"
+      ]
+    },
+    "Lily_Pads_01": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Lily_Pads_01.fbx",
+      "tris": 884,
+      "min": [
+        -0.678,
+        0.0,
+        -0.767
+      ],
+      "max": [
+        0.798,
+        0.115,
+        0.665
+      ],
+      "materials": [
+        "M_Env_FlowerHeart",
+        "M_Env_LilyFlower",
+        "M_Env_LilyPad"
+      ]
+    },
+    "Lily_Pad_Single": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Lily_Pad_Single.fbx",
+      "tris": 364,
+      "min": [
+        -0.311,
+        0.0,
+        -0.303
+      ],
+      "max": [
+        0.288,
+        0.115,
+        0.305
+      ],
+      "materials": [
+        "M_Env_FlowerHeart",
+        "M_Env_LilyFlower",
+        "M_Env_LilyPad"
+      ]
+    },
+    "Reeds_01": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Reeds_01.fbx",
+      "tris": 144,
+      "min": [
+        -0.32,
+        -0.05,
+        -0.351
+      ],
+      "max": [
+        0.344,
+        1.21,
+        0.328
+      ],
+      "materials": [
+        "M_Env_Reed"
+      ]
+    },
+    "Cattails_01": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Cattails_01.fbx",
+      "tris": 348,
+      "min": [
+        -0.396,
+        -0.051,
+        -0.374
+      ],
+      "max": [
+        0.24,
+        1.478,
+        0.35
+      ],
+      "materials": [
+        "M_Env_Cattail",
+        "M_Env_Reed"
+      ]
+    },
+    "Duck_01": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Duck_01.fbx",
+      "tris": 464,
+      "min": [
+        -0.274,
+        -0.062,
+        -0.341
+      ],
+      "max": [
+        0.274,
+        0.425,
+        0.413
+      ],
+      "materials": [
+        "M_Env_Beak",
+        "M_Env_Dark",
+        "M_Env_DuckWhite"
+      ]
+    },
+    "Duck_02": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Duck_02.fbx",
+      "tris": 464,
+      "min": [
+        -0.274,
+        -0.062,
+        -0.341
+      ],
+      "max": [
+        0.274,
+        0.425,
+        0.413
+      ],
+      "materials": [
+        "M_Env_Beak",
+        "M_Env_Dark",
+        "M_Env_DuckBrown",
+        "M_Env_DuckGreen"
+      ]
+    },
+    "Jetty_01": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Jetty_01.fbx",
+      "tris": 2352,
+      "min": [
+        -0.685,
+        -1.201,
+        0.0
+      ],
+      "max": [
+        0.689,
+        0.621,
+        4.0
+      ],
+      "materials": [
+        "M_Env_Plank",
+        "M_Env_PlankDark"
+      ]
+    },
+    "Rowboat_01": {
+      "category": "Water",
+      "fbx": "Assets/Art/Models/Environment/Water/Rowboat_01.fbx",
+      "tris": 552,
+      "min": [
+        -1.199,
+        -0.16,
+        -1.3
+      ],
+      "max": [
+        1.199,
+        0.48,
+        1.3
+      ],
+      "materials": [
+        "M_Env_BoatCream",
+        "M_Env_BoatRed",
+        "M_Env_Plank"
+      ]
+    },
+    "Tree_Pine_Snow_Small": {
+      "category": "Winter",
+      "fbx": "Assets/Art/Models/Environment/Winter/Tree_Pine_Snow_Small.fbx",
+      "tris": 330,
+      "min": [
+        -0.911,
+        -0.15,
+        -0.911
+      ],
+      "max": [
+        0.911,
+        2.445,
+        0.911
+      ],
+      "materials": [
+        "M_Env_PineLeaf",
+        "M_Env_SnowSoft",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Pine_Snow_Medium": {
+      "category": "Winter",
+      "fbx": "Assets/Art/Models/Environment/Winter/Tree_Pine_Snow_Medium.fbx",
+      "tris": 474,
+      "min": [
+        -1.184,
+        -0.15,
+        -1.184
+      ],
+      "max": [
+        1.184,
+        3.845,
+        1.184
+      ],
+      "materials": [
+        "M_Env_PineLeaf",
+        "M_Env_SnowSoft",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Pine_Snow_Large": {
+      "category": "Winter",
+      "fbx": "Assets/Art/Models/Environment/Winter/Tree_Pine_Snow_Large.fbx",
+      "tris": 618,
+      "min": [
+        -1.583,
+        -0.15,
+        -1.583
+      ],
+      "max": [
+        1.583,
+        5.845,
+        1.583
+      ],
+      "materials": [
+        "M_Env_PineLeaf",
+        "M_Env_SnowSoft",
+        "M_Env_Trunk"
+      ]
+    },
+    "Rock_Snow_Medium": {
+      "category": "Winter",
+      "fbx": "Assets/Art/Models/Environment/Winter/Rock_Snow_Medium.fbx",
+      "tris": 90,
+      "min": [
+        -0.65,
+        -0.096,
+        -0.498
+      ],
+      "max": [
+        0.789,
+        0.836,
+        0.657
+      ],
+      "materials": [
+        "M_Env_Rock",
+        "M_Env_SnowSoft"
+      ]
+    },
+    "Rock_Snow_Large": {
+      "category": "Winter",
+      "fbx": "Assets/Art/Models/Environment/Winter/Rock_Snow_Large.fbx",
+      "tris": 90,
+      "min": [
+        -1.066,
+        -0.192,
+        -1.005
+      ],
+      "max": [
+        1.465,
+        1.656,
+        1.304
+      ],
+      "materials": [
+        "M_Env_Rock",
+        "M_Env_SnowSoft"
+      ]
+    },
+    "Snow_Drift_01": {
+      "category": "Winter",
+      "fbx": "Assets/Art/Models/Environment/Winter/Snow_Drift_01.fbx",
+      "tris": 80,
+      "min": [
+        -1.501,
+        -0.02,
+        -0.74
+      ],
+      "max": [
+        1.518,
+        0.524,
+        0.825
+      ],
+      "materials": [
+        "M_Env_SnowSoft"
+      ]
+    },
+    "Snow_Drift_02": {
+      "category": "Winter",
+      "fbx": "Assets/Art/Models/Environment/Winter/Snow_Drift_02.fbx",
+      "tris": 80,
+      "min": [
+        -2.401,
+        -0.02,
+        -1.058
+      ],
+      "max": [
+        2.634,
+        0.75,
+        1.055
+      ],
+      "materials": [
+        "M_Env_SnowSoft"
+      ]
+    },
+    "Snow_Pile_Track": {
+      "category": "Winter",
+      "fbx": "Assets/Art/Models/Environment/Winter/Snow_Pile_Track.fbx",
+      "tris": 176,
+      "min": [
+        -1.211,
+        -0.1,
+        -0.825
+      ],
+      "max": [
+        1.206,
+        0.598,
+        0.84
+      ],
+      "materials": [
+        "M_Env_SnowSoft"
+      ]
+    },
+    "Snowman_01": {
+      "category": "Winter",
+      "fbx": "Assets/Art/Models/Environment/Winter/Snowman_01.fbx",
+      "tris": 1044,
+      "min": [
+        -0.869,
+        0.4,
+        -0.495
+      ],
+      "max": [
+        0.869,
+        1.915,
+        0.48
+      ],
+      "materials": [
+        "M_Env_Carrot",
+        "M_Env_Dark",
+        "M_Env_Scarf",
+        "M_Env_SnowSoft",
+        "M_Env_Trunk"
+      ]
+    },
+    "Cabin_01": {
+      "category": "Winter",
+      "fbx": "Assets/Art/Models/Environment/Winter/Cabin_01.fbx",
+      "tris": 2764,
+      "min": [
+        -2.7,
+        -0.025,
+        -1.99
+      ],
+      "max": [
+        2.142,
+        4.54,
+        1.99
+      ],
+      "materials": [
+        "M_Env_Beak",
+        "M_Env_Chimney",
+        "M_Env_Log",
+        "M_Env_PlankDark",
+        "M_Env_SnowSoft",
+        "M_Env_Window"
+      ]
+    },
+    "Icicles_2m": {
+      "category": "Winter",
+      "fbx": "Assets/Art/Models/Environment/Winter/Icicles_2m.fbx",
+      "tris": 428,
+      "min": [
+        -1.0,
+        -0.446,
+        -0.041
+      ],
+      "max": [
+        1.0,
+        0.02,
+        0.041
+      ],
+      "materials": [
+        "M_Env_Ice",
+        "M_Env_SnowSoft"
+      ]
+    },
+    "Frozen_Lake_01": {
+      "category": "Winter",
+      "fbx": "Assets/Art/Models/Environment/Winter/Frozen_Lake_01.fbx",
+      "tris": 2784,
+      "min": [
+        -7.398,
+        -0.05,
+        -6.924
+      ],
+      "max": [
+        7.238,
+        0.336,
+        7.553
+      ],
+      "materials": [
+        "M_Env_Ice",
+        "M_Env_IceDark",
+        "M_Env_SnowSoft"
+      ]
     }
   },
   "materials": {
@@ -1253,6 +2076,629 @@
         "rim": 0.25,
         "noShadow": true,
         "edge": 0.0
+      }
+    },
+    "M_Env_LeafOak": {
+      "base": "#8B9F3B",
+      "ramp": [
+        "#566D3A",
+        "#6B7F38",
+        "#8B9F3B",
+        "#A1B044",
+        "#ADBC4A"
+      ],
+      "rampShift": 0.04,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.6,
+        "rim": 0.3
+      }
+    },
+    "M_Env_LeafAutumn": {
+      "base": "#DE913F",
+      "ramp": [
+        "#684029",
+        "#C9813B",
+        "#DE913F",
+        "#F5AC4A",
+        "#F9B44F"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.6,
+        "rim": 0.3
+      }
+    },
+    "M_Env_LeafAutumnRed": {
+      "base": "#B7564B",
+      "ramp": [
+        "#833C32",
+        "#9F473D",
+        "#AC4E43",
+        "#B7564B",
+        "#CE6758"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.6,
+        "rim": 0.3
+      }
+    },
+    "M_Env_LeafBirch": {
+      "base": "#82A740",
+      "ramp": [
+        "#6F8C35",
+        "#7A9B3C",
+        "#82A740",
+        "#92BC4B",
+        "#A3D25B"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.6,
+        "rim": 0.3
+      }
+    },
+    "M_Env_LeafBirchAutumn": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.6,
+        "rim": 0.3
+      }
+    },
+    "M_Env_Willow": {
+      "base": "#7A9B3C",
+      "ramp": [
+        "#6F8C35",
+        "#7A9B3C",
+        "#82A740",
+        "#92BC4B",
+        "#A3D25B"
+      ],
+      "rampShift": -0.12,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.5,
+        "rim": 0.3
+      }
+    },
+    "M_Env_BirchBark": {
+      "base": "#FDEEDC",
+      "ramp": [
+        "#352F3C",
+        "#BDABC1",
+        "#DCC7C5",
+        "#FDEEDC",
+        "#FDF6E8"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.3
+      }
+    },
+    "M_Env_Dark": {
+      "base": "#33303B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0
+      }
+    },
+    "M_Env_Moss": {
+      "base": "#7A9B3C",
+      "ramp": [
+        "#6F8C35",
+        "#7A9B3C",
+        "#82A740",
+        "#92BC4B",
+        "#A3D25B"
+      ],
+      "rampShift": -0.25,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.4
+      }
+    },
+    "M_Env_LogCut": {
+      "base": "#EBA462",
+      "ramp": [
+        "#885642",
+        "#9A6146",
+        "#DB945C",
+        "#EBA462",
+        "#F4B06C"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0
+      }
+    },
+    "M_Env_MushroomRed": {
+      "base": "#CD4C2C",
+      "ramp": [
+        "#9E3A22",
+        "#B8432A",
+        "#CD4C2C",
+        "#E06A48",
+        "#E79E80"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.2
+      }
+    },
+    "M_Env_MushroomBrown": {
+      "base": "#8F5039",
+      "ramp": [
+        "#693B2E",
+        "#774332",
+        "#804936",
+        "#8F5039",
+        "#B46D4B"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.2
+      }
+    },
+    "M_Env_MushroomStem": {
+      "base": "#EECAA1",
+      "ramp": [
+        "#D3AA81",
+        "#E7C198",
+        "#EBC69D",
+        "#EECAA1",
+        "#FCDBB4"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.2
+      }
+    },
+    "M_Env_Fern": {
+      "base": "#6B7F38",
+      "ramp": [
+        "#566D3A",
+        "#6B7F38",
+        "#8B9F3B",
+        "#A1B044",
+        "#ADBC4A"
+      ],
+      "rampShift": -0.08,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 0.4
+      }
+    },
+    "M_Env_Tulip": {
+      "base": "#D55246",
+      "ramp": [
+        "#B24036",
+        "#D25044",
+        "#D55246",
+        "#D85448",
+        "#EC6755"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.2
+      }
+    },
+    "M_Env_TulipYellow": {
+      "base": "#F5B038",
+      "ramp": [
+        "#B57326",
+        "#E59C2F",
+        "#F5B038",
+        "#FDBF40",
+        "#FDC443"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.2
+      }
+    },
+    "M_Env_FlowerPink": {
+      "base": "#B297B8",
+      "ramp": [
+        "#6B4269",
+        "#684E6B",
+        "#A7689C",
+        "#B297B8",
+        "#D2BCD0"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.2
+      }
+    },
+    "M_Env_FlowerBlue": {
+      "base": "#4A7B9A",
+      "ramp": [
+        "#204052",
+        "#295065",
+        "#2F5A71",
+        "#325E75",
+        "#4A7B9A"
+      ],
+      "rampShift": 0.15,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.2
+      }
+    },
+    "M_Env_Berry": {
+      "base": "#B83F3C",
+      "ramp": [
+        "#872B2B",
+        "#AF3A38",
+        "#B83F3C",
+        "#BE443F",
+        "#D76552"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.1,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.2
+      }
+    },
+    "M_Env_LilyPad": {
+      "base": "#7A9B3C",
+      "ramp": [
+        "#6F8C35",
+        "#7A9B3C",
+        "#82A740",
+        "#92BC4B",
+        "#A3D25B"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.1,
+      "opts": {
+        "cells": 0.3
+      }
+    },
+    "M_Env_LilyFlower": {
+      "base": "#D2BCD0",
+      "ramp": [
+        "#6B4269",
+        "#684E6B",
+        "#A7689C",
+        "#B297B8",
+        "#D2BCD0"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.2
+      }
+    },
+    "M_Env_Reed": {
+      "base": "#7B6B3A",
+      "ramp": [
+        "#574D2C",
+        "#655931",
+        "#706236",
+        "#7B6B3A",
+        "#9A8548"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0
+      }
+    },
+    "M_Env_Cattail": {
+      "base": "#774332",
+      "ramp": [
+        "#693B2E",
+        "#774332",
+        "#804936",
+        "#8F5039",
+        "#B46D4B"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0
+      }
+    },
+    "M_Env_DuckWhite": {
+      "base": "#FDF6E8",
+      "ramp": [
+        "#352F3C",
+        "#BDABC1",
+        "#DCC7C5",
+        "#FDEEDC",
+        "#FDF6E8"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.25
+      }
+    },
+    "M_Env_DuckBrown": {
+      "base": "#B46D4B",
+      "ramp": [
+        "#693B2E",
+        "#774332",
+        "#804936",
+        "#8F5039",
+        "#B46D4B"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.25
+      }
+    },
+    "M_Env_DuckGreen": {
+      "base": "#5B7A7A",
+      "ramp": [
+        "#2B3B37",
+        "#395251",
+        "#3D5655",
+        "#466162",
+        "#5B7A7A"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.1,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.25
+      }
+    },
+    "M_Env_Beak": {
+      "base": "#E59C2F",
+      "ramp": [
+        "#B57326",
+        "#E59C2F",
+        "#F5B038",
+        "#FDBF40",
+        "#FDC443"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0
+      }
+    },
+    "M_Env_Plank": {
+      "base": "#9A6146",
+      "ramp": [
+        "#885642",
+        "#9A6146",
+        "#DB945C",
+        "#EBA462",
+        "#F4B06C"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 0.5
+      }
+    },
+    "M_Env_PlankDark": {
+      "base": "#814C32",
+      "ramp": [
+        "#6C422A",
+        "#814C32",
+        "#8D543A",
+        "#A56945",
+        "#E59843"
+      ],
+      "rampShift": -0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 0.5
+      }
+    },
+    "M_Env_BoatRed": {
+      "base": "#CD4C2C",
+      "ramp": [
+        "#9E3A22",
+        "#B8432A",
+        "#CD4C2C",
+        "#E06A48",
+        "#E79E80"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.1,
+      "opts": {
+        "cells": 0.2
+      }
+    },
+    "M_Env_BoatCream": {
+      "base": "#EECAA1",
+      "ramp": [
+        "#D3AA81",
+        "#E7C198",
+        "#EBC69D",
+        "#EECAA1",
+        "#FCDBB4"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.1,
+      "opts": {
+        "cells": 0.2
+      }
+    },
+    "M_Env_SnowSoft": {
+      "base": "#FDF2EB",
+      "ramp": [
+        "#C2CAEA",
+        "#C7D0F0",
+        "#DFDDEE",
+        "#E7E1EA",
+        "#FDF2EB"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.3,
+        "cellSize": 0.8,
+        "rim": 0.2
+      }
+    },
+    "M_Env_Ice": {
+      "base": "#ADD7ED",
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.4,
+      "opts": {
+        "cells": 0.3,
+        "cellSize": 1.5,
+        "rim": 0.35
+      }
+    },
+    "M_Env_IceDark": {
+      "base": "#83C2EB",
+      "ramp": [
+        "#6B8CB6",
+        "#83C2EB",
+        "#8EC7EC",
+        "#9ACCEC",
+        "#ADD7ED"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.4,
+      "opts": {
+        "cells": 0.3,
+        "cellSize": 2.0,
+        "rim": 0.25
+      }
+    },
+    "M_Env_Carrot": {
+      "base": "#F5AC4A",
+      "ramp": [
+        "#684029",
+        "#C9813B",
+        "#DE913F",
+        "#F5AC4A",
+        "#F9B44F"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.2
+      }
+    },
+    "M_Env_Scarf": {
+      "base": "#B83F3C",
+      "ramp": [
+        "#872B2B",
+        "#AF3A38",
+        "#B83F3C",
+        "#BE443F",
+        "#D76552"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0
+      }
+    },
+    "M_Env_Log": {
+      "base": "#8D543A",
+      "ramp": [
+        "#6C422A",
+        "#814C32",
+        "#8D543A",
+        "#A56945",
+        "#E59843"
+      ],
+      "rampShift": -0.02,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.5
+      }
+    },
+    "M_Env_Chimney": {
+      "base": "#AC7F75",
+      "ramp": [
+        "#6A4C4B",
+        "#906959",
+        "#AC7F75",
+        "#BE907B",
+        "#CA957A"
+      ],
+      "rampShift": -0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.3
+      }
+    },
+    "M_Env_Window": {
+      "base": "#FDDB78",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.15,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "emissive": 0.55
       }
     }
   }

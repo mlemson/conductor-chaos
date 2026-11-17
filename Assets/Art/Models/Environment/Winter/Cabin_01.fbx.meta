@@ -1,0 +1,60 @@
+fileFormatVersion: 2
+guid: 2ea4875613c8769d3e82d0126d53d5d9
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Beak
+    second: {fileID: 2100000, guid: 74ccd1bae565c8181e5fe373b7bbc115, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Chimney
+    second: {fileID: 2100000, guid: 4e4110845b5350d5fd0fcd0295dfd6ce, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Log
+    second: {fileID: 2100000, guid: 570bb417747fa943e7081af8e826d23c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_PlankDark
+    second: {fileID: 2100000, guid: 336413399fae4c920cda47b58903bb2c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_SnowSoft
+    second: {fileID: 2100000, guid: 7b84b8372740334b5c9b9cb4f17d0a6a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Window
+    second: {fileID: 2100000, guid: 023d9faf2f079c1a96ff44bf8067e699, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

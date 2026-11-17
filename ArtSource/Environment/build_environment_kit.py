@@ -33,6 +33,8 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "ArtSource", "Tools"))
 import meshkit as mk  # noqa: E402
 import unity_assets  # noqa: E402
+sys.path.insert(0, HERE)
+import nature_v3  # noqa: E402
 
 PALETTE = json.load(open(os.path.join(ROOT, "Docs", "References", "palette.json"), encoding="utf-8"))
 R = {k: v["ramp"] for g in PALETTE["groups"].values() for k, v in g.items()}
@@ -77,6 +79,9 @@ MATERIALS = {
     "M_Env_Cloud": (R["cloud_snow"][3], R["cloud_snow"], 0.0, 0.12, {"cells": 0.0, "flat": 0.35, "rim": 0.25,
                                                                        "noShadow": True, "edge": 0.0}),
 }
+
+
+MATERIALS.update(nature_v3.materials(R))         # natuurkit v3, water- en winterprops (#240-#242)
 
 
 # ------------------------------------------------------------------ helpers
@@ -593,7 +598,7 @@ def make_scene(name, mesh, density, radius, gradient=0.25, facet=True):
     return sc
 
 
-def build_all():
+def build_all(only=None):
     rng = np.random.default_rng(2026)
     A = {}
     A["Trees/Tree_Pine_Small_01"] = (pine(2.2, 2, 1.7, rng), 900, 0.20)
@@ -654,6 +659,10 @@ def build_all():
     A["Sky/Cloud_01"] = (cloud(rng, 5, 6.0), 40, 0.6)
     A["Sky/Cloud_02"] = (cloud(rng, 4, 4.5), 50, 0.6)
     A["Sky/Cloud_03"] = (cloud(rng, 3, 3.0), 60, 0.6)
+    # natuurkit v3, waterprops en winterkit: eigen reeksen per sectie (nature_v3.build)
+    A.update(nature_v3.build(lambda k: np.random.default_rng([2026, k]), grass_tuft))
+    if only:
+        A = {rel: v for rel, v in A.items() if any(o in rel for o in only)}
 
     os.makedirs(EXP_DIR, exist_ok=True)
     unity_assets.folder_meta(ROOT, MAT_DIR)
@@ -661,7 +670,8 @@ def build_all():
              for n, (b, ramp, sm, sh, op) in MATERIALS.items()}
     # wateroppervlak (StylizedWater-component) gebruikt een eigen shader: diepte-kleur, schuimrand, schittering (#110)
     guids["M_Env_WaterSurface"] = unity_assets.water_material(ROOT, f"{MAT_DIR}/M_Env_WaterSurface.mat", "M_Env_WaterSurface")
-    manifest = {}
+    manifest_path = os.path.join(EXP_DIR, "EnvironmentKit.json")
+    manifest = json.load(open(manifest_path, encoding="utf-8"))["assets"] if only and os.path.exists(manifest_path) else {}
     for rel, (mesh, dens, rad) in A.items():
         name = os.path.basename(rel)
         smooth = rel.startswith("Sky")
@@ -682,8 +692,8 @@ def build_all():
                           "materials": sorted(sc.materials)}
         print(f"{name:26s} {sc.stats()['tris']:6d} tris")
     mats = {n: {"base": b, "ramp": ramp, "rampShift": sh, "smoothness": sm, "opts": op} for n, (b, ramp, sm, sh, op) in MATERIALS.items()}
-    json.dump({"assets": manifest, "materials": mats}, open(os.path.join(EXP_DIR, "EnvironmentKit.json"), "w", encoding="utf-8"), indent=2)
+    json.dump({"assets": manifest, "materials": mats}, open(manifest_path, "w", encoding="utf-8"), indent=2)
 
 
 if __name__ == "__main__":
-    build_all()
+    build_all(sys.argv[1:] or None)          # optioneel: alleen assets waarvan het pad een van de argumenten bevat
