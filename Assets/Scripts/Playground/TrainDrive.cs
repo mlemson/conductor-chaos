@@ -28,7 +28,8 @@ namespace ConductorChaos.Playground
         private SphereCollider steamValve;
         private Renderer steamValveRenderer;
         private MaterialPropertyBlock steamValveColor;
-        private float nextSteamHit;
+        private float nextSteamHit, coalSurge, visibleFlame;
+        internal float HeatFraction => steamHeat.Value;
         private readonly NetworkVariable<float> doorAngle = new(0f);
         private readonly NetworkVariable<Vector4> wagonDoorOffsets = new(Vector4.zero);
         private NetworkList<byte> endDoorsOpen;
@@ -318,6 +319,7 @@ namespace ConductorChaos.Playground
         {
             get
             {
+                if (!serviceCoachVisible.Value) return true;
                 Vector4 offsets = wagonDoorOffsets.Value;
                 for (int i = 0; i < wagonDoors.Length; i++)
                     if (wagonDoors[i] != null && !WagonDoorIsClosed(offsets[i])) return false;
@@ -336,6 +338,7 @@ namespace ConductorChaos.Playground
         }
         internal bool IsServiceDoorOpen(Transform doorway)
         {
+            if (!serviceCoachVisible.Value) return false;
             Vector4 offsets = wagonDoorOffsets.Value;
             float nearest = float.PositiveInfinity;
             float clearance = 0f;
@@ -367,6 +370,10 @@ namespace ConductorChaos.Playground
         private readonly RaycastHit[] railObstacleHits = new RaycastHit[32];
         private readonly Dictionary<Rigidbody, LooseWagon> looseWagons = new();
         private readonly List<Rigidbody> coupledWagons = new();
+        private readonly NetworkVariable<bool> serviceCoachVisible = new(true);
+        private Rigidbody serviceCoach;
+        private readonly List<Renderer> hiddenCoachRenderers = new();
+        private readonly List<Collider> hiddenCoachColliders = new();
         private readonly Dictionary<Rigidbody, float> couplingGaps = new();
         private readonly Dictionary<Rigidbody, CouplerLayout> couplers = new();
         private readonly HashSet<Rigidbody> reversedWagons = new();
@@ -530,6 +537,7 @@ namespace ConductorChaos.Playground
                 steamPipeBroken.Value = false;
                 steamRepairHits.Value = 0;
                 nextSteamHit = 0f;
+                coalSurge = 0f;
             }
             if (heatNeedle && canStoke && !tiltLever) CreateSteamValve();
             if (smokeOrigin && coalBodies.Count > 0)
@@ -561,6 +569,11 @@ namespace ConductorChaos.Playground
                 if (wagon && wagon != body) couplers[wagon] = GetCouplers(wagon.transform);
             PrepareWagonDoors();
             PrepareEndDoors();
+            serviceCoach = System.Array.Find(availableWagons, wagon =>
+                wagon && RepairPoint.FindDeep(wagon.transform, "DoorLeaf_L"));
+            if (IsServer) serviceCoachVisible.Value = true;
+            serviceCoachVisible.OnValueChanged += OnServiceCoachChanged;
+            PresentServiceCoach(serviceCoachVisible.Value);
             if (!IsServer) return;
             invalidConsist = false;
             awaitingConsist = startWithCoupledWagons && availableWagons.Length > 0;
@@ -660,8 +673,14 @@ namespace ConductorChaos.Playground
         {
             if (!steamValve || !enableBoost) return demand * maximumSpeed;
             float step = Time.fixedDeltaTime;
-            float heatRate = steamPipeBroken.Value ? -.10f : demand >= .90f ? .10f : demand > .72f ? .026f : -.045f;
-            float heat = Mathf.Clamp01(steamHeat.Value + heatRate * step);
+            coalSurge = Mathf.MoveTowards(coalSurge, 0f, .028f * step);
+            float load = Mathf.Abs(demand);
+            float targetHeat = !powered.Value || fuel.Value <= 0f ? 0f :
+                (load <= .72f ? Mathf.Lerp(.10f, .48f, load / .72f)
+                    : Mathf.Lerp(.48f, 1.55f, Mathf.InverseLerp(.72f, 1f, load))) + coalSurge;
+            float warmRate = Mathf.Lerp(.023f, .105f, Mathf.InverseLerp(.50f, 1f, load + coalSurge * .45f));
+            float heatRate = steamPipeBroken.Value ? .10f : targetHeat > steamHeat.Value ? warmRate : .048f;
+            float heat = Mathf.Clamp01(Mathf.MoveTowards(steamHeat.Value, steamPipeBroken.Value ? 0f : targetHeat, heatRate * step));
             if (heat != steamHeat.Value) steamHeat.Value = heat;
             if (heat >= 1f) steamPipeBroken.Value = true;
             if (steamPipeBroken.Value) return 0f;
@@ -690,6 +709,8 @@ namespace ConductorChaos.Playground
                 displayedSpeed.Value = body.linearVelocity.magnitude;
                 return;
             }
+            var service = ServiceRun.Active;
+            if (service && service.Train == this && service.Phase == ServiceRun.RunPhase.Loading && !service.Introduction) return;
             if (invalidConsist || (awaitingConsist && !PlaceStartingConsist())) return;
             TryCoupleWagon();
             foreach (var wagon in coupledWagons)
@@ -700,7 +721,6 @@ namespace ConductorChaos.Playground
                 displayedSpeed.Value = 0f;
                 return;
             }
-            var service = ServiceRun.Active;
             bool training = service && service.IsTrainingTrain(this);
             bool needsFuel = canStoke && !training;
             bool canDrive = powered.Value && (!needsFuel || fuel.Value > 0f) && (!service || service.AllowsMotion(this));
@@ -1020,6 +1040,113 @@ namespace ConductorChaos.Playground
                 ? new CouplerLayout(negative, positive) : new CouplerLayout(positive, negative);
         }
 
+        internal bool PrepareServiceConsist(bool wantsCoach, bool wantsFreight, out BoxCollider freightBay)
+        {
+            freightBay = null;
+            if (!IsServer || !IsSpawned || !track || (wantsCoach && !serviceCoach)) return false;
+            ServiceFreightWagon freight = null;
+            if (wantsFreight)
+            {
+                var prefab = Resources.Load<GameObject>("ServiceFreightWagon");
+                if (!prefab) return false;
+                freight = Instantiate(prefab, body.position, body.rotation).GetComponent<ServiceFreightWagon>();
+                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(freight.gameObject, gameObject.scene);
+                RegisterFreightWagon(freight.Body);
+            }
+            coupledWagons.Clear();
+            couplingGaps.Clear();
+            reversedWagons.Clear();
+            awaitingConsist = false;
+            foreach (var wagon in availableWagons)
+                if (wagon && wagon != body && (wagon != serviceCoach || wantsCoach)) AddServiceWagon(wagon);
+            if (freight) AddServiceWagon(freight.Body);
+
+            var start = track;
+            float along = distance;
+            // Fit the whole consist before spawning it. Some station tracks stop just behind the platform.
+            for (int step = 0; step < 24 && !FitsAtDeparture(start, along); step++)
+                if (!AdvanceOnRail(ref start, ref along, -.5f * rearwardRailSign)) break;
+            if (!FitsAtDeparture(start, along) || !TryRailPose(start, along, railCenterOffset, false, out var position, out var rotation))
+            {
+                if (freight) { UnregisterFreightWagon(freight.Body); Destroy(freight.gameObject); }
+                Debug.LogError("De combinatie van dienstwagons past niet op het vertrekspoor.", this);
+                return false;
+            }
+            serviceCoachVisible.Value = wantsCoach;
+            if (serviceCoach && !wantsCoach) looseWagons.Remove(serviceCoach);
+            if (freight)
+            {
+                float freightOffset = ConsistRearExtent() - RearExtent(freight.Body);
+                WagonPose(start, along, freightOffset, freight.Body, reversedWagons.Contains(freight.Body),
+                    out var freightPosition, out var freightRotation);
+                freight.transform.SetPositionAndRotation(freightPosition, freightRotation);
+                freight.Body.position = freightPosition;
+                freight.Body.rotation = freightRotation;
+                freight.NetworkObject.Spawn(destroyWithScene: true);
+                freightBay = freight.LoadArea;
+            }
+            track = start;
+            distance = along;
+            body.position = position;
+            body.rotation = rotation;
+            GetComponent<NetworkTransform>().Teleport(position, rotation, transform.localScale);
+            if (canStoke)
+            {
+                shovelBody.position = position + rotation * shovelStartPosition;
+                shovelBody.rotation = rotation * shovelStartRotation;
+            }
+            PlaceWagons(snap: true);
+            return true;
+        }
+
+        private bool FitsAtDeparture(TrackPiece piece, float along) => CanPlaceWagons(piece, along) &&
+            AdvanceOnRail(ref piece, ref along, ConsistRearExtent() * rearwardRailSign);
+
+        private void AddServiceWagon(Rigidbody wagon)
+        {
+            coupledWagons.Add(wagon);
+            couplingGaps[wagon] = 0f;
+            if (couplers[wagon].FrontSign != rearwardRailSign) reversedWagons.Add(wagon);
+            looseWagons.Remove(wagon);
+        }
+
+        internal void RegisterFreightWagon(Rigidbody wagon)
+        {
+            ConfigureMotionPresentation(wagon, IsServer);
+            TrainBodies.Add(wagon);
+            ControlOwners[wagon] = this;
+            couplers[wagon] = GetCouplers(wagon.transform);
+        }
+
+        internal void UnregisterFreightWagon(Rigidbody wagon)
+        {
+            coupledWagons.Remove(wagon);
+            couplingGaps.Remove(wagon);
+            reversedWagons.Remove(wagon);
+            couplers.Remove(wagon);
+            TrainBodies.Remove(wagon);
+            ControlOwners.Remove(wagon);
+        }
+
+        private void OnServiceCoachChanged(bool previousValue, bool visible) => PresentServiceCoach(visible);
+
+        private void PresentServiceCoach(bool visible)
+        {
+            if (!serviceCoach) return;
+            if (visible)
+            {
+                foreach (var renderer in hiddenCoachRenderers) if (renderer) renderer.enabled = true;
+                foreach (var collider in hiddenCoachColliders) if (collider) collider.enabled = true;
+                hiddenCoachRenderers.Clear();
+                hiddenCoachColliders.Clear();
+                return;
+            }
+            foreach (var renderer in serviceCoach.GetComponentsInChildren<Renderer>())
+                if (renderer.enabled) { hiddenCoachRenderers.Add(renderer); renderer.enabled = false; }
+            foreach (var collider in serviceCoach.GetComponentsInChildren<Collider>())
+                if (collider.enabled) { hiddenCoachColliders.Add(collider); collider.enabled = false; }
+        }
+
         private bool PlaceStartingConsist()
         {
             foreach (var wagon in availableWagons)
@@ -1062,7 +1189,8 @@ namespace ConductorChaos.Playground
             float nearestDistance = CouplingRange * CouplingRange;
             foreach (var wagon in availableWagons)
             {
-                if (!wagon || wagon == body || coupledWagons.Contains(wagon) || !couplers.TryGetValue(wagon, out var layout) ||
+                if (!wagon || wagon == body || (wagon == serviceCoach && !serviceCoachVisible.Value) ||
+                    coupledWagons.Contains(wagon) || !couplers.TryGetValue(wagon, out var layout) ||
                     !wagon.TryGetComponent<NetworkObject>(out var networkWagon) || !networkWagon.IsSpawned) continue;
                 float alignment = Vector3.Dot(outward, wagon.rotation * Vector3.right);
                 if (Mathf.Abs(alignment) < 0.86f) continue;
@@ -1533,6 +1661,7 @@ namespace ConductorChaos.Playground
 
         private void UpdateWagonDoors()
         {
+            if (!serviceCoachVisible.Value) return;
             Vector4 offsets = wagonDoorOffsets.Value;
             for (int i = 0; i < wagonDoors.Length; i++)
             {
@@ -1855,12 +1984,16 @@ namespace ConductorChaos.Playground
                     coalCalmTime[i] = calm ? coalCalmTime[i] + Time.fixedDeltaTime : 0f;
                     if (coalCalmTime[i] > 0.6f) SleepCoal(i);
                 }
-                bool inFire = doorAngle.Value >= 50f && fuel.Value < FuelCapacity - 0.05f &&
+                bool inFire = doorAngle.Value >= 50f &&
                               (coal.position - mouth).sqrMagnitude < 0.23f * 0.23f;
                 Vector3 stock = source.position;
                 if (inFire || coal.position.y < stock.y - 20f || (coal.position - stock).sqrMagnitude > 10000f)
                 {
-                    if (inFire) fuel.Value = Mathf.Min(FuelCapacity, fuel.Value + 0.5f);
+                    if (inFire)
+                    {
+                        fuel.Value = Mathf.Min(FuelCapacity, fuel.Value + .5f);
+                        coalSurge = Mathf.Min(.65f, coalSurge + .16f);
+                    }
                     WakeCoal(i);
                     coal.gameObject.SetActive(false);
                     coalRespawnTimes[i] = Time.time + 2.5f;
@@ -1957,8 +2090,10 @@ namespace ConductorChaos.Playground
                     coal.localRotation = Quaternion.Slerp(coal.localRotation, pose.Rotation, follow);
                 }
             }
-            float flameStrength = fuel.Value > 0f ? Mathf.Lerp(0.38f, 1f, Mathf.Clamp01(fuel.Value)) : 0f;
-            fireboxFlame.gameObject.SetActive(flameStrength > 0f);
+            float targetFlame = fuel.Value > 0f ? Mathf.Lerp(.18f, 1f, Mathf.Sqrt(Mathf.Clamp01(FuelFraction))) : 0f;
+            visibleFlame = Mathf.MoveTowards(visibleFlame, targetFlame, 2.5f * Time.deltaTime);
+            float flameStrength = visibleFlame;
+            fireboxFlame.gameObject.SetActive(flameStrength > .01f);
             float flicker = 1f + 0.12f * Mathf.Sin(Time.time * 9f) + 0.07f * Mathf.Sin(Time.time * 17f);
             fireboxFlame.localScale = new Vector3(1f, flicker, 1f) * flameStrength;
             firelight.intensity = 1.1f * flameStrength * flicker;
@@ -2013,6 +2148,9 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkDespawn()
         {
+            serviceCoachVisible.OnValueChanged -= OnServiceCoachChanged;
+            PresentServiceCoach(true);
+            serviceCoach = null;
             foreach (var door in endDoors)
                 if (door.Left && door.Right) door.Apply(0f);
             endDoors.Clear();

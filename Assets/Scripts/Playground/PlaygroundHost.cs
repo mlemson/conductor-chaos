@@ -52,6 +52,8 @@ namespace ConductorChaos.Playground
             }
             persistentHost = this;
             manager = GetComponent<NetworkManager>();
+            var freightPrefab = Resources.Load<GameObject>("ServiceFreightWagon");
+            if (freightPrefab) manager.AddNetworkPrefab(freightPrefab);
             transport = GetComponent<UnityTransport>();
             manager.NetworkConfig.TickRate = (uint)Mathf.RoundToInt(1f / Time.fixedDeltaTime);
             manager.OnClientConnectedCallback += OnConnected;

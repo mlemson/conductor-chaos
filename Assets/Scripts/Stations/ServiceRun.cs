@@ -269,16 +269,31 @@ namespace ConductorChaos.Stations
                     objectiveProgress.Add(0);
                     objectiveAboard.Add(-1);
                 }
-                foreach (var objective in ActiveObjectives) objective.BeginOnServer();
-                cargoLoaded.Value = 0;
-                cargoTravelled.Value = 0;
             }
             else if (!introduction)
             {
                 var eligible = System.Array.FindAll(objectives, o => o && o.IsConfigured);
                 var objective = eligible[Random.Range(0, eligible.Length)];
                 selected.Value = System.Array.IndexOf(objectives, objective);
-                objective.BeginOnServer();
+            }
+            if (!introduction)
+            {
+                bool coach = false, freight = false;
+                foreach (var objective in ActiveObjectives)
+                {
+                    if (objective is ServiceCargo cargo)
+                    {
+                        coach |= !cargo.UsesFreightWagon;
+                        freight |= cargo.UsesFreightWagon;
+                    }
+                    else coach |= objective is ServiceTickets or ServiceEscort;
+                }
+                if (!train.PrepareServiceConsist(coach, freight, out var freightBay)) return false;
+                foreach (var objective in ActiveObjectives)
+                {
+                    if (objective is ServiceCargo cargo && cargo.UsesFreightWagon) cargo.SetFreightBay(freightBay);
+                    objective.BeginOnServer();
+                }
                 cargoLoaded.Value = 0;
                 cargoTravelled.Value = 0;
             }
@@ -412,7 +427,7 @@ namespace ConductorChaos.Stations
                 Finish(false);
                 return;
             }
-            if (Phase == RunPhase.Departure && !ServiceStation.Contains(departure.TrainStop, train.ServiceRailPosition))
+            if (Phase == RunPhase.Departure && HasLeftDeparture)
                 phase.Value = RunPhase.Travelling;
 
             bool stopped = ServiceStation.Contains(arrival.TrainStop, train.ServiceRailPosition) && train.ServiceSpeed < .22f;
@@ -456,7 +471,7 @@ namespace ConductorChaos.Stations
                     Finish(false);
                     return;
                 }
-                if (Phase == RunPhase.Departure && !ServiceStation.Contains(departure.TrainStop, train.ServiceRailPosition))
+                if (Phase == RunPhase.Departure && HasLeftDeparture)
                     phase.Value = RunPhase.Travelling;
                 bool stopped = ServiceStation.Contains(arrival.TrainStop, train.ServiceRailPosition) && train.ServiceSpeed < .22f;
                 stopSeconds = stopped ? stopSeconds + Time.fixedDeltaTime : 0;
@@ -484,6 +499,9 @@ namespace ConductorChaos.Stations
             progress.Value = total;
             if (TimerRunning && docked && complete) Finish(true);
         }
+
+        private bool HasLeftDeparture => (train.transform.position - initialTrainPosition).sqrMagnitude > 1f &&
+            !ServiceStation.Contains(departure.TrainStop, train.ServiceRailPosition);
 
         private static void SetListValue(NetworkList<int> list, int index, int value)
         {

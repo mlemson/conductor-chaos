@@ -9,6 +9,7 @@ namespace ConductorChaos.UI
     internal sealed class ServicePresentation
     {
         private readonly GameObject modal, hud, checklistPanel;
+        private readonly Text engineMeters;
         private readonly Image modalBadge, objectiveIcon;
         private readonly Text kicker, heading, detail, route, actionText, waitText;
         private readonly Text hudTitle, hudDetail, timerText, checklist;
@@ -65,6 +66,10 @@ namespace ConductorChaos.UI
             checklist.supportRichText = true;
             checklistPanel = list.gameObject;
             checklistPanel.SetActive(false);
+            var boiler = ChaosUI.Panel(inGame.transform, "Ketel en kolen", V(.76f, .815f), V(.978f, .875f),
+                ChaosUI.Navy, 2, ChaosUI.Dark);
+            engineMeters = ChaosUI.Label(boiler, "Ketel en kolen", "", 18, ChaosUI.Paper, TextAnchor.MiddleCenter);
+            boiler.gameObject.SetActive(false);
             hud = inGame.gameObject;
             hud.SetActive(false);
         }
@@ -134,6 +139,17 @@ namespace ConductorChaos.UI
 
         private void PresentHud(ServiceRun run)
         {
+            bool showEngine = false;
+            if (run.Train && run.Train.HasCoalFurnace)
+                foreach (var player in PlaygroundPlayer.SpawnedPlayers)
+                    if (player && player.IsOwner && run.Train.TryGetCabin(player.transform.position, .12f, out _))
+                    {
+                        showEngine = true;
+                        break;
+                    }
+            engineMeters.transform.parent.gameObject.SetActive(showEngine);
+            if (showEngine)
+                engineMeters.text = $"Kolen {Mathf.RoundToInt(run.Train.FuelFraction * 100f)}%   ·   Hitte {Mathf.RoundToInt(run.Train.HeatFraction * 100f)}%";
             bool combined = run.CombinesObjectives;
             if (checklistPanel.activeSelf != combined) checklistPanel.SetActive(combined);
             if (run.Introduction)
@@ -205,7 +221,7 @@ namespace ConductorChaos.UI
                     return $"Houd de perrondeur open tot de reizigers zitten. ({run.AboardOf(tickets)}/{tickets.BoardingTarget})";
                 if (objective is ServiceCargo && run.CargoLoaded < objective.Target)
                     return objective.Target == 1 ? "Leg de rode koffer in het bagagevak in de wagon."
-                        : $"Zet de kratten in het vrachtvak in de wagon. ({run.CargoLoaded}/{objective.Target} aan boord)";
+                        : $"Zet de kratten in de open vrachtwagon. ({run.CargoLoaded}/{objective.Target} aan boord)";
                 if (objective is ServiceEscort && run.Progress == 0)
                     return run.EscortDoorOpen ? "Pak oma met je handen vast en sleep haar de wagon in." : "Open de wagondeur aan het perron voor oma.";
                 if (!run.BellRung) return "Druk de gele belknop op het vertrekperron omlaag.";
@@ -293,7 +309,7 @@ namespace ConductorChaos.UI
                     }
                     if (objective is ServiceCargo && run.AboardOf(objective) < objective.Target)
                         return objective.Target == 1 ? "Leg de rode koffer in het bagagevak in de wagon."
-                            : $"Zet de kratten in het vrachtvak in de wagon. ({Mathf.Max(0, run.AboardOf(objective))}/{objective.Target} aan boord)";
+                            : $"Zet de kratten in de open vrachtwagon. ({Mathf.Max(0, run.AboardOf(objective))}/{objective.Target} aan boord)";
                     if (objective is ServiceEscort && run.ProgressOf(objective) == 0)
                         return run.EscortDoorOpen ? "Pak oma met je handen vast en sleep haar de wagon in." : "Open de wagondeur aan het perron voor oma.";
                 }

@@ -25,6 +25,8 @@ namespace ConductorChaos.Stations
         public override int Target => pieces?.Length ?? 0;
         public override bool IsConfigured => Target > 0 && destination && cargoBay &&
             System.Array.TrueForAll(pieces, piece => piece);
+        internal bool UsesFreightWagon => Target > 1;
+        internal void SetFreightBay(BoxCollider zone) => cargoBay = zone;
         public int AboardCount => aboard.Count;
         public int TravelledCount => travelled.Count;
         public override bool ReadyToDepart => IsConfigured && aboard.Count == Target;
@@ -40,7 +42,7 @@ namespace ConductorChaos.Stations
             {
                 if (!piece) continue;
                 pieceColliders[piece] = piece.GetComponentsInChildren<Collider>();
-                if (IsLevelOneSuitcase && !piece.isKinematic)
+                if (!piece.isKinematic && (IsLevelOneSuitcase || UsesFreightWagon))
                     piece.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             }
         }
@@ -70,9 +72,11 @@ namespace ConductorChaos.Stations
             Vector3 up = wagon.rotation * Vector3.up;
             Vector3 horizontalSlip = Vector3.ProjectOnPlane(slip, up);
             // A shove, a hard curve or loss of floor contact can still send the luggage sliding.
-            if (horizontalSlip.sqrMagnitude > 1f || Mathf.Abs(Vector3.Dot(slip, up)) > .8f) return;
+            float grip = UsesFreightWagon ? 1.35f : 1f;
+            if (horizontalSlip.sqrMagnitude > grip * grip || Mathf.Abs(Vector3.Dot(slip, up)) > .8f) return;
             // Give a supported bag the floor velocity, including on rising track, with bounded acceleration.
-            piece.AddForce(Vector3.ClampMagnitude(slip, 7f * Time.fixedDeltaTime), ForceMode.VelocityChange);
+            float friction = UsesFreightWagon ? 9f : 7f;
+            piece.AddForce(Vector3.ClampMagnitude(slip, friction * Time.fixedDeltaTime), ForceMode.VelocityChange);
         }
 
         private static bool Held(Rigidbody piece)
