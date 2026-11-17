@@ -321,9 +321,8 @@ namespace ConductorChaos.Playground
         internal float ServiceSpeed => displayedSpeed.Value;
         private float TopSpeed => steamValve ? maximumSpeed * 1.55f : maximumSpeed;
         internal string SteamWarning => !steamValve ? null : steamPipeBroken.Value
-            ? SteamRepairReady ? $"Stoomleiding kapot: tik met de moersleutel op de rode bout bij de vuurhaard. ({steamRepairHits.Value}/{RequiredSteamHits})"
-                : "Stoomleiding kapot: hendel naar neutraal en laat de ketel afkoelen."
-            : steamHeat.Value >= .70f ? "Ketel te heet: zet de rijhendel wat terug." : null;
+            ? "Storing: stoomleiding"
+            : steamHeat.Value >= .70f ? "Ketel te heet" : null;
         private bool SteamRepairReady => ServiceSpeed < .22f && Mathf.Abs(throttle.Value) < .08f && steamHeat.Value <= .45f;
         internal Vector3 ServiceRailPosition => transform.TransformPoint(0f, -TrackPiece.RailToTrainPivot, railCenterOffset);
         internal bool ServiceDerailed => derailed;

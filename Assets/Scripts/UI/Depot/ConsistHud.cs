@@ -39,7 +39,7 @@ namespace ConductorChaos.UI.Depot
                 if (!point || !point.IsSpawned || !point.IsBroken) continue;
                 string key = point.name.StartsWith("RepairPoint_", System.StringComparison.Ordinal) ? point.name.Substring(12) : point.name;
                 string part = PartNames.TryGetValue(key, out string label) ? label : key;
-                warning = owners[i] == 0 ? $"{part} van de loc kapot: tik op de gele bout" : $"{part} van wagon {owners[i]} kapot: tik op de gele bout";
+                warning = owners[i] == 0 ? $"Storing: {part.ToLowerInvariant()} van de loc" : $"Storing: {part.ToLowerInvariant()} van wagon {owners[i]}";
                 break;
             }
             return warning;

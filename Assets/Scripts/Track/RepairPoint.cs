@@ -60,6 +60,8 @@ namespace ConductorChaos.Track
                 boltCollider.radius = 0.09f;
                 boltCollider.center = Vector3.up * 0.02f;
             }
+            // De vaste rookwolkjes in het model worden bewegende rook (alleen zichtbaar zolang het kapot is).
+            BrokenSmoke.Attach(bitsBroken);
             ShowState(startBroken, 0f, instant: true);
         }
 
