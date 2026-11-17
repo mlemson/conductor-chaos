@@ -288,7 +288,21 @@ namespace ConductorChaos.Stations
                     }
                     else coach |= objective is ServiceTickets or ServiceEscort;
                 }
-                if (!train.PrepareServiceConsist(coach, freight, out var freightBay)) return false;
+                BoxCollider freightBay;
+                if (Depot.DepotVehicles.AppliesToScene(gameObject.scene.name))
+                {
+                    // Depot (#239): het treinstel van de host, aangevuld met wat de opdrachten van deze rit nodig hebben.
+                    var plan = new List<Depot.WagonKind>(Depot.DepotLoadout.Active.Wagons);
+                    if (coach && !plan.Contains(Depot.WagonKind.Regional)) plan.Insert(0, Depot.WagonKind.Regional);
+                    if (freight && !plan.Contains(Depot.WagonKind.Flatbed) && !plan.Contains(Depot.WagonKind.Cargo))
+                        plan.Add(Depot.WagonKind.Flatbed);
+                    bool needsCoach = coach, needsFreight = freight;
+                    if (!train.PrepareServiceConsist(plan, kind =>
+                            kind == Depot.WagonKind.Regional ? needsCoach :
+                            kind is Depot.WagonKind.Flatbed or Depot.WagonKind.Cargo ? needsFreight && FirstFreightKind(plan) == kind : false,
+                            out freightBay)) return false;
+                }
+                else if (!train.PrepareServiceConsist(coach, freight, out freightBay)) return false;
                 foreach (var objective in ActiveObjectives)
                 {
                     if (objective is ServiceCargo cargo && cargo.UsesFreightWagon) cargo.SetFreightBay(freightBay);
@@ -300,6 +314,13 @@ namespace ConductorChaos.Stations
             initialTrainPosition = train.transform.position;
             phase.Value = RunPhase.Briefing;
             return true;
+        }
+
+        private static Depot.WagonKind FirstFreightKind(List<Depot.WagonKind> plan)
+        {
+            foreach (var kind in plan)
+                if (kind is Depot.WagonKind.Flatbed or Depot.WagonKind.Cargo) return kind;
+            return Depot.WagonKind.Flatbed;
         }
 
         private int PickDepartureObjectives()

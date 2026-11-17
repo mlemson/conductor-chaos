@@ -11,6 +11,25 @@ namespace ConductorChaos.Stations
         private TrainDrive train;
         internal Rigidbody Body { get; private set; }
         internal BoxCollider LoadArea { get; private set; }
+        /// <summary>Depot (#239): welk model deze dienstwagon draagt. Standaard de open goederenwagon.</summary>
+        internal Depot.WagonKind Kind { get; private set; } = Depot.WagonKind.Flatbed;
+
+        /// <summary>Server vóór Spawn, clients via de prefab-handler: wissel het model naar een andere wagonsoort.</summary>
+        internal void ApplyKind(Depot.WagonKind kind)
+        {
+            if (kind == Kind || kind == Depot.WagonKind.Flatbed || kind == Depot.WagonKind.Regional) return;
+            var model = Depot.DepotVehicles.BuildWagon(gameObject, kind);
+            if (!model) return;
+            Kind = kind;
+            LoadArea = null;
+            if (kind != Depot.WagonKind.Cargo) return;
+            // Gesloten goederenwagon: kratten tellen als ze binnen staan, net als in de open bak.
+            Bounds inside = Depot.DepotVehicles.LocalBounds(transform);
+            var area = AddBox("Vrachtvak", new Vector3(inside.center.x, inside.min.y + inside.size.y * .42f, inside.center.z),
+                new Vector3(Mathf.Max(1f, inside.size.x - .9f), Mathf.Max(.8f, inside.size.y * .6f), Mathf.Max(1f, inside.size.z - .5f)));
+            area.isTrigger = true;
+            LoadArea = area;
+        }
 
         private void Awake()
         {

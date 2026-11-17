@@ -1,4 +1,6 @@
+using ConductorChaos.Depot;
 using ConductorChaos.UI;
+using ConductorChaos.UI.Depot;
 using ConductorChaos.Stations;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -30,6 +32,7 @@ namespace ConductorChaos.Playground
         private InputField joinCodeInput;
         private PlaygroundHost networkHost;
         private ServicePresentation service;
+        private DepotScreens depot;
         private PlaygroundHost.SessionPhase previousPhase;
 
         public static bool BlocksInput => instance && instance.screen != Screen.Game;
@@ -57,6 +60,11 @@ namespace ConductorChaos.Playground
             networkHost = FindAnyObjectByType<PlaygroundHost>();
             Build();
             service = new ServicePresentation(transform, networkHost);
+            // Levelkeuze en depot (#239): kies dienst, trein en wagons voordat een level start.
+            depot = DepotScreens.Create(transform, networkHost);
+            depot.OnBack = () => SetScreen(Screen.Main);
+            depot.OnStart = StartRoute;
+            service.OpenDepot = level => depot.ShowDepot(level, true);
             SetScreen(Screen.Main);
         }
 
@@ -192,10 +200,10 @@ namespace ConductorChaos.Playground
         private void ShowLobby()
         {
             lobbyPanel.gameObject.SetActive(screen == Screen.Main);
-            routesPanel.gameObject.SetActive(screen == Screen.Routes);
+            routesPanel.gameObject.SetActive(false); // vervangen door de levelkeuze in DepotScreens (#239)
             settingsPanel.gameObject.SetActive(false);
             pausePanel.gameObject.SetActive(screen == Screen.Pause);
-            Select(screen == Screen.Routes ? System.Array.Find(routeButtons, button => button.interactable) ?? routesBack :
+            Select(screen == Screen.Routes ? null :
                 screen == Screen.Main ? playButton : screen == Screen.Pause ? resumeButton : null);
         }
 
@@ -273,8 +281,16 @@ namespace ConductorChaos.Playground
         private void StartRoute(string scene)
         {
             if (!networkHost) return;
+            depot?.Hide();
+            if (networkHost.IsHost && networkHost.Phase == PlaygroundHost.SessionPhase.Playing)
+            {
+                networkHost.LoadServiceScene(scene); // volgende level na een gehaalde dienst
+                return;
+            }
             if (networkHost.CanStart) networkHost.StartLocal(scene);
             else if (networkHost.IsHost && networkHost.Phase == PlaygroundHost.SessionPhase.Lobby) networkHost.BeginGame(scene);
+            if (networkHost.Phase is PlaygroundHost.SessionPhase.Offline or PlaygroundHost.SessionPhase.Lobby && screen == Screen.Routes)
+                SetScreen(Screen.Main);
         }
 
         private void JoinLobby()
@@ -339,6 +355,13 @@ namespace ConductorChaos.Playground
         private void Update()
         {
             UpdateLobby();
+            DepotSync.Tick();
+            if (networkHost && !networkHost.IsHost && networkHost.Phase is PlaygroundHost.SessionPhase.Lobby or PlaygroundHost.SessionPhase.Playing)
+            {
+                // Crew: kijk live mee met het depot van de host.
+                if (DepotSync.IsOpen) depot.ShowCrewDepot();
+                else if (depot.Current != DepotScreens.Mode.Hidden) depot.Hide();
+            }
             var run = ServiceRun.Active;
             if (ServicePresentation.IsModal(networkHost, run))
             {
@@ -346,9 +369,10 @@ namespace ConductorChaos.Playground
             }
             else if (screen == Screen.Service)
                 SetScreen(networkHost && networkHost.Phase == PlaygroundHost.SessionPhase.Playing ? Screen.Game : Screen.Main);
-            service.Present(networkHost, run, screen == Screen.Service, screen == Screen.Game && run);
+            service.Present(networkHost, run, screen == Screen.Service, screen == Screen.Game && run, depot.Current != DepotScreens.Mode.Hidden);
             if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
-            if (screen == Screen.Routes) SetScreen(Screen.Main);
+            if (screen == Screen.Routes) { if (!depot.Back()) SetScreen(Screen.Main); }
+            else if (screen == Screen.Service && depot.Current != DepotScreens.Mode.Hidden) depot.Back();
             else if (screen == Screen.Game) SetScreen(Screen.Pause);
             else if (settingsPanel.gameObject.activeSelf) ShowLobby();
             else if (screen == Screen.Pause) SetScreen(Screen.Game);
@@ -356,6 +380,11 @@ namespace ConductorChaos.Playground
         private void SetScreen(Screen next)
         {
             screen = next;
+            if (depot)
+            {
+                if (next == Screen.Routes) { if (depot.Current == DepotScreens.Mode.Hidden) depot.ShowLevels(); }
+                else if (next != Screen.Service && (networkHost == null || networkHost.IsHost || !DepotSync.IsOpen)) depot.Hide();
+            }
             canvas.gameObject.SetActive(next is Screen.Main or Screen.Routes or Screen.Pause);
             mainPanel.gameObject.SetActive(next == Screen.Main);
             logoPanel.gameObject.SetActive(next == Screen.Main);

@@ -24,8 +24,23 @@ namespace ConductorChaos.UI
         public static readonly Color Muted = Hex("#DAC3B2");
         public static readonly Color Green = Hex("#8B9F3B");
 
-        private static Font cachedFont;
+        private static Font cachedFont, cachedHeading, cachedBody;
+        private static bool fontsLoaded;
         private static Sprite rounded;
+
+        // Typografie uit de UI-stijlgids: Baloo 2 voor koppen en knoppen, Nunito voor tekst (OFL, Resources/Fonts).
+        // Zonder die bestanden valt alles terug op het ingebouwde lettertype.
+        private static void LoadFonts()
+        {
+            if (fontsLoaded) return;
+            fontsLoaded = true;
+            cachedHeading = Resources.Load<Font>("Fonts/Baloo2-Bold");
+            cachedBody = Resources.Load<Font>("Fonts/Nunito-Bold");
+        }
+
+        public static Font HeadingFont { get { LoadFonts(); return cachedHeading ? cachedHeading : Font; } }
+        public static Font BodyFont { get { LoadFonts(); return cachedBody ? cachedBody : Font; } }
+        public static bool HasStyleFonts { get { LoadFonts(); return cachedHeading && cachedBody; } }
 
         public static Color Hex(string value)
         {
@@ -144,9 +159,11 @@ namespace ConductorChaos.UI
             RectTransform rt = Rect(parent, name, min ?? Vector2.zero, max ?? Vector2.one,
                 new Vector2(10f, 0f), new Vector2(-10f, 0f));
             Text text = rt.gameObject.AddComponent<Text>();
-            text.font = Font;
+            bool heading = style == FontStyle.Bold || style == FontStyle.BoldAndItalic;
+            text.font = heading ? HeadingFont : BodyFont;
             text.fontSize = size;
-            text.fontStyle = style;
+            // De stijl-lettertypes zijn al vet; synthetisch vet maakt ze alleen wazig.
+            text.fontStyle = HasStyleFonts ? (style == FontStyle.BoldAndItalic || style == FontStyle.Italic ? FontStyle.Italic : FontStyle.Normal) : style;
             text.alignment = alignment;
             text.color = color;
             text.text = caption;

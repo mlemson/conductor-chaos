@@ -205,7 +205,19 @@ namespace ConductorChaos.Playground
         {
             coalPoses = new NetworkList<CoalPose>();
             endDoorsOpen = new NetworkList<byte>();
+            // Depot (#239): de gekozen loc vervangt het stoommodel vóór het spawnen, op host en clients gelijk.
+            Depot.DepotVehicles.ApplyLocomotive(this, availableWagons);
         }
+
+        internal void SetDepotPerformance(float topSpeed, float accelerationRate)
+        {
+            maximumSpeed = Mathf.Max(1f, topSpeed);
+            acceleration = Mathf.Max(.1f, accelerationRate);
+        }
+
+        /// <summary>De gekoppelde wagons in volgorde vanaf de loc (voor de HUD).</summary>
+        internal IReadOnlyList<Rigidbody> CoupledWagons => coupledWagons;
+        internal Rigidbody LocomotiveBody => body;
         internal static bool IsCoalBody(Rigidbody target) => target && GrippableCoal.ContainsKey(target);
 
         // Locomotieven en wagons van alle treinen (issue #214: een wissel is bezet zolang er een op staat).
@@ -1032,61 +1044,114 @@ namespace ConductorChaos.Playground
 
         internal bool PrepareServiceConsist(bool wantsCoach, bool wantsFreight, out BoxCollider freightBay)
         {
-            freightBay = null;
-            if (!IsServer || !IsSpawned || !track || (wantsCoach && !serviceCoach)) return false;
-            ServiceFreightWagon freight = null;
-            if (wantsFreight)
-            {
-                var prefab = Resources.Load<GameObject>("ServiceFreightWagon");
-                if (!prefab) return false;
-                freight = Instantiate(prefab, body.position, body.rotation).GetComponent<ServiceFreightWagon>();
-                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(freight.gameObject, gameObject.scene);
-                RegisterFreightWagon(freight.Body);
-            }
-            coupledWagons.Clear();
-            couplingGaps.Clear();
-            reversedWagons.Clear();
-            awaitingConsist = false;
-            foreach (var wagon in availableWagons)
-                if (wagon && wagon != body && (wagon != serviceCoach || wantsCoach)) AddServiceWagon(wagon);
-            if (freight) AddServiceWagon(freight.Body);
+            var plan = new List<Depot.WagonKind>(2);
+            if (wantsCoach) plan.Add(Depot.WagonKind.Regional);
+            if (wantsFreight) plan.Add(Depot.WagonKind.Flatbed);
+            return PrepareServiceConsist(plan, _ => true, out freightBay);
+        }
 
-            var start = track;
-            float along = distance;
-            // Fit the whole consist before spawning it. Some station tracks stop just behind the platform.
-            for (int step = 0; step < 24 && !FitsAtDeparture(start, along); step++)
-                if (!AdvanceOnRail(ref start, ref along, -.5f * rearwardRailSign)) break;
-            if (!FitsAtDeparture(start, along) || !TryRailPose(start, along, railCenterOffset, false, out var position, out var rotation))
+        /// <summary>Zet het treinstel uit het depot (#239) achter de loc op het vertrekspoor. Wagons die niet passen
+        /// (optioneel, achteraan eerst) blijven achter; verplichte wagons nooit.</summary>
+        internal bool PrepareServiceConsist(IReadOnlyList<Depot.WagonKind> wagons, System.Func<Depot.WagonKind, bool> required,
+            out BoxCollider freightBay)
+        {
+            freightBay = null;
+            if (!IsServer || !IsSpawned || !track) return false;
+            var plan = new List<Depot.WagonKind>(wagons);
+            if (!serviceCoach && plan.Contains(Depot.WagonKind.Regional))
             {
-                if (freight) { UnregisterFreightWagon(freight.Body); Destroy(freight.gameObject); }
-                Debug.LogError("De combinatie van dienstwagons past niet op het vertrekspoor.", this);
-                return false;
+                if (required(Depot.WagonKind.Regional)) return false;
+                plan.RemoveAll(kind => kind == Depot.WagonKind.Regional);
             }
-            serviceCoachVisible.Value = wantsCoach;
-            if (serviceCoach && !wantsCoach) looseWagons.Remove(serviceCoach);
-            if (freight)
+            var prefab = Resources.Load<GameObject>("ServiceFreightWagon");
+            var spawned = new List<ServiceFreightWagon>();
+            while (true)
             {
-                float freightOffset = ConsistRearExtent() - RearExtent(freight.Body);
-                WagonPose(start, along, freightOffset, freight.Body, reversedWagons.Contains(freight.Body),
-                    out var freightPosition, out var freightRotation);
-                freight.transform.SetPositionAndRotation(freightPosition, freightRotation);
-                freight.Body.position = freightPosition;
-                freight.Body.rotation = freightRotation;
-                freight.NetworkObject.Spawn(destroyWithScene: true);
-                freightBay = freight.LoadArea;
+                spawned.Clear();
+                coupledWagons.Clear();
+                couplingGaps.Clear();
+                reversedWagons.Clear();
+                awaitingConsist = false;
+                bool built = true;
+                foreach (var wagon in availableWagons)
+                    if (wagon && wagon != body && wagon != serviceCoach) AddServiceWagon(wagon);
+                foreach (var kind in plan)
+                {
+                    if (kind == Depot.WagonKind.Regional)
+                    {
+                        AddServiceWagon(serviceCoach);
+                        continue;
+                    }
+                    if (!prefab) { built = false; break; }
+                    var freight = Instantiate(prefab, body.position, body.rotation).GetComponent<ServiceFreightWagon>();
+                    UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(freight.gameObject, gameObject.scene);
+                    freight.ApplyKind(kind);
+                    RegisterFreightWagon(freight.Body);
+                    AddServiceWagon(freight.Body);
+                    spawned.Add(freight);
+                }
+
+                var start = track;
+                float along = distance;
+                // Fit the whole consist before spawning it. Some station tracks stop just behind the platform.
+                if (built)
+                    for (int step = 0; step < 24 && !FitsAtDeparture(start, along); step++)
+                        if (!AdvanceOnRail(ref start, ref along, -.5f * rearwardRailSign)) break;
+                if (built && FitsAtDeparture(start, along) &&
+                    TryRailPose(start, along, railCenterOffset, false, out var position, out var rotation))
+                {
+                    bool wantsCoach = plan.Contains(Depot.WagonKind.Regional);
+                    serviceCoachVisible.Value = wantsCoach;
+                    if (serviceCoach && !wantsCoach) looseWagons.Remove(serviceCoach);
+                    track = start;
+                    distance = along;
+                    body.position = position;
+                    body.rotation = rotation;
+                    GetComponent<NetworkTransform>().Teleport(position, rotation, transform.localScale);
+                    if (canStoke)
+                    {
+                        shovelBody.position = position + rotation * shovelStartPosition;
+                        shovelBody.rotation = rotation * shovelStartRotation;
+                    }
+                    float offset = RearExtent(body);
+                    foreach (var wagon in coupledWagons)
+                    {
+                        offset += couplingGaps[wagon] + FrontExtent(wagon);
+                        var freight = spawned.Find(candidate => candidate.Body == wagon);
+                        if (freight && WagonPose(start, along, offset, wagon, reversedWagons.Contains(wagon),
+                                out var wagonPosition, out var wagonRotation))
+                        {
+                            freight.transform.SetPositionAndRotation(wagonPosition, wagonRotation);
+                            freight.Body.position = wagonPosition;
+                            freight.Body.rotation = wagonRotation;
+                        }
+                        offset += RearExtent(wagon);
+                    }
+                    foreach (var freight in spawned)
+                    {
+                        NetworkManager.PrefabHandler.SetInstantiationData(freight.NetworkObject,
+                            new Depot.DepotWagonData { Kind = (byte)freight.Kind });
+                        freight.NetworkObject.Spawn(destroyWithScene: true);
+                        if (!freightBay && freight.LoadArea) freightBay = freight.LoadArea;
+                    }
+                    PlaceWagons(snap: true);
+                    return true;
+                }
+
+                foreach (var freight in spawned)
+                {
+                    UnregisterFreightWagon(freight.Body);
+                    Destroy(freight.gameObject);
+                }
+                int drop = plan.FindLastIndex(kind => !required(kind));
+                if (!built || drop < 0)
+                {
+                    Debug.LogError("De combinatie van dienstwagons past niet op het vertrekspoor.", this);
+                    return false;
+                }
+                Debug.LogWarning($"Depot: {Depot.DepotCatalog.Wagon(plan[drop]).Name} past niet meer op het vertrekspoor en blijft in het depot.", this);
+                plan.RemoveAt(drop);
             }
-            track = start;
-            distance = along;
-            body.position = position;
-            body.rotation = rotation;
-            GetComponent<NetworkTransform>().Teleport(position, rotation, transform.localScale);
-            if (canStoke)
-            {
-                shovelBody.position = position + rotation * shovelStartPosition;
-                shovelBody.rotation = rotation * shovelStartRotation;
-            }
-            PlaceWagons(snap: true);
-            return true;
         }
 
         private bool FitsAtDeparture(TrackPiece piece, float along) => CanPlaceWagons(piece, along) &&

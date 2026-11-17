@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c319c616ff4846ebb49bbb712329c384, type: 3}
+  m_Name: DepotModels
+  m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.Depot.DepotModels
+  dieselLocomotive: {fileID: 919132149155446097, guid: b108cfe9be41c47f3288c3ad7eed7bcd, type: 3}
+  modernCabCar: {fileID: 919132149155446097, guid: 8eab46b36496774fcc192c10b5d03def, type: 3}
+  futuristicCabCar: {fileID: 919132149155446097, guid: ea42031bbb752a304612cd87f5e5ac95, type: 3}
+  cargoWagon: {fileID: 919132149155446097, guid: d7589b38722c93308916878ed9ce1d56, type: 3}
+  cattleWagon: {fileID: 919132149155446097, guid: f20935cba768167f0713eb814a0c8348, type: 3}
+  tankWagon: {fileID: 919132149155446097, guid: 273216c8415a1d4cf086a0c8f9b24aa4, type: 3}
+  dieselCoach: {fileID: 919132149155446097, guid: 7c0382a2f1575dc6ec7b423f2b85a789, type: 3}
+  modernCoach: {fileID: 919132149155446097, guid: 5a15ce8850d11da76dc6761527d4daeb, type: 3}
+  futuristicCoach: {fileID: 919132149155446097, guid: 6b8dd0b55fbd3a2b189f3d8b3d04f070, type: 3}

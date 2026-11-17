@@ -53,7 +53,12 @@ namespace ConductorChaos.Playground
             persistentHost = this;
             manager = GetComponent<NetworkManager>();
             var freightPrefab = Resources.Load<GameObject>("ServiceFreightWagon");
-            if (freightPrefab) manager.AddNetworkPrefab(freightPrefab);
+            if (freightPrefab)
+            {
+                manager.AddNetworkPrefab(freightPrefab);
+                // Depot (#239): extra wagons gebruiken dezelfde prefab met een ander model.
+                manager.PrefabHandler.AddHandler(freightPrefab, new Depot.DepotWagonHandler(freightPrefab));
+            }
             transport = GetComponent<UnityTransport>();
             manager.NetworkConfig.TickRate = (uint)Mathf.RoundToInt(1f / Time.fixedDeltaTime);
             manager.OnClientConnectedCallback += OnConnected;
@@ -229,6 +234,9 @@ namespace ConductorChaos.Playground
                 return;
             }
 
+            // Depot (#239): clients moeten de gekozen loc kennen vóór hun scène laadt.
+            Depot.DepotSync.Close();
+            Depot.DepotSync.SendNow();
             var scenes = manager.SceneManager;
             scenes.OnLoadEventCompleted -= OnServiceLoaded;
             scenes.OnLoadEventCompleted += OnServiceLoaded;

@@ -1,5 +1,7 @@
+using ConductorChaos.Depot;
 using ConductorChaos.Playground;
 using ConductorChaos.Stations;
+using ConductorChaos.UI.Depot;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -8,7 +10,15 @@ namespace ConductorChaos.UI
 {
     internal sealed class ServicePresentation
     {
-        private readonly GameObject modal, hud, checklistPanel;
+        private readonly GameObject modal, hud, checklistPanel, warningPanel;
+        private readonly Text warningText;
+        private readonly DepotResults results;
+        private readonly ConsistHud consist;
+        private readonly PlaygroundHost host;
+        private ServiceRun rewardedRun;
+        private RunReward reward;
+        /// <summary>Host na een gehaalde dienst: open het depot voor het volgende level.</summary>
+        internal System.Action<int> OpenDepot;
         private readonly Text engineMeters;
         private readonly Image modalBadge, objectiveIcon;
         private readonly Text kicker, heading, detail, route, actionText, waitText;
@@ -51,27 +61,44 @@ namespace ConductorChaos.UI
 
             var inGame = ChaosUI.MakeCanvas(parent, "Dienst-HUD", false);
             inGame.sortingOrder = 22;
-            var objective = ChaosUI.Panel(inGame.transform, "Opdrachtkaart", V(.022f, .79f), V(.322f, .966f),
-                ChaosUI.Paper, 2, ChaosUI.Dark);
-            objectiveIcon = ChaosUISpriteCatalog.Add(objective, "Opdrachticoon", "route", V(.035f, .56f), V(.155f, .91f), ChaosUI.Ink) as Image;
-            hudTitle = Label(objective, "Doel", 22, ChaosUI.Ink, V(.17f, .58f), V(.97f, .94f));
-            hudDetail = Label(objective, "Huidige stap", 18, ChaosUI.Ink, V(.05f, .065f), V(.955f, .57f), FontStyle.Normal);
-            var timer = ChaosUI.Panel(inGame.transform, "Dienstklok", V(.867f, .895f), V(.978f, .966f),
-                ChaosUI.Navy, 2, ChaosUI.Dark);
-            timerText = ChaosUI.Label(timer, "Resterende tijd", "", 26, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold);
+            // Linksboven: de opdrachtkaart met rode kop en de klok (UI-stijlgids, ontwerp #239).
+            var objective = ChaosUI.Panel(inGame.transform, "Opdrachtkaart", V(.015f, .745f), V(.262f, .975f),
+                ChaosUI.Paper, 2, ChaosUI.TrainRedDark);
+            var header = ChaosUI.Panel(objective, "Kop", V(0f, .70f), V(1f, 1f), ChaosUI.TrainRed);
+            objectiveIcon = ChaosUISpriteCatalog.Add(header, "Opdrachticoon", "route", V(.02f, .12f), V(.12f, .88f), Color.white) as Image;
+            hudTitle = Label(header, "Doel", 20, ChaosUI.Paper, V(.13f, 0f), V(.70f, 1f));
+            var timer = ChaosUI.Panel(header, "Dienstklok", V(.71f, .16f), V(.975f, .84f), ChaosUI.Dark);
+            timerText = ChaosUI.Label(timer, "Resterende tijd", "", 22, ChaosUI.Gold, TextAnchor.MiddleCenter, FontStyle.Bold);
+            hudDetail = Label(objective, "Huidige stap", 16, ChaosUI.Ink, V(.04f, .04f), V(.96f, .68f), FontStyle.Normal);
+            hudDetail.resizeTextForBestFit = true;
+            hudDetail.resizeTextMinSize = 12;
+            hudDetail.resizeTextMaxSize = 16;
             // Level 2+: alle opdrachten tegelijk, als afvinklijst onder de opdrachtkaart.
-            var list = ChaosUI.Panel(inGame.transform, "Checklist", V(.022f, .515f), V(.322f, .775f), ChaosUI.Paper, 2, ChaosUI.Dark);
-            checklist = ChaosUI.Label(list, "Opdrachten", "", 17, ChaosUI.Ink, TextAnchor.UpperLeft, FontStyle.Normal,
+            var list = ChaosUI.Panel(inGame.transform, "Checklist", V(.015f, .505f), V(.262f, .735f), ChaosUI.Paper, 2, ChaosUI.TrainRedDark);
+            checklist = ChaosUI.Label(list, "Opdrachten", "", 16, ChaosUI.Ink, TextAnchor.UpperLeft, FontStyle.Normal,
                 V(.05f, .04f), V(.96f, .95f));
             checklist.supportRichText = true;
             checklistPanel = list.gameObject;
             checklistPanel.SetActive(false);
-            var boiler = ChaosUI.Panel(inGame.transform, "Ketel en kolen", V(.76f, .815f), V(.978f, .875f),
-                ChaosUI.Navy, 2, ChaosUI.Dark);
-            engineMeters = ChaosUI.Label(boiler, "Ketel en kolen", "", 18, ChaosUI.Paper, TextAnchor.MiddleCenter);
+            // Rechtsboven: hooguit één waarschuwing tegelijk.
+            var warning = ChaosUI.Panel(inGame.transform, "Waarschuwing", V(.66f, .895f), V(.985f, .975f), ChaosUI.TrainRed, 2, ChaosUI.TrainRedDark);
+            ChaosUISpriteCatalog.Add(warning, "Waarschuwingsicoon", "warning", V(.02f, .12f), V(.13f, .88f), Color.white);
+            warningText = ChaosUI.Label(warning, "Melding", "", 17, DepotUi.RedText, TextAnchor.MiddleLeft, FontStyle.Bold, V(.14f, .04f), V(.98f, .96f));
+            warningText.resizeTextForBestFit = true;
+            warningText.resizeTextMinSize = 11;
+            warningText.resizeTextMaxSize = 17;
+            warningPanel = warning.gameObject;
+            warningPanel.SetActive(false);
+            var boiler = ChaosUI.Panel(inGame.transform, "Ketel en kolen", V(.80f, .835f), V(.985f, .885f),
+                ChaosUI.Dark, 2, DepotUi.Edge);
+            engineMeters = ChaosUI.Label(boiler, "Ketel en kolen", "", 17, ChaosUI.Paper, TextAnchor.MiddleCenter);
             boiler.gameObject.SetActive(false);
+            // Linksonder: het treinstel uit het depot.
+            consist = new ConsistHud(inGame.transform);
             hud = inGame.gameObject;
             hud.SetActive(false);
+            results = new DepotResults(parent);
+            this.host = host;
         }
 
         internal static bool IsModal(PlaygroundHost host, ServiceRun run) => host &&
@@ -79,8 +106,18 @@ namespace ConductorChaos.UI
              host.Phase == PlaygroundHost.SessionPhase.Playing && run &&
              run.Phase is ServiceRun.RunPhase.Briefing or ServiceRun.RunPhase.Won or ServiceRun.RunPhase.Failed);
 
-        internal void Present(PlaygroundHost host, ServiceRun run, bool showModal, bool showHud)
+        internal void Present(PlaygroundHost host, ServiceRun run, bool showModal, bool showHud, bool depotOpen = false)
         {
+            bool won = run && host && host.Phase == PlaygroundHost.SessionPhase.Playing && run.Phase == ServiceRun.RunPhase.Won;
+            if (won && rewardedRun != run) Reward(run);
+            if (!won) rewardedRun = null;
+            if (won && showModal && !depotOpen)
+            {
+                if (!results.Visible) ShowResults(host, run);
+                showModal = false;
+            }
+            else results.Hide();
+            if (depotOpen) showModal = false;
             bool modalChanged = modal.activeSelf != showModal;
             bool hudChanged = hud.activeSelf != showHud;
             if (modalChanged) modal.SetActive(showModal);
@@ -97,6 +134,46 @@ namespace ConductorChaos.UI
                         ? advance.gameObject : leave.gameObject);
             }
             if (showHud) PresentHud(run);
+        }
+
+        // ---------------------------------------------------------------- resultaat en kaartjes (#239)
+
+        private void Reward(ServiceRun run)
+        {
+            rewardedRun = run;
+            var level = DepotCatalog.LevelForScene(run.gameObject.scene.name);
+            int done = 0;
+            if (run.Introduction) done = 0;
+            else if (run.CombinesObjectives)
+            {
+                foreach (var objective in run.ActiveObjectives) if (run.ProgressOf(objective) >= objective.Target) done++;
+            }
+            else if (run.Objective && run.Progress >= run.Objective.Target) done = 1;
+            bool repaired = run.SteamWarning == null;
+            if (run.Train)
+                foreach (var point in run.Train.GetComponentsInChildren<Track.RepairPoint>())
+                    if (point.IsSpawned && point.IsBroken) repaired = false;
+            if (run.Train)
+                foreach (var wagon in run.Train.CoupledWagons)
+                    if (wagon)
+                        foreach (var point in wagon.GetComponentsInChildren<Track.RepairPoint>())
+                            if (point.IsSpawned && point.IsBroken) repaired = false;
+            reward = DepotProgress.AwardWin(level != null ? level.Index : 0, run.TimeLeft, done, repaired);
+        }
+
+        private void ShowResults(PlaygroundHost host, ServiceRun run)
+        {
+            if (reward == null) return;
+            var level = DepotCatalog.LevelForScene(run.gameObject.scene.name) ?? DepotCatalog.Levels[0];
+            string next = ServiceRun.NextScene(run.gameObject.scene.name);
+            var nextLevel = next != null && Application.CanStreamedLevelBeLoaded(next) ? DepotCatalog.LevelForScene(next) : null;
+            string scene = run.gameObject.scene.name;
+            results.Show(reward, level, run.Departure ? run.Departure.StationName : "", run.Arrival && !run.Introduction ? run.Arrival.StationName : "",
+                host.PlayerCount, host.IsHost, nextLevel != null ? nextLevel.Index : -1,
+                () => { if (nextLevel != null) OpenDepot?.Invoke(nextLevel.Index); },
+                () => host.LoadServiceScene(scene),
+                () => host.Leave());
+            if (EventSystem.current) EventSystem.current.SetSelectedGameObject(null);
         }
 
         private void PresentModal(PlaygroundHost host, ServiceRun run)
@@ -169,18 +246,24 @@ namespace ConductorChaos.UI
                     _ => $"{run.Progress}/5 meter · Houd de rijhendel vast en kijk omhoog. Zet hem daarna terug naar het midden."
                 };
                 timerText.text = "Vrije tijd";
+                consist.SetVisible(false);
+                if (warningPanel.activeSelf) warningPanel.SetActive(false);
                 return;
             }
 
-            string warning = run.SteamWarning ?? (ServiceIncidents.Active ? ServiceIncidents.Active.Warning : null) ?? SuitcaseWarning(run);
+            consist.Present(run);
+            string warning = run.SteamWarning ?? (ServiceIncidents.Active ? ServiceIncidents.Active.Warning : null) ?? SuitcaseWarning(run) ??
+                             consist.BreakdownWarning;
+            if (warningPanel.activeSelf != (warning != null)) warningPanel.SetActive(warning != null);
+            if (warning != null) warningText.text = warning;
             if (combined)
             {
                 hudTitle.text = $"{run.LevelLabel}  ·  {run.Progress}/{run.TotalTarget}";
                 if (objectiveIcon)
                     objectiveIcon.sprite = ChaosUISpriteCatalog.Find(warning != null ? "warning" : run.Objective ? run.Objective.Icon : "route")
                                            ?? ChaosUISpriteCatalog.Find("route");
-                hudDetail.text = warning ?? CombinedStep(run);
-                hudDetail.color = warning != null ? ChaosUI.TrainRed : ChaosUI.Ink;
+                hudDetail.text = CombinedStep(run);
+                hudDetail.color = ChaosUI.Ink;
                 checklist.text = Checklist(run);
             }
             else
@@ -188,11 +271,11 @@ namespace ConductorChaos.UI
                 hudTitle.text = run.Objective?.Title ?? "Eerste dienst";
                 if (objectiveIcon && run.Objective)
                     objectiveIcon.sprite = ChaosUISpriteCatalog.Find(run.Objective.Icon) ?? ChaosUISpriteCatalog.Find("route");
-                hudDetail.text = warning ?? NextServiceStep(run);
-                hudDetail.color = warning != null ? ChaosUI.TrainRed : ChaosUI.Ink;
+                hudDetail.text = NextServiceStep(run);
+                hudDetail.color = ChaosUI.Ink;
             }
             timerText.text = run.TimerRunning ? FormatTime(run.TimeLeft) : "Klaar?";
-            timerText.color = run.TimerRunning && run.TimeLeft <= 30 ? ChaosUI.GoldLight : ChaosUI.Paper;
+            timerText.color = run.TimerRunning && run.TimeLeft <= 30 ? ChaosUI.TrainRed : ChaosUI.Gold;
         }
 
         private static string SuitcaseWarning(ServiceRun run)
