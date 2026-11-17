@@ -292,21 +292,50 @@ namespace ConductorChaos.Playground
             return new Vector3(Mathf.Clamp(eye.x, min.x, max.x), Mathf.Clamp(eye.y, min.y, max.y),
                 Mathf.Clamp(eye.z, min.z, max.z));
         }
-        internal bool TryFindRecoveryPoint(out Vector3 point, out Vector3 velocity)
+        internal bool TryFindRecoveryPoint(System.Predicate<Vector3> hasRoom, out Vector3 point, out Vector3 velocity)
         {
             point = velocity = Vector3.zero;
-            if (!IsSpawned || !cabin || !cabin.sharedMesh || !body) return false;
-            Vector3 center = cabin.transform.TransformPoint(cabin.sharedMesh.bounds.center);
-            float nearest = float.PositiveInfinity;
-            foreach (RaycastHit hit in Physics.RaycastAll(center + Vector3.up * 10f, Vector3.down, 20f, ~0, QueryTriggerInteraction.Ignore))
+            if (!IsSpawned || !body) return false;
+            Rigidbody support = body;
+            if (!FindRecoveryFloor(body, hasRoom, out point))
             {
-                if (hit.rigidbody != body || hit.normal.y < 0.7f || hit.distance >= nearest) continue;
-                nearest = hit.distance;
-                point = hit.point;
+                support = null;
+                foreach (var wagon in coupledWagons)
+                    if (wagon && FindRecoveryFloor(wagon, hasRoom, out point))
+                    {
+                        support = wagon;
+                        break;
+                    }
             }
-            if (float.IsPositiveInfinity(nearest)) return false;
-            velocity = body.GetPointVelocity(point);
+            if (!support) return false;
+            velocity = GuidedPointVelocity(support, point);
             return true;
+        }
+
+        private bool FindRecoveryFloor(Rigidbody vehicle, System.Predicate<Vector3> hasRoom, out Vector3 point)
+        {
+            Transform frame = vehicle.transform;
+            Vector3 center = vehicle == body && cabin && cabin.sharedMesh
+                ? cabin.transform.TransformPoint(cabin.sharedMesh.bounds.center)
+                : frame.TransformPoint(0f, 0f, couplers.TryGetValue(vehicle, out var coupling) ? coupling.Center : railCenterOffset);
+            for (int i = 0; i < 9; i++)
+            {
+                float offset = i == 0 ? 0f : (i % 2 == 0 ? -1f : 1f) * ((i + 1) / 2) * .55f;
+                Vector3 origin = center + frame.right * offset + Vector3.up * 3f;
+                float highest = float.NegativeInfinity;
+                point = default;
+                foreach (var hit in Physics.RaycastAll(origin, Vector3.down, 6f, ~0, QueryTriggerInteraction.Ignore))
+                {
+                    float height = frame.InverseTransformPoint(hit.point).y;
+                    if (hit.rigidbody != vehicle || hit.normal.y < .7f || height < -.2f || height > .9f ||
+                        height <= highest || !hasRoom(hit.point)) continue;
+                    point = hit.point;
+                    highest = height;
+                }
+                if (float.IsFinite(highest)) return true;
+            }
+            point = default;
+            return false;
         }
         private Transform shovelHand;
         private bool shovelHeld;
@@ -1575,7 +1604,8 @@ namespace ConductorChaos.Playground
                     leverGripPitch = pitch;
                     leverGripOffset = leverOffset;
                 }
-                leverOffset = MoveCabLever(leverGripOffset, leverGripPitch, pitch);
+                float travel = tiltLever ? pitch - leverGripPitch : leverGripPitch - pitch;
+                leverOffset = MoveCabLever(leverGripOffset, travel);
             }
             leverHand = hand;
             bool stop = stopButton && IsButtonPushed(stopButton, false);
@@ -1624,9 +1654,9 @@ namespace ConductorChaos.Playground
             return false;
         }
 
-        private static float MoveCabLever(float startOffset, float startPitch, float pitch)
+        private static float MoveCabLever(float startOffset, float pitchDelta)
         {
-            float offset = Mathf.Clamp(startOffset + (startPitch - pitch) * (LeverTravel / 22f), -LeverTravel, LeverTravel);
+            float offset = Mathf.Clamp(startOffset + pitchDelta * (LeverTravel / 22f), -LeverTravel, LeverTravel);
             return Mathf.Abs(offset) <= LeverTravel * .10f ? 0f : offset;
         }
 

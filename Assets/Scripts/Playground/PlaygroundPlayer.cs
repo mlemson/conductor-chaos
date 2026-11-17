@@ -293,14 +293,9 @@ namespace ConductorChaos.Playground
         {
             if (sessionHost && sessionHost.Phase != PlaygroundHost.SessionPhase.Playing) return;
             if (!trainDrive) trainDrive = FindAnyObjectByType<TrainDrive>();
-            if (!trainDrive || !bodyCapsule || !trainDrive.TryFindRecoveryPoint(out Vector3 floor, out Vector3 velocity)) return;
+            if (!trainDrive || !bodyCapsule || !trainDrive.TryFindRecoveryPoint(CanRecoverAt, out Vector3 floor, out Vector3 velocity)) return;
             float radius = bodyCapsule.radius;
             Vector3 lower = floor + Vector3.up * (radius + 0.08f);
-            Vector3 upper = lower + Vector3.up * Mathf.Max(0f, bodyCapsule.height - 2f * radius);
-            int count = Physics.OverlapCapsuleNonAlloc(lower, upper, radius, ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
-            if (count == ledgeObstacles.Length) return;
-            for (int i = 0; i < count; i++)
-                if (!ledgeObstacles[i].transform.IsChildOf(transform)) return;
             left.Release(); right.Release(); legs?.ReleaseSupport();
             Quaternion rotation = Quaternion.Euler(0f, requestedYaw, 0f);
             Vector3 destination = lower - rotation * (bodyCapsule.center - Vector3.up * (bodyCapsule.height * 0.5f - radius));
@@ -316,6 +311,18 @@ namespace ConductorChaos.Playground
                 parts[i].rotation = rotations[i];
                 if (!parts[i].isKinematic) { parts[i].linearVelocity = velocity; parts[i].angularVelocity = Vector3.zero; }
             }
+        }
+
+        private bool CanRecoverAt(Vector3 floor)
+        {
+            float radius = bodyCapsule.radius;
+            Vector3 lower = floor + Vector3.up * (radius + .08f);
+            Vector3 upper = lower + Vector3.up * Mathf.Max(0f, bodyCapsule.height - 2f * radius);
+            int count = Physics.OverlapCapsuleNonAlloc(lower, upper, radius, ledgeObstacles, ~0, QueryTriggerInteraction.Ignore);
+            if (count == ledgeObstacles.Length) return false;
+            for (int i = 0; i < count; i++)
+                if (!ledgeObstacles[i].transform.IsChildOf(transform)) return false;
+            return true;
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -982,6 +989,8 @@ namespace ConductorChaos.Playground
             private float nextAttempt;
             private float poseHandFocus;
             private float handYield;
+            private Collider pinchingSurface;
+            private float pinchedFor, retractUntil;
             private bool releasedAtCrest;
 
             public Quaternion LocalRotation => arm ? arm.localRotation : Quaternion.identity;
@@ -1063,6 +1072,7 @@ namespace ConductorChaos.Playground
                     (grip && (!gripSurface || !gripSurface.enabled || !gripSurface.gameObject.activeInHierarchy)) ||
                     (!grip && gripSurface)) Release();
                 bool hasGrip = HasGrip;
+                bool retracting = RetractIfPinched(held || hasGrip, player);
                 bool followsCamera = otherHand.HasGrip && !hasGrip;
                 var otherHandPunch = otherHand.HeldPunch;
                 bool activelyAiming = held || followsCamera;
@@ -1074,6 +1084,7 @@ namespace ConductorChaos.Playground
                 float cabinReach = cabinView ? Mathf.Sqrt(upwardReach) : upwardReach;
                 float targetStretch = heldWrench ? Mathf.Lerp(1.15f, 1.65f, cabinReach) : holdingAimedTool ? 0.75f : holdingPunch ? 1.45f : stretch ? GripStretch : 1f;
                 if (!hasGrip) targetStretch = Mathf.Max(targetStretch, Mathf.Lerp(1f, cabinView ? 2.6f : 1.9f, cabinReach));
+                if (retracting) targetStretch = .75f;
                 bool pressingPunch = false;
                 Vector3 pressDirection = Vector3.zero;
                 if (held && !hasGrip && otherHandPunch && otherHandPunch.PressHandle)
@@ -1134,6 +1145,7 @@ namespace ConductorChaos.Playground
                 }
                 handYield = Mathf.MoveTowards(handYield, blocked ? 1f : 0f, Time.fixedDeltaTime * (blocked ? 9f : 4f));
                 if (!activelyAiming) localTarget = Quaternion.Slerp(localTarget, rest, handYield);
+                if (retracting) localTarget = rest;
                 Quaternion desired = arm.parent.rotation * localTarget;
                 Quaternion error = desired * Quaternion.Inverse(rigid.rotation);
                 error.ToAngleAxis(out float angle, out Vector3 axis);
@@ -1158,6 +1170,36 @@ namespace ConductorChaos.Playground
                 bool cabGrip = train && train.IsSpawned && train.IsOwnedByServer && train.IsCabControlCollider(chosen.collider);
                 float plantMargin = MatchesGripSurface(chosen.collider, pairedSurface) ? SecondHandPlantMargin : 0f;
                 AttachGrip(chosen.collider, chosen.rigidbody, chosen.point, IsClimbSurface(chosen), cabGrip, chosen.normal, plantMargin);
+            }
+
+            private bool RetractIfPinched(bool usingHand, Transform player)
+            {
+                if (pinchingSurface)
+                {
+                    if (!usingHand && Time.time < retractUntil) return true;
+                    Physics.IgnoreCollision(collider, pinchingSurface, false);
+                    pinchingSurface = null;
+                }
+                if (usingHand) { pinchedFor = 0f; return false; }
+
+                Vector3 palm = HandPosition;
+                int count = Physics.OverlapSphereNonAlloc(palm, .09f, leverOverlaps, ~0, QueryTriggerInteraction.Ignore);
+                for (int i = 0; i < count; i++)
+                {
+                    var obstacle = leverOverlaps[i];
+                    if (obstacle.transform.IsChildOf(player) || Physics.GetIgnoreCollision(collider, obstacle) ||
+                        !Physics.ComputePenetration(collider, arm.position, arm.rotation, obstacle, obstacle.transform.position,
+                            obstacle.transform.rotation, out _, out float depth) || depth < .012f) continue;
+                    pinchedFor += Time.fixedDeltaTime;
+                    if (pinchedFor < .16f) return false;
+                    pinchedFor = 0f;
+                    pinchingSurface = obstacle;
+                    retractUntil = Time.time + .24f;
+                    Physics.IgnoreCollision(collider, obstacle, true);
+                    return true;
+                }
+                pinchedFor = 0f;
+                return false;
             }
 
             private bool AttachGrip(Collider surface, Rigidbody target, Vector3 point, bool climbingGrip, bool cabGrip,
@@ -1387,6 +1429,7 @@ namespace ConductorChaos.Playground
             public void Dispose()
             {
                 Release();
+                if (collider && pinchingSurface) Physics.IgnoreCollision(collider, pinchingSurface, false);
                 if (shoulder) Object.Destroy(shoulder);
                 if (collider) Object.Destroy(collider);
                 if (rigid) Object.Destroy(rigid);

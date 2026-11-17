@@ -46,6 +46,8 @@ namespace ConductorChaos.UI.Depot
             if (level.Index > 0) Line(left, ref y, "speed-gauge", $"Tijd over: {DepotUi.Time(reward.SecondsLeft)}", $"{DepotProgress.TicketsPerSecond} per seconde", reward.TimeBonus);
             Line(left, ref y, "ticket", $"Opdrachten gehaald: {reward.ObjectivesDone}", $"{DepotProgress.TicketsPerObjective} per opdracht", reward.ObjectiveBonus);
             if (level.Index > 0) Line(left, ref y, "wrench", reward.RepairBonus > 0 ? "Alle storingen gerepareerd" : "Nog iets kapot bij aankomst", null, reward.RepairBonus);
+            if (reward.ExtraPassengers > 0)
+                Line(left, ref y, "player-group", $"Extra reizigers · {reward.ExtraPassengers}", $"{DepotProgress.TicketsPerExtraPassenger} per reiziger", reward.PassengerBonus);
             y += 10;
             DepotUi.Icon(left, "ticket", 30, y, 50);
             DepotUi.Txt(left, "Totaal", 92, y, 200, 50, 30, ChaosUI.Paper, true);

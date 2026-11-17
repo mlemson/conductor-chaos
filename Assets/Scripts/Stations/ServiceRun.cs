@@ -65,6 +65,7 @@ namespace ConductorChaos.Stations
         private readonly NetworkVariable<byte> suitcaseStatus = new();
         private readonly NetworkVariable<Vector3> suitcasePosition = new();
         private readonly NetworkVariable<int> ticketAboard = new();
+        private readonly NetworkVariable<int> bonusPassengers = new();
         internal const int WrongTicketPenaltySeconds = 10;
         private readonly NetworkVariable<double> deadline = new();
         private readonly NetworkVariable<int> ticketPenalty = new();
@@ -99,6 +100,7 @@ namespace ConductorChaos.Stations
         public ServiceStation Departure => departure;
         public ServiceStation Arrival => arrival;
         public RunPhase Phase => phase.Value;
+        internal int BonusPassengers => bonusPassengers.Value;
         public Lesson CurrentLesson => lesson.Value;
         public bool CombinesObjectives => combineObjectives && !introduction;
         internal bool RotatesDepartureObjectives => CombinesObjectives && rotateDepartureObjectives;
@@ -341,6 +343,15 @@ namespace ConductorChaos.Stations
                     }
                     if (objective is ServiceEscort escort) escort.SetTrain(depot ? train : null);
                     objective.BeginOnServer();
+                }
+                if (train.ServiceCoachVisible && gameObject.scene.name is SecondLevelScene or ThirdLevelScene)
+                {
+                    int crew = NetworkManager.ConnectedClientsIds.Count;
+                    int extra = crew <= 1 ? 0 : crew <= 3 ? 1 : 2;
+                    int bonus = (gameObject.scene.name == ThirdLevelScene ? 2 : 1) + extra;
+                    foreach (var objective in objectives)
+                        if (objective is ServiceTickets tickets && tickets.IsConfigured)
+                            tickets.SpawnBonusPassengers(departure.Platform, bonus);
                 }
                 cargoLoaded.Value = 0;
                 cargoTravelled.Value = 0;
@@ -633,6 +644,12 @@ namespace ConductorChaos.Stations
         private void Finish(bool succeeded)
         {
             resultTime.Value = TimerRunning ? TimeLeft : 0;
+            int extraPassengers = 0;
+            if (succeeded && CombinesObjectives)
+                foreach (var objective in objectives)
+                    if (objective is ServiceTickets tickets)
+                        extraPassengers += tickets.BonusBoardedCount;
+            bonusPassengers.Value = extraPassengers;
             resultReadyAt = NetworkManager.ServerTime.Time + .75;
             phase.Value = succeeded ? RunPhase.Won : RunPhase.Failed;
         }

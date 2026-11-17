@@ -139,7 +139,7 @@ namespace ConductorChaos.UI
                     if (wagon)
                         foreach (var point in wagon.GetComponentsInChildren<Track.RepairPoint>())
                             if (point.IsSpawned && point.IsBroken) repaired = false;
-            reward = DepotProgress.AwardWin(level != null ? level.Index : 0, run.TimeLeft, done, repaired);
+            reward = DepotProgress.AwardWin(level != null ? level.Index : 0, run.TimeLeft, done, repaired, run.BonusPassengers);
         }
 
         private void ShowResults(PlaygroundHost host, ServiceRun run)

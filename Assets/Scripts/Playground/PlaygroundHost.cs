@@ -62,6 +62,9 @@ namespace ConductorChaos.Playground
                 // Depot (#239): extra wagons gebruiken dezelfde prefab met een ander model.
                 manager.PrefabHandler.AddHandler(freightPrefab, new Depot.DepotWagonHandler(freightPrefab));
             }
+            var bonusPassenger = Resources.Load<GameObject>(ServiceTickets.BonusPassengerResource);
+            if (bonusPassenger && !manager.NetworkConfig.Prefabs.Contains(bonusPassenger))
+                manager.AddNetworkPrefab(bonusPassenger);
             transport = GetComponent<UnityTransport>();
             manager.NetworkConfig.TickRate = (uint)Mathf.RoundToInt(1f / Time.fixedDeltaTime);
             manager.OnClientConnectedCallback += OnConnected;

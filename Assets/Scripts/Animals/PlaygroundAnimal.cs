@@ -12,6 +12,7 @@
 // staart en oren bewegen daar alleen cosmetisch mee.
 using System.Collections.Generic;
 using ConductorChaos.Characters;
+using ConductorChaos.Playground;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -105,8 +106,15 @@ namespace ConductorChaos.Animals
                 if (hits[i].distance < best) { best = hits[i].distance; groundY = hits[i].point.y; grounded = true; }
             }
 
+            bool beingDragged = false;
+            foreach (var player in PlaygroundPlayer.SpawnedPlayers)
+                if (player && player.TryGetControlHand(body, out _, out _, out _))
+                {
+                    beingDragged = true;
+                    break;
+                }
             var m = (Mood)mood.Value;
-            if (m == Mood.Fallen) { Recover(upright); return; }
+            if (m == Mood.Fallen) { if (!beingDragged) Recover(upright); return; }
             if (!upright) { SetMood(Mood.Fallen); fallenSince = -1f; return; }
 
             Vector3 v = body.linearVelocity;
@@ -122,6 +130,13 @@ namespace ConductorChaos.Animals
             Vector3 w = body.angularVelocity;
             body.AddTorque(tilt * 40f - new Vector3(w.x, 0f, w.z) * 9f, ForceMode.Acceleration);
 
+            if (beingDragged)
+            {
+                home = transform.position;
+                SetMood(Mood.Idle);
+                nextThink = Time.time + .5f;
+                return;
+            }
             Think(m);
             m = (Mood)mood.Value;
             Vector3 flat = new(v.x, 0f, v.z);

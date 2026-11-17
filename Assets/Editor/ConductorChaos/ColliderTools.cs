@@ -11,6 +11,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -128,5 +130,68 @@ namespace ConductorChaos.EditorTools
         }
 
         static string Path(Transform t) => t.parent == null ? t.name : Path(t.parent) + "/" + t.name;
+    }
+
+    // Models dragged straight from the Project window bypass the generated station and track prefabs.
+    internal sealed class StationPropColliders : IProcessSceneWithReport
+    {
+        public int callbackOrder => 0;
+
+        public void OnProcessScene(Scene scene, BuildReport report) => Repair(scene, withUndo: false);
+
+        [MenuItem("Conductor Chaos/Tools/Add Missing Station Prop Colliders")]
+        private static void RepairActiveScene()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+            var scene = SceneManager.GetActiveScene();
+            Undo.IncrementCurrentGroup();
+            Undo.SetCurrentGroupName("Add Missing Station Prop Colliders");
+            int group = Undo.GetCurrentGroup();
+            int count = Repair(scene, withUndo: true);
+            Undo.CollapseUndoOperations(group);
+            if (count > 0) EditorSceneManager.MarkSceneDirty(scene);
+            Debug.Log($"[Colliders] {count} botsvormen toegevoegd in {scene.name}.");
+        }
+
+        internal static int Repair(Scene scene, bool withUndo)
+        {
+            int count = 0;
+            foreach (var sceneRoot in scene.GetRootGameObjects())
+            {
+                var props = sceneRoot.GetComponentsInChildren<MeshFilter>(true).Where(IsAuthoredPropShape)
+                    .GroupBy(shape => PrefabUtility.GetNearestPrefabInstanceRoot(shape.gameObject) ??
+                        shape.transform.parent.gameObject);
+                foreach (var prop in props)
+                {
+                    if (prop.Key.GetComponentsInChildren<Collider>(true).Any(collider => !collider.isTrigger)) continue;
+                    foreach (var shape in prop)
+                    {
+                        if (shape.GetComponentInParent<Rigidbody>(true)) continue;
+                        if (shape.TryGetComponent<MeshRenderer>(out var renderer) && renderer.enabled)
+                        {
+                            if (withUndo) Undo.RecordObject(renderer, "Hide prop collision mesh");
+                            renderer.enabled = false;
+                            if (withUndo) PrefabUtility.RecordPrefabInstancePropertyModifications(renderer);
+                        }
+                        var collider = withUndo ? Undo.AddComponent<MeshCollider>(shape.gameObject) :
+                            shape.gameObject.AddComponent<MeshCollider>();
+                        collider.sharedMesh = shape.sharedMesh;
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        private static bool IsAuthoredPropShape(MeshFilter shape)
+        {
+            if (!shape.transform.parent || !shape.sharedMesh || !shape.name.StartsWith("Col_", System.StringComparison.Ordinal))
+                return false;
+            string path = AssetDatabase.GetAssetPath(shape.sharedMesh);
+            return path.StartsWith(StationKitPrefabs.ModelDir + "/Props/", System.StringComparison.Ordinal) ||
+                path.StartsWith(StationKitPrefabs.ModelDir + "/Platform/", System.StringComparison.Ordinal) ||
+                path.StartsWith(StationKitPrefabs.ModelDir + "/Station_", System.StringComparison.Ordinal) ||
+                path == "Assets/Art/Models/Environment/Track/Prop_WarningSign.fbx";
+        }
     }
 }
