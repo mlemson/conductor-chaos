@@ -93,7 +93,7 @@ namespace ConductorChaos.Stations
 
         public override int Target => CountValid(passengers);
         public override bool IsConfigured => passengers is { Length: > 0 } && System.Array.TrueForAll(passengers, ticket => ticket);
-        public override bool ReadyToDepart => ReadProgress(false) >= Target;
+        public override bool ReadyToDepart => ReadProgress(false) >= Target && BoardedCount >= BoardingTarget;
 
         public override int ReadProgress(bool trainStoppedAtDestination)
         {

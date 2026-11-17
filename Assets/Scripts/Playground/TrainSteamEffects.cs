@@ -71,9 +71,10 @@ namespace ConductorChaos.Playground
             return source;
         }
 
-        public void Present(bool powered, float speed)
+        public void Present(bool powered, float speed, float venting)
         {
             speed = Mathf.Clamp01(speed);
+            powered |= venting > .05f;
             if (powered != wasPowered)
             {
                 wasPowered = powered;
@@ -92,8 +93,8 @@ namespace ConductorChaos.Playground
                 }
             }
             var emission = smoke.emission;
-            emission.rateOverTime = Mathf.Lerp(3f, 10f, speed);
-            engine.volume = Mathf.Lerp(0.15f, 0.33f, speed);
+            emission.rateOverTime = Mathf.Lerp(3f, 10f, speed) + venting * 15f;
+            engine.volume = Mathf.Lerp(0.15f, 0.33f, speed) + venting * .12f;
             engine.pitch = Mathf.Lerp(0.62f, 1.3f, speed);
         }
 

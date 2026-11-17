@@ -21,6 +21,14 @@ namespace ConductorChaos.Playground
         private readonly NetworkVariable<bool> buttonDown = new(false);
         private readonly NetworkVariable<float> throttle = new(0f);
         private readonly NetworkVariable<float> displayedSpeed = new(0f);
+        private readonly NetworkVariable<float> steamHeat = new();
+        private readonly NetworkVariable<bool> steamPipeBroken = new();
+        private readonly NetworkVariable<byte> steamRepairHits = new();
+        private const int RequiredSteamHits = 4;
+        private SphereCollider steamValve;
+        private Renderer steamValveRenderer;
+        private MaterialPropertyBlock steamValveColor;
+        private float nextSteamHit;
         private readonly NetworkVariable<float> doorAngle = new(0f);
         private readonly NetworkVariable<Vector4> wagonDoorOffsets = new(Vector4.zero);
         private NetworkList<byte> endDoorsOpen;
@@ -236,7 +244,7 @@ namespace ConductorChaos.Playground
             Vector3 local = Quaternion.Inverse(motion.From.rotation) * (point - motion.From.position);
             Vector3 velocity = (motion.To.position + motion.To.rotation * local - point) / Time.fixedDeltaTime;
             // A wagon can snap onto its rail pose when it couples.
-            return Vector3.ClampMagnitude(velocity, maximumSpeed + 3f);
+            return Vector3.ClampMagnitude(velocity, TopSpeed + 3f);
         }
 
         private void MoveGuidedBody(Rigidbody vehicle, Vector3 position, Quaternion rotation)
@@ -298,6 +306,12 @@ namespace ConductorChaos.Playground
         internal float FuelFraction => fuel.Value / FuelCapacity;
         internal bool ServicePowerOn => powered.Value;
         internal float ServiceSpeed => displayedSpeed.Value;
+        private float TopSpeed => steamValve ? maximumSpeed * 1.55f : maximumSpeed;
+        internal string SteamWarning => !steamValve ? null : steamPipeBroken.Value
+            ? SteamRepairReady ? $"Stoomleiding kapot. Tik de rode bout naast de hittemeter met de moersleutel. ({steamRepairHits.Value}/{RequiredSteamHits})"
+                : "Stoomleiding kapot. Hendel naar neutraal en wacht tot de ketel is afgekoeld."
+            : steamHeat.Value >= .70f ? "Ketel wordt te heet. Zet de rijhendel wat terug om af te koelen." : null;
+        private bool SteamRepairReady => ServiceSpeed < .22f && Mathf.Abs(throttle.Value) < .08f && steamHeat.Value <= .45f;
         internal Vector3 ServiceRailPosition => transform.TransformPoint(0f, -TrackPiece.RailToTrainPivot, railCenterOffset);
         internal bool ServiceDerailed => derailed;
         internal bool ServiceDoorsClosed
@@ -325,14 +339,18 @@ namespace ConductorChaos.Playground
             Vector4 offsets = wagonDoorOffsets.Value;
             float nearest = float.PositiveInfinity;
             float clearance = 0f;
+            var wagon = doorway.GetComponentInParent<Rigidbody>();
+            if (!wagon) return false;
             for (int i = 0; i < wagonDoors.Length; i += 2)
             {
                 var left = wagonDoors[i];
                 var right = wagonDoors[i + 1];
-                if (left == null || right == null || left.Body == null || right.Body == null ||
-                    left.Leaf.parent != doorway.parent || right.Leaf.parent != doorway.parent) continue;
-                Vector3 center = (left.RestPosition + right.RestPosition) * .5f;
-                float distance = (doorway.localPosition - center).sqrMagnitude;
+                if (left == null || right == null || left.Body == null || right.Body == null) continue;
+                if (left.Leaf.parent.GetComponentInParent<Rigidbody>() != wagon ||
+                    right.Leaf.parent.GetComponentInParent<Rigidbody>() != wagon) continue;
+                Vector3 center = (left.Leaf.parent.TransformPoint(left.RestPosition) +
+                    right.Leaf.parent.TransformPoint(right.RestPosition)) * .5f;
+                float distance = (doorway.position - center).sqrMagnitude;
                 if (distance >= nearest) continue;
                 nearest = distance;
                 clearance = Mathf.Abs(WagonDoorDisplacement(offsets[i]).x) +
@@ -506,6 +524,14 @@ namespace ConductorChaos.Playground
                 latchCollider.radius = 0.085f;
             }
             PrepareStoking();
+            if (IsServer)
+            {
+                steamHeat.Value = 0f;
+                steamPipeBroken.Value = false;
+                steamRepairHits.Value = 0;
+                nextSteamHit = 0f;
+            }
+            if (heatNeedle && canStoke && !tiltLever) CreateSteamValve();
             if (smokeOrigin && coalBodies.Count > 0)
             {
                 var steam = new GameObject("Stoom en motorgeluid");
@@ -576,14 +602,14 @@ namespace ConductorChaos.Playground
             }
             if (speedNeedle)
             {
-                float sweep = (tiltLever ? 258f : 240f) * Mathf.Clamp01(displayedSpeed.Value / Mathf.Max(maximumSpeed, 0.01f));
+                float sweep = (tiltLever ? 258f : 240f) * Mathf.Clamp01(displayedSpeed.Value / Mathf.Max(TopSpeed, 0.01f));
                 speedNeedle.localRotation = tiltLever ? speedNeedleRest * Quaternion.AngleAxis(-sweep, Vector3.up)
                     : Quaternion.Euler(sweep - (fireboxLatch ? 0f : 120f), 0f, 0f);
             }
             if (heatNeedle)
             {
                 // Hittemeter: de brandstof in de oven (0 = koud links, vol = rode zone rechts), zelfde zwaai als SpeedNeedle.
-                float heat = IsSpawned && canStoke ? Mathf.Clamp01(fuel.Value / FuelCapacity) : 0f;
+                float heat = IsSpawned && steamValve ? steamHeat.Value : 0f;
                 displayedHeat = Mathf.MoveTowards(displayedHeat, heat, 0.6f * Time.deltaTime);
                 heatNeedle.localRotation = Quaternion.Euler(240f * displayedHeat, 0f, 0f);
             }
@@ -591,7 +617,9 @@ namespace ConductorChaos.Playground
             if (IsSpawned && !IsServer) ApplyWagonDoors();
             if (!IsServer) ApplyEndDoors(Time.deltaTime);
             if (IsSpawned && canStoke) PresentStoking();
-            if (steamEffects) steamEffects.Present(powered.Value, displayedSpeed.Value / Mathf.Max(maximumSpeed, 0.01f));
+            if (steamValve) PresentSteamValve();
+            if (steamEffects) steamEffects.Present(powered.Value, displayedSpeed.Value / Mathf.Max(TopSpeed, .01f),
+                steamPipeBroken.Value ? 1f : Mathf.InverseLerp(.65f, 1f, steamHeat.Value));
         }
 
         private void FixedUpdate()
@@ -602,6 +630,57 @@ namespace ConductorChaos.Playground
             MoveTrain();
             UpdateEndDoors();
             UpdateCoal();
+        }
+
+        private void CreateSteamValve()
+        {
+            var marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            marker.name = "Bout van de stoomleiding";
+            marker.transform.SetParent(heatNeedle.parent, false);
+            marker.transform.localPosition = heatNeedle.localPosition + new Vector3(-.17f, .16f, .24f);
+            marker.transform.localScale = Vector3.one * .22f;
+            steamValve = marker.GetComponent<SphereCollider>();
+            steamValveRenderer = marker.GetComponent<Renderer>();
+            steamValveColor = new MaterialPropertyBlock();
+            if (heatNeedle.TryGetComponent<Renderer>(out var needleRenderer))
+                steamValveRenderer.sharedMaterial = needleRenderer.sharedMaterial;
+            PresentSteamValve();
+        }
+
+        private void PresentSteamValve()
+        {
+            if (steamValve.enabled != steamPipeBroken.Value) steamValve.enabled = steamPipeBroken.Value;
+            Color color = steamPipeBroken.Value ? new Color(.95f, .23f, .15f) :
+                Color.Lerp(new Color(.74f, .51f, .23f), new Color(.96f, .35f, .12f), steamHeat.Value);
+            steamValveColor.SetColor("_BaseColor", color);
+            steamValveRenderer.SetPropertyBlock(steamValveColor);
+        }
+
+        private float SteamTargetSpeed(float demand, bool enableBoost)
+        {
+            if (!steamValve || !enableBoost) return demand * maximumSpeed;
+            float step = Time.fixedDeltaTime;
+            float heatRate = steamPipeBroken.Value ? -.10f : demand >= .90f ? .10f : demand > .72f ? .026f : -.045f;
+            float heat = Mathf.Clamp01(steamHeat.Value + heatRate * step);
+            if (heat != steamHeat.Value) steamHeat.Value = heat;
+            if (heat >= 1f) steamPipeBroken.Value = true;
+            if (steamPipeBroken.Value) return 0f;
+            if (demand <= 0f) return demand * maximumSpeed;
+            float speedFactor = demand <= .72f ? demand / .72f : demand < .90f
+                ? Mathf.Lerp(1f, 1.25f, Mathf.InverseLerp(.72f, .90f, demand))
+                : Mathf.Lerp(1.25f, 1.55f, Mathf.InverseLerp(.90f, 1f, demand));
+            return maximumSpeed * speedFactor;
+        }
+
+        internal void TryRepairSteamPipe(Collider bolt, float impactSpeed)
+        {
+            if (!IsServer || !IsSpawned || !steamValve || bolt != steamValve || !steamPipeBroken.Value ||
+                !SteamRepairReady || impactSpeed < 1.4f || Time.time < nextSteamHit) return;
+            nextSteamHit = Time.time + .2f;
+            ++steamRepairHits.Value;
+            if (steamRepairHits.Value < RequiredSteamHits) return;
+            steamPipeBroken.Value = false;
+            steamRepairHits.Value = 0;
         }
 
         private void MoveTrain()
@@ -622,11 +701,14 @@ namespace ConductorChaos.Playground
                 return;
             }
             var service = ServiceRun.Active;
-            bool needsFuel = canStoke && !(service && service.IsTrainingTrain(this));
+            bool training = service && service.IsTrainingTrain(this);
+            bool needsFuel = canStoke && !training;
             bool canDrive = powered.Value && (!needsFuel || fuel.Value > 0f) && (!service || service.AllowsMotion(this));
-            if (canDrive && needsFuel)
-                fuel.Value = Mathf.Max(0f, fuel.Value - Mathf.Abs(throttle.Value) * Time.fixedDeltaTime / secondsPerFuelUnit);
-            speed = Mathf.MoveTowards(speed, canDrive ? throttle.Value * maximumSpeed : 0f, acceleration * Time.fixedDeltaTime);
+            float demand = canDrive ? throttle.Value : 0f;
+            float requestedSpeed = SteamTargetSpeed(demand, !training);
+            if (canDrive && needsFuel && !steamPipeBroken.Value)
+                fuel.Value = Mathf.Max(0f, fuel.Value - Mathf.Abs(requestedSpeed / Mathf.Max(maximumSpeed, .01f)) * Time.fixedDeltaTime / secondsPerFuelUnit);
+            speed = Mathf.MoveTowards(speed, requestedSpeed, acceleration * Time.fixedDeltaTime);
             var oldTrack = track;
             float oldDistance = distance;
             float remaining = speed * Time.fixedDeltaTime;
@@ -2030,6 +2112,8 @@ namespace ConductorChaos.Playground
                     if (chunk.name.StartsWith("CoalChunk", System.StringComparison.Ordinal)) chunk.gameObject.SetActive(true);
             }
             if (steamEffects) steamEffects.Teardown();
+            if (steamValve) Destroy(steamValve.gameObject);
+            steamValve = null;
             shovelHand = null;
             canStoke = false;
             coalSource = null;

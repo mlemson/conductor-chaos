@@ -53,6 +53,9 @@ namespace ConductorChaos.Stations
         private readonly NetworkVariable<int> progress = new();
         private readonly NetworkVariable<int> cargoLoaded = new();
         private readonly NetworkVariable<int> cargoTravelled = new();
+        private readonly NetworkVariable<byte> suitcaseStatus = new();
+        private readonly NetworkVariable<Vector3> suitcasePosition = new();
+        private readonly NetworkVariable<int> ticketAboard = new();
         internal const int WrongTicketPenaltySeconds = 10;
         private readonly NetworkVariable<double> deadline = new();
         private readonly NetworkVariable<int> ticketPenalty = new();
@@ -141,7 +144,7 @@ namespace ConductorChaos.Stations
         /// <summary>Aantal aan boord voor deze opdracht (vracht), of -1 als dat niet bekend is.</summary>
         public int AboardOf(ServiceObjective objective)
         {
-            if (!CombinesObjectives) return objective is ServiceCargo ? cargoLoaded.Value : -1;
+            if (!CombinesObjectives) return objective is ServiceCargo ? cargoLoaded.Value : objective is ServiceTickets ? ticketAboard.Value : -1;
             int index = objectives == null ? -1 : System.Array.IndexOf(objectives, objective);
             return index >= 0 && index < objectiveAboard.Count ? objectiveAboard[index] : -1;
         }
@@ -160,6 +163,9 @@ namespace ConductorChaos.Stations
         public int Progress => progress.Value;
         public int CargoLoaded => cargoLoaded.Value;
         public int CargoTravelled => cargoTravelled.Value;
+        internal byte SuitcaseStatus => suitcaseStatus.Value;
+        internal Vector3 SuitcasePosition => suitcasePosition.Value;
+        internal string SteamWarning => train ? train.SteamWarning : null;
         public bool BellRung => bellRung.Value;
         public bool DoorsClosed => doorsClosed.Value;
         public bool PowerOn => powerOn.Value;
@@ -207,8 +213,7 @@ namespace ConductorChaos.Stations
             {
                 if (!CombinesObjectives) return Objective?.ReadyToDepart ?? false;
                 foreach (var objective in ActiveObjectives)
-                    if (!objective.ReadyToDepart ||
-                        (RotatesDepartureObjectives && objective is ServiceTickets tickets && tickets.BoardedCount < tickets.BoardingTarget))
+                    if (!objective.ReadyToDepart)
                         return false;
                 return ActiveObjectives.Count > 0;
             }
@@ -375,6 +380,7 @@ namespace ConductorChaos.Stations
                 return;
             }
 
+            if (Objective is ServiceTickets tickets) ticketAboard.Value = tickets.BoardedCount;
             var cargo = Objective as ServiceCargo;
             if (cargo != null)
             {
@@ -405,7 +411,13 @@ namespace ConductorChaos.Stations
             if (Phase is RunPhase.Travelling or RunPhase.Arrival)
                 phase.Value = docked ? RunPhase.Arrival : RunPhase.Travelling;
             if (train.ServiceSpeed >= .22f) Objective.ObserveTravelOnServer();
-            if (cargo != null) cargoTravelled.Value = cargo.TravelledCount;
+            if (cargo != null)
+            {
+                cargoTravelled.Value = cargo.TravelledCount;
+                suitcaseStatus.Value = cargo.SuitcaseStatus(Phase == RunPhase.Travelling, out var position);
+                if (suitcaseStatus.Value == 1 && (position - suitcasePosition.Value).sqrMagnitude > .25f)
+                    suitcasePosition.Value = position;
+            }
             progress.Value = Mathf.Clamp(Objective.ReadProgress(docked), 0, Objective.Target);
             if (docked && progress.Value >= Objective.Target) Finish(true);
         }
@@ -422,7 +434,7 @@ namespace ConductorChaos.Stations
                     if (!firstCargo) firstCargo = cargo;
                     SetListValue(objectiveAboard, System.Array.IndexOf(objectives, objective), cargo.AboardCount);
                 }
-                else if (RotatesDepartureObjectives && objective is ServiceTickets tickets)
+                else if (objective is ServiceTickets tickets)
                     SetListValue(objectiveAboard, System.Array.IndexOf(objectives, objective), tickets.BoardedCount);
             if (firstCargo) cargoLoaded.Value = firstCargo.AboardCount;
 

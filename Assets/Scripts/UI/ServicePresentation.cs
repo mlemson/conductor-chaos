@@ -156,7 +156,7 @@ namespace ConductorChaos.UI
                 return;
             }
 
-            string warning = ServiceIncidents.Active ? ServiceIncidents.Active.Warning : null;
+            string warning = run.SteamWarning ?? (ServiceIncidents.Active ? ServiceIncidents.Active.Warning : null) ?? SuitcaseWarning(run);
             if (combined)
             {
                 hudTitle.text = $"{run.LevelLabel}  ·  {run.Progress}/{run.TotalTarget}";
@@ -179,6 +179,20 @@ namespace ConductorChaos.UI
             timerText.color = run.TimerRunning && run.TimeLeft <= 30 ? ChaosUI.GoldLight : ChaosUI.Paper;
         }
 
+        private static string SuitcaseWarning(ServiceRun run)
+        {
+            if (run.SuitcaseStatus == 2) return "De koffer viel onder het speelveld en staat weer in het bagagevak.";
+            if (run.SuitcaseStatus != 1) return null;
+            foreach (var player in PlaygroundPlayer.SpawnedPlayers)
+                if (player && player.IsOwner)
+                {
+                    Vector3 direction = run.SuitcasePosition - player.transform.position;
+                    string heading = Vector3.Dot(direction, player.transform.forward) < 0f ? "achter" : "voor";
+                    return $"Koffer buiten het bagagevak, circa {Mathf.RoundToInt(direction.magnitude)} m {heading} je.";
+                }
+            return "Koffer buiten het bagagevak. Kijk in de wagon en langs het spoor.";
+        }
+
         private static string NextServiceStep(ServiceRun run)
         {
             var objective = run.Objective;
@@ -187,6 +201,8 @@ namespace ConductorChaos.UI
                 if (!run.TimerRunning) return "Loop naar het vertrekperron om de dienstklok te starten.";
                 if (objective is ServiceTickets && run.Progress < objective.Target)
                     return $"Knip de crème kaartjes met de donkerblauwe strook. Open de perrondeur zodat de reizigers kunnen instappen. ({run.Progress}/{objective.Target})";
+                if (objective is ServiceTickets tickets && run.AboardOf(tickets) < tickets.BoardingTarget)
+                    return $"Houd de perrondeur open tot de reizigers zitten. ({run.AboardOf(tickets)}/{tickets.BoardingTarget})";
                 if (objective is ServiceCargo && run.CargoLoaded < objective.Target)
                     return objective.Target == 1 ? "Leg de rode koffer in het bagagevak in de wagon."
                         : $"Zet de kratten in het vrachtvak in de wagon. ({run.CargoLoaded}/{objective.Target} aan boord)";
@@ -272,7 +288,7 @@ namespace ConductorChaos.UI
                     {
                         if (!Done(run, objective))
                             return $"Knip de crème kaartjes met de donkerblauwe strook. ({run.ProgressOf(objective)}/{objective.Target})";
-                        if (run.RotatesDepartureObjectives && run.AboardOf(objective) < tickets.BoardingTarget)
+                        if (run.AboardOf(objective) < tickets.BoardingTarget)
                             return $"Laat de perrondeur open tot de reizigers zijn ingestapt. ({Mathf.Max(0, run.AboardOf(objective))}/{tickets.BoardingTarget})";
                     }
                     if (objective is ServiceCargo && run.AboardOf(objective) < objective.Target)

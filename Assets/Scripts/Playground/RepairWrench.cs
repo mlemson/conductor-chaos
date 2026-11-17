@@ -110,7 +110,8 @@ namespace ConductorChaos.Playground
         {
             if (!IsServer || !IsSpawned) return;
             var point = collision.collider.GetComponentInParent<RepairPoint>();
-            if (!point || collision.collider != point.BoltCollider) return;
+            var engine = point ? null : collision.collider.GetComponentInParent<TrainDrive>();
+            if (point ? collision.collider != point.BoltCollider : !engine || !holder) return;
             if (head)
             {
                 bool nearHead = false;
@@ -119,7 +120,8 @@ namespace ConductorChaos.Playground
                     nearHead = (points[i].point - head.position).sqrMagnitude <= headRadius * headRadius;
                 if (!nearHead) return;
             }
-            point.ServerHit(collision.relativeVelocity.magnitude);
+            if (point) point.ServerHit(collision.relativeVelocity.magnitude);
+            else engine.TryRepairSteamPipe(collision.collider, collision.relativeVelocity.magnitude);
         }
     }
 }
