@@ -12,7 +12,7 @@
     Farm_Scarecrow    vrolijke vogelverschrikker
     Farm_Wheat_*      graanveld in modules: Straight_3m, Edge_3m, Corner, Harvested_3m (raster van 1,5 m)
     Farm_WheatField_* compleet graanveld als één model (6 x 3 m en 12 x 6 m, issue #230): akkerbed met aarden rand,
-                      rijen graan met aren erboven, een trekkerspoor in het midden en klaprozen langs de rand
+                      rijen losse halmen zoals de modules (golvend, met wind), trekkerspoor, klaprozen en korenbloemen
     Farm_FieldPath_3m veldpad · Farm_WheatSheaf graanbos · Farm_GrainSacks graanzakken · Farm_FieldSign veldbord
 
 Elke functie geeft de knopenlijst voor export() terug: (naam, mesh, parent, pivot, rotatie, zichtbaar). Pivot
@@ -493,32 +493,6 @@ def wheat_field(kind="straight", seed=1):
     return _nodes(mk.merge(*parts), cols)
 
 
-def _row_mass(x0, x1, rng, h=0.50, w=0.44):
-    """Dichte onderkant van een graanrij: een lage, bolle wal met bulten (donker aan de voet, goud bovenin)."""
-    prof = [(-w / 2, 0.0), (w / 2, 0.0), (w * 0.48, h * 0.18), (w * 0.38, h * 0.48), (w * 0.20, h * 0.80), (0.0, h),
-            (-w * 0.20, h * 0.80), (-w * 0.38, h * 0.48), (-w * 0.48, h * 0.18)]
-    nx = max(8, int((x1 - x0) / 0.16))
-    m = mk.extrude_profile(prof, x0, x1, nx=nx, round0=0.20, round1=0.20, rings=3,
-                           mat_fn=lambda i: STEM if i in (0, 1, 8) else WHEAT)
-    seed = int(rng.integers(1, 10_000))
-    up = m.V[:, 1] > 0.02
-    k = (m.V[up, 1] / h)
-    bumps = mk.fbm(m.V[up] * np.array([2.6, 1.0, 1.0]), 1.0, 2, seed) - 0.5
-    m.V[up, 1] += bumps * 0.30 * k
-    side = np.sign(m.V[up, 2])
-    m.V[up, 2] += side * (mk.fbm(m.V[up] * np.array([3.1, 1.4, 1.0]), 1.0, 2, seed + 7) - 0.5) * 0.14 * np.sin(np.pi * np.clip(k, 0, 1))
-    m.sharp = True
-    return m
-
-
-def _field_stalk(rng, h):
-    """Lichte halm voor een heel veld: driekantige steel + aar (geen bladeren; die zitten in de wal)."""
-    stem = mk.lathe([(0.0, 0.0), (0.022, 0.0), (0.016, h - 0.22), (0.0, h - 0.20)], 3, mat=STEM)
-    ear = wheat_ear(rng.uniform(0.32, 0.40), rng.uniform(0.070, 0.085), WHEAT).transform(
-        R=mk.rot_x(rng.uniform(0.04, 0.30)), t=(0, h - 0.27, 0))
-    return mk.merge(stem, ear).transform(R=mk.rot_y(rng.uniform(0, 6.28)) @ mk.rot_x(rng.uniform(-0.08, 0.08)))
-
-
 def _poppy(rng):
     h = rng.uniform(0.42, 0.58)
     stem = mk.lathe([(0.0, 0.0), (0.014, 0.0), (0.010, h), (0.0, h + 0.01)], 3, mat=STEM)
@@ -527,8 +501,17 @@ def _poppy(rng):
     return mk.merge(stem, head, eye).transform(R=mk.rot_y(rng.uniform(0, 6.28)) @ mk.rot_x(rng.uniform(-0.25, 0.25)))
 
 
-def wheat_field_whole(L, W, seed=1, row_pitch=0.5, stalk_pitch=0.21):
-    """Compleet graanveld van L x W m als één model. Pivot midden-onder, rijen langs X, trekkerspoor in het midden.
+def _cornflower(rng):
+    h = rng.uniform(0.40, 0.52)
+    stem = mk.lathe([(0.0, 0.0), (0.012, 0.0), (0.009, h), (0.0, h + 0.01)], 3, mat=STEM)
+    head = ball(0.055, "M_Stn_NavyLight", 8, 5, sy=0.75).transform(t=(0, h + 0.02, 0))
+    return mk.merge(stem, head).transform(R=mk.rot_y(rng.uniform(0, 6.28)) @ mk.rot_x(rng.uniform(-0.25, 0.25)))
+
+
+def wheat_field_whole(L, W, seed=1, row_pitch=0.42, stalk_pitch=0.22):
+    """Compleet graanveld van L x W m als één model (v2, #230): dezelfde losse halmen met bladeren als de modules,
+    in rijen op zichtbare akkeraarde, met een zachte golf in de hoogte en een gezamenlijke windrichting. Een
+    trekkerspoor in het midden en klaprozen en korenbloemen langs de rand. Pivot midden-onder, rijen langs X.
     Botsvorm alleen voor het akkerbed: door het graan loop je heen, net als bij de modules."""
     rng = np.random.default_rng([2026, 230, seed])
     rim = 0.18
@@ -539,34 +522,41 @@ def wheat_field_whole(L, W, seed=1, row_pitch=0.5, stalk_pitch=0.21):
     # aarden rand (iets hoger dan het bed) en het bed zelf; het bed steekt 1 cm onder de rand door (geen naad)
     parts.append(_xz(slab([(x, -z) for x, z in outer], [[(x, -z) for x, z in inner]], 0.0, BED_H + 0.035, 0.03, DIRT)))
     parts.append(_xz(slab([(x, -z) for x, z in bed_loop], [], 0.0, BED_H, 0.02, SOIL)))
-    # rijen; de middelste rij(en) open als trekkerspoor
     n_rows = max(2, int((W - 2 * rim - 0.30) / row_pitch) + 1)
     zs = [-(n_rows - 1) * row_pitch / 2 + k * row_pitch for k in range(n_rows)]
     track = min(range(n_rows), key=lambda k: abs(zs[k])) if W >= 2.5 else -1
-    x0, x1 = -L / 2 + rim + 0.18, L / 2 - rim - 0.18
+    x0, x1 = -L / 2 + rim + 0.16, L / 2 - rim - 0.16
+    noise_seed = int(rng.integers(1, 10_000))
     for k, z in enumerate(zs):
         if k == track:
             continue
-        parts.append(_row_mass(x0, x1, rng).transform(t=(0, BED_H - 0.02, z + rng.uniform(-0.03, 0.03))))
-        x = x0 + 0.10
-        while x < x1 - 0.08:
-            hgt = rng.uniform(0.80, 0.98)
-            parts.append(_field_stalk(rng, hgt - 0.24).transform(
-                t=(x + rng.uniform(-0.05, 0.05), BED_H + 0.22, z + rng.uniform(-0.12, 0.12))))
-            x += stalk_pitch * rng.uniform(0.85, 1.15)
-    # wielsporen in het trekkerspoor (iets lager dan... nee: plat op het bed, 1 cm hoger dan het bed, eigen kleur)
+        edge_row = k in (0, n_rows - 1) or abs(k - track) == 1
+        x = x0 + rng.uniform(0.0, 0.08)
+        while x < x1:
+            zz = z + rng.uniform(-0.09, 0.09)
+            p = np.array([[x * 0.35, 0.0, zz * 0.35]])
+            wave = float(mk.fbm(p, 1.0, 2, noise_seed)[0]) - 0.5            # zachte golven over het veld
+            hgt = 0.94 + wave * 0.22 + rng.uniform(-0.05, 0.05) - (0.10 if edge_row else 0.0)
+            lean = 0.10 + wave * 0.10 + rng.uniform(-0.04, 0.04)              # wind uit -X: aren buigen naar +X
+            stalk = _stalk(rng, hgt).transform(R=mk.rot_z(-lean))
+            parts.append(stalk.transform(t=(x, BED_H - 0.01, zz)))
+            x += stalk_pitch * rng.uniform(0.75, 1.25)
+    # wielsporen in het trekkerspoor (1 cm hoger dan het bed, eigen kleur)
     if track >= 0:
         for dz in (-0.17, 0.17):
             rut = rounded_rect_loop(x0 + 0.2, x1 - 0.2, zs[track] + dz - 0.06, zs[track] + dz + 0.06, 0.05, 2)
             parts.append(_xz(slab([(x, -z) for x, z in rut], [], BED_H - 0.02, BED_H + 0.008, 0.006, DIRT)))
-    # klaprozen langs de rand, tussen de buitenste rijen
-    for _ in range(int(L * W / 4) + 3):
-        edge = rng.integers(4)
+    # klaprozen en korenbloemen langs de rand en hier en daar tussen het graan
+    for i in range(int(L * W / 3) + 4):
+        edge = rng.integers(5)
         if edge < 2:
-            px, pz = rng.uniform(x0, x1), (zs[0] - 0.24) if edge == 0 else (zs[-1] + 0.24)
+            px, pz = rng.uniform(x0, x1), (zs[0] - 0.20) if edge == 0 else (zs[-1] + 0.20)
+        elif edge < 4:
+            px, pz = (x0 - 0.04) if edge == 2 else (x1 + 0.04), rng.uniform(zs[0], zs[-1])
         else:
-            px, pz = (x0 - 0.05) if edge == 2 else (x1 + 0.05), rng.uniform(zs[0], zs[-1])
-        parts.append(_poppy(rng).transform(t=(px, BED_H - 0.01, pz + rng.uniform(-0.05, 0.05))))
+            px, pz = rng.uniform(x0, x1), zs[int(rng.integers(n_rows))] + row_pitch / 2
+        flower = _poppy(rng) if rng.random() < 0.65 else _cornflower(rng)
+        parts.append(flower.transform(t=(px, BED_H - 0.01, pz + rng.uniform(-0.04, 0.04))))
     cols = [col_box(-L / 2, L / 2, 0.0, BED_H + 0.035, -W / 2, W / 2)]
     return _nodes(mk.merge(*parts), cols)
 

@@ -1898,7 +1898,7 @@
     "Farm_WheatField_6x3m": {
       "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_WheatField_6x3m.fbx",
       "category": "Farm",
-      "tris": 9608,
+      "tris": 9556,
       "min": [
         -3.0,
         -0.0,
@@ -1906,7 +1906,7 @@
       ],
       "max": [
         3.0,
-        1.154,
+        1.201,
         1.5
       ],
       "nodes": [
@@ -1918,7 +1918,7 @@
     "Farm_WheatField_12x6m": {
       "fbx": "Assets/Art/Models/Environment/Station/Farm/Farm_WheatField_12x6m.fbx",
       "category": "Farm",
-      "tris": 45352,
+      "tris": 44092,
       "min": [
         -6.0,
         -0.0,
@@ -1926,7 +1926,7 @@
       ],
       "max": [
         6.0,
-        1.146,
+        1.212,
         3.0
       ],
       "nodes": [
