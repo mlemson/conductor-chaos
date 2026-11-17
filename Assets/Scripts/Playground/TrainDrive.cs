@@ -26,8 +26,7 @@ namespace ConductorChaos.Playground
         private readonly NetworkVariable<byte> steamRepairHits = new();
         private const int RequiredSteamHits = 4;
         private SphereCollider steamValve;
-        private Renderer steamValveRenderer;
-        private MaterialPropertyBlock steamValveColor;
+        private SteamPipeRepair steamPipe;
         private float nextSteamHit, coalSurge, visibleFlame;
         internal float HeatFraction => steamHeat.Value;
         private readonly NetworkVariable<float> doorAngle = new(0f);
@@ -309,7 +308,7 @@ namespace ConductorChaos.Playground
         internal float ServiceSpeed => displayedSpeed.Value;
         private float TopSpeed => steamValve ? maximumSpeed * 1.55f : maximumSpeed;
         internal string SteamWarning => !steamValve ? null : steamPipeBroken.Value
-            ? SteamRepairReady ? $"Stoomleiding kapot. Tik de rode bout naast de hittemeter met de moersleutel. ({steamRepairHits.Value}/{RequiredSteamHits})"
+            ? SteamRepairReady ? $"Stoomleiding kapot. Tik met de kop van de moersleutel op de rode zeskantbout van de koperen leiding bij de vuurhaard. ({steamRepairHits.Value}/{RequiredSteamHits})"
                 : "Stoomleiding kapot. Hendel naar neutraal en wacht tot de ketel is afgekoeld."
             : steamHeat.Value >= .70f ? "Ketel wordt te heet. Zet de rijhendel wat terug om af te koelen." : null;
         private bool SteamRepairReady => ServiceSpeed < .22f && Mathf.Abs(throttle.Value) < .08f && steamHeat.Value <= .45f;
@@ -539,7 +538,12 @@ namespace ConductorChaos.Playground
                 nextSteamHit = 0f;
                 coalSurge = 0f;
             }
-            if (heatNeedle && canStoke && !tiltLever) CreateSteamValve();
+            if (heatNeedle && lever && canStoke && !tiltLever)
+            {
+                steamPipe = SteamPipeRepair.Install(heatNeedle, lever);
+                steamValve = steamPipe.BoltCollider;
+                PresentSteamValve(snap: true);
+            }
             if (smokeOrigin && coalBodies.Count > 0)
             {
                 var steam = new GameObject("Stoom en motorgeluid");
@@ -645,28 +649,11 @@ namespace ConductorChaos.Playground
             UpdateCoal();
         }
 
-        private void CreateSteamValve()
+        private void PresentSteamValve(bool snap = false)
         {
-            var marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            marker.name = "Bout van de stoomleiding";
-            marker.transform.SetParent(heatNeedle.parent, false);
-            marker.transform.localPosition = heatNeedle.localPosition + new Vector3(-.17f, .16f, .24f);
-            marker.transform.localScale = Vector3.one * .22f;
-            steamValve = marker.GetComponent<SphereCollider>();
-            steamValveRenderer = marker.GetComponent<Renderer>();
-            steamValveColor = new MaterialPropertyBlock();
-            if (heatNeedle.TryGetComponent<Renderer>(out var needleRenderer))
-                steamValveRenderer.sharedMaterial = needleRenderer.sharedMaterial;
-            PresentSteamValve();
-        }
-
-        private void PresentSteamValve()
-        {
-            if (steamValve.enabled != steamPipeBroken.Value) steamValve.enabled = steamPipeBroken.Value;
-            Color color = steamPipeBroken.Value ? new Color(.95f, .23f, .15f) :
-                Color.Lerp(new Color(.74f, .51f, .23f), new Color(.96f, .35f, .12f), steamHeat.Value);
-            steamValveColor.SetColor("_BaseColor", color);
-            steamValveRenderer.SetPropertyBlock(steamValveColor);
+            bool broken = steamPipeBroken.Value;
+            float progress = broken ? steamRepairHits.Value / (float)RequiredSteamHits : 1f;
+            steamPipe.Present(broken, progress, snap);
         }
 
         private float SteamTargetSpeed(float demand, bool enableBoost)
@@ -682,7 +669,11 @@ namespace ConductorChaos.Playground
             float heatRate = steamPipeBroken.Value ? .10f : targetHeat > steamHeat.Value ? warmRate : .048f;
             float heat = Mathf.Clamp01(Mathf.MoveTowards(steamHeat.Value, steamPipeBroken.Value ? 0f : targetHeat, heatRate * step));
             if (heat != steamHeat.Value) steamHeat.Value = heat;
-            if (heat >= 1f) steamPipeBroken.Value = true;
+            if (heat >= 1f && !steamPipeBroken.Value)
+            {
+                steamRepairHits.Value = 0;
+                steamPipeBroken.Value = true;
+            }
             if (steamPipeBroken.Value) return 0f;
             if (demand <= 0f) return demand * maximumSpeed;
             float speedFactor = demand <= .72f ? demand / .72f : demand < .90f
@@ -699,7 +690,6 @@ namespace ConductorChaos.Playground
             ++steamRepairHits.Value;
             if (steamRepairHits.Value < RequiredSteamHits) return;
             steamPipeBroken.Value = false;
-            steamRepairHits.Value = 0;
         }
 
         private void MoveTrain()
@@ -2250,7 +2240,8 @@ namespace ConductorChaos.Playground
                     if (chunk.name.StartsWith("CoalChunk", System.StringComparison.Ordinal)) chunk.gameObject.SetActive(true);
             }
             if (steamEffects) steamEffects.Teardown();
-            if (steamValve) Destroy(steamValve.gameObject);
+            if (steamPipe) Destroy(steamPipe.gameObject);
+            steamPipe = null;
             steamValve = null;
             shovelHand = null;
             canStoke = false;
