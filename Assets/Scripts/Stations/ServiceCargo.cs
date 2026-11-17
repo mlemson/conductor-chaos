@@ -16,6 +16,10 @@ namespace ConductorChaos.Stations
         private readonly HashSet<Rigidbody> aboard = new();
         private readonly HashSet<Rigidbody> travelled = new();
         private readonly Dictionary<Rigidbody, Collider[]> pieceColliders = new();
+        // Depot (#239): elke wagon (of de loc) telt; wat fysiek in of op de trein zit, reist mee.
+        private TrainDrive train;
+        private readonly Dictionary<Rigidbody, Bounds> trainVolumes = new();
+        private readonly List<Rigidbody> trainBodies = new();
 
         private readonly RaycastHit[] supportHits = new RaycastHit[16];
         private Terrain[] routeTerrains;
@@ -27,6 +31,11 @@ namespace ConductorChaos.Stations
             System.Array.TrueForAll(pieces, piece => piece);
         internal bool UsesFreightWagon => Target > 1;
         internal void SetFreightBay(BoxCollider zone) => cargoBay = zone;
+        internal void SetTrain(TrainDrive value)
+        {
+            train = value;
+            trainVolumes.Clear();
+        }
         public int AboardCount => aboard.Count;
         public int TravelledCount => travelled.Count;
         public override bool ReadyToDepart => IsConfigured && aboard.Count == Target;
@@ -50,6 +59,11 @@ namespace ConductorChaos.Stations
         // Called while the crew loads the train, including before it begins moving.
         public void ObserveLoadingOnServer()
         {
+            if (train)
+            {
+                ObserveTrainLoadingOnServer();
+                return;
+            }
             aboard.Clear();
             var wagon = cargoBay ? TrainDrive.FindGuidedSupport(cargoBay.attachedRigidbody) : null;
             foreach (var piece in pieces)
@@ -61,6 +75,96 @@ namespace ConductorChaos.Stations
                 if (inBay) aboard.Add(piece);
                 if (onFloor && (inBay || IsLevelOneSuitcase)) CarryRestingCargo(piece, wagon);
             }
+        }
+
+        private void ObserveTrainLoadingOnServer()
+        {
+            aboard.Clear();
+            CollectTrainBodies();
+            Rigidbody fallback = RecoveryWagon();
+            foreach (var piece in pieces)
+            {
+                if (!piece) continue;
+                if (fallback && IsLevelOneSuitcase && travelled.Contains(piece)) RecoverBelowTerrain(piece, fallback);
+                Rigidbody support = TrainFloorUnder(piece);
+                if (support || InsideTrain(piece)) aboard.Add(piece);
+                if (support) CarryRestingCargo(piece, support);
+            }
+        }
+
+        private void CollectTrainBodies()
+        {
+            trainBodies.Clear();
+            if (!train) return;
+            if (train.LocomotiveBody) trainBodies.Add(train.LocomotiveBody);
+            foreach (var wagon in train.CoupledWagons)
+                if (wagon && !trainBodies.Contains(wagon)) trainBodies.Add(wagon);
+        }
+
+        // De vloer (of het dak) van een treindeel waar het stuk op rust.
+        private Rigidbody TrainFloorUnder(Rigidbody piece)
+        {
+            if (!pieceColliders.TryGetValue(piece, out var colliders)) return null;
+            Vector3 center = piece.worldCenterOfMass;
+            float bottom = center.y;
+            foreach (var collider in colliders)
+                if (collider && collider.enabled && !collider.isTrigger)
+                    bottom = Mathf.Min(bottom, collider.bounds.min.y);
+            int count = Physics.SphereCastNonAlloc(center, .09f, Vector3.down, supportHits, center.y - bottom + .08f,
+                ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+            {
+                Rigidbody hit = supportHits[i].rigidbody;
+                if (hit && trainBodies.Contains(hit) && Vector3.Dot(supportHits[i].normal, hit.rotation * Vector3.up) > .65f)
+                    return hit;
+            }
+            return null;
+        }
+
+        // Binnen in een wagon (of erboven gedragen door iemand die op de wagon staat).
+        private bool InsideTrain(Rigidbody piece)
+        {
+            Vector3 point = piece.worldCenterOfMass;
+            foreach (var body in trainBodies)
+            {
+                Bounds volume = TrainVolume(body);
+                if (volume.size.sqrMagnitude < .01f) continue;
+                Vector3 local = body.transform.InverseTransformPoint(point);
+                Vector3 min = volume.min, max = volume.max + Vector3.up * 1.4f;
+                if (local.x >= min.x && local.x <= max.x && local.y >= min.y && local.y <= max.y &&
+                    local.z >= min.z && local.z <= max.z) return true;
+            }
+            return false;
+        }
+
+        private Bounds TrainVolume(Rigidbody body)
+        {
+            if (trainVolumes.TryGetValue(body, out var cached)) return cached;
+            var volume = new Bounds();
+            bool any = false;
+            foreach (var collider in body.GetComponentsInChildren<Collider>())
+            {
+                if (!collider || !collider.enabled || collider.isTrigger || collider.attachedRigidbody != body) continue;
+                Bounds world = collider.bounds;
+                for (int corner = 0; corner < 8; corner++)
+                {
+                    Vector3 p = new(corner & 1, (corner >> 1) & 1, (corner >> 2) & 1);
+                    Vector3 local = body.transform.InverseTransformPoint(world.min + Vector3.Scale(world.size, p));
+                    if (!any) { volume = new Bounds(local, Vector3.zero); any = true; }
+                    else volume.Encapsulate(local);
+                }
+            }
+            trainVolumes[body] = volume;
+            return volume;
+        }
+
+        private Rigidbody RecoveryWagon()
+        {
+            Rigidbody bay = cargoBay ? cargoBay.attachedRigidbody : null;
+            if (bay && trainBodies.Contains(bay) && cargoBay.enabled) return bay;
+            for (int i = trainBodies.Count - 1; i >= 0; i--)
+                if (TrainVolume(trainBodies[i]).size.sqrMagnitude > .01f) return trainBodies[i];
+            return null;
         }
 
         private void CarryRestingCargo(Rigidbody piece, Rigidbody wagon)
@@ -105,7 +209,14 @@ namespace ConductorChaos.Stations
             }
             if (!belowTerrain && (!float.IsFinite(terrainBase) || location.y >= terrainBase - 4f)) return;
 
-            Vector3 safe = cargoBay.transform.TransformPoint(cargoBay.center + Vector3.down * .38f);
+            Vector3 safe;
+            if (cargoBay && cargoBay.attachedRigidbody == wagon)
+                safe = cargoBay.transform.TransformPoint(cargoBay.center + Vector3.down * .38f);
+            else
+            {
+                Bounds volume = TrainVolume(wagon);
+                safe = wagon.transform.TransformPoint(new Vector3(volume.center.x, volume.min.y + 1.6f, volume.center.z));
+            }
             network.Teleport(safe, wagon.rotation, piece.transform.localScale);
             piece.position = safe;
             piece.rotation = wagon.rotation;

@@ -75,6 +75,8 @@ namespace ConductorChaos.Stations
         private readonly NetworkVariable<bool> doorsClosed = new();
         private readonly NetworkVariable<bool> powerOn = new();
         private readonly NetworkVariable<bool> offTrack = new();
+        // Depot (#239): zonder regionale wagon zijn er geen zittende reizigers, dus geen kaartjesopdracht.
+        private readonly NetworkVariable<bool> withoutPassengerCoach = new();
         // Voortgang per opdracht (index = objectives[]), voor de checklist op alle clients.
         private readonly NetworkList<int> objectiveProgress = new();
         // Per opdracht: hoeveel er nu aan boord is (vracht) of 1 = aan boord (oma); -1 = niet van toepassing.
@@ -123,7 +125,7 @@ namespace ConductorChaos.Stations
             {
                 // Eén keer opbouwen (de opdrachten veranderen niet tijdens een dienst), zodat iemand die de lijst
                 // doorloopt en ondertussen Objective opvraagt nooit een lijst ziet die verandert.
-                int key = CombinesObjectives ? objectiveSelection.Value : selected.Value;
+                int key = (CombinesObjectives ? objectiveSelection.Value : selected.Value) ^ (withoutPassengerCoach.Value ? 0x40000000 : 0);
                 if (activeFor == key) return activeObjectives;
                 activeFor = key;
                 activeObjectives.Clear();
@@ -131,7 +133,7 @@ namespace ConductorChaos.Stations
                 if (CombinesObjectives)
                 {
                     for (int i = 0; i < objectives.Length; i++)
-                        if (objectives[i] && objectives[i].IsConfigured &&
+                        if (Usable(objectives[i]) &&
                             (!RotatesDepartureObjectives || (i < 32 && (key & (1 << i)) != 0)))
                             activeObjectives.Add(objectives[i]);
                 }
@@ -178,6 +180,8 @@ namespace ConductorChaos.Stations
         public bool DoorsClosed => doorsClosed.Value;
         public bool PowerOn => powerOn.Value;
         public bool NeedsCoal => train.HasCoalFurnace && train.FuelFraction <= 0f;
+        /// <summary>Rijdt het regionale rijtuig (met deuren en zittende reizigers) mee in deze dienst?</summary>
+        public bool HasPassengerCoach => train && train.ServiceCoachVisible;
         public bool EscortDoorOpen
         {
             get
@@ -258,6 +262,15 @@ namespace ConductorChaos.Stations
             if (!introduction)
                 foreach (var objective in objectives)
                     if (objective is ServiceTickets tickets) tickets.AssignWrongTicket();
+            bool depot = !introduction && Depot.DepotVehicles.AppliesToScene(gameObject.scene.name);
+            var plan = depot ? new List<Depot.WagonKind>(Depot.DepotLoadout.Active.Wagons) : null;
+            withoutPassengerCoach.Value = depot && !plan.Contains(Depot.WagonKind.Regional) &&
+                // Valt er zonder kaartjes niets te doen, dan rijdt het regionale rijtuig met de reizigers toch mee.
+                System.Array.Exists(objectives, o => o && o.IsConfigured && o is not ServiceTickets &&
+                    (!RotatesDepartureObjectives || o is ServiceEscort || o is ServiceCargo { Target: > 1 }));
+            if (depot && !withoutPassengerCoach.Value && !plan.Contains(Depot.WagonKind.Regional) &&
+                System.Array.Exists(objectives, o => o is ServiceTickets && o.IsConfigured))
+                plan.Insert(0, Depot.WagonKind.Regional);
             if (CombinesObjectives)
             {
                 selected.Value = -1;
@@ -272,40 +285,43 @@ namespace ConductorChaos.Stations
             }
             else if (!introduction)
             {
-                var eligible = System.Array.FindAll(objectives, o => o && o.IsConfigured);
+                var eligible = System.Array.FindAll(objectives, Usable);
                 var objective = eligible[Random.Range(0, eligible.Length)];
                 selected.Value = System.Array.IndexOf(objectives, objective);
             }
             if (!introduction)
             {
-                bool coach = false, freight = false;
+                BoxCollider freightBay;
+                if (depot)
+                {
+                    // Depot (#239): precies het treinstel van de host. Geen verplichte wagons: vracht en oma mogen
+                    // in of op elke wagon mee, als ze maar fysiek van perron naar perron komen.
+                    bool keepCoach = plan.Contains(Depot.WagonKind.Regional) && !withoutPassengerCoach.Value;
+                    if (!train.PrepareServiceConsist(plan, kind => kind == Depot.WagonKind.Regional && keepCoach,
+                            out freightBay)) return false;
+                }
+                else
+                {
+                    bool coach = false, freight = false;
+                    foreach (var objective in ActiveObjectives)
+                    {
+                        if (objective is ServiceCargo cargo)
+                        {
+                            coach |= !cargo.UsesFreightWagon;
+                            freight |= cargo.UsesFreightWagon;
+                        }
+                        else coach |= objective is ServiceTickets or ServiceEscort;
+                    }
+                    if (!train.PrepareServiceConsist(coach, freight, out freightBay)) return false;
+                }
                 foreach (var objective in ActiveObjectives)
                 {
                     if (objective is ServiceCargo cargo)
                     {
-                        coach |= !cargo.UsesFreightWagon;
-                        freight |= cargo.UsesFreightWagon;
+                        if (!depot && cargo.UsesFreightWagon) cargo.SetFreightBay(freightBay);
+                        cargo.SetTrain(depot ? train : null);
                     }
-                    else coach |= objective is ServiceTickets or ServiceEscort;
-                }
-                BoxCollider freightBay;
-                if (Depot.DepotVehicles.AppliesToScene(gameObject.scene.name))
-                {
-                    // Depot (#239): het treinstel van de host, aangevuld met wat de opdrachten van deze rit nodig hebben.
-                    var plan = new List<Depot.WagonKind>(Depot.DepotLoadout.Active.Wagons);
-                    if (coach && !plan.Contains(Depot.WagonKind.Regional)) plan.Insert(0, Depot.WagonKind.Regional);
-                    if (freight && !plan.Contains(Depot.WagonKind.Flatbed) && !plan.Contains(Depot.WagonKind.Cargo))
-                        plan.Add(Depot.WagonKind.Flatbed);
-                    bool needsCoach = coach, needsFreight = freight;
-                    if (!train.PrepareServiceConsist(plan, kind =>
-                            kind == Depot.WagonKind.Regional ? needsCoach :
-                            kind is Depot.WagonKind.Flatbed or Depot.WagonKind.Cargo ? needsFreight && FirstFreightKind(plan) == kind : false,
-                            out freightBay)) return false;
-                }
-                else if (!train.PrepareServiceConsist(coach, freight, out freightBay)) return false;
-                foreach (var objective in ActiveObjectives)
-                {
-                    if (objective is ServiceCargo cargo && cargo.UsesFreightWagon) cargo.SetFreightBay(freightBay);
+                    if (objective is ServiceEscort escort) escort.SetTrain(depot ? train : null);
                     objective.BeginOnServer();
                 }
                 cargoLoaded.Value = 0;
@@ -316,12 +332,8 @@ namespace ConductorChaos.Stations
             return true;
         }
 
-        private static Depot.WagonKind FirstFreightKind(List<Depot.WagonKind> plan)
-        {
-            foreach (var kind in plan)
-                if (kind is Depot.WagonKind.Flatbed or Depot.WagonKind.Cargo) return kind;
-            return Depot.WagonKind.Flatbed;
-        }
+        private bool Usable(ServiceObjective objective) => objective && objective.IsConfigured &&
+            !(withoutPassengerCoach.Value && objective is ServiceTickets);
 
         private int PickDepartureObjectives()
         {
@@ -330,7 +342,7 @@ namespace ConductorChaos.Stations
             for (int i = 0; i < Mathf.Min(32, objectives.Length); i++)
             {
                 var objective = objectives[i];
-                if (!objective || !objective.IsConfigured) continue;
+                if (!Usable(objective)) continue;
                 if (objective is ServiceTickets or ServiceEscort || objective is ServiceCargo && objective.Target > 1)
                     pool.Add(i);
                 else if (objective is not (ServiceCargo or ServiceRepair or ServiceTrackRepair))

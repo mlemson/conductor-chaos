@@ -48,7 +48,7 @@ namespace ConductorChaos.Depot
         public int MaxWagons => DepotCatalog.Train(Train).MaxWagons;
 
         /// <summary>Maakt de samenstelling geldig: loc en wagons in bezit (alleen als checkOwnership), set-rijtuigen achter hun
-        /// eigen loc, verplichte wagons aanwezig en niet meer dan de loc trekt.</summary>
+        /// eigen loc, hooguit één regionaal rijtuig en niet meer dan de loc trekt.</summary>
         public DepotLoadout Sanitized(bool checkOwnership)
         {
             var result = new DepotLoadout { Train = Train };
@@ -57,14 +57,11 @@ namespace ConductorChaos.Depot
             {
                 if (!DepotCatalog.Fits(wagon, result.Train)) continue;
                 if (checkOwnership && !DepotProgress.Owns(wagon)) continue;
-                if (DepotCatalog.IsRequired(wagon) && result.Wagons.Contains(wagon)) continue;
+                if (DepotCatalog.IsUnique(wagon) && result.Wagons.Contains(wagon)) continue;
                 result.Wagons.Add(wagon);
             }
-            for (int i = DepotCatalog.RequiredWagons.Length - 1; i >= 0; i--)
-                if (!result.Wagons.Contains(DepotCatalog.RequiredWagons[i])) result.Wagons.Insert(0, DepotCatalog.RequiredWagons[i]);
             int max = result.MaxWagons;
-            for (int i = result.Wagons.Count - 1; i >= 0 && result.Wagons.Count > max; i--)
-                if (!DepotCatalog.IsRequired(result.Wagons[i])) result.Wagons.RemoveAt(i);
+            if (result.Wagons.Count > max) result.Wagons.RemoveRange(max, result.Wagons.Count - max);
             return result;
         }
 

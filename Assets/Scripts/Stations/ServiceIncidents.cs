@@ -106,12 +106,12 @@ namespace ConductorChaos.Stations
                 for (int j = 0; j < damages.Length; j++)
                     if ((open & DamageBit(j)) != 0)
                         return damages[j]?.repair && damages[j].repair.GetComponent<TrackSwitch>()
-                            ? "Wisselstoring verderop! Stop vóór de wissel en sla de gele bout vast met de moersleutel."
-                            : "Spoorschade verderop! Stop vóór de kapotte rail en sla de gele bout vast met de moersleutel.";
+                            ? "Wisselstoring verderop: stop en sla de gele bout vast."
+                            : "Spoorschade verderop: stop en sla de gele bout vast.";
                 for (int i = 0; i < rockfalls.Length; i++)
                     if ((open & RockBit(i)) != 0)
-                        return "Steenlawine op het spoor! Stop, stap uit en duw de rotsblokken van de rails.";
-                return WrongSwitchAhead() ? "Wissel verderop staat naar het zijspoor! Stop en duw de hendel naar de andere kant." : null;
+                        return "Rotsen op het spoor: stop en duw ze weg.";
+                return WrongSwitchAhead() ? "Wissel verderop staat verkeerd: stop en duw de hendel om." : null;
             }
         }
 

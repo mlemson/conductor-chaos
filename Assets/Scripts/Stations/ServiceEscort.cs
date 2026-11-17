@@ -1,4 +1,5 @@
 using ConductorChaos.Characters;
+using ConductorChaos.Playground;
 using UnityEngine;
 
 namespace ConductorChaos.Stations
@@ -10,6 +11,9 @@ namespace ConductorChaos.Stations
         private Rigidbody wagon;
         private readonly RaycastHit[] floorHits = new RaycastHit[12];
         private bool aboard, travelled, delivered;
+        // Depot (#239): oma mag in of op elk deel van de trein mee, niet alleen op haar stoel in het rijtuig.
+        private TrainDrive train;
+        internal void SetTrain(TrainDrive value) => train = value;
 
         public override int Target => 2;
         public override bool IsConfigured => passenger && outside && doorway && seat && destination;
@@ -44,6 +48,7 @@ namespace ConductorChaos.Stations
 
         private bool IsAboard()
         {
+            if (train) return OnAnyTrainFloor();
             if (!wagon || Mathf.Abs(passenger.position.y - seat.position.y) > .45f) return false;
             Vector3 inward = Vector3.ProjectOnPlane(doorway.position - outside.position, Vector3.up).normalized;
             if (Vector3.Dot(passenger.position - doorway.position, inward) < .25f) return false;
@@ -54,5 +59,19 @@ namespace ConductorChaos.Stations
             return false;
         }
 
+        private bool OnAnyTrainFloor()
+        {
+            int count = Physics.RaycastNonAlloc(passenger.position + Vector3.up * .25f, Vector3.down, floorHits, .8f,
+                ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+            {
+                Rigidbody hit = floorHits[i].rigidbody;
+                if (!hit || floorHits[i].normal.y <= .55f) continue;
+                if (hit == train.LocomotiveBody) return true;
+                foreach (var coupled in train.CoupledWagons)
+                    if (coupled == hit) return true;
+            }
+            return false;
+        }
     }
 }

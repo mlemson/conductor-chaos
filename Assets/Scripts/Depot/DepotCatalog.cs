@@ -83,7 +83,7 @@ namespace ConductorChaos.Depot
 
         public static readonly WagonInfo[] Wagons =
         {
-            new WagonInfo { Kind = WagonKind.Regional, Name = "Regionale wagon", Capacity = "Reizigers, oma en de rode koffer", Category = CategoryPassengers,
+            new WagonInfo { Kind = WagonKind.Regional, Name = "Regionale wagon", Capacity = "Hier zitten de reizigers met kaartjes", Category = CategoryPassengers,
                 Seats = 8, Sprite = "regional", Weight = 1, Breakdowns = new string[0] },
             new WagonInfo { Kind = WagonKind.Flatbed, Name = "Open goederenwagon", Capacity = "Kratten in de open bak", Category = CategoryGoods,
                 Crates = 4, Sprite = "flatbed", Weight = 1, Breakdowns = new string[0] },
@@ -117,8 +117,8 @@ namespace ConductorChaos.Depot
                 Highlights = new[] { "Viaduct van 72 m", "Steile afdaling" } },
         };
 
-        /// <summary>Wagons die de dienst in een level kan vragen; zitten altijd in het treinstel.</summary>
-        public static readonly WagonKind[] RequiredWagons = { WagonKind.Regional, WagonKind.Flatbed };
+        /// <summary>Treinstel voor een nieuwe speler. Niets is verplicht: alles mag in of op elke wagon mee.</summary>
+        public static readonly WagonKind[] StarterWagons = { WagonKind.Regional, WagonKind.Flatbed };
 
         public static TrainInfo Train(TrainKind kind) => Trains[(int)kind];
 
@@ -134,7 +134,8 @@ namespace ConductorChaos.Depot
             return null;
         }
 
-        public static bool IsRequired(WagonKind kind) => System.Array.IndexOf(RequiredWagons, kind) >= 0;
+        /// <summary>Het regionale rijtuig is het ene rijtuig van de lijn, met de zittende reizigers erin: maximaal één.</summary>
+        public static bool IsUnique(WagonKind kind) => kind == WagonKind.Regional;
 
         /// <summary>Set-rijtuigen passen alleen achter hun eigen loc; de rest overal.</summary>
         public static bool Fits(WagonKind wagon, TrainKind train)

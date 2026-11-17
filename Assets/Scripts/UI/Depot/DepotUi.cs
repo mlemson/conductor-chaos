@@ -114,6 +114,27 @@ namespace ConductorChaos.UI.Depot
             return generator.GetPreferredWidth(caption ?? "", settings);
         }
 
+        /// <summary>Hoogte van tekst die binnen een vaste breedte afbreekt.</summary>
+        public static float MeasureHeight(string caption, int size, bool heading, float width)
+        {
+            var settings = new TextGenerationSettings
+            {
+                font = heading ? ChaosUI.HeadingFont : ChaosUI.BodyFont,
+                fontSize = size,
+                fontStyle = FontStyle.Normal,
+                generationExtents = new Vector2(width, 2000f),
+                scaleFactor = 1f,
+                richText = false,
+                textAnchor = TextAnchor.UpperLeft,
+                horizontalOverflow = HorizontalWrapMode.Wrap,
+                verticalOverflow = VerticalWrapMode.Overflow,
+                updateBounds = false,
+                pivot = Vector2.zero,
+                lineSpacing = 1f
+            };
+            return new TextGenerator().GetPreferredHeight(caption ?? "", settings);
+        }
+
         public static Image Pic(Transform parent, Sprite sprite, float x, float y, float w, float h, bool preserve = true, Color? tint = null)
         {
             var rt = Box(parent, sprite ? sprite.name : "Afbeelding", x, y, w, h);

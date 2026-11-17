@@ -120,6 +120,7 @@ namespace ConductorChaos.Depot
         public static DepotLoadout LoadLastLoadout()
         {
             var loadout = new DepotLoadout { Train = (TrainKind)Mathf.Clamp(PlayerPrefs.GetInt(Prefix + "Last.Train", 0), 0, 3) };
+            if (!PlayerPrefs.HasKey(Prefix + "Last.Wagons")) loadout.Wagons.AddRange(DepotCatalog.StarterWagons);
             string wagons = PlayerPrefs.GetString(Prefix + "Last.Wagons", "");
             foreach (string part in wagons.Split(','))
                 if (byte.TryParse(part, out byte value) && value < DepotCatalog.Wagons.Length) loadout.Wagons.Add((WagonKind)value);
