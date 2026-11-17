@@ -1072,7 +1072,7 @@ namespace ConductorChaos.Playground
                 Vector3 lookDirection = aim * Vector3.forward;
                 float upwardReach = Mathf.InverseLerp(cabinView ? -0.18f : 0.25f, cabinView ? 0.65f : 0.9f, lookDirection.y);
                 float cabinReach = cabinView ? Mathf.Sqrt(upwardReach) : upwardReach;
-                float targetStretch = holdingAimedTool ? 0.75f : holdingPunch ? 1.45f : stretch ? GripStretch : 1f;
+                float targetStretch = heldWrench ? Mathf.Lerp(1.15f, 1.65f, cabinReach) : holdingAimedTool ? 0.75f : holdingPunch ? 1.45f : stretch ? GripStretch : 1f;
                 if (!hasGrip) targetStretch = Mathf.Max(targetStretch, Mathf.Lerp(1f, cabinView ? 2.6f : 1.9f, cabinReach));
                 bool pressingPunch = false;
                 Vector3 pressDirection = Vector3.zero;
@@ -1113,7 +1113,7 @@ namespace ConductorChaos.Playground
                 Quaternion aiming = Quaternion.FromToRotation(restDirection, aimInParent) * rest;
                 AimedHandPosition = arm.position + arm.parent.TransformVector(aiming * Vector3.Scale(arm.localScale, HandOffset));
                 // Keep both arms aimed even when their grip buttons are released.
-                Quaternion localTarget = holdingAimedTool ? Quaternion.FromToRotation(restDirection, Vector3.Slerp(Vector3.down, aimInParent, 0.35f)) * rest
+                Quaternion localTarget = holdingAimedTool && !heldWrench ? Quaternion.FromToRotation(restDirection, Vector3.Slerp(Vector3.down, aimInParent, 0.35f)) * rest
                     : Quaternion.Slerp(rest, aiming, activelyAiming ? 1f : Mathf.Lerp(0.75f, 0.95f, upwardAim));
                 bool blocked = false;
                 if (!activelyAiming && collider && collider.enabled && move.sqrMagnitude > 0.01f)
@@ -1163,7 +1163,7 @@ namespace ConductorChaos.Playground
             private bool AttachGrip(Collider surface, Rigidbody target, Vector3 point, bool climbingGrip, bool cabGrip,
                 Vector3 normal = default, float plantMargin = 0f)
             {
-                if (!cabGrip && (!target || target.isKinematic && !TrainDrive.IsCoalBody(target)) && normal.sqrMagnitude > 0.5f)
+                if (!cabGrip && (!target || target.isKinematic && !TrainDrive.IsCoalBody(target) && !TrainVehicleDoors.IsDoor(target)) && normal.sqrMagnitude > 0.5f)
                 {
                     if (!PlaygroundControls.CanPlantHand(HandPosition, point, normal, plantMargin)) return false;
                     gripSurface = surface;
@@ -1279,7 +1279,8 @@ namespace ConductorChaos.Playground
                     if (!hit.rigidbody || hit.rigidbody.isKinematic && !TrainDrive.IsCoalBody(hit.rigidbody))
                     {
                         var train = TrainDrive.FindControlOwner(hit.rigidbody);
-                        bool control = train && train.IsCabControlCollider(hit.collider) && !train.IsWagonDoorPanel(hit.collider);
+                        bool control = TrainVehicleDoors.IsDoor(hit.rigidbody) ||
+                            train && train.IsCabControlCollider(hit.collider) && !train.IsWagonDoorPanel(hit.collider);
                         if (!control && !PlaygroundControls.CanPlantHand(hand, hit.point, hit.normal)) continue;
                     }
                     closest = hit.distance;
@@ -1315,10 +1316,11 @@ namespace ConductorChaos.Playground
                     if (!surface.collider) continue;
                     var train = TrainDrive.FindControlOwner(surface.rigidbody);
                     bool cabControl = train && train.IsSpawned && train.IsOwnedByServer && train.IsCabControlCollider(surface.collider);
+                    bool doorControl = TrainVehicleDoors.IsDoor(surface.rigidbody);
                     bool paired = MatchesGripSurface(surface.collider, pairedSurface);
                     bool pairedProp = paired && surface.rigidbody && !surface.rigidbody.isKinematic;
-                    if (!IsClimbSurface(surface) && !cabControl && !paired) continue;
-                    if (!pairedProp && (!cabControl || train.IsWagonDoorPanel(surface.collider)) &&
+                    if (!IsClimbSurface(surface) && !cabControl && !doorControl && !paired) continue;
+                    if (!pairedProp && !doorControl && (!cabControl || train.IsWagonDoorPanel(surface.collider)) &&
                         !PlaygroundControls.CanPlantHand(hand, surface.point, surface.normal, paired ? SecondHandPlantMargin : 0f)) continue;
                     Vector3 offset = surface.point - hand;
                     float distance = offset.sqrMagnitude;

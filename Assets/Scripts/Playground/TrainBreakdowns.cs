@@ -3,7 +3,6 @@
 // Zet dit op een voertuig van de nieuwe treinsets (Tools > Conductor Chaos > Train Sets doet dat). Alleen de server kiest een
 // storing. RepairPoint synchroniseert de staat.
 // Nog geen gevolgen voor het rijden (snelheid, licht): dat is een aparte stap.
-using System.Collections.Generic;
 using ConductorChaos.Track;
 using Unity.Netcode;
 using UnityEngine;
@@ -20,8 +19,10 @@ namespace ConductorChaos.Playground
         [Tooltip("Zoveel onderhoudspunten mogen er op dit voertuig tegelijk kapot zijn.")]
         [SerializeField, Range(1, 6)] int maxBroken = 1;
 
-        private readonly NetworkVariable<byte> openEndDoors = new();
-        private readonly List<TrainDrive.EndDoor> automaticDoors = new(2);
+        private NetworkList<float> openings;
+        private TrainVehicleDoors doors;
+
+        private void Awake() => openings = new NetworkList<float>();
 
         RepairPoint[] points;
         float next;
@@ -31,6 +32,18 @@ namespace ConductorChaos.Playground
             EnsureMeshColliders(gameObject);
             points = GetComponentsInChildren<RepairPoint>(true);
             next = Time.time + firstAfter + Random.Range(0f, Mathf.Max(0f, interval.x));
+        }
+
+        public static bool HasMovingDoors(GameObject vehicle) =>
+            System.Array.Exists(vehicle.GetComponentsInChildren<MeshFilter>(true), filter =>
+                filter.name.StartsWith("SideDoorLeaf", System.StringComparison.Ordinal) || IsEndDoorLeaf(filter.name) ||
+                filter.name.StartsWith("RoofHatch_", System.StringComparison.Ordinal) ||
+                filter.name.StartsWith("SlideDoor_", System.StringComparison.Ordinal));
+
+        internal static void PrepareDoors(GameObject vehicle)
+        {
+            if (vehicle.GetComponent<NetworkObject>() && !vehicle.GetComponent<TrainBreakdowns>() && HasMovingDoors(vehicle))
+                vehicle.AddComponent<TrainBreakdowns>();
         }
 
         public static bool IsEndDoorLeaf(string name) => name.StartsWith("EndDoorLeaf_", System.StringComparison.Ordinal);
@@ -73,7 +86,7 @@ namespace ConductorChaos.Playground
 
         internal static void EnsureEndDoorCollider(MeshFilter filter)
         {
-            if (!filter.sharedMesh) return;
+            if (!filter.sharedMesh || TrainVehicleDoors.IsDoor(filter.GetComponent<Rigidbody>())) return;
             // A sliding leaf needs a solid shape even where the visual mesh cannot be cooked.
             foreach (var mesh in filter.GetComponents<MeshCollider>())
                 if (!mesh.isTrigger) mesh.enabled = false;
@@ -87,49 +100,43 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkSpawn()
         {
-            foreach (var door in TrainDrive.FindEndDoors(gameObject))
-                if (door.Automatic) automaticDoors.Add(door);
-            if (IsServer) openEndDoors.Value = 0;
-            else ApplyEndDoors(1f);
+            doors = new TrainVehicleDoors(gameObject);
+            if (IsServer)
+            {
+                openings.Clear();
+                for (int i = 0; i < doors.Count; i++) openings.Add(doors.Initial(i));
+            }
+            PresentDoors();
         }
 
         public override void OnNetworkDespawn()
         {
-            foreach (var door in automaticDoors)
-                if (door.Left && door.Right) door.Apply(0f);
-            automaticDoors.Clear();
+            doors?.Dispose();
+            doors = null;
         }
 
         private void FixedUpdate()
         {
-            if (!IsSpawned || !IsServer || automaticDoors.Count == 0) return;
-            byte open = 0;
-            for (int i = 0; i < automaticDoors.Count; i++)
+            if (!IsSpawned || !IsServer || doors == null) return;
+            var drive = TrainDrive.FindControlOwner(GetComponent<Rigidbody>());
+            bool allowAutomatic = !drive || !drive.ServiceDerailed;
+            for (int i = 0; i < doors.Count && i < openings.Count; i++)
             {
-                var door = automaticDoors[i];
-                if (!door.Left || !door.Right) continue;
-                var drive = TrainDrive.FindControlOwner(door.Vehicle);
-                if (door.ShouldOpen((!drive || !drive.ServiceDerailed) && door.HasNearbyPlayer())) open |= (byte)(1 << i);
+                float opening = doors.ReadInput(i, openings[i], allowAutomatic);
+                if (Mathf.Abs(openings[i] - opening) > .0001f) openings[i] = opening;
+                doors.Present(i, openings[i]);
             }
-            if (openEndDoors.Value != open) openEndDoors.Value = open;
-            ApplyEndDoors(Time.fixedDeltaTime);
         }
 
-        private void ApplyEndDoors(float deltaTime)
+        private void PresentDoors()
         {
-            for (int i = 0; i < automaticDoors.Count; i++)
-            {
-                var door = automaticDoors[i];
-                if (!door.Left || !door.Right) continue;
-                float target = (openEndDoors.Value & (1 << i)) != 0 ? 1f : 0f;
-                float opening = Mathf.MoveTowards(door.Opening, target, 3f * deltaTime);
-                if (opening != door.Opening) door.Apply(opening);
-            }
+            if (doors == null) return;
+            for (int i = 0; i < doors.Count && i < openings.Count; i++) doors.Present(i, openings[i]);
         }
 
         void Update()
         {
-            if (IsSpawned && !IsServer) ApplyEndDoors(Time.deltaTime);
+            if (IsSpawned && !IsServer) PresentDoors();
             var network = NetworkManager.Singleton;
             if (!network || !network.IsServer || points == null || points.Length == 0 || Time.time < next) return;
             next = Time.time + Random.Range(Mathf.Min(interval.x, interval.y), Mathf.Max(interval.x, interval.y));

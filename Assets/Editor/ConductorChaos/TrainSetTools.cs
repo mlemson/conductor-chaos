@@ -144,7 +144,8 @@ namespace ConductorChaos.EditorTools
                 Undo.AddComponent<RepairPoint>(node.gameObject).Configure(false);     // heel bij de start
                 repairs++;
             }
-            if (vehicle.GetComponentsInChildren<RepairPoint>(true).Length > 0)
+            if (vehicle.GetComponentsInChildren<RepairPoint>(true).Length > 0 ||
+                TrainBreakdowns.HasMovingDoors(vehicle))
             {
                 // RepairPoint is netwerkstate: het voertuig heeft een NetworkObject nodig (Configure Train voegt de rest toe)
                 if (!vehicle.GetComponent<NetworkObject>()) Undo.AddComponent<NetworkObject>(vehicle);

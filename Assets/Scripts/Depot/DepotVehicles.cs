@@ -99,10 +99,6 @@ namespace ConductorChaos.Depot
             instance.transform.localRotation = Quaternion.identity;
             instance.transform.localScale = Vector3.one;
             PrepareVehicle(root, instance.transform);
-            // Handmatige kopdeuren staan open, zodat je door het hele treinstel kunt lopen. Automatische deuren
-            // (modern/futuristisch) bedient TrainBreakdowns zoals bij de vaste sets.
-            foreach (var door in TrainDrive.FindEndDoors(root))
-                if (!door.Automatic && door.Left && door.Right) door.Apply(1f);
             return instance.transform;
         }
 
@@ -130,14 +126,18 @@ namespace ConductorChaos.Depot
                 collider.convex = filter.name == "TankHatch";
             }
             bool hasRepairs = false;
+            bool hasTank = false;
             foreach (var node in model.GetComponentsInChildren<Transform>(true))
             {
+                hasTank |= node.name == "TankLiquid";
                 if (!node.name.StartsWith("RepairPoint_", System.StringComparison.Ordinal)) continue;
                 if (!node.GetComponent<RepairPoint>()) node.gameObject.AddComponent<RepairPoint>().Configure(false);
                 hasRepairs = true;
             }
-            if (hasRepairs && vehicle.GetComponent<NetworkObject>() && !vehicle.GetComponent<TrainBreakdowns>())
+            if ((hasRepairs || TrainBreakdowns.HasMovingDoors(vehicle)) && vehicle.GetComponent<NetworkObject>() && !vehicle.GetComponent<TrainBreakdowns>())
                 vehicle.AddComponent<TrainBreakdowns>();
+            if (hasTank && !vehicle.GetComponent<ConductorChaos.Yard.LiquidTank>())
+                vehicle.AddComponent<ConductorChaos.Yard.LiquidTank>();
         }
 
         private static void Hide(GameObject vehicle)

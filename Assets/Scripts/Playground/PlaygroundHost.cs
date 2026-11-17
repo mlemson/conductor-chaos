@@ -55,7 +55,10 @@ namespace ConductorChaos.Playground
             var freightPrefab = Resources.Load<GameObject>("ServiceFreightWagon");
             if (freightPrefab)
             {
-                manager.AddNetworkPrefab(freightPrefab);
+                bool registered = manager.NetworkConfig.Prefabs.Contains(freightPrefab);
+                foreach (var list in manager.NetworkConfig.Prefabs.NetworkPrefabsLists)
+                    registered |= list && list.Contains(freightPrefab);
+                if (!registered) manager.AddNetworkPrefab(freightPrefab);
                 // Depot (#239): extra wagons gebruiken dezelfde prefab met een ander model.
                 manager.PrefabHandler.AddHandler(freightPrefab, new Depot.DepotWagonHandler(freightPrefab));
             }

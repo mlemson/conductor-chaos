@@ -42,7 +42,7 @@ namespace ConductorChaos.Playground
         [SerializeField] private bool startWithCoupledWagons;
         private bool awaitingConsist, invalidConsist;
         private bool tiltLever;
-        private Transform stopButton;
+        private Transform stopButton, generatedStartButton;
         private Vector3 startButtonRest;
         private Quaternion speedNeedleRest;
         private const float LeverTilt = 28f;
@@ -207,6 +207,9 @@ namespace ConductorChaos.Playground
             endDoorsOpen = new NetworkList<byte>();
             // Depot (#239): de gekozen loc vervangt het stoommodel vóór het spawnen, op host en clients gelijk.
             Depot.DepotVehicles.ApplyLocomotive(this, availableWagons);
+            TrainBreakdowns.PrepareDoors(gameObject);
+            foreach (var wagon in availableWagons)
+                if (wagon) TrainBreakdowns.PrepareDoors(wagon.gameObject);
         }
 
         internal void SetDepotPerformance(float topSpeed, float accelerationRate)
@@ -498,9 +501,9 @@ namespace ConductorChaos.Playground
                 if (t.name == "FireboxFeedPoint") fireboxFeedPoint = t;
                 if (t.name == "FireboxFlame") fireboxFlame = t;
             }
+            if (tiltLever && !startButton) startButton = CreatePowerButton();
             if (startButton) startButtonRest = startButton.localPosition;
             if (speedNeedle) speedNeedleRest = speedNeedle.localRotation;
-            if (IsServer && tiltLever && !startButton) powered.Value = true;
             CreateCabControls();
             if (cabLamp)
             {
@@ -514,7 +517,7 @@ namespace ConductorChaos.Playground
                 cabLampLight.intensity = 0.6f;
                 cabLampLight.shadows = LightShadows.None;
             }
-            if (!tiltLever && startButton && startButton.TryGetComponent<Renderer>(out startButtonRenderer))
+            if (startButton && startButton.TryGetComponent<Renderer>(out startButtonRenderer))
             {
                 buttonOriginalProperties = new MaterialPropertyBlock();
                 startButtonRenderer.GetPropertyBlock(buttonOriginalProperties);
@@ -522,10 +525,10 @@ namespace ConductorChaos.Playground
                 startButtonRenderer.GetPropertyBlock(buttonProperties);
                 var lamp = new GameObject("Startknop licht");
                 lamp.transform.SetParent(startButton, false);
-                lamp.transform.localPosition = Vector3.left * 0.08f;
+                lamp.transform.localPosition = tiltLever ? Vector3.up * .08f : Vector3.left * .08f;
                 startButtonLight = lamp.AddComponent<Light>();
                 startButtonLight.type = LightType.Point;
-                startButtonLight.color = new Color(0.988f, 0.486f, 0.412f);
+                startButtonLight.color = tiltLever ? new Color(.572549f, .737255f, .294118f) : new Color(0.988f, 0.486f, 0.412f);
                 startButtonLight.range = 0.55f;
                 startButtonLight.intensity = 0.8f;
                 buttonLit = null;
@@ -1453,10 +1456,9 @@ namespace ConductorChaos.Playground
         private void PrepareVehicleEndDoors(Rigidbody vehicle)
         {
             var breakdowns = vehicle.GetComponent<TrainBreakdowns>();
-            if (breakdowns) TrainBreakdowns.EnsureMeshColliders(vehicle.gameObject);
+            if (breakdowns && breakdowns.isActiveAndEnabled) return;
             foreach (var door in FindEndDoors(vehicle.gameObject))
             {
-                if (door.Automatic && breakdowns && breakdowns.isActiveAndEnabled) continue;
                 endDoors.Add(door);
                 if (IsServer) endDoorsOpen.Add(0);
             }
@@ -1589,7 +1591,7 @@ namespace ConductorChaos.Playground
             bool pressed = IsButtonPushed(startButton, buttonDown.Value);
             if (!derailed && !stop && pressed && !buttonDown.Value && Time.time >= nextButtonPress)
             {
-                powered.Value = tiltLever || !powered.Value;
+                powered.Value = stopButton || !powered.Value;
                 nextButtonPress = Time.time + 0.35f;
             }
             if (buttonDown.Value != pressed) buttonDown.Value = pressed;
@@ -2154,6 +2156,33 @@ namespace ConductorChaos.Playground
             firelight.intensity = 1.1f * flameStrength * flicker;
         }
 
+        private Transform CreatePowerButton()
+        {
+            var reference = RepairPoint.FindDeep(transform, "Button_Horn");
+            if (!reference) reference = lever;
+            var button = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            button.name = "Button_Start";
+            generatedStartButton = button.transform;
+            button.transform.SetParent(reference.parent, false);
+            button.transform.localPosition = reference.localPosition + reference.localRotation * new Vector3(0f, .025f, -.21f);
+            button.transform.localRotation = reference.localRotation;
+            button.transform.localScale = new Vector3(.13f, .025f, .13f);
+            var renderer = button.GetComponent<Renderer>();
+            foreach (var source in GetComponentsInChildren<Renderer>(true))
+                foreach (var material in source.sharedMaterials)
+                    if (material && material.name.EndsWith("_Go", System.StringComparison.Ordinal))
+                    {
+                        renderer.sharedMaterial = material;
+                        return button.transform;
+                    }
+            renderer.sharedMaterial = reference.GetComponent<Renderer>().sharedMaterial;
+            var properties = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(properties);
+            properties.SetColor("_BaseColor", new Color(.572549f, .737255f, .294118f));
+            renderer.SetPropertyBlock(properties);
+            return button.transform;
+        }
+
         private void CreateCabControls()
         {
             if (!lever || (!tiltLever && !startButton)) { Debug.LogError("TrainDrive: de cabinehendel of startknop ontbreekt in het locomotiefmodel.", this); return; }
@@ -2243,6 +2272,8 @@ namespace ConductorChaos.Playground
             else if (startButton) startButton.localScale = Vector3.one;
             if (startButtonRenderer && buttonOriginalProperties != null) startButtonRenderer.SetPropertyBlock(buttonOriginalProperties);
             if (startButtonLight) Destroy(startButtonLight.gameObject);
+            if (generatedStartButton) Destroy(generatedStartButton.gameObject);
+            generatedStartButton = null;
             startButtonRenderer = null;
             startButtonLight = null;
             if (speedNeedle) speedNeedle.localRotation = speedNeedleRest;
