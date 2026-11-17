@@ -264,11 +264,12 @@ namespace ConductorChaos.Stations
                     if (objective is ServiceTickets tickets) tickets.AssignWrongTicket();
             bool depot = !introduction && Depot.DepotVehicles.AppliesToScene(gameObject.scene.name);
             var plan = depot ? new List<Depot.WagonKind>(Depot.DepotLoadout.Active.Wagons) : null;
-            withoutPassengerCoach.Value = depot && !plan.Contains(Depot.WagonKind.Regional) &&
+            int coachIndex = depot ? Depot.DepotCatalog.PassengerCoachIndex(plan) : -1;
+            withoutPassengerCoach.Value = depot && coachIndex < 0 &&
                 // Valt er zonder kaartjes niets te doen, dan rijdt het regionale rijtuig met de reizigers toch mee.
                 System.Array.Exists(objectives, o => o && o.IsConfigured && o is not ServiceTickets &&
                     (!RotatesDepartureObjectives || o is ServiceEscort || o is ServiceCargo { Target: > 1 }));
-            if (depot && !withoutPassengerCoach.Value && !plan.Contains(Depot.WagonKind.Regional) &&
+            if (depot && !withoutPassengerCoach.Value && coachIndex < 0 &&
                 System.Array.Exists(objectives, o => o is ServiceTickets && o.IsConfigured))
                 plan.Insert(0, Depot.WagonKind.Regional);
             if (CombinesObjectives)
@@ -296,8 +297,8 @@ namespace ConductorChaos.Stations
                 {
                     // Depot (#239): precies het treinstel van de host. Geen verplichte wagons: vracht en oma mogen
                     // in of op elke wagon mee, als ze maar fysiek van perron naar perron komen.
-                    bool keepCoach = plan.Contains(Depot.WagonKind.Regional) && !withoutPassengerCoach.Value;
-                    if (!train.PrepareServiceConsist(plan, kind => kind == Depot.WagonKind.Regional && keepCoach,
+                    var passengerKind = coachIndex >= 0 ? plan[coachIndex] : Depot.WagonKind.Regional;
+                    if (!train.PrepareServiceConsist(plan, kind => kind == passengerKind && !withoutPassengerCoach.Value,
                             out freightBay)) return false;
                 }
                 else

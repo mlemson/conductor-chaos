@@ -80,6 +80,30 @@ namespace ConductorChaos.Depot
             instance.transform.localRotation = Quaternion.identity;
             instance.transform.localScale = Vector3.one;
             PrepareVehicle(drive.gameObject, instance.transform);
+
+            int coachIndex = DepotCatalog.PassengerCoachIndex(loadout.Wagons);
+            if (coachIndex >= 0 && loadout.Wagons[coachIndex] == WagonKind.DieselCoachDoors)
+            {
+                var coach = System.Array.Find(wagons, wagon => wagon && RepairPoint.FindDeep(wagon.transform, "DoorLeaf_L"));
+                if (coach && models.dieselCoachDoors) FitPassengerCoach(coach, models.dieselCoachDoors);
+            }
+        }
+
+        private static void FitPassengerCoach(Rigidbody coach, GameObject model)
+        {
+            // Keep the scene's boarding markers, luggage volume and network identity on the passenger wagon.
+            var root = coach.transform;
+            for (int i = root.childCount - 1; i >= 0; i--)
+            {
+                var child = root.GetChild(i);
+                if (child.GetComponent<MeshFilter>()) Object.DestroyImmediate(child.gameObject);
+            }
+            var instance = Object.Instantiate(model, root, false);
+            // The service interlock and passengers read these four leaves through TrainDrive.
+            foreach (var leaf in instance.GetComponentsInChildren<MeshFilter>())
+                if (leaf.name.StartsWith("SideDoorLeaf_", System.StringComparison.Ordinal))
+                    leaf.name = leaf.name.Substring("Side".Length);
+            PrepareVehicle(coach.gameObject, instance.transform);
         }
 
         /// <summary>Wisselt het model van een dienstwagon (ServiceFreightWagon) naar de gekozen soort.</summary>

@@ -2,6 +2,7 @@
 
     python ArtSource/Tests/test_train_sets.py
 """
+from pathlib import Path
 import json
 import os
 import struct
@@ -38,6 +39,10 @@ def nodes(path):
 
 def main():
     fails = []
+    for meta in (Path(ROOT) / "Assets/Art/Models/Train").rglob("*.fbx.meta"):
+        animations = meta.read_text(encoding="utf-8").partition("  animations:\n")[2].partition("  meshes:\n")[0]
+        if "    isReadable: 1" not in animations.splitlines():
+            fails.append(f"{meta.name}: Read/Write vereist voor doorgangen en storingsrook")
     for model, (repairs, hatch, ladder) in MODELS.items():
         path = os.path.join(EXPORTS, model + ".glb")
         if not os.path.exists(path):

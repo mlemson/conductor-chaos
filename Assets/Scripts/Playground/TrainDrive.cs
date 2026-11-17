@@ -1061,10 +1061,12 @@ namespace ConductorChaos.Playground
             freightBay = null;
             if (!IsServer || !IsSpawned || !track) return false;
             var plan = new List<Depot.WagonKind>(wagons);
-            if (!serviceCoach && plan.Contains(Depot.WagonKind.Regional))
+            int coachIndex = Depot.DepotCatalog.PassengerCoachIndex(plan);
+            var passengerKind = coachIndex >= 0 ? plan[coachIndex] : Depot.WagonKind.Regional;
+            if (!serviceCoach && coachIndex >= 0)
             {
-                if (required(Depot.WagonKind.Regional)) return false;
-                plan.RemoveAll(kind => kind == Depot.WagonKind.Regional);
+                if (required(passengerKind)) return false;
+                plan.RemoveAll(kind => kind == passengerKind);
             }
             var prefab = Resources.Load<GameObject>("ServiceFreightWagon");
             var spawned = new List<ServiceFreightWagon>();
@@ -1080,7 +1082,7 @@ namespace ConductorChaos.Playground
                     if (wagon && wagon != body && wagon != serviceCoach) AddServiceWagon(wagon);
                 foreach (var kind in plan)
                 {
-                    if (kind == Depot.WagonKind.Regional)
+                    if (kind == passengerKind)
                     {
                         AddServiceWagon(serviceCoach);
                         continue;
@@ -1103,7 +1105,7 @@ namespace ConductorChaos.Playground
                 if (built && FitsAtDeparture(start, along) &&
                     TryRailPose(start, along, railCenterOffset, false, out var position, out var rotation))
                 {
-                    bool wantsCoach = plan.Contains(Depot.WagonKind.Regional);
+                    bool wantsCoach = plan.Contains(passengerKind);
                     serviceCoachVisible.Value = wantsCoach;
                     if (serviceCoach && !wantsCoach) looseWagons.Remove(serviceCoach);
                     track = start;

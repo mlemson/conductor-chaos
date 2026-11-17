@@ -61,8 +61,8 @@ ModelImporter:
     materialLocation: 1
   animations:
     importAnimation: 0
-  meshes:
     isReadable: 1
+  meshes:
     globalScale: 1
     useFileUnits: 1
     useFileScale: 1

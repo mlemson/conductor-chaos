@@ -19,5 +19,6 @@ MonoBehaviour:
   cattleWagon: {fileID: 919132149155446097, guid: f20935cba768167f0713eb814a0c8348, type: 3}
   tankWagon: {fileID: 919132149155446097, guid: 273216c8415a1d4cf086a0c8f9b24aa4, type: 3}
   dieselCoach: {fileID: 919132149155446097, guid: 7c0382a2f1575dc6ec7b423f2b85a789, type: 3}
+  dieselCoachDoors: {fileID: 919132149155446097, guid: af711d602ce617b5bdad8446bca8fe85, type: 3}
   modernCoach: {fileID: 919132149155446097, guid: 5a15ce8850d11da76dc6761527d4daeb, type: 3}
   futuristicCoach: {fileID: 919132149155446097, guid: 6b8dd0b55fbd3a2b189f3d8b3d04f070, type: 3}

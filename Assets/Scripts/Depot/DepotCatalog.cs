@@ -7,7 +7,7 @@ namespace ConductorChaos.Depot
 {
     public enum TrainKind : byte { Steam, Diesel, Modern, Futuristic }
 
-    public enum WagonKind : byte { Flatbed, Regional, Cargo, Cattle, Tank, DieselCoach, ModernCoach, FuturisticCoach }
+    public enum WagonKind : byte { Flatbed, Regional, Cargo, Cattle, Tank, DieselCoach, ModernCoach, FuturisticCoach, DieselCoachDoors }
 
     public sealed class TrainInfo
     {
@@ -95,6 +95,8 @@ namespace ConductorChaos.Depot
                 Tanks = 1, Sprite = "tank", UnlockLevel = 3, Cost = 1200, Weight = 2, Breakdowns = new[] { "Afsluiter", "Aspot", "Remslang" } },
             new WagonInfo { Kind = WagonKind.DieselCoach, Name = "Dieselrijtuig", Capacity = "Extra zitplaatsen", Category = CategoryPassengers,
                 Seats = 10, Sprite = "diesel_coach", HasSet = true, Set = TrainKind.Diesel, Weight = 1, Breakdowns = new[] { "Dakventilator", "Aspot", "Remslang" } },
+            new WagonInfo { Kind = WagonKind.DieselCoachDoors, Name = "Dieselrijtuig · zijdeuren", Capacity = "Instappen voor de kaartjesdienst", Category = CategoryPassengers,
+                Seats = 10, Sprite = "diesel_coach", HasSet = true, Set = TrainKind.Diesel, Weight = 1, Breakdowns = new[] { "Dakventilator", "Aspot", "Remslang" } },
             new WagonInfo { Kind = WagonKind.ModernCoach, Name = "Modern rijtuig", Capacity = "Extra zitplaatsen", Category = CategoryPassengers,
                 Seats = 12, Sprite = "modern_coach", HasSet = true, Set = TrainKind.Modern, Weight = 1, Breakdowns = new[] { "Aircon", "Aspot", "Remslang" } },
             new WagonInfo { Kind = WagonKind.FuturisticCoach, Name = "Futuristisch rijtuig", Capacity = "Extra zitplaatsen", Category = CategoryPassengers,
@@ -135,7 +137,13 @@ namespace ConductorChaos.Depot
         }
 
         /// <summary>Het regionale rijtuig is het ene rijtuig van de lijn, met de zittende reizigers erin: maximaal één.</summary>
-        public static bool IsUnique(WagonKind kind) => kind == WagonKind.Regional;
+        public static bool IsUnique(WagonKind kind) => kind is WagonKind.Regional or WagonKind.DieselCoachDoors;
+
+        public static int PassengerCoachIndex(List<WagonKind> wagons)
+        {
+            int regional = wagons.IndexOf(WagonKind.Regional);
+            return regional >= 0 ? regional : wagons.IndexOf(WagonKind.DieselCoachDoors);
+        }
 
         /// <summary>Set-rijtuigen passen alleen achter hun eigen loc; de rest overal.</summary>
         public static bool Fits(WagonKind wagon, TrainKind train)

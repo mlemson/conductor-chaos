@@ -41,15 +41,17 @@ namespace ConductorChaos.Playground
                 if (!hatch)
                 {
                     bool paired = name.Contains("_L", StringComparison.Ordinal) || name.Contains("_R", StringComparison.Ordinal);
+                    float direction = cattle ? -1f : -Mathf.Sign(center.x); // The single cab door slides toward the engine bay.
                     if (paired)
                     {
                         var other = RepairPoint.FindDeep(filter.transform.parent,
                             name.Contains("_L", StringComparison.Ordinal) ? name.Replace("_L", "_R") : name.Replace("_R", "_L"));
-                        if (other) center = (center + other.localPosition) * .5f;
+                        if (!other) continue;
+                        direction = Mathf.Sign(center.x - other.localPosition.x);
+                        center = (center + other.localPosition) * .5f;
                     }
-                    bool positive = name.StartsWith("SideDoorLeaf_R", StringComparison.Ordinal);
                     float distance = cattle ? 1.55f : filter.sharedMesh.bounds.size.x + .04f;
-                    slide = filter.transform.localRotation * Vector3.right * (positive ? distance : -distance);
+                    slide = Vector3.right * (direction * distance);
                 }
                 Add(filter.transform, slide, center, automatic && !hatch && !cattle, hatch);
             }

@@ -269,12 +269,12 @@ ModelImporter:
     materialLocation: 1
   animations:
     importAnimation: 0
-  meshes:
+{{readable_line}}  meshes:
     globalScale: 1
     useFileUnits: 1
     useFileScale: 1
     importBlendShapes: 0
-{{readable_line}}    importVisibility: 1
+    importVisibility: 1
     importCameras: 0
     importLights: 0
     generateSecondaryUV: 0
@@ -305,7 +305,7 @@ def export_unity(root, scene, fbx_rel, mat_dir_rel):
     for name, md in scene.materials.items():
         guids[name] = material(root, f"{mat_dir_rel}/{name}.mat", name, md["base"], md["smoothness"], md.get("emissive"),
                                (md.get("opts") or {}).get("opacity"), md.get("ramp"), md.get("ramp_shift", 0.0), md.get("opts"))
-    model_meta(root, fbx_rel, guids)
+    model_meta(root, fbx_rel, guids, readable=fbx_rel.startswith("Assets/Art/Models/Train/"))
     return guids
 
 

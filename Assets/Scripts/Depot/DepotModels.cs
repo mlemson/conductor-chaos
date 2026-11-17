@@ -17,6 +17,7 @@ namespace ConductorChaos.Depot
         public GameObject cattleWagon;
         public GameObject tankWagon;
         public GameObject dieselCoach;
+        public GameObject dieselCoachDoors;
         public GameObject modernCoach;
         public GameObject futuristicCoach;
 
@@ -45,6 +46,7 @@ namespace ConductorChaos.Depot
             WagonKind.Cattle => cattleWagon,
             WagonKind.Tank => tankWagon,
             WagonKind.DieselCoach => dieselCoach,
+            WagonKind.DieselCoachDoors => dieselCoachDoors,
             WagonKind.ModernCoach => modernCoach,
             WagonKind.FuturisticCoach => futuristicCoach,
             _ => null

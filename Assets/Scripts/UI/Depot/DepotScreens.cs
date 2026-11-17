@@ -619,13 +619,15 @@ namespace ConductorChaos.UI.Depot
 
             var shown = new List<WagonInfo>();
             foreach (var wagon in DepotCatalog.Wagons) if (wagonFilter == null || wagon.Category == wagonFilter) shown.Add(wagon);
+            int columns = Mathf.Max(4, (shown.Count + 1) / 2);
+            float stride = 1048f / columns;
             float gridTop = catalogTop + 56;
             float cardHeight = Mathf.Min(196, (816 - 12 - gridTop - 12) / 2f);
             for (int i = 0; i < shown.Count; i++)
             {
                 var wagon = shown[i];
-                float x = 24 + (i % 4) * 262, y = gridTop + (i / 4) * (cardHeight + 12);
-                WagonCard(wagon, loadout, x, y, 250, cardHeight, crew);
+                float x = 24 + (i % columns) * stride, y = gridTop + (i / columns) * (cardHeight + 12);
+                WagonCard(wagon, loadout, x, y, stride - 12, cardHeight, crew);
             }
 
             // Samenvatting
@@ -637,11 +639,12 @@ namespace ConductorChaos.UI.Depot
                 var w = DepotCatalog.Wagon(kind);
                 seats += w.Seats; crates += w.Crates; animals += w.Animals; tanks += w.Tanks; weight += w.Weight; breakdowns += w.Breakdowns.Length;
             }
-            bool coach = loadout.Wagons.Contains(WagonKind.Regional);
+            int coachIndex = DepotCatalog.PassengerCoachIndex(loadout.Wagons);
+            bool coach = coachIndex >= 0;
             InfoRow(summary, 50, "train", "Alles mag overal mee",
                 "Oma, koffers en kratten passen in of op elke wagon.", null);
             InfoRow(summary, 112, "ticket", "Reizigers met kaartjes",
-                coach ? "Zitten in de regionale wagon." : "Zonder regionale wagon rijden ze niet mee.", coach ? "Mee" : "Niet mee");
+                coach ? $"Zitten in wagon {coachIndex + 1}." : "Kies een regionaal rijtuig of een dieselrijtuig met zijdeuren.", coach ? "Mee" : "Niet mee");
             string[] labels = { "Zitplaatsen", "Kratvakken", "Dieren", "Tanks" };
             int[] values = { seats, crates, animals, tanks };
             for (int i = 0; i < 4; i++)
@@ -679,7 +682,10 @@ namespace ConductorChaos.UI.Depot
             DepotUi.Panel(card, "Wagonvak", 3, 3, w - 6, imageHeight, DepotUi.Inset);
             DepotUi.Vehicle(card, wagon.Sprite, 12, 14, w - 24, imageHeight - 22, !owned || !fits);
             DepotUi.Track(card, 3, imageHeight - 8, w - 6);
-            DepotUi.Txt(card, wagon.Name, 12, imageHeight + 6, w - 24, 26, 18, fits ? ChaosUI.Paper : ChaosUI.Muted, true);
+            var title = DepotUi.Txt(card, wagon.Name, 12, imageHeight + 6, w - 24, 26, 18, fits ? ChaosUI.Paper : ChaosUI.Muted, true);
+            title.resizeTextForBestFit = true;
+            title.resizeTextMinSize = 13;
+            title.resizeTextMaxSize = 18;
             DepotUi.Txt(card, wagon.Capacity, 12, imageHeight + 32, w - 24, 20, 12, ChaosUI.Muted);
             float chipY = h - 40;
             if (crew)
@@ -839,7 +845,7 @@ namespace ConductorChaos.UI.Depot
 
             var tasks = DepotUi.Panel(stage, "Opdrachten", 420, 440, 644, 362, DepotUi.PanelFace, DepotUi.Edge);
             DepotUi.Txt(tasks, level == 1 ? "Opdrachten · één per rit" : "Opdrachten · alles tegelijk", 20, 12, 600, 34, 23, ChaosUI.Paper, true);
-            int coach = loadout.Wagons.IndexOf(WagonKind.Regional) + 1;
+            int coach = DepotCatalog.PassengerCoachIndex(loadout.Wagons) + 1;
             var rows = new List<(string, string)>
             {
                 ("Kaartjes controleren", coach > 0 ? $"Wagon {coach}" : "Niet deze rit"), ("Oma begeleiden", "Elke wagon"),
