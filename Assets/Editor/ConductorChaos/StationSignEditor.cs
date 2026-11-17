@@ -14,7 +14,7 @@ namespace ConductorChaos.EditorTools
     public static class StationSignTools
     {
         public const string GlyphDir = "Assets/Art/Models/Environment/SignGlyphs";
-        const string FontPath = GlyphDir + "/StationGlyphFont.asset";
+        const string FontPath = "Assets/Resources/StationGlyphFont.asset";
         const string FbxPath = GlyphDir + "/StationGlyphs.fbx";
         const string JsonPath = GlyphDir + "/StationGlyphs.json";
 

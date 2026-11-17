@@ -17,6 +17,14 @@ namespace ConductorChaos.Stations
         /// <summary>Alle dienstscènes in speelvolgorde (introductie, level 1, 2, 3).</summary>
         public static readonly string[] ServiceScenes = { IntroScene, FirstLevelScene, SecondLevelScene, ThirdLevelScene };
         public static bool IsServiceScene(string scene) => System.Array.IndexOf(ServiceScenes, scene) >= 0;
+        private static readonly string[] CampaignStops = { "Whistleton", "Bumblewick", "Puddleford", "Craggleton", "Eaglecrest" };
+
+        internal static string PlannedStationName(string scene, ServiceStation.StationRole role)
+        {
+            int index = System.Array.IndexOf(ServiceScenes, scene);
+            if (index < 0 || (index == 0 && role == ServiceStation.StationRole.Aankomst)) return null;
+            return CampaignStops[index + (role == ServiceStation.StationRole.Aankomst ? 1 : 0)];
+        }
 
         /// <summary>De scène na een gewonnen dienst, of null als dit het laatste level is.</summary>
         public static string NextScene(string scene)
@@ -226,6 +234,8 @@ namespace ConductorChaos.Stations
             (introduction ? practiceLuggage && practiceDrop && practiceTicket && practiceTicket.IsConfigured :
                 arrival && arrival.Role == ServiceStation.StationRole.Aankomst &&
                 arrival.TrainStop && objectives != null && System.Array.Exists(objectives, o => o && o.IsConfigured));
+
+        private void Start() => ServiceStation.ApplyRouteSigns(departure, arrival);
 
         public override void OnNetworkSpawn()
         {

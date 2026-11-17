@@ -37,8 +37,7 @@ namespace ConductorChaos.Playground
         public string Message { get; private set; }
         public int PlayerCount { get; private set; }
         public bool IsHost => manager && manager.IsHost;
-        public bool HasServiceScenes => Application.CanStreamedLevelBeLoaded(ServiceRun.IntroScene) &&
-                                        Application.CanStreamedLevelBeLoaded(ServiceRun.FirstLevelScene);
+        public bool HasServiceScenes => Array.Exists(ServiceRun.ServiceScenes, Application.CanStreamedLevelBeLoaded);
         public bool CanStart => Phase == SessionPhase.Offline && !preparingOnline &&
                                 !returningToLobby && manager && !manager.IsListening && !manager.ShutdownInProgress;
 
@@ -68,7 +67,7 @@ namespace ConductorChaos.Playground
                 StartLocalTrial();
         }
 
-        public void StartLocal()
+        public void StartLocal(string scene)
         {
             if (!CanStart) return;
             if (!HasServiceScenes)
@@ -76,9 +75,20 @@ namespace ConductorChaos.Playground
                 StartLocalTrial();
                 return;
             }
+            if (!ServiceRun.IsServiceScene(scene) || !Application.CanStreamedLevelBeLoaded(scene))
+            {
+                Message = "Deze rit is niet beschikbaar in deze build.";
+                return;
+            }
             transport.SetConnectionData(true, "127.0.0.1", SoloPort, "127.0.0.1");
-            if (StartHost(SessionPhase.Lobby, "De solo-dienst kon niet starten."))
-                LoadServiceScene(ServiceRun.IntroScene);
+            if (!StartHost(SessionPhase.Lobby, "De solo-dienst kon niet starten.")) return;
+            LoadServiceScene(scene);
+            if (Phase != SessionPhase.Loading)
+            {
+                string failure = Message;
+                Leave();
+                Message = failure;
+            }
         }
 
         private void StartLocalTrial()
@@ -195,12 +205,12 @@ namespace ConductorChaos.Playground
             manager.CustomMessagingManager.RegisterNamedMessageHandler(LobbyStateMessage, ReceiveLobbyState);
         }
 
-        public void BeginGame()
+        public void BeginGame(string scene)
         {
             if (!IsHost || Phase != SessionPhase.Lobby) return;
             if (HasServiceScenes)
             {
-                LoadServiceScene(ServiceRun.IntroScene);
+                LoadServiceScene(scene);
                 return;
             }
             Phase = SessionPhase.Playing;

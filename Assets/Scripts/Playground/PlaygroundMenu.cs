@@ -11,14 +11,17 @@ namespace ConductorChaos.Playground
     [DefaultExecutionOrder(-1000)]
     public sealed class PlaygroundMenu : MonoBehaviour
     {
-        private enum Screen { Main, Game, Pause, Service }
+        private enum Screen { Main, Routes, Game, Pause, Service }
         private static PlaygroundMenu instance;
         private Screen screen;
         private Canvas canvas;
         private RectTransform logoPanel, mainPanel, pausePanel, lobbyPanel, settingsPanel;
         private Text volumeText, muteText, musicVolumeText, musicEnabledText, cameraBobText;
         private bool muted, musicEnabled;
-        private Button playButton, resumeButton, settingsBack;
+        private Button playButton, resumeButton, settingsBack, routesBack;
+        private RectTransform routesPanel;
+        private Text routesStatus;
+        private readonly Button[] routeButtons = new Button[ServiceRun.ServiceScenes.Length];
         private Button hostButton, joinButton, beginButton, leaveButton, copyButton;
         private Text lobbyStatus, lobbyAvailability, lobbyCode;
         private RectTransform lobbySeats, lobbyShare;
@@ -70,7 +73,7 @@ namespace ConductorChaos.Playground
             root = stage;
 
             mainPanel = ChaosUI.MenuPanel(root, "Main menu", V(.04f, .105f), V(.31f, .745f));
-            playButton = MenuAction("Play", "Spelen", .73f, .91f, ChaosUI.Gold, "play", StartLocalPlay, 34);
+            playButton = MenuAction("Play", "Spelen", .73f, .91f, ChaosUI.Gold, "play", ChooseLocalRoute, 34);
             hostButton = MenuAction("Host", "Online hosten", .565f, .70f, ChaosUI.Paper, "player-group", () => networkHost?.HostLobby(), 27);
             joinButton = MenuAction("Join", "Deelnemen", .40f, .535f, ChaosUI.Paper, "key", JoinLobby, 27);
             MenuAction("Settings", "Instellingen", .235f, .37f, ChaosUI.Paper, "options", ShowSettings, 27);
@@ -78,6 +81,7 @@ namespace ConductorChaos.Playground
             logoPanel = ChaosUI.MenuLogo(root, V(.055f, .709f), V(.295f, .98f));
 
             BuildLobby(root);
+            BuildRoutes(root);
 
             settingsPanel = ChaosUI.MenuPanel(root, "Settings", V(.36f, .07f), V(.96f, .90f));
             RectTransform settingsHeading = ChaosUI.Panel(settingsPanel, "Heading paper", V(.035f, .895f), V(.32f, .98f), ChaosUI.Paper);
@@ -167,7 +171,7 @@ namespace ConductorChaos.Playground
             copyButton = ChaosUI.Action(lobbyPanel, "Copy code", "Kopieer code", V(.55f, .153f), V(.955f, .235f), ChaosUI.Paper, ChaosUI.Ink,
                 () => GUIUtility.systemCopyBuffer = networkHost.JoinCode, 20, iconKey: "key");
             beginButton = ChaosUI.Action(lobbyPanel, "Begin", "Start samen", V(.045f, .045f), V(.52f, .125f), ChaosUI.Gold, ChaosUI.Ink,
-                () => networkHost?.BeginGame(), 21, iconKey: "play");
+                ChooseOnlineRoute, 21, iconKey: "play");
             leaveButton = ChaosUI.Action(lobbyPanel, "Leave", "Verlaat sessie", V(.55f, .045f), V(.955f, .125f), ChaosUI.Paper, ChaosUI.Ink,
                 () => networkHost?.Leave(), 20, iconKey: "back");
 
@@ -188,9 +192,11 @@ namespace ConductorChaos.Playground
         private void ShowLobby()
         {
             lobbyPanel.gameObject.SetActive(screen == Screen.Main);
+            routesPanel.gameObject.SetActive(screen == Screen.Routes);
             settingsPanel.gameObject.SetActive(false);
             pausePanel.gameObject.SetActive(screen == Screen.Pause);
-            Select(screen == Screen.Main ? playButton : screen == Screen.Pause ? resumeButton : null);
+            Select(screen == Screen.Routes ? System.Array.Find(routeButtons, button => button.interactable) ?? routesBack :
+                screen == Screen.Main ? playButton : screen == Screen.Pause ? resumeButton : null);
         }
 
         private void ShowSettings()
@@ -206,11 +212,69 @@ namespace ConductorChaos.Playground
             if (EventSystem.current) EventSystem.current.SetSelectedGameObject(button ? button.gameObject : null);
         }
 
-        private void StartLocalPlay()
+        private void BuildRoutes(RectTransform root)
+        {
+            routesPanel = ChaosUI.MenuPanel(root, "Route picker", V(.15f, .065f), V(.85f, .935f));
+            ChaosUI.Label(routesPanel, "Heading", "Kies een rit", 32, ChaosUI.Paper, TextAnchor.MiddleLeft,
+                FontStyle.Bold, V(.045f, .875f), V(.62f, .965f));
+            routesBack = ChaosUI.Action(routesPanel, "Back", "Terug", V(.79f, .88f), V(.95f, .955f),
+                ChaosUI.Paper, ChaosUI.Ink, () => SetScreen(Screen.Main), 21, iconKey: "back");
+            routesStatus = ChaosUI.Label(routesPanel, "Status", "", 17, ChaosUI.Paper, TextAnchor.MiddleCenter,
+                FontStyle.Normal, V(.08f, .015f), V(.92f, .065f));
+
+            for (int i = 0; i < ServiceRun.ServiceScenes.Length; i++)
+            {
+                string scene = ServiceRun.ServiceScenes[i];
+                string from = ServiceRun.PlannedStationName(scene, ServiceStation.StationRole.Vertrek);
+                string to = ServiceRun.PlannedStationName(scene, ServiceStation.StationRole.Aankomst);
+                bool available = Application.CanStreamedLevelBeLoaded(scene);
+                float left = i % 2 == 0 ? .045f : .515f;
+                float bottom = i < 2 ? .48f : .085f;
+                string caption = i == 0 ? "Intro" : $"Level {i}";
+                Button card = ChaosUI.Action(routesPanel, caption, "", V(left, bottom), V(left + .44f, bottom + .365f),
+                    ChaosUI.Paper, ChaosUI.Ink, () => StartRoute(scene), 22, available);
+                routeButtons[i] = card;
+                var photoArea = ChaosUI.Panel(card.transform, "Station preview", V(.025f, .275f), V(.975f, .97f), ChaosUI.Navy);
+                var texture = Resources.Load<Texture2D>("Routes/" + from);
+                if (texture)
+                {
+                    var photo = ChaosUI.Rect(photoArea, from, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                    var raw = photo.gameObject.AddComponent<RawImage>();
+                    raw.texture = texture;
+                    raw.raycastTarget = false;
+                    if (!available) raw.color = ChaosUI.Muted;
+                    var fit = photo.gameObject.AddComponent<AspectRatioFitter>();
+                    fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+                    fit.aspectRatio = (float)texture.width / texture.height;
+                }
+                else ChaosUISpriteCatalog.Add(photoArea, "Station icon", "route", V(.40f, .17f), V(.60f, .83f), ChaosUI.Muted);
+                ChaosUI.Label(card.transform, "Ride", caption, 23, ChaosUI.Ink, TextAnchor.MiddleLeft, FontStyle.Bold,
+                    V(.03f, .14f), V(.98f, .268f));
+                ChaosUI.Label(card.transform, "Stations", available ? to == null ? $"{from} · oefenrit" : $"{from} → {to}" : "Niet in deze build",
+                    18, ChaosUI.Ink, TextAnchor.MiddleLeft, FontStyle.Normal, V(.03f, .022f), V(.98f, .152f));
+            }
+        }
+
+        private void ChooseLocalRoute()
         {
             if (!networkHost) return;
             if (networkHost.Phase == PlaygroundHost.SessionPhase.Playing) SetScreen(Screen.Game);
-            else networkHost.StartLocal();
+            else if (networkHost.HasServiceScenes) SetScreen(Screen.Routes);
+            else networkHost.StartLocal(null);
+        }
+
+        private void ChooseOnlineRoute()
+        {
+            if (!networkHost || !networkHost.IsHost || networkHost.Phase != PlaygroundHost.SessionPhase.Lobby) return;
+            if (networkHost.HasServiceScenes) SetScreen(Screen.Routes);
+            else networkHost.BeginGame(null);
+        }
+
+        private void StartRoute(string scene)
+        {
+            if (!networkHost) return;
+            if (networkHost.CanStart) networkHost.StartLocal(scene);
+            else if (networkHost.IsHost && networkHost.Phase == PlaygroundHost.SessionPhase.Lobby) networkHost.BeginGame(scene);
         }
 
         private void JoinLobby()
@@ -233,6 +297,7 @@ namespace ConductorChaos.Playground
                 else if (offline && screen != Screen.Main) SetScreen(Screen.Main);
                 previousPhase = phase;
             }
+            routesStatus.text = networkHost.Message;
             hostButton.interactable = joinButton.interactable = networkHost.CanStart;
             playButton.interactable = networkHost.CanStart || playing;
             joinCodeInput.gameObject.SetActive(offline);
@@ -283,14 +348,15 @@ namespace ConductorChaos.Playground
                 SetScreen(networkHost && networkHost.Phase == PlaygroundHost.SessionPhase.Playing ? Screen.Game : Screen.Main);
             service.Present(networkHost, run, screen == Screen.Service, screen == Screen.Game && run);
             if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
-            if (screen == Screen.Game) SetScreen(Screen.Pause);
+            if (screen == Screen.Routes) SetScreen(Screen.Main);
+            else if (screen == Screen.Game) SetScreen(Screen.Pause);
             else if (settingsPanel.gameObject.activeSelf) ShowLobby();
             else if (screen == Screen.Pause) SetScreen(Screen.Game);
         }
         private void SetScreen(Screen next)
         {
             screen = next;
-            canvas.gameObject.SetActive(next is Screen.Main or Screen.Pause);
+            canvas.gameObject.SetActive(next is Screen.Main or Screen.Routes or Screen.Pause);
             mainPanel.gameObject.SetActive(next == Screen.Main);
             logoPanel.gameObject.SetActive(next == Screen.Main);
             ShowLobby();

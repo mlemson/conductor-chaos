@@ -108,7 +108,7 @@ namespace ConductorChaos.UI
                 briefing ? (run.CombinesObjectives ? "Over het ravijn" : run.Objective?.Title ?? "Eerste dienst") :
                 won ? "Goed gewerkt, conducteurs!" :
                 run.OffTrack ? "De trein is ontspoord" : "De tijd is om";
-            route.text = loading ? "De crew laadt dezelfde scène." : intro ? "Whistleton  ·  Oefenrit zonder tijdslimiet" :
+            route.text = loading ? "De crew laadt dezelfde scène." : intro ? $"{run.Departure.StationName}  ·  Oefenrit zonder tijdslimiet" :
                 $"{run.Departure.StationName}   →   {run.Arrival.StationName}";
             detail.text = loading ? $"Verbonden crew  ·  {host.PlayerCount}" : briefing
                 ? intro ? "Loop naar het perron, oefen met bagage en de treindeur en rijd een klein stukje. Eén geslaagde handeling telt voor de hele crew."
