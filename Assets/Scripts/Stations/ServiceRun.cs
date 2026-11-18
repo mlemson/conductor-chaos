@@ -15,11 +15,12 @@ namespace ConductorChaos.Stations
         public const string SecondLevelScene = "ServiceLevel02";
         public const string ThirdLevelScene = "ServiceLevel03";
         public const string FourthLevelScene = "ServiceLevel04";        // winterlevel 'Over de pas' (#242)
+        public const string FifthLevelScene = "ServiceLevel05";         // boslevel 'Door het woud' (#246)
 
         /// <summary>Alle dienstscènes in speelvolgorde (introductie, level 1, 2, 3).</summary>
-        public static readonly string[] ServiceScenes = { IntroScene, FirstLevelScene, SecondLevelScene, ThirdLevelScene, FourthLevelScene };
+        public static readonly string[] ServiceScenes = { IntroScene, FirstLevelScene, SecondLevelScene, ThirdLevelScene, FourthLevelScene, FifthLevelScene };
         public static bool IsServiceScene(string scene) => System.Array.IndexOf(ServiceScenes, scene) >= 0;
-        private static readonly string[] CampaignStops = { "Whistleton", "Bumblewick", "Puddleford", "Craggleton", "Eaglecrest", "Frostbury" };
+        private static readonly string[] CampaignStops = { "Whistleton", "Bumblewick", "Puddleford", "Craggleton", "Eaglecrest", "Frostbury", "Fernwood" };
 
         internal static string PlannedStationName(string scene, ServiceStation.StationRole role)
         {
@@ -259,6 +260,7 @@ namespace ConductorChaos.Stations
                     SecondLevelScene => (3, new Vector2(12f, 20f), new Vector2(22f, 35f)),
                     ThirdLevelScene => (7, new Vector2(6f, 12f), new Vector2(10f, 18f)),
                     FourthLevelScene => (6, new Vector2(8f, 14f), new Vector2(12f, 20f)),
+                    FifthLevelScene => (7, new Vector2(8f, 14f), new Vector2(11f, 18f)),
                     _ => (0, Vector2.zero, Vector2.zero)
                 };
                 breakdownsRemaining = limit;

@@ -55,6 +55,19 @@ namespace ConductorChaos.EditorTools
 
         public static TerrainLayer[] EnsureWinterLayers() => EnsureLayers(WinterDefs);
 
+        // bos (#246): dezelfde vijf rollen, maar laag 1 = schaduwgras onder het bladerdak en laag 2 = bosgrond met blad.
+        // Gras, stenen pad en rots zijn dezelfde laag-assets als Defs.
+        static readonly (string tex, string layer, float tile)[] ForestDefs =
+        {
+            ("T_Ground_Grass", "TL_Grass", 8f),
+            ("T_Forest_GrassShade", "TL_Forest_GrassShade", 8f),
+            ("T_Forest_Floor", "TL_Forest_Floor", 6f),
+            ("T_Ground_PathStones", "TL_PathStones", 3f),
+            ("T_Ground_Rock", "TL_Rock", 6f),
+        };
+
+        public static TerrainLayer[] EnsureForestLayers() => EnsureLayers(ForestDefs);
+
         static void EnsureFolder(string path)
         {
             if (AssetDatabase.IsValidFolder(path)) return;

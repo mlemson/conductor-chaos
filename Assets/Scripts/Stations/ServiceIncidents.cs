@@ -30,6 +30,8 @@ namespace ConductorChaos.Stations
             [Tooltip("Punt op het spoor met forward in rijrichting: hier wordt gemeten of het spoor weer vrij is.")]
             public Transform site;
             [Range(0f, 1f)] public float chance = 0.75f;
+            [Tooltip("Korte HUD-melding, bv. 'Sneeuw op het spoor' of 'Boomstammen op het spoor'. Leeg = 'Rotsen op het spoor'.")]
+            public string warning = "Rotsen op het spoor";
         }
 
         [Serializable]
@@ -110,7 +112,7 @@ namespace ConductorChaos.Stations
                             : "Storing: spoor verderop";
                 for (int i = 0; i < rockfalls.Length; i++)
                     if ((open & RockBit(i)) != 0)
-                        return "Rotsen op het spoor";
+                        return string.IsNullOrEmpty(rockfalls[i]?.warning) ? "Rotsen op het spoor" : rockfalls[i].warning;
                 return WrongSwitchAhead() ? "Wissel verderop staat verkeerd" : null;
             }
         }

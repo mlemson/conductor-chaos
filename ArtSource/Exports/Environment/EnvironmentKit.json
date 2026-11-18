@@ -1647,6 +1647,287 @@
         "M_Env_IceDark",
         "M_Env_SnowSoft"
       ]
+    },
+    "Tree_Beech_Tall_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Beech_Tall_01.fbx",
+      "tris": 1260,
+      "min": [
+        -4.121,
+        -0.152,
+        -4.531
+      ],
+      "max": [
+        4.346,
+        10.721,
+        3.903
+      ],
+      "materials": [
+        "M_Env_BeechBark",
+        "M_Env_LeafBeech"
+      ]
+    },
+    "Tree_Beech_Tall_02": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Beech_Tall_02.fbx",
+      "tris": 1260,
+      "min": [
+        -4.681,
+        -0.152,
+        -4.098
+      ],
+      "max": [
+        4.086,
+        12.287,
+        4.473
+      ],
+      "materials": [
+        "M_Env_BeechBark",
+        "M_Env_LeafBeech"
+      ]
+    },
+    "Tree_Beech_Young_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Beech_Young_01.fbx",
+      "tris": 304,
+      "min": [
+        -1.026,
+        -0.122,
+        -1.023
+      ],
+      "max": [
+        1.093,
+        4.882,
+        0.88
+      ],
+      "materials": [
+        "M_Env_BeechBark",
+        "M_Env_LeafBeech"
+      ]
+    },
+    "Tree_Oak_Giant_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Oak_Giant_01.fbx",
+      "tris": 1420,
+      "min": [
+        -4.052,
+        -0.197,
+        -4.67
+      ],
+      "max": [
+        4.971,
+        8.539,
+        4.573
+      ],
+      "materials": [
+        "M_Env_LeafOak",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Linden_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Linden_01.fbx",
+      "tris": 1752,
+      "min": [
+        -2.973,
+        -0.143,
+        -3.136
+      ],
+      "max": [
+        3.038,
+        9.085,
+        3.023
+      ],
+      "materials": [
+        "M_Env_LeafLinden",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Poplar_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Poplar_01.fbx",
+      "tris": 1016,
+      "min": [
+        -1.529,
+        -0.121,
+        -1.496
+      ],
+      "max": [
+        1.552,
+        11.005,
+        1.413
+      ],
+      "materials": [
+        "M_Env_LeafPoplar",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Maple_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Maple_01.fbx",
+      "tris": 1100,
+      "min": [
+        -3.112,
+        -0.143,
+        -3.038
+      ],
+      "max": [
+        2.851,
+        7.248,
+        3.038
+      ],
+      "materials": [
+        "M_Env_LeafMaple",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Maple_Autumn_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Maple_Autumn_01.fbx",
+      "tris": 1100,
+      "min": [
+        -2.995,
+        -0.143,
+        -3.083
+      ],
+      "max": [
+        3.187,
+        6.827,
+        3.154
+      ],
+      "materials": [
+        "M_Env_LeafAutumn",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Maple_Red_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Maple_Red_01.fbx",
+      "tris": 1100,
+      "min": [
+        -3.168,
+        -0.143,
+        -3.319
+      ],
+      "max": [
+        2.861,
+        7.133,
+        3.168
+      ],
+      "materials": [
+        "M_Env_LeafAutumnRed",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Chestnut_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Chestnut_01.fbx",
+      "tris": 2600,
+      "min": [
+        -3.405,
+        -0.16,
+        -3.324
+      ],
+      "max": [
+        3.438,
+        8.299,
+        3.529
+      ],
+      "materials": [
+        "M_Env_Blossom",
+        "M_Env_LeafChestnut",
+        "M_Env_Trunk"
+      ]
+    },
+    "Tree_Dead_01": {
+      "category": "Trees",
+      "fbx": "Assets/Art/Models/Environment/Trees/Tree_Dead_01.fbx",
+      "tris": 368,
+      "min": [
+        -1.461,
+        -0.143,
+        -1.475
+      ],
+      "max": [
+        1.548,
+        6.787,
+        1.6
+      ],
+      "materials": [
+        "M_Env_DeadWood",
+        "M_Env_LogCut"
+      ]
+    },
+    "FlowerBed_Grass_Round_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/FlowerBed_Grass_Round_01.fbx",
+      "tris": 3428,
+      "min": [
+        -0.882,
+        -0.098,
+        -0.92
+      ],
+      "max": [
+        0.9,
+        0.553,
+        0.887
+      ],
+      "materials": [
+        "M_Env_BedLeaf",
+        "M_Env_FlowerHeart",
+        "M_Env_FlowerPink",
+        "M_Env_Stem",
+        "M_Env_Tulip",
+        "M_Env_TulipYellow"
+      ]
+    },
+    "FlowerBed_Grass_Round_02": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/FlowerBed_Grass_Round_02.fbx",
+      "tris": 3360,
+      "min": [
+        -0.8,
+        -0.098,
+        -0.728
+      ],
+      "max": [
+        0.729,
+        0.536,
+        0.682
+      ],
+      "materials": [
+        "M_Env_BedLeaf",
+        "M_Env_FlowerBlue",
+        "M_Env_FlowerHeart",
+        "M_Env_FlowerPink",
+        "M_Env_Petal",
+        "M_Env_Stem"
+      ]
+    },
+    "FlowerBed_Grass_Long_01": {
+      "category": "Plants",
+      "fbx": "Assets/Art/Models/Environment/Plants/FlowerBed_Grass_Long_01.fbx",
+      "tris": 4274,
+      "min": [
+        -1.217,
+        -0.11,
+        -0.418
+      ],
+      "max": [
+        1.243,
+        0.54,
+        0.455
+      ],
+      "materials": [
+        "M_Env_BedLeaf",
+        "M_Env_FlowerBlue",
+        "M_Env_FlowerHeart",
+        "M_Env_FlowerPink",
+        "M_Env_Petal",
+        "M_Env_Stem",
+        "M_Env_Tulip",
+        "M_Env_TulipYellow"
+      ]
     }
   },
   "materials": {
@@ -2718,6 +2999,156 @@
       "opts": {
         "cells": 0.0,
         "emissive": 0.55
+      }
+    },
+    "M_Env_LeafBeech": {
+      "base": "#8B9F3B",
+      "ramp": [
+        "#566D3A",
+        "#6B7F38",
+        "#8B9F3B",
+        "#A1B044",
+        "#ADBC4A"
+      ],
+      "rampShift": -0.06,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.7,
+        "rim": 0.3
+      }
+    },
+    "M_Env_LeafLinden": {
+      "base": "#82A740",
+      "ramp": [
+        "#6F8C35",
+        "#7A9B3C",
+        "#82A740",
+        "#92BC4B",
+        "#A3D25B"
+      ],
+      "rampShift": -0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.7,
+        "rim": 0.3
+      }
+    },
+    "M_Env_LeafPoplar": {
+      "base": "#5E6F41",
+      "ramp": [
+        "#4F5F3A",
+        "#576840",
+        "#5B6C41",
+        "#5E6F41",
+        "#647544"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.7,
+        "rim": 0.3
+      }
+    },
+    "M_Env_LeafMaple": {
+      "base": "#A1B044",
+      "ramp": [
+        "#566D3A",
+        "#6B7F38",
+        "#8B9F3B",
+        "#A1B044",
+        "#ADBC4A"
+      ],
+      "rampShift": 0.02,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.7,
+        "rim": 0.3
+      }
+    },
+    "M_Env_LeafChestnut": {
+      "base": "#6B7F38",
+      "ramp": [
+        "#566D3A",
+        "#6B7F38",
+        "#8B9F3B",
+        "#A1B044",
+        "#ADBC4A"
+      ],
+      "rampShift": -0.02,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.7,
+        "rim": 0.3
+      }
+    },
+    "M_Env_BeechBark": {
+      "base": "#6F696E",
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "rampShift": -0.32,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 0.5
+      }
+    },
+    "M_Env_DeadWood": {
+      "base": "#906959",
+      "ramp": [
+        "#6A4C4B",
+        "#906959",
+        "#AC7F75",
+        "#BE907B",
+        "#CA957A"
+      ],
+      "rampShift": -0.18,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 0.4
+      }
+    },
+    "M_Env_BedLeaf": {
+      "base": "#647544",
+      "ramp": [
+        "#4F5F3A",
+        "#576840",
+        "#5B6C41",
+        "#5E6F41",
+        "#647544"
+      ],
+      "rampShift": 0.06,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.4,
+        "rim": 0.25
+      }
+    },
+    "M_Env_Blossom": {
+      "base": "#FCDBB4",
+      "ramp": [
+        "#D3AA81",
+        "#E7C198",
+        "#EBC69D",
+        "#EECAA1",
+        "#FCDBB4"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.15
       }
     }
   }

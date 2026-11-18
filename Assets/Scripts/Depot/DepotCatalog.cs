@@ -120,6 +120,9 @@ namespace ConductorChaos.Depot
             new LevelInfo { Index = 4, Scene = ServiceRun.FourthLevelScene, Label = "LEVEL 4", Name = "Over de pas", Photo = "Frostbury",
                 Summary = "Sneeuw op het spoor en reizigers die bevriezen in de kou.", Distance = "± 900 m", Difficulty = 5,
                 Highlights = new[] { "Sneeuwlawines", "Bevroren rivier" } },
+            new LevelInfo { Index = 5, Scene = ServiceRun.FifthLevelScene, Label = "LEVEL 5", Name = "Door het woud", Photo = "Fernwood",
+                Summary = "Dicht loofbos, stammen op het spoor en twee bruggen.", Distance = "± 950 m", Difficulty = 5,
+                Highlights = new[] { "Rollende boomstammen", "Beukenbos" } },
         };
 
         /// <summary>Treinstel voor een nieuwe speler. Niets is verplicht: alles mag in of op elke wagon mee.</summary>

@@ -236,10 +236,13 @@ namespace ConductorChaos.Playground
                 string from = ServiceRun.PlannedStationName(scene, ServiceStation.StationRole.Vertrek);
                 string to = ServiceRun.PlannedStationName(scene, ServiceStation.StationRole.Aankomst);
                 bool available = Application.CanStreamedLevelBeLoaded(scene);
-                float left = i % 2 == 0 ? .045f : .515f;
-                float bottom = i < 2 ? .48f : .085f;
+                // raster dat met het aantal ritten meegroeit (2 kolommen tot 4 ritten, daarna 3)
+                int count = ServiceRun.ServiceScenes.Length, cols = count <= 4 ? 2 : 3, rows = (count + cols - 1) / cols;
+                float cellW = (.91f - .03f * (cols - 1)) / cols, cellH = (.76f - .03f * (rows - 1)) / rows;
+                float left = .045f + (i % cols) * (cellW + .03f);
+                float bottom = .085f + (rows - 1 - i / cols) * (cellH + .03f);
                 string caption = i == 0 ? "Intro" : $"Level {i}";
-                Button card = ChaosUI.Action(routesPanel, caption, "", V(left, bottom), V(left + .44f, bottom + .365f),
+                Button card = ChaosUI.Action(routesPanel, caption, "", V(left, bottom), V(left + cellW, bottom + cellH),
                     ChaosUI.Paper, ChaosUI.Ink, () => StartRoute(scene), 22, available);
                 routeButtons[i] = card;
                 var photoArea = ChaosUI.Panel(card.transform, "Station preview", V(.025f, .275f), V(.975f, .97f), ChaosUI.Navy);

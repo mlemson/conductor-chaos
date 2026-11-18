@@ -257,6 +257,43 @@ WINTER = {
 }
 
 
+# Bos (#246): zelfde rollen als de gewone lagen, maar laag 1 = schaduwgras onder de bomen en laag 2 = bosgrond met
+# afgevallen blad. Gras, stenen pad en rots zijn de gewone texturen (zelfde laag-assets).
+def shade_grass():
+    """Gras in de schaduw van het bladerdak: dezelfde zachte vlakken als T_Ground_Grass, maar dieper van tint."""
+    v = 0.5 + 0.12 * pnoise(240) + 0.04 * pnoise(110)
+    return ramp("grass", 0.06 + 0.26 * soft_bands(np.clip(v, 0, 1), 4, 0.55))
+
+
+def forest_floor():
+    """Bosgrond: donkere aarde met mosplekken en losse afgevallen blaadjes in herfstkleuren."""
+    v = 0.5 + 0.17 * pnoise(160) + 0.08 * pnoise(50)
+    img = ramp("cliff", 0.02 + 0.30 * soft_bands(np.clip(v, 0, 1), 5, 0.45))
+    moss = ramp("grass", 0.04 + 0.14 * np.clip(pnoise(70) + 0.5, 0, 1))
+    m = 0.85 * np.clip((pnoise(160) - 0.30) * 2.2, 0, 1)[..., None]
+    img = img * (1 - m) + moss * m
+    leaves = [rgb(R["crate"][1]), rgb(R["crate"][3]), rgb(R["roof_terracotta"][2]), rgb(R["accent_yellow"][1]),
+              rgb(R["leather"][3]), rgb(R["shorts_olive"][3])]
+    for _ in range(420):                                      # blaadjes: kleine gedraaide ellipsen met een donkere rand
+        cx, cy = rng.uniform(0, N, 2)
+        rx, ry = rng.uniform(8, 14), rng.uniform(4.5, 7)
+        a = rng.uniform(0, np.pi)
+        ca, sa = np.cos(a), np.sin(a)
+        def leaf(X, Y, k=1.0):
+            u, w = X * ca + Y * sa, -X * sa + Y * ca
+            return (1 - (u / (rx * k)) ** 2 - (w / (ry * k)) ** 2) * ry / 1.0
+        col = leaves[int(rng.integers(len(leaves)))]
+        stamp(img, cx + 1.0, cy + 1.0, lambda X, Y: leaf(X, Y, 1.05), col * 0.62, rx + 2)
+        stamp(img, cx, cy, leaf, col, rx + 2)
+    return img
+
+
+FOREST = {
+    "T_Forest_GrassShade": lambda: shade_grass(),
+    "T_Forest_Floor": lambda: forest_floor(),
+}
+
+
 def save(name, img):
     rel = f"{OUT}/{name}.png"
     path = os.path.join(ROOT, rel)
@@ -292,12 +329,19 @@ def main():
     for k, (name, make) in enumerate(WINTER.items()):
         seeded(200 + k)
         save(name, make())
+    for k, (name, make) in enumerate(FOREST.items()):
+        seeded(300 + k)
+        save(name, make())
 
 
 if __name__ == "__main__":
     if sys.argv[1:] == ["winter"]:                         # alleen de wintertexturen
         for k, (name, make) in enumerate(WINTER.items()):
             rng = np.random.default_rng([38, 200 + k])
+            save(name, make())
+    elif sys.argv[1:] == ["forest"]:                       # alleen de bostexturen
+        for k, (name, make) in enumerate(FOREST.items()):
+            rng = np.random.default_rng([38, 300 + k])
             save(name, make())
     else:
         main()

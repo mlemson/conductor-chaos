@@ -99,6 +99,7 @@ namespace ConductorChaos.EditorTools
             public int mesas = 10;
             public bool cliffRing = true;
             public bool winter;                  // sneeuwlevel (#242): sneeuwgrond, besneeuwde bomen/kliffen, ijs, kou (#243)
+            public bool forest;                  // boslevel (#246): dicht loofbos, bosgrond, varens, stammen die van de helling rollen
         }
 
         public static Step S(string prefab, string tag, float grade = 0f) => new Step { prefab = prefab, tag = tag, grade = grade };
@@ -349,6 +350,12 @@ namespace ConductorChaos.EditorTools
                 Progress("Bos en rotsen", 0.72f);
                 PlantNature();
                 if (spec.winter) DressWinter();
+                if (spec.forest)
+                {
+                    Progress("Bosgrond en water", 0.86f);
+                    Physics.SyncTransforms();
+                    log.AppendLine("Bos: " + NatureDresser.DressForest(scene));
+                }
                 Progress("Water en achtergrond", 0.9f);
                 foreach (var c in canyons) BuildRiver(c);
                 BuildBackdrop();
@@ -802,7 +809,8 @@ namespace ConductorChaos.EditorTools
                 float longest = Mathf.Max(terrainSize.x, terrainSize.z);
                 res = longest > 820f ? 2049 : longest > 420f ? 1025 : 513;
 
-                var layers = spec.winter ? StylizedTerrainTools.EnsureWinterLayers() : StylizedTerrainTools.EnsureLayers();
+                var layers = spec.winter ? StylizedTerrainTools.EnsureWinterLayers()
+                           : spec.forest ? StylizedTerrainTools.EnsureForestLayers() : StylizedTerrainTools.EnsureLayers();
                 data = new TerrainData { heightmapResolution = res, alphamapResolution = longest > 820f ? 2048 : 1024 };
                 data.size = terrainSize;
                 data.terrainLayers = layers;
@@ -849,6 +857,18 @@ namespace ConductorChaos.EditorTools
                 terrainOrigin.z + z / (float)(res - 1) * terrainSize.z);
 
             static float Noise(float x, float z, float scale, float ox, float oz) => Mathf.PerlinNoise(ox + x / scale, oz + z / scale);
+
+            // Boslevel (#246): hoe dicht het bos hier is (0 = open plek, 1 = dicht bos). Vaste ruisverschuiving per level, zodat de
+            // bosgrond (terreinkleur) en de bomen precies op elkaar vallen. Rond de stations open weide.
+            float ForestAt(float x, float z)
+            {
+                float ox = spec.seed % 977, oz = spec.seed % 613;
+                float n = Noise(x, z, 70f, ox, oz) * 0.75f + Noise(x, z, 24f, ox + 41f, oz + 17f) * 0.35f;
+                float wood = Mathf.Clamp01((n - 0.30f) * 2.6f);
+                foreach (var area in stationAreas)
+                    wood *= Smooth(10f, 34f, DistanceToBox(area.bounds, x, z));
+                return wood;
+            }
 
             static float Fbm(float x, float z, float ox, float oz) =>
                 Noise(x, z, 90f, ox, oz) * 0.55f + Noise(x, z, 38f, ox + 31f, oz + 7f) * 0.3f + Noise(x, z, 15f, ox + 77f, oz + 51f) * 0.15f;
@@ -968,7 +988,16 @@ namespace ConductorChaos.EditorTools
                         float grass = 1f, flowers = 0f, dirt = 0f, stones = 0f, rock = 0f;
                         float d = far.Distance(wx, wz);
                         float f = Noise(wx, wz, 22f, ox + 500f, oz + 500f);
-                        if (d > 7f && f > 0.6f) flowers = Mathf.Clamp01((f - 0.6f) * 6f);
+                        if (spec.forest)
+                        {
+                            // bos: laag 1 = schaduwgras onder het bladerdak, laag 2 = bosgrond met blad (plekken in het dichte bos)
+                            float wood = ForestAt(wx, wz) * Smooth(5f, 16f, d);
+                            flowers = wood * 1.6f;
+                            float litter = Noise(wx, wz, 9f, ox + 700f, oz + 300f);
+                            if (wood > 0.45f && litter > 0.42f) dirt = Mathf.Clamp01((litter - 0.42f) * 4f) * wood * 1.4f;
+                            grass = Mathf.Max(0.05f, 1f - wood);
+                        }
+                        else if (d > 7f && f > 0.6f) flowers = Mathf.Clamp01((f - 0.6f) * 6f);
                         if (d > 2.6f && d < 4.6f) dirt = 0.55f;                       // berm naast de bielzen
                         foreach (var c in canyons)
                         {
@@ -1493,8 +1522,9 @@ namespace ConductorChaos.EditorTools
                 siteMarker.SetParent(group, false);
                 siteMarker.SetPositionAndRotation(site.rail, Quaternion.LookRotation(site.dir));
 
-                var model = AssetDatabase.LoadAssetAtPath<GameObject>(spec.winter ? $"{EnvDir}/Winter/Snow_Pile_Track.fbx" : $"{EnvDir}/Rocks/Rock_Medium_01.fbx");
-                if (!model) throw new Exception(spec.winter ? "Snow_Pile_Track.fbx ontbreekt." : "Rock_Medium_01.fbx ontbreekt.");
+                string modelPath = spec.winter ? $"{EnvDir}/Winter/Snow_Pile_Track.fbx" : spec.forest ? $"{EnvDir}/Wood/Log_Fallen_02.fbx" : $"{EnvDir}/Rocks/Rock_Medium_01.fbx";
+                var model = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
+                if (!model) throw new Exception($"{modelPath} ontbreekt.");
                 var rocks = new List<Rigidbody>();
                 var landing = new List<Transform>();
                 for (int k = 0; k < 3; k++)
@@ -1504,8 +1534,8 @@ namespace ConductorChaos.EditorTools
                     // klaar op de klifrand: recht boven de wand, iets naar binnen
                     var perch = s.rail + side * (from + 1.6f);
                     float top = TopOf(perch, cliff);
-                    var rock = MakeRock(rockRoot, $"{name} · {(spec.winter ? "sneeuw" : "blok")} {k + 1}", model, new Vector3(perch.x, top, perch.z),
-                        spec.winter ? 0.6f + 0.08f * k : 0.85f + 0.12f * k);
+                    var rock = MakeRock(rockRoot, $"{name} · {(spec.winter ? "sneeuw" : spec.forest ? "stam" : "blok")} {k + 1}", model, new Vector3(perch.x, top, perch.z),
+                        spec.winter ? 0.6f + 0.08f * k : spec.forest ? 0.78f + 0.06f * k : 0.85f + 0.12f * k);
                     rocks.Add(rock);
                     var land = new GameObject($"Landing {k + 1}").transform;
                     land.SetParent(group, false);
@@ -1520,6 +1550,7 @@ namespace ConductorChaos.EditorTools
                     landing = landing.ToArray(),
                     site = siteMarker,
                     chance = 0.7f,
+                    warning = spec.winter ? "Sneeuw op het spoor" : spec.forest ? "Boomstammen op het spoor" : "Rotsen op het spoor",
                 };
             }
 
@@ -1586,7 +1617,7 @@ namespace ConductorChaos.EditorTools
 
             void PlantNature()
             {
-                var trees = spec.winter ? new (GameObject model, float weight, float clearance)[]
+                var trees = spec.forest ? ForestTrees() : spec.winter ? new (GameObject model, float weight, float clearance)[]
                 {
                     (Model("Winter", "Tree_Pine_Snow_Medium"), 1.0f, 6.5f),
                     (Model("Winter", "Tree_Pine_Snow_Large"), 0.7f, 7.5f),
@@ -1601,7 +1632,8 @@ namespace ConductorChaos.EditorTools
                 };
                 trees = trees.Where(t => t.model).ToArray();
                 float area = terrainSize.x * terrainSize.z;
-                int maxTrees = Mathf.RoundToInt(Mathf.Clamp(area / 260f, 1400f, 3600f));
+                int maxTrees = spec.forest ? Mathf.RoundToInt(Mathf.Clamp(area / 170f, 1800f, 3400f))
+                                           : Mathf.RoundToInt(Mathf.Clamp(area / 260f, 1400f, 3600f));
                 int planted = 0, onCliffs = 0;
                 float ox = rng.Next(1000), oz = rng.Next(1000);
                 var taken = new SampleFreeGrid(4f);
@@ -1613,13 +1645,21 @@ namespace ConductorChaos.EditorTools
                                         terrainOrigin.z + 4f + (float)rng.NextDouble() * (terrainSize.z - 8f));
                     float d = far.Distance(p.x, p.z);
                     // bos in plukken: dicht waar de ruis hoog is, open weides rond de stations
-                    float forest = Noise(p.x, p.z, 55f, ox, oz) * 0.8f + Noise(p.x, p.z, 18f, ox + 40f, oz + 9f) * 0.35f;
-                    float density = Mathf.Clamp01((forest - 0.48f) * 2.4f) * (0.35f + 0.65f * Smooth(6f, 30f, d));
-                    if (NearStation(p, 14f)) density *= 0.15f;
+                    float density;
+                    if (spec.forest) density = ForestAt(p.x, p.z) * 1.6f;          // dicht loofbos tot vlak langs het spoor
+                    else
+                    {
+                        float forest = Noise(p.x, p.z, 55f, ox, oz) * 0.8f + Noise(p.x, p.z, 18f, ox + 40f, oz + 9f) * 0.35f;
+                        density = Mathf.Clamp01((forest - 0.48f) * 2.4f) * (0.35f + 0.65f * Smooth(6f, 30f, d));
+                        if (NearStation(p, 14f)) density *= 0.15f;
+                    }
                     if (rng.NextDouble() > density * 0.55f) continue;
                     var pick = Pick(trees, t => t.weight);
-                    if (d < pick.clearance || NearStation(p, 4f)) continue;
-                    if (!taken.TryTake(p, pick.model.name.StartsWith("Bush") ? 2f : 3.1f)) continue;
+                    float treeScale = 0.85f + (float)rng.NextDouble() * 0.45f;
+                    // bos: de kruin blijft naast het spoor (kruinstraal schaalt mee), zodat niets boven de trein hangt
+                    if (d < pick.clearance * (spec.forest ? treeScale : 1f) || NearStation(p, 4f)) continue;
+                    bool small = pick.model.name.StartsWith("Bush") || pick.model.name.Contains("Young") || pick.model.name.Contains("Dead");
+                    if (!taken.TryTake(p, small ? 2f : spec.forest ? 4.2f : 3.1f)) continue;
 
                     // op de grond of bovenop een klif (alleen ver van het spoor)
                     bool onCliff = false;
@@ -1640,7 +1680,7 @@ namespace ConductorChaos.EditorTools
                     }
                     float sink = 0.08f;
                     var go = Place(pick.model, "Trees", new Vector3(p.x, y - sink, p.z), (float)rng.NextDouble() * 360f,
-                        0.85f + (float)rng.NextDouble() * 0.45f, 0.9f + (float)rng.NextDouble() * 0.3f, -sink, d < 45f || NearStation(p, 40f));
+                        treeScale, 0.9f + (float)rng.NextDouble() * 0.3f, -sink, d < 45f || NearStation(p, 40f));
                     if (go) { planted++; if (onCliff) onCliffs++; }
                 }
 
@@ -1669,6 +1709,7 @@ namespace ConductorChaos.EditorTools
 
                 // gras en bloemen op vlakke stukken langs het spoor, rond de stations en op de kloofbodem (geen colliders)
                 var plants = (spec.winter ? new[] { Model("Winter", "Snow_Drift_01"), Model("Winter", "Snow_Drift_01"), Model("Winter", "Snow_Drift_02"), Model("Winter", "Rock_Snow_Medium") }
+                    : spec.forest ? new[] { Model("Plants", "Grass_Tuft_01"), Model("Plants", "Grass_Tuft_02"), Model("Plants", "Fern_01"), Model("Plants", "Flower_Wild_01") }
                     : new[] { Model("Plants", "Grass_Tuft_01"), Model("Plants", "Grass_Tuft_02"), Model("Plants", "Flower_Patch_01"), Model("Plants", "Flower_Daisy_01") })
                     .Where(m => m).ToArray();
                 int plantCount = 0, maxPlants = Mathf.RoundToInt(Mathf.Clamp(area / 600f, 560f, 1200f));
@@ -1689,6 +1730,28 @@ namespace ConductorChaos.EditorTools
                 }
                 log.AppendLine($"Natuur: {planted} bomen en struiken ({onCliffs} op kliffen), {rocks} rotsen, {plantCount} planten.");
             }
+
+            // Boslevel (#246): grote loofbomen voor een echt bos (boskit, nature_v4) met wat naaldbomen en struiken ertussen.
+            // De vrije afstand tot het spoor is kruinstraal + ruim 2,5 m.
+            (GameObject model, float weight, float clearance)[] ForestTrees() => new (GameObject model, float weight, float clearance)[]
+            {
+                (Model("Trees", "Tree_Beech_Tall_01"), 1.0f, 6.8f),
+                (Model("Trees", "Tree_Beech_Tall_02"), 0.8f, 7.2f),
+                (Model("Trees", "Tree_Oak_Giant_01"), 0.3f, 7.6f),
+                (Model("Trees", "Tree_Linden_01"), 0.5f, 5.6f),
+                (Model("Trees", "Tree_Maple_01"), 0.45f, 5.6f),
+                (Model("Trees", "Tree_Maple_Autumn_01"), 0.18f, 5.6f),
+                (Model("Trees", "Tree_Maple_Red_01"), 0.1f, 5.6f),
+                (Model("Trees", "Tree_Chestnut_01"), 0.28f, 6.2f),
+                (Model("Trees", "Tree_Poplar_01"), 0.2f, 4.4f),
+                (Model("Trees", "Tree_Beech_Young_01"), 0.7f, 4.2f),
+                (Model("Trees", "Tree_Dead_01"), 0.1f, 4.5f),
+                (Model("Trees", "Tree_Oak_01"), 0.35f, 5.2f),
+                (Model("Trees", "Tree_Birch_01"), 0.25f, 4.4f),
+                (Model("Trees", "Tree_Pine_Large_01"), 0.2f, 7.5f),
+                (Model("Trees", "Bush_Round_02"), 0.5f, 3.6f),
+                (Model("Trees", "Bush_01"), 0.3f, 3.6f),
+            };
 
             static bool CliffTop(Vector3 p, out float y, out Vector3 normal)
             {

@@ -188,7 +188,7 @@ namespace ConductorChaos.UI
             bool hasNext = next != null && Application.CanStreamedLevelBeLoaded(next);
             actionText.text = briefing ? (intro ? "Begin training" : "Begin dienst") :
                 hasNext ? (next == ServiceRun.FirstLevelScene ? "Naar level 1" : next == ServiceRun.SecondLevelScene ? "Naar level 2" :
-                    next == ServiceRun.ThirdLevelScene ? "Naar level 3" : next == ServiceRun.FourthLevelScene ? "Naar level 4" : "Volgende dienst") :
+                    next == ServiceRun.ThirdLevelScene ? "Naar level 3" : next == ServiceRun.FourthLevelScene ? "Naar level 4" : next == ServiceRun.FifthLevelScene ? "Naar level 5" : "Volgende dienst") :
                 "Opnieuw spelen";
             waitText.text = loading ? "Wachten op de crew…" : "Wachten op de host…";
             waitText.gameObject.SetActive(!advance.gameObject.activeSelf);

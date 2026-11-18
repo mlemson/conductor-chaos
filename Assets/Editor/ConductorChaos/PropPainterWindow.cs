@@ -97,6 +97,12 @@ namespace ConductorChaos.EditorTools
                 if (GUILayout.Button("Bloemen + gras")) LoadPreset("Plants");
                 if (GUILayout.Button("Stenen kliffen")) LoadPreset("StoneCliffs");
             }
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("Loofbos")) LoadPreset("Forest");
+                if (GUILayout.Button("Bosgrond")) LoadPreset("ForestFloor");
+                if (GUILayout.Button("Bloemenperk")) LoadPreset("FlowerBeds");
+            }
 
             if (entries.Any(e => e.enabled && e.prefab && CategoryOf(e.prefab) == "Cliffs"))
             {
@@ -274,8 +280,24 @@ namespace ConductorChaos.EditorTools
                     spacing = 0.5f;
                     break;
                 case "Plants":
-                    Add("Plants", "Grass_Tuft", 1.5f); Add("Plants", "Flower", 1f);
+                    Add("Plants", "Grass_Tuft", 1.5f); Add("Plants", "Flower_", 1f);   // geen perkjes: die zet je los (Bloemenperk)
                     Set(radius: 3, per: 6, dist: 0.35f, scale: new Vector2(0.8f, 1.3f), height: new Vector2(0.8f, 1.3f), yaw: 0, align: 0.5f, sink: 0.02f, colliders: false);
+                    break;
+                case "Forest":                                  // grote loofbomen (boskit) met jonge boompjes en struiken ertussen
+                    foreach (var (name, w) in new[] { ("Tree_Beech_Tall", 1.0f), ("Tree_Oak_Giant", 0.3f), ("Tree_Linden", 0.5f), ("Tree_Maple", 0.25f),
+                                                     ("Tree_Chestnut", 0.3f), ("Tree_Poplar", 0.2f), ("Tree_Beech_Young", 0.6f), ("Tree_Oak_0", 0.35f),
+                                                     ("Tree_Birch_01", 0.25f), ("Tree_Dead", 0.1f), ("Bush_Round", 0.4f) })
+                        Add("Trees", name, w);
+                    Set(radius: 10, per: 3, dist: 4.2f, scale: new Vector2(0.85f, 1.25f), height: new Vector2(0.9f, 1.15f), yaw: 0, align: 0f, sink: 0.12f, colliders: true);
+                    break;
+                case "ForestFloor":                             // varens, paddenstoelen, stronken onder de bomen
+                    Add("Plants", "Fern", 1.2f); Add("Plants", "Mushroom", 0.5f); Add("Wood", "Stump", 0.25f);
+                    Set(radius: 4, per: 4, dist: 0.9f, scale: new Vector2(0.8f, 1.3f), height: new Vector2(0.9f, 1.2f), yaw: 0, align: 0.4f, sink: 0.03f, colliders: true);
+                    break;
+                case "FlowerBeds":                              // perkjes direct op het gras: één per klik
+                    Add("Plants", "FlowerBed_Grass");
+                    Set(radius: 1, per: 1, dist: 1.5f, scale: new Vector2(0.9f, 1.15f), height: new Vector2(0.9f, 1.1f), yaw: 0, align: 0.6f, sink: 0f, colliders: false);
+                    singleMode = true;
                     break;
                 case "Mixed":
                     Add("Trees", "Tree_Pine", 1.2f); Add("Trees", "Bush", 0.7f); Add("Rocks", null, 0.5f); Add("Plants", "Grass_Tuft", 0.6f);

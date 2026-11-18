@@ -1,7 +1,8 @@
-// Conductor Chaos — natuur v3 aanvullen in bestaande levels (issues #240, #241). Zet loofbomen, struiken, varens,
-// paddenstoelen, omgevallen stammen, bloemenperken en waterprops (lelies, riet, eendjes, steiger, roeibootje) in de open
-// scène, zonder het level opnieuw te bouwen. Alles komt onder één root ('Natuur v3'); opnieuw draaien vervangt die root,
-// dus het is veilig om het vaker te doen. Menu: Tools > Conductor Chaos > Natuur v3 aanvullen.
+// Conductor Chaos — natuur v3 (issues #240, #241, #246). Zet loofbomen, struiken, varens, paddenstoelen, omgevallen stammen,
+// bloemenperkjes (op het gras, zonder bak) en waterprops (lelies, riet, eendjes, steiger, roeibootje) in een scène. Alles komt
+// onder één root ('Natuur v3'); opnieuw draaien vervangt die root. Level 1-3 houden hun eigen stijl: 'Natuur v3 weghalen
+// (level 1-3)' haalt deze root daar weer weg. Het boslevel (level 5) roept DressForest aan vanuit CliffLevelBuilder: daar
+// staan de bomen al en komt er een dichte bosgrond bij.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,8 +33,8 @@ namespace ConductorChaos.EditorTools
             Debug.Log(log);
         }
 
-        [MenuItem("Tools/Conductor Chaos/Natuur v3 aanvullen (level 1-3, opslaan)")]
-        public static void DressLevels()
+        [MenuItem("Tools/Conductor Chaos/Natuur v3 weghalen (level 1-3, opslaan)")]
+        public static void RemoveFromLevels()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode || !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             var logs = new List<string>();
@@ -42,19 +43,26 @@ namespace ConductorChaos.EditorTools
                 string path = $"Assets/Scenes/{name}.unity";
                 if (!AssetDatabase.LoadAssetAtPath<SceneAsset>(path)) { logs.Add($"{name}: scène ontbreekt."); continue; }
                 var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
-                logs.Add(Dress(scene));
-                EditorSceneManager.SaveScene(scene);
+                var roots = scene.GetRootGameObjects().Where(r => r.name == RootName).ToArray();
+                foreach (var r in roots) Object.DestroyImmediate(r);
+                if (roots.Length > 0) EditorSceneManager.SaveScene(scene);
+                logs.Add($"{name}: {(roots.Length > 0 ? "natuur v3 weggehaald" : "had geen natuur v3")}.");
             }
             Debug.Log(string.Join("\n", logs));
         }
 
         static GameObject Model(string folder, string name) => AssetDatabase.LoadAssetAtPath<GameObject>($"{EnvDir}/{folder}/{name}.fbx");
 
-        public static string Dress(Scene scene)
+        public static string Dress(Scene scene) => Dress(scene, false);
+
+        /// <summary>Boslevel: geen extra bomen (die plant de levelbouwer), wel een volle bosgrond, wilgen, perkjes en water.</summary>
+        public static string DressForest(Scene scene) => Dress(scene, true);
+
+        static string Dress(Scene scene, bool forest)
         {
             foreach (var old in scene.GetRootGameObjects().Where(r => r.name == RootName).ToArray()) Object.DestroyImmediate(old);
             Physics.SyncTransforms();
-            var d = new Context(scene);
+            var d = new Context(scene, forest);
             d.Run();
             return $"{scene.name}: {d.Summary}";
         }
@@ -62,6 +70,7 @@ namespace ConductorChaos.EditorTools
         sealed class Context
         {
             readonly Scene scene;
+            readonly bool forest;
             readonly Random rng;
             readonly Transform root;
             readonly List<Vector3> track = new();
@@ -72,9 +81,10 @@ namespace ConductorChaos.EditorTools
             Bounds area;
             readonly Dictionary<string, int> counts = new();
 
-            public Context(Scene scene)
+            public Context(Scene scene, bool forest)
             {
                 this.scene = scene;
+                this.forest = forest;
                 rng = new Random(scene.name.GetHashCode() ^ 0x240241);
                 var go = new GameObject(RootName);
                 SceneManager.MoveGameObjectToScene(go, scene);
@@ -108,7 +118,7 @@ namespace ConductorChaos.EditorTools
                     foreach (var p in track) area.Encapsulate(p);
                     area.Expand(new Vector3(160f, 0f, 160f));
                 }
-                Trees();
+                if (forest) Willows(); else Trees();
                 Undergrowth();
                 FlowerBeds();
                 Water();
@@ -229,7 +239,12 @@ namespace ConductorChaos.EditorTools
                             dTrack < 40f, bush ? .08f : .1f))
                     { placed++; Count(bush ? "struiken" : "loofbomen"); }
                 }
-                // treurwilgen aan het water
+                Willows();
+            }
+
+            // treurwilgen aan het water
+            void Willows()
+            {
                 var willow = Model("Trees", "Tree_Willow_01");
                 foreach (var water in waters.Take(6))
                 {
@@ -258,7 +273,11 @@ namespace ConductorChaos.EditorTools
                 var trees = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Transform>(true))
                     .Where(t => t.name.StartsWith("Tree_") && t.GetComponent<PaintedProp>()).Select(t => t.position).ToList();
                 if (trees.Count == 0) trees.AddRange(taken);
-                int maxSmall = Mathf.Clamp(trees.Count / 3, 40, 220), maxLogs = Mathf.Clamp(trees.Count / 40, 6, 18);
+                if (forest)                                                   // dichte bosgrond: veel meer varens en stammen
+                    small.AddRange(new[] { (Model("Plants", "Fern_02"), .6f), (Model("Trees", "Bush_Berry_01"), .25f), (Model("Wood", "Stump_01"), .2f) }
+                        .Where(t => t.Item1));
+                int maxSmall = forest ? Mathf.Clamp(trees.Count, 300, 1600) : Mathf.Clamp(trees.Count / 3, 40, 220);
+                int maxLogs = forest ? Mathf.Clamp(trees.Count / 18, 20, 90) : Mathf.Clamp(trees.Count / 40, 6, 18);
                 for (int i = 0, placed = 0; i < maxSmall * 10 && placed < maxSmall && small.Count > 0; i++)
                 {
                     var t = trees[rng.Next(trees.Count)];
@@ -266,8 +285,12 @@ namespace ConductorChaos.EditorTools
                     var p = t + new Vector3(Mathf.Cos(a) * r, 0f, Mathf.Sin(a) * r);
                     if (TrackDistance(p) < 3.8f || NearStation(p, 6f) || !Free(p, .9f) || !Ground(ref p, out float slope) || slope > 22f) continue;
                     var model = Pick(small);
-                    if (Place(model, "Bosgrond", p, (float)rng.NextDouble() * 360f, .8f + (float)rng.NextDouble() * .5f, model.name.StartsWith("Stump"), .03f))
-                    { placed++; Count(model.name.StartsWith("Fern") ? "varens" : model.name.StartsWith("Stump") ? "stronken" : "paddenstoelen"); }
+                    bool solid = model.name.StartsWith("Stump") || model.name.StartsWith("Bush");
+                    if (Place(model, "Bosgrond", p, (float)rng.NextDouble() * 360f, .8f + (float)rng.NextDouble() * .5f, solid, solid ? .08f : .03f))
+                    {
+                        placed++;
+                        Count(model.name.StartsWith("Fern") ? "varens" : model.name.StartsWith("Stump") ? "stronken" : model.name.StartsWith("Bush") ? "struiken" : "paddenstoelen");
+                    }
                 }
                 for (int i = 0, placed = 0; i < maxLogs * 30 && placed < maxLogs && logs.Length > 0; i++)
                 {
@@ -282,7 +305,9 @@ namespace ConductorChaos.EditorTools
             // ---------------------------------------------------------------- bloemen
             void FlowerBeds()
             {
-                var beds = new[] { Model("Plants", "FlowerBed_Round_01"), Model("Plants", "FlowerBed_Long_01") }.Where(m => m).ToArray();
+                // perkjes direct op het gras (geen bak of aarden bult, #245)
+                var beds = new[] { Model("Plants", "FlowerBed_Grass_Round_01"), Model("Plants", "FlowerBed_Grass_Round_02"), Model("Plants", "FlowerBed_Grass_Long_01") }
+                    .Where(m => m).ToArray();
                 var patches = new[] { Model("Plants", "Flower_Tulips_01"), Model("Plants", "Flower_Wild_01") }.Where(m => m).ToArray();
                 foreach (var s in stations)
                 {
@@ -292,7 +317,7 @@ namespace ConductorChaos.EditorTools
                         float a = (float)rng.NextDouble() * Mathf.PI * 2f, r = 7f + (float)rng.NextDouble() * 7f;
                         var p = s + new Vector3(Mathf.Cos(a) * r, 0f, Mathf.Sin(a) * r);
                         if (TrackDistance(p) < 4.2f || !Free(p, 2.2f) || !Ground(ref p, out float slope) || slope > 8f) continue;
-                        if (Place(beds[rng.Next(beds.Length)], "Bloemenperken", p, (float)rng.NextDouble() * 360f, 1f, true, .02f)) { done++; Count("bloemenperken"); }
+                        if (Place(beds[rng.Next(beds.Length)], "Bloemenperken", p, (float)rng.NextDouble() * 360f, 1f, false, 0f)) { done++; Count("bloemenperken"); }
                     }
                 }
                 int max = Mathf.RoundToInt(Mathf.Clamp(track.Count / 3f, 30f, 120f));

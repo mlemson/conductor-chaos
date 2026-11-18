@@ -35,6 +35,7 @@ import meshkit as mk  # noqa: E402
 import unity_assets  # noqa: E402
 sys.path.insert(0, HERE)
 import nature_v3  # noqa: E402
+import nature_v4  # noqa: E402
 
 PALETTE = json.load(open(os.path.join(ROOT, "Docs", "References", "palette.json"), encoding="utf-8"))
 R = {k: v["ramp"] for g in PALETTE["groups"].values() for k, v in g.items()}
@@ -82,6 +83,7 @@ MATERIALS = {
 
 
 MATERIALS.update(nature_v3.materials(R))         # natuurkit v3, water- en winterprops (#240-#242)
+MATERIALS.update(nature_v4.materials(R))         # boskit: grote loofbomen en perkjes op het gras (#244, #245)
 
 
 # ------------------------------------------------------------------ helpers
@@ -661,6 +663,7 @@ def build_all(only=None):
     A["Sky/Cloud_03"] = (cloud(rng, 3, 3.0), 60, 0.6)
     # natuurkit v3, waterprops en winterkit: eigen reeksen per sectie (nature_v3.build)
     A.update(nature_v3.build(lambda k: np.random.default_rng([2026, k]), grass_tuft))
+    A.update(nature_v4.build(lambda k: np.random.default_rng([2026, k])))
     if only:
         A = {rel: v for rel, v in A.items() if any(o in rel for o in only)}
 

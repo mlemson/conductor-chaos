@@ -282,15 +282,15 @@ namespace ConductorChaos.UI.Depot
                 else if (i > 0 && DepotProgress.LevelEverWon(i)) DepotUi.Chip(card, "Gehaald", cw - 22, 22, ChaosUI.Green, DepotUi.GreenText, "ready", 13, 30, true);
                 else if (i == next) DepotUi.Chip(card, "Volgende", cw - 22, 22, ChaosUI.Gold, ChaosUI.Ink, null, 13, 30, true);
 
-                DepotUi.Txt(card, info.Name, 20, 254, cw - 40, 40, cw < 340 ? 26 : 30, ChaosUI.Paper, true);
+                DepotUi.Txt(card, info.Name, 20, 254, cw - 40, 40, cw < 280 ? 22 : cw < 340 ? 26 : 30, ChaosUI.Paper, true);
                 string from = ServiceStationName(i, false), to = ServiceStationName(i, true);
-                DepotUi.Txt(card, string.IsNullOrEmpty(to) ? from : $"{from} → {to}", 20, 298, cw - 40, 24, 17, ChaosUI.Paper);
+                DepotUi.Txt(card, string.IsNullOrEmpty(to) ? from : $"{from} → {to}", 20, 298, cw - 40, 24, cw < 280 ? 15 : 17, ChaosUI.Paper);
                 bool roomy = cw >= 340f;
                 if (roomy) DepotUi.Txt(card, "Moeilijkheid", 20, 340, 112, 22, 14, ChaosUI.Muted);
-                DepotUi.Segments(card, roomy ? 128 : 20, 345, roomy ? 108 : 100, 12, info.Difficulty, 5);
+                DepotUi.Segments(card, roomy ? 128 : 20, 345, roomy ? 108 : cw < 280 ? 84 : 100, 12, info.Difficulty, 5);
                 if (i >= 2)
                     DepotUi.Txt(card, info.Distance, cw - 130, 340, 110, 22, 14, ChaosUI.Muted, false, TextAnchor.MiddleRight);
-                DepotUi.Txt(card, info.Summary, 20, 380, cw - 40, 52, cw < 340 ? 15 : 16, ChaosUI.Muted, false, TextAnchor.UpperLeft);
+                DepotUi.Txt(card, info.Summary, 20, 380, cw - 40, 66, cw < 280 ? 14 : cw < 340 ? 15 : 16, ChaosUI.Muted, false, TextAnchor.UpperLeft);
                 int best = DepotProgress.BestSecondsLeft(i);
                 if (i > 0 && best >= 0)
                 {
