@@ -907,8 +907,6 @@ namespace ConductorChaos.EditorTools
                     layers[1] = StylizedTerrainTools.EnsureWinterLayers()[0];
                 data = new TerrainData { heightmapResolution = res, alphamapResolution = longest > 820f ? 2048 : 1024 };
                 data.size = terrainSize;
-                data.terrainLayers = layers;
-
                 Progress("Terrein: afstandsvelden", 0.25f);
                 far = new FarField(samples, terrainOrigin, terrainSize, 6f);
                 regional = new Regional(samples, terrainOrigin, terrainSize, 8f, departureY);
@@ -929,6 +927,7 @@ namespace ConductorChaos.EditorTools
                 }
                 data.SetHeights(0, 0, heights);
                 AssetDatabase.CreateAsset(data, DataFolder(spec) + $"/Level{spec.number:00}_Terrain.asset");
+                data.terrainLayers = layers;
                 PaintLayers(layers.Length, noiseX, noiseZ);
                 EditorUtility.SetDirty(data);
                 foreach (var texture in data.alphamapTextures) EditorUtility.SetDirty(texture);
