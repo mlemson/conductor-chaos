@@ -137,8 +137,13 @@ namespace ConductorChaos.EditorTools
         internal static void DressEaglecrest(ServiceStation station)
         {
             var root = station.transform.root;
-            if (root.Find(EaglecrestBuilding)) return;
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/Prefabs/Station/Station_Building_Small.prefab");
+            var existing = root.Find(EaglecrestBuilding);
+            if (existing)
+            {
+                WinterStationRoofs.AddTo(existing.gameObject, "Station_Building_Small");
+                return;
+            }
+            var prefab = WinterStationRoofs.GetVariant("Station_Building_Small");
             var font = StationSignTools.GetFont();
             if (!prefab || !font) throw new InvalidOperationException("Het stationsgebouw of de bordletters voor Eaglecrest ontbreken.");
 
@@ -449,6 +454,9 @@ namespace ConductorChaos.EditorTools
                 Progress("Water en achtergrond", 0.9f);
                 foreach (var c in canyons) BuildRiver(c);
                 BuildBackdrop();
+                if (spec.departureName == "Eaglecrest") EaglecrestSurroundings.Apply(departure, terrain);
+                if (spec.arrivalName == "Eaglecrest") EaglecrestSurroundings.Apply(arrival, terrain);
+                if (spec.winter) WinterStationRoofs.AddTo(arrival.gameObject, "Station_Building");
                 Selection.activeGameObject = run.gameObject;
             }
 
