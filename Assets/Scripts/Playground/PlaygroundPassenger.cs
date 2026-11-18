@@ -21,7 +21,7 @@ namespace ConductorChaos.Playground
         private Rigidbody body, leftArm, rightArm;
         private Transform leftArmVisual, rightArmVisual;
         private Pose leftArmRest, rightArmRest;
-        private bool boarding;
+        private bool boarding, seated;
         private float boardingStride;
         private ConfigurableJoint leftShoulder, rightShoulder;
         private CapsuleCollider leftCollider, rightCollider;
@@ -72,6 +72,7 @@ namespace ConductorChaos.Playground
             leftArmRest = new Pose(left.localPosition, left.localRotation);
             rightArmRest = new Pose(right.localPosition, right.localRotation);
             boarding = false;
+            seated = false;
             boardingStride = 0f;
             leftArm = MakeArm(left, out leftShoulder, out leftCollider);
             rightArm = MakeArm(right, out rightShoulder, out rightCollider);
@@ -139,7 +140,11 @@ namespace ConductorChaos.Playground
             Destroy(arm);
         }
 
-        internal void PoseSeated() => PoseLegs(-72f, -72f);
+        internal void PoseSeated()
+        {
+            seated = true;
+            PoseLegs(-72f, -72f);
+        }
 
         private void PoseLegs(float left, float right)
         {
@@ -151,6 +156,8 @@ namespace ConductorChaos.Playground
 
         internal bool WalkToward(Vector3 destination)
         {
+            if (IsFrozen) return false;
+            if (!body.isKinematic) body.isKinematic = true;
             Vector3 from = body.position;
             Vector3 delta = destination - from;
             Vector3 flat = Vector3.ProjectOnPlane(delta, Vector3.up);
@@ -181,26 +188,38 @@ namespace ConductorChaos.Playground
             if (WarmZone.Contains(body.position)) rate = -1f / winter.ThawSeconds;
             else
             {
-                var train = TrainUnder();
-                rate = !train ? 1f / winter.FreezeSeconds
-                    : train.ServiceDoorsClosed ? -1f / winter.ThawSeconds : winter.OpenDoorFactor / winter.FreezeSeconds;
+                var floor = ShelteredVehicle();
+                var train = TrainDrive.FindControlOwner(floor);
+                rate = !floor ? 1f / winter.FreezeSeconds
+                    : train && train.DoorsClosedOn(floor) ? -1f / winter.ThawSeconds : winter.OpenDoorFactor / winter.FreezeSeconds;
             }
             cold = Mathf.Clamp01(cold + rate * Time.fixedDeltaTime);
-            if (!frozen.Value && cold >= 1f) frozen.Value = true;
+            if (!frozen.Value && cold >= 1f)
+            {
+                frozen.Value = true;
+                if (boarding && !seated) body.isKinematic = false;
+            }
             else if (frozen.Value && cold <= .55f) frozen.Value = false;
             byte percent = (byte)Mathf.RoundToInt(cold * 100f);
             if (Mathf.Abs(percent - coldPercent.Value) >= 2 || (percent == 0) != (coldPercent.Value == 0)) coldPercent.Value = percent;
         }
 
-        private TrainDrive TrainUnder()
+        private Rigidbody ShelteredVehicle()
         {
             int count = Physics.RaycastNonAlloc(body.position + Vector3.up * .4f, Vector3.down, groundHits, 1.3f, ~0, QueryTriggerInteraction.Ignore);
+            Rigidbody floor = null;
+            float nearest = float.PositiveInfinity;
             for (int i = 0; i < count; i++)
             {
-                var hit = groundHits[i].rigidbody;
-                if (hit && hit != body && !hit.transform.IsChildOf(transform) && TrainDrive.IsTrainBody(hit))
-                    return TrainDrive.FindControlOwner(hit);
+                var hit = groundHits[i];
+                if (hit.distance >= nearest || hit.normal.y < .45f || !TrainDrive.IsTrainBody(hit.rigidbody)) continue;
+                floor = hit.rigidbody;
+                nearest = hit.distance;
             }
+            if (!floor) return null;
+            count = Physics.RaycastNonAlloc(body.position + Vector3.up * .45f, Vector3.up, groundHits, 3.5f, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+                if (groundHits[i].rigidbody == floor) return floor;
             return null;
         }
 

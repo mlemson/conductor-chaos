@@ -23,6 +23,16 @@ namespace ConductorChaos.Playground
 
         private NetworkList<float> openings;
         private TrainVehicleDoors doors;
+        internal bool DoorsClosed
+        {
+            get
+            {
+                if (doors == null || openings == null) return true;
+                for (int i = 0; i < doors.Count && i < openings.Count; i++)
+                    if (Mathf.Abs(openings[i] - doors.Initial(i)) > .08f) return false;
+                return true;
+            }
+        }
 
         private void Awake() => openings = new NetworkList<float>();
 

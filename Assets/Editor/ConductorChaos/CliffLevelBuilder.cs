@@ -457,6 +457,7 @@ namespace ConductorChaos.EditorTools
                 if (spec.departureName == "Eaglecrest") EaglecrestSurroundings.Apply(departure, terrain);
                 if (spec.arrivalName == "Eaglecrest") EaglecrestSurroundings.Apply(arrival, terrain);
                 if (spec.winter) WinterStationRoofs.AddTo(arrival.gameObject, "Station_Building");
+                if (spec.winter || spec.forest) WinterServiceAuthoring.Apply(scene, spec.winter);
                 Selection.activeGameObject = run.gameObject;
             }
 

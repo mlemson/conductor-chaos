@@ -13,7 +13,7 @@ namespace ConductorChaos.Nature
         [Tooltip("Zoveel seconden in de warmte en een bevroren reiziger is helemaal ontdooid.")]
         [SerializeField, Min(3f)] float thawSeconds = 25f;
         [Tooltip("In een wagon met een open deur koelt het zo veel langzamer af als buiten (0..1).")]
-        [SerializeField, Range(0f, 1f)] float openDoorFactor = .45f;
+        [SerializeField, Range(0f, 1f)] float openDoorFactor = 1f;
 
         static WinterLevel active;
 

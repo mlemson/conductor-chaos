@@ -358,6 +358,14 @@ namespace ConductorChaos.Playground
         private bool SteamRepairReady => ServiceSpeed < .22f && Mathf.Abs(throttle.Value) < .08f && steamHeat.Value <= .45f;
         internal Vector3 ServiceRailPosition => transform.TransformPoint(0f, -TrackPiece.RailToTrainPivot, railCenterOffset);
         internal bool ServiceDerailed => derailed;
+        internal bool DoorsClosedOn(Rigidbody vehicle)
+        {
+            if (vehicle == serviceCoach && !ServiceDoorsClosed) return false;
+            for (int i = 0; i < endDoors.Count; i++)
+                if (endDoors[i].Vehicle == vehicle && endDoors[i].Opening > .08f) return false;
+            return !vehicle.TryGetComponent<TrainBreakdowns>(out var variants) || variants.DoorsClosed;
+        }
+
         internal bool ServiceDoorsClosed
         {
             get
@@ -411,6 +419,7 @@ namespace ConductorChaos.Playground
         private readonly Dictionary<TrackPiece, TrackPiece> following = new();
         private TrackPiece[] railPieces = System.Array.Empty<TrackPiece>();
         private readonly RaycastHit[] railObstacleHits = new RaycastHit[32];
+        private readonly Collider[] lowRailObstacleHits = new Collider[32];
         private readonly Dictionary<Rigidbody, LooseWagon> looseWagons = new();
         private readonly List<Rigidbody> coupledWagons = new();
         private readonly NetworkVariable<bool> serviceCoachVisible = new(true);
@@ -1003,6 +1012,12 @@ namespace ConductorChaos.Playground
             Vector3 move = end - start;
             float length = move.magnitude;
             if (length <= 0.0001f) return false;
+            Vector3 lowCenter = (start + end) * .5f - facing * Vector3.up * .97f;
+            int lowCount = Physics.OverlapBoxNonAlloc(lowCenter, new Vector3(1.05f, .43f, length * .5f + .12f),
+                lowRailObstacleHits, facing, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < lowCount; i++)
+                if (lowRailObstacleHits[i].attachedRigidbody is { } obstacle &&
+                    obstacle.TryGetComponent<LowTrackObstacle>(out _)) return true;
             int count = Physics.BoxCastNonAlloc(start, new Vector3(1.05f, 0.55f, 0.06f), move / length,
                 railObstacleHits, facing, length + 0.05f, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
