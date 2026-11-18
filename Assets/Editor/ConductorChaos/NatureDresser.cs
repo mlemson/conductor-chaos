@@ -331,13 +331,17 @@ namespace ConductorChaos.EditorTools
                 var lilies = new[] { Model("Water", "Lily_Pads_01"), Model("Water", "Lily_Pad_Single") }.Where(m => m).ToArray();
                 var reeds = new[] { Model("Water", "Reeds_01"), Model("Water", "Cattails_01") }.Where(m => m).ToArray();
                 var ducks = new[] { Model("Water", "Duck_01"), Model("Water", "Duck_02") }.Where(m => m).ToArray();
+                int duckCount = 0;
                 foreach (var water in waters)
                 {
                     float a = water.size.x * water.size.y;
+                    // rivieren bestaan uit veel korte stukken: daar minder per stuk, anders staat het water vol
+                    float share = water.joinRiverSections ? 0.35f : 1f;
                     float y = water.transform.position.y;
                     int nLily = Mathf.Clamp(Mathf.RoundToInt(a / 60f), 1, 8), nReed = Mathf.Clamp(Mathf.RoundToInt((water.size.x + water.size.y) / 6f), 2, 12);
                     for (int k = 0; k < nLily && lilies.Length > 0; k++)
                     {
+                        if (rng.NextDouble() > share) continue;
                         var p = OnWater(water, .6f);
                         if (TrackDistance(p) < 3f || !Free(p, 1.2f)) continue;
                         var go = Place(lilies[rng.Next(lilies.Length)], "Waterlelies", new Vector3(p.x, y + .01f, p.z), (float)rng.NextDouble() * 360f, .9f + (float)rng.NextDouble() * .4f, false, 0f);
@@ -345,13 +349,14 @@ namespace ConductorChaos.EditorTools
                     }
                     for (int k = 0; k < nReed && reeds.Length > 0; k++)
                     {
+                        if (rng.NextDouble() > share + 0.15f) continue;
                         var p = EdgePoint(water, -.25f);
                         if (TrackDistance(p) < 3.5f || !Free(p, .9f)) continue;
                         var go = Place(reeds[rng.Next(reeds.Length)], "Riet", new Vector3(p.x, y, p.z), (float)rng.NextDouble() * 360f, .9f + (float)rng.NextDouble() * .4f, false, .05f);
                         if (go) { go.GetComponent<PaintedProp>().followGround = false; Count("rietpollen"); }
                     }
-                    if (a >= 40f && ducks.Length > 0)
-                        for (int k = 0; k < Mathf.Clamp(Mathf.RoundToInt(a / 120f), 1, 3); k++)
+                    if (a >= 40f && ducks.Length > 0 && rng.NextDouble() < share)
+                        for (int k = 0; k < Mathf.Clamp(Mathf.RoundToInt(a / 120f), 1, 3) && duckCount < 8; k++, duckCount++)
                         {
                             var p = OnWater(water, 1f);
                             var go = Place(ducks[rng.Next(ducks.Length)], "Eendjes", new Vector3(p.x, y, p.z), (float)rng.NextDouble() * 360f, 1f, false, 0f);

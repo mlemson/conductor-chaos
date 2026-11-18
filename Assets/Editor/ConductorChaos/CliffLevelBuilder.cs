@@ -1591,7 +1591,6 @@ namespace ConductorChaos.EditorTools
                     (Model("Winter", "Tree_Pine_Snow_Medium"), 1.0f, 6.5f),
                     (Model("Winter", "Tree_Pine_Snow_Large"), 0.7f, 7.5f),
                     (Model("Winter", "Tree_Pine_Snow_Small"), 0.9f, 5.5f),
-                    (Model("Trees", "Tree_Birch_01"), 0.15f, 7f),
                 } : new (GameObject model, float weight, float clearance)[]
                 {
                     (Model("Trees", "Tree_Pine_Medium_01"), 1.0f, 6.5f),
@@ -1669,7 +1668,7 @@ namespace ConductorChaos.EditorTools
                 }
 
                 // gras en bloemen op vlakke stukken langs het spoor, rond de stations en op de kloofbodem (geen colliders)
-                var plants = (spec.winter ? new[] { Model("Winter", "Snow_Drift_01"), Model("Winter", "Snow_Drift_01"), Model("Winter", "Snow_Drift_02"), Model("Plants", "Grass_Tuft_01") }
+                var plants = (spec.winter ? new[] { Model("Winter", "Snow_Drift_01"), Model("Winter", "Snow_Drift_01"), Model("Winter", "Snow_Drift_02"), Model("Winter", "Rock_Snow_Medium") }
                     : new[] { Model("Plants", "Grass_Tuft_01"), Model("Plants", "Grass_Tuft_02"), Model("Plants", "Flower_Patch_01"), Model("Plants", "Flower_Daisy_01") })
                     .Where(m => m).ToArray();
                 int plantCount = 0, maxPlants = Mathf.RoundToInt(Mathf.Clamp(area / 600f, 560f, 1200f));
