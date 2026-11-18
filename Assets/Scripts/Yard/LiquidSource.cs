@@ -42,11 +42,15 @@ namespace ConductorChaos.Yard
         float amount, puddleSize, spawnTimer;
         Vector3 impact, impactNormal = Vector3.up;
         bool hitGround;
-        LiquidTank target;
+        ILiquidInlet target;
         Collider[] own;
 
         public LiquidKind Kind => kind;
-        public bool Flowing => outlet && (!valve || valve.Normalized >= openAt) && (!gate || gate.Normalized >= gateAt);
+        public float LitersPerSecond => litersPerSecond;
+        public Vector3 OutletPosition => outlet ? outlet.position : transform.position;
+        /// <summary>Extra kraan vanuit code (jerrycan gekanteld, spuitmond vastgehouden). Standaard open.</summary>
+        public bool Open { get; set; } = true;
+        public bool Flowing => Open && outlet && (!valve || valve.Normalized >= openAt) && (!gate || gate.Normalized >= gateAt);
 
         public void Setup(LiquidKind liquid, Transform from, Vector3 direction, HandLever tap, HandLever requires, float rate, float speed, float width)
         {
@@ -79,7 +83,7 @@ namespace ConductorChaos.Yard
 
         void FixedUpdate()
         {
-            if (target && amount > 0.5f && Authority) target.Pour(litersPerSecond * amount * Time.fixedDeltaTime, kind);
+            if (target != null && amount > 0.5f && Authority) target.Pour(litersPerSecond * amount * Time.fixedDeltaTime, kind);
         }
 
         void Update()
@@ -98,7 +102,7 @@ namespace ConductorChaos.Yard
             EnsureObjects();
             stream.SetActive(true);
             BuildTube();
-            UpdateDropletsAndPuddle(dt, hitGround && !target);
+            UpdateDropletsAndPuddle(dt, hitGround && target == null);
         }
 
         void Trace()
@@ -114,7 +118,7 @@ namespace ConductorChaos.Yard
                 Vector3 q = p + v * Step + 0.5f * Physics.gravity * Step * Step;
                 v += Physics.gravity * Step;
                 // in de vulopening van een tank?
-                foreach (var tank in LiquidTank.All)
+                foreach (var tank in LiquidInlets.All)
                 {
                     if (!tank.HatchOpen) continue;
                     Vector3 inlet = tank.Inlet;

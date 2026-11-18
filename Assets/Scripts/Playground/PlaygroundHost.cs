@@ -55,16 +55,17 @@ namespace ConductorChaos.Playground
             var freightPrefab = Resources.Load<GameObject>("ServiceFreightWagon");
             if (freightPrefab)
             {
-                bool registered = manager.NetworkConfig.Prefabs.Contains(freightPrefab);
-                foreach (var list in manager.NetworkConfig.Prefabs.NetworkPrefabsLists)
-                    registered |= list && list.Contains(freightPrefab);
-                if (!registered) manager.AddNetworkPrefab(freightPrefab);
+                RegisterNetworkPrefab(freightPrefab);
                 // Depot (#239): extra wagons gebruiken dezelfde prefab met een ander model.
                 manager.PrefabHandler.AddHandler(freightPrefab, new Depot.DepotWagonHandler(freightPrefab));
             }
             var bonusPassenger = Resources.Load<GameObject>(ServiceTickets.BonusPassengerResource);
-            if (bonusPassenger && !manager.NetworkConfig.Prefabs.Contains(bonusPassenger))
-                manager.AddNetworkPrefab(bonusPassenger);
+            if (bonusPassenger) RegisterNetworkPrefab(bonusPassenger);
+            foreach (string gearName in ServiceGear.ResourceNames)
+            {
+                var gear = Resources.Load<GameObject>(gearName);
+                if (gear) RegisterNetworkPrefab(gear);
+            }
             transport = GetComponent<UnityTransport>();
             manager.NetworkConfig.TickRate = (uint)Mathf.RoundToInt(1f / Time.fixedDeltaTime);
             manager.OnClientConnectedCallback += OnConnected;
@@ -72,6 +73,15 @@ namespace ConductorChaos.Playground
             manager.OnTransportFailure += OnTransportFailure;
             manager.NetworkConfig.ConnectionApproval = true;
             manager.ConnectionApprovalCallback += ApproveConnection;
+        }
+
+        private void RegisterNetworkPrefab(GameObject prefab)
+        {
+            var prefabs = manager.NetworkConfig.Prefabs;
+            if (prefabs.Contains(prefab)) return;
+            foreach (var list in prefabs.NetworkPrefabsLists)
+                if (list && list.Contains(prefab)) return;
+            manager.AddNetworkPrefab(prefab);
         }
 
         private void Start()

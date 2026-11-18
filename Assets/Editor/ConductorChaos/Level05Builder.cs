@@ -83,7 +83,6 @@ namespace ConductorChaos.EditorTools
             damages = new[] { new DamageSpec { tag = "damage", name = "Spoorschade in de beukenlaan", chance = 0.6f } },
             switchFaults = true,
             minimumIncidents = 2,
-            timeLimits = new[] { 900, 840, 780, 720 },
             extraWrenches = 2,
             mesas = 5,
         };

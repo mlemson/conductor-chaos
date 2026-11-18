@@ -206,7 +206,8 @@ namespace ConductorChaos.Stations
                 if (UnityEngine.Random.value < site.chance) mask |= bit;
             }
             if (railSites != 0) mask |= PickBit(railSites);
-            while (CountBits(mask) < minimumIncidents && (possible & ~mask) != 0)
+            int minimum = gameObject.scene.name == ServiceRun.FifthLevelScene ? Mathf.Max(3, minimumIncidents) : minimumIncidents;
+            while (CountBits(mask) < minimum && (possible & ~mask) != 0)
                 mask |= PickBit(possible & ~mask);
             planned.Value = mask;
         }

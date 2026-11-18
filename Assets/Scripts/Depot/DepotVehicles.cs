@@ -70,6 +70,7 @@ namespace ConductorChaos.Depot
             }
             drive.ConfigureWagons(kept.ToArray());
             drive.SetDepotPerformance(info.MaximumSpeed, info.AccelerationRate);
+            if (loadout.Train == TrainKind.Diesel) drive.EnableDieselTank();
 
             var root = drive.transform;
             if (root.TryGetComponent<Rigidbody>(out var body)) body.isKinematic = true;

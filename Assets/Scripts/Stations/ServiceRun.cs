@@ -19,6 +19,16 @@ namespace ConductorChaos.Stations
 
         /// <summary>Alle dienstscènes in speelvolgorde (introductie, level 1, 2, 3).</summary>
         public static readonly string[] ServiceScenes = { IntroScene, FirstLevelScene, SecondLevelScene, ThirdLevelScene, FourthLevelScene, FifthLevelScene };
+        // Complete campaign budgets, including the longer journeys. No inherited travel bonus.
+        private static readonly int[][] CampaignTimeLimits =
+        {
+            null,
+            new[] { 300, 270, 240, 210 },
+            new[] { 390, 360, 330, 300 },
+            new[] { 630, 585, 550, 515 },
+            new[] { 645, 600, 565, 530 },
+            new[] { 405, 375, 345, 320 }   // kortste route maar krapste marge: level 5 is het zwaarst
+        };
         public static bool IsServiceScene(string scene) => System.Array.IndexOf(ServiceScenes, scene) >= 0;
         private static readonly string[] CampaignStops = { "Whistleton", "Bumblewick", "Puddleford", "Craggleton", "Eaglecrest", "Frostbury", "Fernwood" };
 
@@ -54,7 +64,7 @@ namespace ConductorChaos.Stations
         [SerializeField] private bool rotateDepartureObjectives;
         [Tooltip("Tekst in de briefing, bv. LEVEL 2.")]
         [SerializeField] private string levelLabel = "LEVEL 1";
-        [Tooltip("Tijdslimiet per crewgrootte (1, 2, 3, 4+ spelers) in seconden. Leeg = de standaard van level 1.")]
+        [Tooltip("Tijdslimiet per crewgrootte voor scènes buiten de campagne. Leeg gebruikt de standaard van level 1.")]
         [SerializeField] private int[] timeLimits;
 
         private readonly NetworkVariable<RunPhase> phase = new();
@@ -90,6 +100,7 @@ namespace ConductorChaos.Stations
         private Vector3 initialTrainPosition;
         private float stopSeconds;
         private int breakdownsRemaining;
+        private bool gearSpawned;
         private float breakdownDelay;
         private Vector2 breakdownInterval;
         private double resultReadyAt;
@@ -188,6 +199,8 @@ namespace ConductorChaos.Stations
         public bool DoorsClosed => doorsClosed.Value;
         public bool PowerOn => powerOn.Value;
         public bool NeedsCoal => train.HasCoalFurnace && train.FuelFraction <= 0f;
+        public bool NeedsDiesel => train.HasDieselTank && train.FuelFraction <= 0f;
+        public bool LowDiesel => train.HasDieselTank && train.FuelFraction < .2f;
         /// <summary>Rijdt het regionale rijtuig (met deuren en zittende reizigers) mee in deze dienst?</summary>
         public bool HasPassengerCoach => train && train.ServiceCoachVisible;
         public bool EscortDoorOpen
@@ -258,9 +271,10 @@ namespace ConductorChaos.Stations
                 {
                     FirstLevelScene => (1, new Vector2(15f, 24f), Vector2.zero),
                     SecondLevelScene => (3, new Vector2(12f, 20f), new Vector2(22f, 35f)),
-                    ThirdLevelScene => (7, new Vector2(6f, 12f), new Vector2(10f, 18f)),
-                    FourthLevelScene => (6, new Vector2(8f, 14f), new Vector2(12f, 20f)),
-                    FifthLevelScene => (7, new Vector2(8f, 14f), new Vector2(11f, 18f)),
+                    // Per level meer storingen en kortere pauzes ertussen, zodat de moeilijkheid steeds oploopt.
+                    ThirdLevelScene => (5, new Vector2(8f, 14f), new Vector2(16f, 26f)),
+                    FourthLevelScene => (6, new Vector2(8f, 14f), new Vector2(13f, 22f)),
+                    FifthLevelScene => (7, new Vector2(6f, 12f), new Vector2(10f, 16f)),
                     _ => (0, Vector2.zero, Vector2.zero)
                 };
                 breakdownsRemaining = limit;
@@ -359,6 +373,12 @@ namespace ConductorChaos.Stations
                 }
                 cargoLoaded.Value = 0;
                 cargoTravelled.Value = 0;
+                if (depot && !gearSpawned)
+                {
+                    gearSpawned = true;
+                    ServiceGear.SpawnAtDeparture(departure, train.transform, Depot.DepotLoadout.Active.Train == Depot.TrainKind.Diesel,
+                        gameObject.scene.name == FourthLevelScene);
+                }
             }
             initialTrainPosition = train.transform.position;
             phase.Value = RunPhase.Briefing;
@@ -662,22 +682,20 @@ namespace ConductorChaos.Stations
         private void StartTimer()
         {
             int crew = NetworkManager.ConnectedClientsIds.Count;
-            bool soloLevelOne = IsSoloLevelOne(crew);
             double now = NetworkManager.ServerTime.Time;
             musicStart.Value = now;
-            musicDuration.Value = soloLevelOne ? 300 : BaseTimeLimit(crew);
-            deadline.Value = now + TimeLimit(crew);
+            int limit = TimeLimit(crew);
+            musicDuration.Value = limit;
+            deadline.Value = now + limit;
         }
 
-        private bool IsSoloLevelOne(int crew) => crew <= 1 && gameObject.scene.name == FirstLevelScene;
-
-        internal int TimeLimit(int crew) => IsSoloLevelOne(crew) ? 300 : BaseTimeLimit(crew) + extraTravelSeconds;
-
-        private int BaseTimeLimit(int crew)
+        internal int TimeLimit(int crew)
         {
+            int level = System.Array.IndexOf(ServiceScenes, gameObject.scene.name);
+            if (level > 0) return CampaignTimeLimits[level][Mathf.Clamp(crew, 1, 4) - 1];
             if (timeLimits != null && timeLimits.Length > 0)
-                return Mathf.Max(30, timeLimits[Mathf.Clamp(crew, 1, timeLimits.Length) - 1]);
-            return DefaultTimeLimit(crew);
+                return Mathf.Max(30, timeLimits[Mathf.Clamp(crew, 1, timeLimits.Length) - 1]) + extraTravelSeconds;
+            return DefaultTimeLimit(crew) + extraTravelSeconds;
         }
 
         internal static int DefaultTimeLimit(int crew) => crew switch { <= 1 => 300, 2 => 270, 3 => 240, _ => 210 };

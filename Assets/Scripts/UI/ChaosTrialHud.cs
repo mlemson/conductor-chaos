@@ -70,11 +70,12 @@ namespace ConductorChaos.UI
             RectTransform controls = ChaosUI.Panel(root, "Controls", V(.21f, .018f), V(.79f, .086f),
                 ChaosUI.Slate, 2, ChaosUI.Dark);
             ChaosUISpriteCatalog.Add(controls, "Controls", "controls", V(.012f, .08f), V(.075f, .92f), ChaosUI.Paper);
-            Hint("WASD", "Lopen", .085f, .24f);
-            Hint("Shift", "Rennen", .245f, .40f);
-            Hint("Spatie", "Springen", .405f, .59f);
-            Hint("LMB / RMB", "Grijpen", .595f, .815f);
-            Hint("Esc", "Menu", .82f, .985f);
+            Hint("WASD", "Lopen", .085f, .225f);
+            Hint("Shift", "Rennen", .23f, .37f);
+            Hint("Spatie", "Springen", .375f, .53f);
+            Hint("LMB / RMB", "Grijpen", .535f, .725f);
+            Hint("V", "Omroep", .73f, .86f);
+            Hint("Esc", "Menu", .865f, .985f);
 
             void Hint(string key, string action, float left, float right)
             {

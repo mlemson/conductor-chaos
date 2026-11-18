@@ -36,3 +36,7 @@ __pycache__/
 # Lokale werkbestanden en editorconfiguratie
 /work/
 /.vscode/
+
+# Unity herstelscene na een crash
+/Assets/_Recovery/
+/Assets/_Recovery.meta

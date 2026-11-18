@@ -78,30 +78,6 @@ namespace ConductorChaos.UI.Depot
 
             float rx = 792, rw = 760;
             float ry = 40;
-            if (reward.NewTrains.Count + reward.NewWagons.Count > 0)
-            {
-                var unlocked = DepotUi.Panel(stage, "Vrijgespeeld", rx, ry, rw, 330, DepotUi.PanelFace, DepotUi.Edge);
-                DepotUi.Chip(unlocked, "Vrijgespeeld", 24, 20, ChaosUI.Gold, ChaosUI.Ink, null, 22, 38);
-                DepotUi.Txt(unlocked, $"door {level.Label.ToLowerInvariant()} te halen", 200, 20, 400, 38, 15, ChaosUI.Muted);
-                float cx = 24;
-                int shown = 0;
-                foreach (var kind in reward.NewTrains)
-                {
-                    if (shown++ >= 3) break;
-                    var info = DepotCatalog.Train(kind);
-                    UnlockCard(unlocked, cx, info.Sprite, info.Name, $"Trein · max. {info.MaxWagons} wagons");
-                    cx += 244;
-                }
-                foreach (var kind in reward.NewWagons)
-                {
-                    if (shown++ >= 3) break;
-                    var info = DepotCatalog.Wagon(kind);
-                    UnlockCard(unlocked, cx, info.Sprite, info.Name, "Wagon · " + info.Capacity.ToLowerInvariant());
-                    cx += 244;
-                }
-                ry += 346;
-            }
-
             var goals = DepotUi.Panel(stage, "Volgende doelen", rx, ry, rw, 260, DepotUi.PanelFace, DepotUi.Edge);
             DepotUi.Txt(goals, "Volgende doelen", 24, 16, 400, 36, 24, ChaosUI.Paper, true);
             float gy = 64;
@@ -109,13 +85,13 @@ namespace ConductorChaos.UI.Depot
             foreach (var info in DepotCatalog.Trains)
             {
                 if (DepotProgress.Owns(info.Kind) || goalsShown >= 2) continue;
-                Goal(goals, ref gy, info.Sprite, info.Name, info.Cost, info.UnlockLevel);
+                Goal(goals, ref gy, info.Sprite, info.Name, info.Cost);
                 goalsShown++;
             }
             foreach (var info in DepotCatalog.Wagons)
             {
                 if (info.HasSet || DepotProgress.Owns(info.Kind) || goalsShown >= 2) continue;
-                Goal(goals, ref gy, info.Sprite, info.Name, info.Cost, info.UnlockLevel);
+                Goal(goals, ref gy, info.Sprite, info.Name, info.Cost);
                 goalsShown++;
             }
             if (goalsShown == 0) DepotUi.Txt(goals, "Alles staat in je depot. Ga voor de beste tijd per level.", 24, 64, 700, 40, 16, ChaosUI.Muted);
@@ -131,17 +107,7 @@ namespace ConductorChaos.UI.Depot
             y += 60;
         }
 
-        private static void UnlockCard(Transform parent, float x, string sprite, string name, string sub)
-        {
-            var card = DepotUi.Panel(parent, name, x, 74, 232, 236, DepotUi.Inset);
-            DepotUi.Vehicle(card, sprite, 12, 24, 208, 110);
-            DepotUi.Track(card, 0, 140, 232);
-            DepotUi.Txt(card, name, 12, 158, 212, 32, 21, ChaosUI.Paper, true);
-            var text = DepotUi.Txt(card, sub, 12, 190, 212, 40, 13, ChaosUI.Muted);
-            text.alignment = TextAnchor.UpperLeft;
-        }
-
-        private static void Goal(Transform parent, ref float y, string sprite, string name, int cost, int level)
+        private static void Goal(Transform parent, ref float y, string sprite, string name, int cost)
         {
             DepotUi.Vehicle(parent, sprite, 24, y, 150, 70, true);
             DepotUi.Txt(parent, name, 196, y, 300, 26, 17, ChaosUI.Paper, true);
@@ -152,7 +118,6 @@ namespace ConductorChaos.UI.Depot
             DepotUi.Panel(parent, "Balk", 196, y + 32, 540, 16, ChaosUI.Slate);
             float fill = Mathf.Clamp01(cost <= 0 ? 1f : tickets / (float)cost);
             if (fill > 0f) DepotUi.Panel(parent, "Voortgang", 196, y + 32, Mathf.Max(16f, 540f * fill), 16, ChaosUI.Gold);
-            DepotUi.Txt(parent, $"Of gratis na level {level}", 196, y + 50, 400, 22, 13, ChaosUI.Muted);
             y += 90;
         }
     }

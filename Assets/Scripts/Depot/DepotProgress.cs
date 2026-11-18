@@ -12,8 +12,6 @@ namespace ConductorChaos.Depot
         public int Total => Base + TimeBonus + ObjectiveBonus + RepairBonus + PassengerBonus;
         public int BalanceBefore, BalanceAfter;
         public bool FirstWin;
-        public readonly List<TrainKind> NewTrains = new();
-        public readonly List<WagonKind> NewWagons = new();
     }
 
     public static class DepotProgress
@@ -36,20 +34,16 @@ namespace ConductorChaos.Depot
 
         public static bool Owns(TrainKind train)
         {
-            var info = DepotCatalog.Train(train);
-            return LevelWon(info.UnlockLevel) || PlayerPrefs.GetInt(Prefix + "Train." + train, 0) != 0;
+            return train == TrainKind.Steam || PlayerPrefs.GetInt(Prefix + "Train." + train, 0) != 0;
         }
 
         public static bool Owns(WagonKind wagon)
         {
             var info = DepotCatalog.Wagon(wagon);
             if (info.HasSet) return Owns(info.Set);
-            return LevelWon(info.UnlockLevel) || PlayerPrefs.GetInt(Prefix + "Wagon." + wagon, 0) != 0;
+            // Wagons met een prijs komen alleen vrij door ze te kopen, niet meer door levels te halen.
+            return info.Cost <= 0 || PlayerPrefs.GetInt(Prefix + "Wagon." + wagon, 0) != 0;
         }
-
-        /// <summary>Net vrijgekomen door een level en nog niet in het depot bekeken.</summary>
-        public static bool IsNew(TrainKind train) => PlayerPrefs.GetInt(Prefix + "New.Train." + train, 0) != 0;
-        public static void MarkSeen(TrainKind train) { if (IsNew(train)) { PlayerPrefs.DeleteKey(Prefix + "New.Train." + train); PlayerPrefs.Save(); } }
 
         public static bool CanAfford(int cost) => Tickets >= cost;
 
@@ -96,24 +90,11 @@ namespace ConductorChaos.Depot
                 reward.PassengerBonus = reward.ExtraPassengers * TicketsPerExtraPassenger;
             }
 
-            var trainsBefore = new List<TrainKind>();
-            var wagonsBefore = new List<WagonKind>();
-            foreach (var train in DepotCatalog.Trains) if (Owns(train.Kind)) trainsBefore.Add(train.Kind);
-            foreach (var wagon in DepotCatalog.Wagons) if (Owns(wagon.Kind)) wagonsBefore.Add(wagon.Kind);
-
             if (level > 0)
             {
                 PlayerPrefs.SetInt(Prefix + "Won." + level, 1);
                 if (reward.SecondsLeft > BestSecondsLeft(level)) PlayerPrefs.SetInt(Prefix + "Best." + level, reward.SecondsLeft);
             }
-            foreach (var train in DepotCatalog.Trains)
-                if (!trainsBefore.Contains(train.Kind) && Owns(train.Kind))
-                {
-                    reward.NewTrains.Add(train.Kind);
-                    PlayerPrefs.SetInt(Prefix + "New.Train." + train.Kind, 1);
-                }
-            foreach (var wagon in DepotCatalog.Wagons)
-                if (!wagonsBefore.Contains(wagon.Kind) && Owns(wagon.Kind) && !wagon.HasSet) reward.NewWagons.Add(wagon.Kind);
 
             Tickets = reward.BalanceBefore + reward.Total;
             reward.BalanceAfter = Tickets;
@@ -143,10 +124,7 @@ namespace ConductorChaos.Depot
         public static void ResetProgress()
         {
             foreach (var train in DepotCatalog.Trains)
-            {
                 PlayerPrefs.DeleteKey(Prefix + "Train." + train.Kind);
-                PlayerPrefs.DeleteKey(Prefix + "New.Train." + train.Kind);
-            }
             foreach (var wagon in DepotCatalog.Wagons) PlayerPrefs.DeleteKey(Prefix + "Wagon." + wagon.Kind);
             for (int level = 1; level < DepotCatalog.Levels.Length; level++)
             {

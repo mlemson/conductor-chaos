@@ -198,7 +198,7 @@ namespace ConductorChaos.UI
         private void PresentHud(ServiceRun run)
         {
             bool showEngine = false;
-            if (run.Train && run.Train.HasCoalFurnace)
+            if (run.Train && (run.Train.HasCoalFurnace || run.Train.HasDieselTank))
                 foreach (var player in PlaygroundPlayer.SpawnedPlayers)
                     if (player && player.IsOwner && run.Train.TryGetCabin(player.transform.position, .12f, out _))
                     {
@@ -207,7 +207,8 @@ namespace ConductorChaos.UI
                     }
             engineMeters.transform.parent.gameObject.SetActive(showEngine);
             if (showEngine)
-                engineMeters.text = $"Kolen {Mathf.RoundToInt(run.Train.FuelFraction * 100f)}%   ·   Hitte {Mathf.RoundToInt(run.Train.HeatFraction * 100f)}%";
+                engineMeters.text = run.Train.HasDieselTank ? $"Diesel {Mathf.RoundToInt(run.Train.FuelFraction * 100f)}%"
+                    : $"Kolen {Mathf.RoundToInt(run.Train.FuelFraction * 100f)}%   ·   Hitte {Mathf.RoundToInt(run.Train.HeatFraction * 100f)}%";
             rows.Clear();
             if (run.Introduction)
             {
@@ -320,6 +321,7 @@ namespace ConductorChaos.UI
             if (!run.DoorsClosed) return "Schuif de wagondeuren dicht.";
             if (!run.PowerOn) return "Druk op de startknop in de cabine.";
             if (run.NeedsCoal) return "Schep kolen in de vuurkist.";
+            if (run.NeedsDiesel) return "Tank leeg: tank bij met de pompslang op het perron of een jerrycan (gele vuldop).";
             if (objective is ServiceRepair broken && run.Progress < objective.Target)
                 return run.Phase == ServiceRun.RunPhase.Departure ? "Neem de moersleutel mee naar de kapotte wissel."
                     : "Tik met de moersleutel op de gele bout." + Count(broken.Hits, broken.RequiredHits);
@@ -382,6 +384,8 @@ namespace ConductorChaos.UI
             if (!run.DoorsClosed) return "Schuif de wagondeuren dicht.";
             if (!run.PowerOn) return "Druk op de startknop in de cabine.";
             if (run.NeedsCoal) return "Het vuur is uit: schep kolen in de vuurkist.";
+            if (run.NeedsDiesel) return "De diesel is op: giet een jerrycan leeg boven de gele vuldop.";
+            if (run.LowDiesel) return "Diesel bijna op: giet een jerrycan leeg boven de gele vuldop.";
             foreach (var objective in objectives)
             {
                 if (objective is ServiceRepair repair && !Done(run, objective))

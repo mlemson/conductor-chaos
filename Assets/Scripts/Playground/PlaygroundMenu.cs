@@ -14,11 +14,17 @@ namespace ConductorChaos.Playground
     public sealed class PlaygroundMenu : MonoBehaviour
     {
         private enum Screen { Main, Routes, Game, Pause, Service }
+        private const string ViewDistanceKey = "ChaosUI.ViewDistance";
+        private const int MinimumViewDistance = 400;
+        private const int DefaultViewDistance = 1500;
+        private const int MaximumViewDistance = 2200;
+
         private static PlaygroundMenu instance;
         private Screen screen;
         private Canvas canvas;
         private RectTransform logoPanel, mainPanel, pausePanel, lobbyPanel, settingsPanel;
-        private Text volumeText, muteText, musicVolumeText, musicEnabledText, cameraBobText;
+        private Text volumeText, muteText, musicVolumeText, musicEnabledText, cameraBobText, viewDistanceText;
+        private int viewDistance;
         private bool muted, musicEnabled;
         private Button playButton, resumeButton, settingsBack, routesBack;
         private RectTransform routesPanel;
@@ -56,7 +62,10 @@ namespace ConductorChaos.Playground
             muted = PlayerPrefs.GetInt("ChaosUI.Muted", 0) != 0;
             AudioListener.pause = muted;
             musicEnabled = PlayerPrefs.GetInt(ServiceMusic.MusicEnabledKey, 1) != 0;
+            viewDistance = Mathf.Clamp(PlayerPrefs.GetInt(ViewDistanceKey, DefaultViewDistance), MinimumViewDistance, MaximumViewDistance);
+            ApplyViewDistance();
             gameObject.AddComponent<ServiceMusic>();
+            gameObject.AddComponent<TrainAnnouncer>();
             networkHost = FindAnyObjectByType<PlaygroundHost>();
             Build();
             service = new ServicePresentation(transform, networkHost);
@@ -101,29 +110,34 @@ namespace ConductorChaos.Playground
             ChaosUI.Action(settingsPanel, "Controls tab", "Besturing", V(.26f, .77f), V(.49f, .875f), ChaosUI.Paper, ChaosUI.Ink, null, 16, false, "controls");
             ChaosUI.Action(settingsPanel, "Accessibility tab", "Toegankelijkheid", V(.50f, .77f), V(.84f, .875f), ChaosUI.Paper, ChaosUI.Ink, null, 15, false, "accessibility");
 
-            ChaosUI.Label(settingsPanel, "Master volume", "Mastervolume", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .645f), V(.34f, .745f));
-            ChaosUI.VolumeSlider(settingsPanel, V(.36f, .677f), V(.78f, .72f), AudioListener.volume, SetVolume);
-            volumeText = ChaosUI.Label(settingsPanel, "Master volume value", Mathf.RoundToInt(AudioListener.volume * 100) + "%", 18, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.8f, .645f), V(.96f, .745f));
+            ChaosUI.Label(settingsPanel, "Master volume", "Mastervolume", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .650f), V(.34f, .745f));
+            ChaosUI.VolumeSlider(settingsPanel, V(.36f, .676f), V(.78f, .719f), AudioListener.volume, SetVolume);
+            volumeText = ChaosUI.Label(settingsPanel, "Master volume value", Mathf.RoundToInt(AudioListener.volume * 100) + "%", 18, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.8f, .650f), V(.96f, .745f));
 
             float musicVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(ServiceMusic.MusicVolumeKey, ServiceMusic.DefaultMusicVolume));
-            ChaosUI.Label(settingsPanel, "Music volume", "Muziekvolume", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .515f), V(.34f, .615f));
-            ChaosUI.VolumeSlider(settingsPanel, V(.36f, .547f), V(.78f, .59f), musicVolume, SetMusicVolume);
-            musicVolumeText = ChaosUI.Label(settingsPanel, "Music volume value", Mathf.RoundToInt(musicVolume * 100) + "%", 18, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.8f, .515f), V(.96f, .615f));
+            ChaosUI.Label(settingsPanel, "Music volume", "Muziekvolume", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .545f), V(.34f, .640f));
+            ChaosUI.VolumeSlider(settingsPanel, V(.36f, .571f), V(.78f, .614f), musicVolume, SetMusicVolume);
+            musicVolumeText = ChaosUI.Label(settingsPanel, "Music volume value", Mathf.RoundToInt(musicVolume * 100) + "%", 18, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.8f, .545f), V(.96f, .640f));
 
-            ChaosUI.Label(settingsPanel, "Music", "Muziek", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .395f), V(.34f, .49f));
+            ChaosUI.Label(settingsPanel, "Music", "Muziek", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .440f), V(.34f, .535f));
             Button musicSwitch = ChaosUI.Action(settingsPanel, "Music switch", musicEnabled ? "Aan" : "Uit",
-                V(.36f, .40f), V(.52f, .485f), ChaosUI.Paper, ChaosUI.Ink, ToggleMusic, 20);
+                V(.36f, .445f), V(.52f, .530f), ChaosUI.Paper, ChaosUI.Ink, ToggleMusic, 20);
             musicEnabledText = musicSwitch.GetComponentInChildren<Text>();
 
-            ChaosUI.Label(settingsPanel, "Sound", "Geluid", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .27f), V(.34f, .365f));
+            ChaosUI.Label(settingsPanel, "Sound", "Geluid", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .335f), V(.34f, .430f));
             Button soundSwitch = ChaosUI.Action(settingsPanel, "Sound switch", muted ? "Uit" : "Aan",
-                V(.36f, .275f), V(.52f, .36f), ChaosUI.Paper, ChaosUI.Ink, ToggleMute, 20);
+                V(.36f, .340f), V(.52f, .425f), ChaosUI.Paper, ChaosUI.Ink, ToggleMute, 20);
             muteText = soundSwitch.GetComponentInChildren<Text>();
 
-            ChaosUI.Label(settingsPanel, "Camera motion", "Camerabeweging", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .145f), V(.34f, .24f));
+            ChaosUI.Label(settingsPanel, "Camera motion", "Camerabeweging", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .230f), V(.34f, .325f));
             Button cameraBobSwitch = ChaosUI.Action(settingsPanel, "Camera motion switch", PlayerPrefs.GetInt("ChaosUI.CameraBob", 1) != 0 ? "Aan" : "Uit",
-                V(.36f, .15f), V(.52f, .235f), ChaosUI.Paper, ChaosUI.Ink, ToggleCameraBob, 20);
+                V(.36f, .235f), V(.52f, .320f), ChaosUI.Paper, ChaosUI.Ink, ToggleCameraBob, 20);
             cameraBobText = cameraBobSwitch.GetComponentInChildren<Text>();
+
+            ChaosUI.Label(settingsPanel, "View distance", "Zichtafstand", 19, ChaosUI.Paper, TextAnchor.MiddleLeft, FontStyle.Bold, V(.04f, .125f), V(.34f, .220f));
+            ChaosUI.VolumeSlider(settingsPanel, V(.36f, .151f), V(.78f, .194f),
+                Mathf.InverseLerp(MinimumViewDistance, MaximumViewDistance, viewDistance), SetViewDistance);
+            viewDistanceText = ChaosUI.Label(settingsPanel, "View distance value", $"{viewDistance} m", 18, ChaosUI.Paper, TextAnchor.MiddleCenter, FontStyle.Bold, V(.8f, .125f), V(.96f, .220f));
             settingsBack = ChaosUI.Action(settingsPanel, "Back", "Terug", V(.69f, .025f), V(.96f, .115f), ChaosUI.Paper, ChaosUI.Ink, ShowLobby, 18, iconKey: "back");
 
             pausePanel = ChaosUI.MenuPanel(root, "Pause", V(.35f, .19f), V(.65f, .81f));
@@ -350,6 +364,29 @@ namespace ConductorChaos.Playground
         private void ToggleMusic() { musicEnabled = !musicEnabled; PlayerPrefs.SetInt(ServiceMusic.MusicEnabledKey, musicEnabled ? 1 : 0); if (musicEnabledText) musicEnabledText.text = musicEnabled ? "Aan" : "Uit"; }
         private void ToggleMute() { muted = !muted; AudioListener.pause = muted; PlayerPrefs.SetInt("ChaosUI.Muted", muted ? 1 : 0); if (muteText) muteText.text = muted ? "Uit" : "Aan"; }
         private void ToggleCameraBob() { bool enabled = PlayerPrefs.GetInt("ChaosUI.CameraBob", 1) == 0; PlayerPrefs.SetInt("ChaosUI.CameraBob", enabled ? 1 : 0); if (cameraBobText) cameraBobText.text = enabled ? "Aan" : "Uit"; }
+        private void SetViewDistance(float value)
+        {
+            viewDistance = 25 * Mathf.RoundToInt(Mathf.Lerp(MinimumViewDistance, MaximumViewDistance, value) / 25f);
+            PlayerPrefs.SetInt(ViewDistanceKey, viewDistance);
+            viewDistanceText.text = $"{viewDistance} m";
+            ApplyViewDistance();
+        }
+
+        private void OnEnable() => SceneManager.activeSceneChanged += OnActiveSceneChanged;
+        private void OnDisable() => SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+        private void OnActiveSceneChanged(Scene previous, Scene current) => ApplyViewDistance();
+
+        private void ApplyViewDistance()
+        {
+            Camera camera = Camera.main;
+            if (camera) camera.farClipPlane = viewDistance;
+            if (RenderSettings.fog && RenderSettings.fogMode == FogMode.Linear)
+            {
+                RenderSettings.fogStartDistance = viewDistance * .24f;
+                RenderSettings.fogEndDistance = viewDistance * (14f / 15f);
+            }
+        }
+
         private void Unstuck()
         {
             foreach (var player in FindObjectsByType<PlaygroundPlayer>())

@@ -287,7 +287,7 @@ namespace ConductorChaos.UI.Depot
                 DepotUi.Txt(card, string.IsNullOrEmpty(to) ? from : $"{from} → {to}", 20, 298, cw - 40, 24, cw < 280 ? 15 : 17, ChaosUI.Paper);
                 bool roomy = cw >= 340f;
                 if (roomy) DepotUi.Txt(card, "Moeilijkheid", 20, 340, 112, 22, 14, ChaosUI.Muted);
-                DepotUi.Segments(card, roomy ? 128 : 20, 345, roomy ? 108 : cw < 280 ? 84 : 100, 12, info.Difficulty, 5);
+                DepotUi.Segments(card, roomy ? 128 : 20, 345, roomy ? 108 : cw < 280 ? 84 : 100, 12, info.Difficulty, DepotCatalog.Levels.Length);
                 if (i >= 2)
                     DepotUi.Txt(card, info.Distance, cw - 130, 340, 110, 22, 14, ChaosUI.Muted, false, TextAnchor.MiddleRight);
                 DepotUi.Txt(card, info.Summary, 20, 380, cw - 40, 66, cw < 280 ? 14 : cw < 340 ? 15 : 16, ChaosUI.Muted, false, TextAnchor.UpperLeft);
@@ -296,16 +296,6 @@ namespace ConductorChaos.UI.Depot
                 {
                     DepotUi.Icon(card, "speed-gauge", 18, 452, 28);
                     DepotUi.Txt(card, $"Record · {DepotUi.Time(best)} over", 52, 452, cw - 76, 28, 15, ChaosUI.Paper);
-                }
-                if (i > 0)
-                {
-                    var unlock = UnlockForLevel(i);
-                    if (unlock != null)
-                    {
-                        DepotUi.Panel(card, "Vrijspelen", 12, 508, cw - 24, 60, DepotUi.Background);
-                        DepotUi.Icon(card, "key", 22, 520, 34);
-                        DepotUi.Txt(card, unlock, 64, 508, cw - 86, 60, 13, ChaosUI.Muted);
-                    }
                 }
                 if (available) DepotUi.Hit(card, () => { selectedLevel = index; Render(); });
             }
@@ -316,15 +306,6 @@ namespace ConductorChaos.UI.Depot
                 DepotUi.Btn(bottom, "Start oefenrit", 1314, 22, 272, 58, ChaosUI.Gold, () => StartScene(DepotCatalog.Levels[0].Scene), 24, canStart, "play");
             else
                 DepotUi.Btn(bottom, "Naar het depot", 1314, 22, 272, 58, ChaosUI.Gold, () => ShowDepot(selectedLevel, false), 24, canStart);
-        }
-
-        private static string UnlockForLevel(int index)
-        {
-            var parts = new List<string>();
-            foreach (var train in DepotCatalog.Trains) if (train.UnlockLevel == index) parts.Add(train.Name);
-            foreach (var wagon in DepotCatalog.Wagons) if (!wagon.HasSet && wagon.UnlockLevel == index) parts.Add(wagon.Name.ToLowerInvariant());
-            if (parts.Count == 0) return null;
-            return (DepotProgress.LevelEverWon(index) ? "Vrijgespeeld · " : "Beloning · ") + string.Join(", ", parts);
         }
 
         private void StartScene(string scene)
@@ -343,7 +324,6 @@ namespace ConductorChaos.UI.Depot
             TopBar("Depot", crew ? null : afterRun ? "Terug" : "Levels", crew ? null : (UnityEngine.Events.UnityAction)(() => Back()), true);
             var info = DepotCatalog.Train(viewedTrain);
             bool owned = crew || DepotProgress.Owns(viewedTrain);
-            if (!crew && owned && DepotProgress.IsNew(viewedTrain)) DepotProgress.MarkSeen(viewedTrain);
             float top = crew ? 142 : 94;
             if (crew) CrewBanner();
 
@@ -360,8 +340,6 @@ namespace ConductorChaos.UI.Depot
             DepotUi.Txt(plate, info.Name, 72, 4, plateW - 76, 44, 34, ChaosUI.Paper, true);
             DepotUi.Txt(plate, info.Era, 72, 44, plateW - 76, 24, 15, ChaosUI.Muted);
             if (!owned) DepotUi.Chip(podium, "Nog op slot", 1040, 18, DepotUi.PanelFace, ChaosUI.Paper, "key", 18, 46, true);
-            else if (!crew && info.UnlockLevel > 0 && DepotProgress.LevelEverWon(info.UnlockLevel) && info.UnlockLevel == HighestWon())
-                DepotUi.Chip(podium, "Nieuw in je depot", 1040, 18, ChaosUI.Gold, ChaosUI.Ink, null, 18, 40, true);
 
             // Gegevens
             var panel = DepotUi.Panel(stage, "Gegevens", 1104, top, 472, stageHeight, DepotUi.PanelFace, DepotUi.Edge);
@@ -394,11 +372,10 @@ namespace ConductorChaos.UI.Depot
             }
             if (!owned)
             {
-                var box = DepotUi.Panel(panel, "Vrijspelen", 22, stageHeight - 96, 428, 74, DepotUi.Background);
-                DepotUi.Txt(box, $"Gratis na level {info.UnlockLevel}", 14, 8, 220, 28, 15, ChaosUI.Paper, true);
-                DepotUi.Txt(box, "of nu kopen met kaartjes", 14, 34, 220, 24, 14, ChaosUI.Muted);
+                var box = DepotUi.Panel(panel, "Kopen", 22, stageHeight - 96, 428, 74, DepotUi.Background);
+                DepotUi.Txt(box, $"Prijs · {DepotCatalog.FormatTickets(info.Cost)} kaartjes", 14, 12, 220, 50, 16, ChaosUI.Paper, true);
                 if (DepotProgress.CanAfford(info.Cost))
-                    DepotUi.Btn(box, DepotCatalog.FormatTickets(info.Cost), 238, 12, 176, 50, ChaosUI.Gold, () => ConfirmTrain(info.Kind), 20, true, "ticket");
+                    DepotUi.Btn(box, "Kopen", 238, 12, 176, 50, ChaosUI.Gold, () => ConfirmTrain(info.Kind), 20, true, "ticket");
                 else
                     DepotUi.Btn(box, $"nog {DepotCatalog.FormatTickets(info.Cost - DepotProgress.Tickets)} tekort", 238, 12, 176, 50, ChaosUI.Gold, null, 15, false);
             }
@@ -431,15 +408,11 @@ namespace ConductorChaos.UI.Depot
                         () => DepotSync.Suggest(suggested ? DepotSync.SuggestNone : DepotSync.SuggestTrain, (byte)kind), 16);
                 }
                 else if (mine)
-                {
-                    bool fresh = DepotProgress.IsNew(train.Kind);
-                    DepotUi.Chip(card, fresh ? "Nieuw" : "In depot", 362, imageHeight + 12, fresh ? ChaosUI.Gold : ChaosUI.Green,
-                        fresh ? ChaosUI.Ink : DepotUi.GreenText, "ready", 13, 30, true);
-                }
+                    DepotUi.Chip(card, "In depot", 362, imageHeight + 12, ChaosUI.Green, DepotUi.GreenText, "ready", 13, 30, true);
                 else if (DepotProgress.CanAfford(train.Cost))
                     DepotUi.Chip(card, DepotCatalog.FormatTickets(train.Cost), 362, imageHeight + 12, ChaosUI.Paper, ChaosUI.Ink, "ticket", 13, 30, true);
                 else
-                    DepotUi.Chip(card, "Level " + train.UnlockLevel, 362, imageHeight + 12, ChaosUI.Slate, ChaosUI.Paper, "key", 13, 30, true);
+                    DepotUi.Chip(card, DepotCatalog.FormatTickets(train.Cost), 362, imageHeight + 12, ChaosUI.Slate, ChaosUI.Paper, "ticket", 13, 30, true);
                 if (chosen) DepotUi.Chip(card, "Gekozen", 10, 10, ChaosUI.Gold, ChaosUI.Ink, null, 14, 26);
                 if (!crew && DepotSync.TryGetSuggestion(DepotSync.SuggestTrain, (byte)train.Kind, out ulong by))
                     DepotUi.Chip(card, $"{DepotSync.PlayerName(by)} stelt voor", 366, 10, ChaosUI.Paper, ChaosUI.Ink, "player", 13, 28, true);
@@ -462,14 +435,7 @@ namespace ConductorChaos.UI.Depot
             if (owned)
                 DepotUi.Btn(bottom, "Wagons koppelen", 1286, 22, 300, 58, ChaosUI.Gold, () => SetMode(Mode.Wagons), 24);
             else
-                DepotUi.Btn(bottom, "Eerst ontgrendelen", 1286, 22, 300, 58, ChaosUI.Gold, null, 22, false);
-        }
-
-        private static int HighestWon()
-        {
-            int best = 0;
-            for (int i = 1; i < DepotCatalog.Levels.Length; i++) if (DepotProgress.LevelEverWon(i)) best = i;
-            return best;
+                DepotUi.Btn(bottom, "Eerst kopen", 1286, 22, 300, 58, ChaosUI.Gold, null, 22, false);
         }
 
         private void ViewTrain(TrainKind kind)
@@ -589,7 +555,7 @@ namespace ConductorChaos.UI.Depot
             DepotUi.Panel(stage, "Tablijn", 24, catalogTop + 42, 1036, 4, ChaosUI.TrainRed);
 
             var shown = new List<WagonInfo>();
-            foreach (var wagon in DepotCatalog.Wagons) if (wagonFilter == null || wagon.Category == wagonFilter) shown.Add(wagon);
+            foreach (var wagon in DepotCatalog.Wagons) if (!wagon.Hidden && (wagonFilter == null || wagon.Category == wagonFilter)) shown.Add(wagon);
             int columns = Mathf.Max(4, (shown.Count + 1) / 2);
             float stride = 1048f / columns;
             float gridTop = catalogTop + 56;
@@ -666,8 +632,8 @@ namespace ConductorChaos.UI.Depot
             }
             if (count > 0) DepotUi.Chip(card, $"{count}× gekoppeld", 10, chipY, ChaosUI.Gold, ChaosUI.Ink, null, 12, 28);
             else if (!fits) DepotUi.Chip(card, DepotCatalog.Train(wagon.Set).Name, 10, chipY, ChaosUI.Slate, ChaosUI.Paper, "train", 12, 28);
-            else if (afford) DepotUi.Chip(card, $"{DepotCatalog.FormatTickets(wagon.Cost)} · of level {wagon.UnlockLevel}", 10, chipY, ChaosUI.Paper, ChaosUI.Ink, "ticket", 12, 28);
-            else if (!owned) DepotUi.Chip(card, $"Level {wagon.UnlockLevel} · {DepotCatalog.FormatTickets(wagon.Cost)}", 10, chipY, ChaosUI.Slate, ChaosUI.Paper, "key", 12, 28);
+            else if (afford) DepotUi.Chip(card, DepotCatalog.FormatTickets(wagon.Cost), 10, chipY, ChaosUI.Paper, ChaosUI.Ink, "ticket", 12, 28);
+            else if (!owned) DepotUi.Chip(card, DepotCatalog.FormatTickets(wagon.Cost), 10, chipY, ChaosUI.Slate, ChaosUI.Paper, "key", 12, 28);
             if (DepotSync.TryGetSuggestion(DepotSync.SuggestWagon, (byte)wagon.Kind, out _))
                 DepotUi.Chip(card, "Voorstel", w - 8, 8, ChaosUI.Paper, ChaosUI.Ink, "player", 12, 26, true);
             var target = wagon;
@@ -703,7 +669,7 @@ namespace ConductorChaos.UI.Depot
             if (!DepotProgress.Owns(wagon.Kind))
             {
                 if (DepotProgress.CanAfford(wagon.Cost)) ConfirmWagon(wagon.Kind);
-                else Flash($"Nog {DepotCatalog.FormatTickets(wagon.Cost - DepotProgress.Tickets)} kaartjes nodig, of haal level {wagon.UnlockLevel}", true);
+                else Flash($"Nog {DepotCatalog.FormatTickets(wagon.Cost - DepotProgress.Tickets)} kaartjes nodig", true);
                 return;
             }
             if (loadout.Wagons.Count >= loadout.MaxWagons)
@@ -915,7 +881,7 @@ namespace ConductorChaos.UI.Depot
         private void ConfirmTrain(TrainKind kind)
         {
             var info = DepotCatalog.Train(kind);
-            modal = () => UnlockDialog(info.Name, info.Sprite, info.Cost, $"Na level {info.UnlockLevel} komt deze trein ook gratis vrij.",
+            modal = () => UnlockDialog(info.Name, info.Sprite, info.Cost, null,
                 $"Max. {info.MaxWagons} wagons · snelheid {info.Speed} / 5", () =>
                 {
                     if (DepotProgress.Buy(kind))
@@ -931,7 +897,7 @@ namespace ConductorChaos.UI.Depot
         private void ConfirmWagon(WagonKind kind)
         {
             var info = DepotCatalog.Wagon(kind);
-            modal = () => UnlockDialog(info.Name, info.Sprite, info.Cost, $"Na level {info.UnlockLevel} komt deze wagon ook gratis vrij.",
+            modal = () => UnlockDialog(info.Name, info.Sprite, info.Cost, "Wagons komen alleen vrij door ze met kaartjes te kopen.",
                 info.Capacity, () =>
                 {
                     if (DepotProgress.Buy(kind))
@@ -964,9 +930,9 @@ namespace ConductorChaos.UI.Depot
             DepotUi.Panel(sums, "Lijn", 18, 80, 516, 2, DepotUi.Edge);
             DepotUi.Txt(sums, "Daarna over", 18, 84, 300, 34, 17, ChaosUI.Paper, true);
             DepotUi.Txt(sums, DepotCatalog.FormatTickets(balance - cost), 300, 84, 234, 34, 22, ChaosUI.Gold, true, TextAnchor.MiddleRight);
-            DepotUi.Txt(dialog, note + " Kopen kan niet ongedaan worden.", 24, 420, 552, 44, 14, ChaosUI.Muted);
+            if (note != null) DepotUi.Txt(dialog, note, 24, 420, 552, 44, 14, ChaosUI.Muted);
             DepotUi.Btn(dialog, "Annuleren", 236, 478, 160, 56, ChaosUI.Paper, () => { modal = null; Render(); }, 20);
-            DepotUi.Btn(dialog, "Ontgrendel", 408, 478, 168, 56, ChaosUI.Gold, confirm, 20, true, "ticket");
+            DepotUi.Btn(dialog, "Kopen", 408, 478, 168, 56, ChaosUI.Gold, confirm, 20, true, "ticket");
         }
 
         private void RenderToast()

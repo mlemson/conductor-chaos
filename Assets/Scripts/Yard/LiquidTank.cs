@@ -9,9 +9,23 @@ using UnityEngine;
 
 namespace ConductorChaos.Yard
 {
-    public enum LiquidKind : byte { Water, Oil }
+    public enum LiquidKind : byte { Water, Oil, Diesel }
 
-    public sealed class LiquidTank : NetworkBehaviour
+    /// <summary>Een opening waar een straal (LiquidSource) in kan: de ketelwagon, of de vuldop van de diesel.</summary>
+    public interface ILiquidInlet
+    {
+        bool HatchOpen { get; }
+        Vector3 Inlet { get; }
+        float InletRadius { get; }
+        void Pour(float liters, LiquidKind what);
+    }
+
+    public static class LiquidInlets
+    {
+        public static readonly List<ILiquidInlet> All = new();
+    }
+
+    public sealed class LiquidTank : NetworkBehaviour, ILiquidInlet
     {
         [SerializeField] float capacityLiters = 3000f;
         [Range(0f, 1f)] [SerializeField] float startLevel = 0.15f;
@@ -19,9 +33,6 @@ namespace ConductorChaos.Yard
         [Tooltip("Zo ver zakt de vloeistofspiegel van vol naar leeg (m, langs lokale Y).")]
         [SerializeField] float emptyDrop = 1.2f;
         [SerializeField] float inletRadius = 0.32f;
-
-        static readonly List<LiquidTank> all = new();
-        public static IReadOnlyList<LiquidTank> All => all;
 
         readonly NetworkVariable<float> level = new(0.15f);
         readonly NetworkVariable<byte> kind = new((byte)LiquidKind.Water);
@@ -65,8 +76,8 @@ namespace ConductorChaos.Yard
             block = new MaterialPropertyBlock();
         }
 
-        void OnEnable() => all.Add(this);
-        void OnDisable() => all.Remove(this);
+        void OnEnable() => LiquidInlets.All.Add(this);
+        void OnDisable() => LiquidInlets.All.Remove(this);
 
         public override void OnNetworkSpawn()
         {
@@ -159,16 +170,20 @@ namespace ConductorChaos.Yard
 
         static Color Hex(int rgb) => new Color(((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f, 1f);
 
-        public static Color Base(LiquidKind kind) => (kind == LiquidKind.Oil ? Oil : Water)[2];
+        static readonly Color[] Diesel = { Hex(0x6A5212), Hex(0x8E7020), Hex(0xB18D2C), Hex(0xC9A641), Hex(0xDDBE5E) };
+
+        static Color[] Ramp(LiquidKind kind) => kind switch { LiquidKind.Oil => Oil, LiquidKind.Diesel => Diesel, _ => Water };
+
+        public static Color Base(LiquidKind kind) => Ramp(kind)[2];
 
         public static void Apply(MaterialPropertyBlock block, LiquidKind kind, float flow)
         {
-            var ramp = kind == LiquidKind.Oil ? Oil : Water;
+            var ramp = Ramp(kind);
             for (int i = 0; i < 5; i++) block.SetColor(RampIds[i], ramp[i]);
             block.SetColor("_BaseColor", ramp[2]);
             block.SetFloat("_Flow", flow);
-            block.SetFloat("_Spec", kind == LiquidKind.Oil ? 1.1f : 0.7f);
-            block.SetFloat("_Rim", kind == LiquidKind.Oil ? 0.55f : 0.35f);
+            block.SetFloat("_Spec", kind != LiquidKind.Water ? 1.1f : 0.7f);
+            block.SetFloat("_Rim", kind != LiquidKind.Water ? 0.55f : 0.35f);
             block.SetFloat("_Cells", 0f);
             block.SetFloat("_Grime", 0f);
         }

@@ -81,7 +81,6 @@ namespace ConductorChaos.EditorTools
             rotateDepartureObjectives = true,
             switchFaults = true,
             minimumIncidents = 2,
-            timeLimits = new[] { 660, 600, 540, 480 },
             extraWrenches = 1,
             mesas = 10,
         };

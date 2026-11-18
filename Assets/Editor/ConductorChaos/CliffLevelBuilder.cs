@@ -104,7 +104,6 @@ namespace ConductorChaos.EditorTools
             public bool rotateDepartureObjectives;
             public bool switchFaults;            // wissels op de hoofdroute kunnen onderweg storen
             public int minimumIncidents = 1;
-            public int[] timeLimits;
             public int extraWrenches = 1;
             public int mesas = 10;
             public bool cliffRing = true;
@@ -1663,9 +1662,6 @@ namespace ConductorChaos.EditorTools
                 runSo.FindProperty("combineObjectives").boolValue = true;
                 runSo.FindProperty("rotateDepartureObjectives").boolValue = spec.rotateDepartureObjectives;
                 runSo.FindProperty("levelLabel").stringValue = spec.label;
-                var limits = runSo.FindProperty("timeLimits");
-                limits.arraySize = spec.timeLimits.Length;
-                for (int i = 0; i < spec.timeLimits.Length; i++) limits.GetArrayElementAtIndex(i).intValue = spec.timeLimits[i];
                 runSo.ApplyModifiedPropertiesWithoutUndo();
                 run.gameObject.name = $"Level {spec.number} · spelregels";
                 var titles = new List<string>();

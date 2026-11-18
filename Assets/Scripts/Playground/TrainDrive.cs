@@ -37,6 +37,25 @@ namespace ConductorChaos.Playground
         private const float FuelCapacity = 3f;
         private const float StartingFuel = FuelCapacity * 0.5f;
         private readonly NetworkVariable<float> fuel = new(StartingFuel);
+        // Depot: de diesel heeft een tank die leegraakt. Bijvullen door diesel (jerrycan of pompslang) in een gele vuldop
+        // op de zijkant te gieten; de rode knop (Button_Alarm) is het waarschuwingslampje.
+        private const float DieselBurnFactor = 2.5f, DieselLitersPerUnit = 40f;    // volle tank = 120 liter
+        private bool dieselTank;
+        private Transform dieselLamp;
+        private Light dieselLampLight;
+        private readonly List<GameObject> dieselFillers = new();
+        // Microfoon op het diesel-bureau: wie hem vastpakt roept om (TrainAnnouncer). ulong.MaxValue = niemand.
+        private const ulong NoMicHolder = ulong.MaxValue;
+        private readonly NetworkVariable<ulong> micHolder = new(NoMicHolder);
+        private SphereCollider micCollider;
+        private Transform micHand;
+        private static readonly List<TrainDrive> microphones = new();
+        internal static bool MicrophoneHeldBy(ulong client)
+        {
+            foreach (var train in microphones)
+                if (train && train.IsSpawned && train.micHolder.Value == client) return true;
+            return false;
+        }
         private readonly NetworkVariable<Vector3> shovelPosition = new();
         private readonly NetworkVariable<Quaternion> shovelRotation = new(Quaternion.identity);
         [SerializeField] private bool startWithCoupledWagons;
@@ -348,6 +367,14 @@ namespace ConductorChaos.Playground
         private Light firelight;
         private bool canStoke;
         internal bool HasCoalFurnace => IsSpawned && canStoke;
+        internal bool HasDieselTank => IsSpawned && dieselTank;
+        /// <summary>Server: diesel die in een vuldop is gegoten.</summary>
+        internal void AddDiesel(float liters)
+        {
+            if (IsServer && dieselTank) fuel.Value = Mathf.Min(FuelCapacity, fuel.Value + liters / DieselLitersPerUnit);
+        }
+        /// <summary>Vanuit DepotVehicles in Awake, vóór het spawnen, op host en clients gelijk.</summary>
+        internal void EnableDieselTank() => dieselTank = true;
         internal float FuelFraction => fuel.Value / FuelCapacity;
         internal bool ServicePowerOn => powered.Value;
         internal float ServiceSpeed => displayedSpeed.Value;
@@ -468,7 +495,7 @@ namespace ConductorChaos.Playground
             startWithCoupledWagons = coupledAtStart;
         }
         internal bool IsCabControlCollider(Collider candidate) =>
-            candidate && (candidate == latchCollider || IsShovelGrip(candidate) || IsLeverHandle(candidate) ||
+            candidate && (candidate == latchCollider || candidate == micCollider || IsShovelGrip(candidate) || IsLeverHandle(candidate) ||
                 IsWagonDoorPanel(candidate) || IsWagonDoorHandle(candidate));
 
         internal bool IsWagonDoorPanel(Collider candidate)
@@ -495,6 +522,15 @@ namespace ConductorChaos.Playground
 
         internal bool TryClaimCabControl(Collider candidate, Transform hand)
         {
+            if (candidate && candidate == micCollider)
+            {
+                if (micHand && micHand != hand) return false;
+                var player = hand ? hand.GetComponentInParent<PlaygroundPlayer>() : null;
+                if (!player) return false;
+                micHand = hand;
+                if (IsServer) micHolder.Value = player.OwnerClientId;
+                return true;
+            }
             if (!IsShovelGrip(candidate)) return true;
             if (shovelHand && shovelHand != hand) return false;
             shovelHand = hand;
@@ -503,6 +539,11 @@ namespace ConductorChaos.Playground
 
         internal void ReleaseCabControl(Collider candidate, Transform hand)
         {
+            if (candidate && candidate == micCollider && micHand == hand)
+            {
+                micHand = null;
+                if (IsServer) micHolder.Value = NoMicHolder;
+            }
             if (IsShovelGrip(candidate) && shovelHand == hand) shovelHand = null;
         }
 
@@ -514,9 +555,10 @@ namespace ConductorChaos.Playground
             body.isKinematic = true;
             body.useGravity = false;
             tiltLever = false;
-            lever = startButton = stopButton = speedNeedle = null;
+            lever = startButton = stopButton = speedNeedle = dieselLamp = null;
+            Transform hornButton = null;
             ConfigureMotionPresentation(body, IsServer);
-            if (IsServer) { powered.Value = false; throttle.Value = 0f; displayedSpeed.Value = 0f; doorAngle.Value = 0f; wagonDoorOffsets.Value = Vector4.zero; speed = 0f; buttonDown.Value = false; nextButtonPress = 0f; }
+            if (IsServer) { micHolder.Value = NoMicHolder; powered.Value = false; throttle.Value = 0f; displayedSpeed.Value = 0f; doorAngle.Value = 0f; wagonDoorOffsets.Value = Vector4.zero; speed = 0f; buttonDown.Value = false; nextButtonPress = 0f; }
             coalBin = coalScoopPoint = coalSource = null;
             coalSourceBody = null;
             foreach (var t in GetComponentsInChildren<Transform>(true))
@@ -527,6 +569,8 @@ namespace ConductorChaos.Playground
                 if (t.name == "ThrottleLever") { lever = t; leverRest = t.localRotation; tiltLever = true; }
                 if (t.name == "StartButton" || t.name == "Button_Start") startButton = t;
                 if (t.name == "Button_Stop") stopButton = t;
+                if (t.name == "Button_Alarm") dieselLamp = t;
+                if (t.name == "Button_Horn") hornButton = t;
                 if (t.name == "SpeedNeedle") speedNeedle = t;
                 if (t.name == "FireboxDoor") fireboxDoor = t;
                 if (t.name == "FireboxLatch") fireboxLatch = t;
@@ -541,6 +585,24 @@ namespace ConductorChaos.Playground
             }
             if (tiltLever && !startButton) startButton = CreatePowerButton();
             if (startButton) startButtonRest = startButton.localPosition;
+            if (dieselLamp && hornButton) CreateMicrophone(hornButton, dieselLamp);
+            if (dieselTank)
+            {
+                CreateDieselFillers();
+                if (dieselLamp)
+                {
+                    var warning = new GameObject("Tanklampje");
+                    warning.transform.SetParent(dieselLamp, false);
+                    warning.transform.localPosition = Vector3.up * .06f;
+                    dieselLampLight = warning.AddComponent<Light>();
+                    dieselLampLight.type = LightType.Point;
+                    dieselLampLight.color = new Color(1f, .55f, .1f);
+                    dieselLampLight.range = .6f;
+                    dieselLampLight.intensity = 1.2f;
+                    dieselLampLight.shadows = LightShadows.None;
+                    dieselLampLight.enabled = false;
+                }
+            }
             if (speedNeedle) speedNeedleRest = speedNeedle.localRotation;
             CreateCabControls();
             if (cabLamp)
@@ -663,6 +725,8 @@ namespace ConductorChaos.Playground
             if (startButton && tiltLever)
                 startButton.localPosition = startButtonRest - startButton.localRotation * Vector3.up * (buttonDown.Value ? 0.02f : 0f);
             else if (startButton) startButton.localScale = new Vector3(buttonDown.Value ? 0.6f : 1f, 1f, 1f);
+            // knippert als de tank bijna leeg is, brandt continu als hij leeg is
+            if (dieselLampLight) dieselLampLight.enabled = fuel.Value <= 0f || (FuelFraction < .25f && Mathf.Repeat(Time.time, .8f) < .4f);
             if (startButtonRenderer && buttonLit != powered.Value)
             {
                 buttonProperties.SetFloat("_Emissive", powered.Value ? 1f : 0f);
@@ -735,6 +799,70 @@ namespace ConductorChaos.Playground
             return maximumSpeed * speedFactor;
         }
 
+        /// <summary>Gele vuldop links en rechts op de diesel; een straal diesel erin vult de tank (LiquidSource).</summary>
+        private void CreateDieselFillers()
+        {
+            var bounds = Depot.DepotVehicles.LocalBounds(transform);
+            // Primitieven krijgen het standaardmateriaal, dat in een URP-build ontbreekt: neem een materiaal van de loc.
+            var look = GetComponentInChildren<Renderer>(true);
+            var material = look ? look.sharedMaterial : null;
+            foreach (float side in new[] { -1f, 1f })
+            {
+                var filler = new GameObject(side < 0f ? "Vuldop links" : "Vuldop rechts");
+                filler.transform.SetParent(transform, false);
+                filler.transform.localPosition = new Vector3(bounds.center.x + side * (bounds.extents.x + .1f), bounds.min.y + 1.05f, bounds.center.z);
+                var cap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                cap.name = "Dop";
+                Destroy(cap.GetComponent<Collider>());
+                cap.transform.SetParent(filler.transform, false);
+                cap.transform.localPosition = Vector3.down * .06f;
+                cap.transform.localScale = new Vector3(.16f, .06f, .16f);
+                var arm = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                arm.name = "Beugel";
+                Destroy(arm.GetComponent<Collider>());
+                arm.transform.SetParent(filler.transform, false);
+                arm.transform.localPosition = new Vector3(-side * .07f, -.1f, 0f);
+                arm.transform.localScale = new Vector3(.14f, .03f, .06f);
+                var paint = new MaterialPropertyBlock();
+                paint.SetColor("_BaseColor", new Color(.98f, .78f, .16f));
+                foreach (var part in new[] { cap, arm })
+                {
+                    var renderer = part.GetComponent<Renderer>();
+                    if (material) renderer.sharedMaterial = material;
+                    renderer.SetPropertyBlock(paint);
+                }
+                filler.AddComponent<DieselFiller>().Train = this;
+                dieselFillers.Add(filler);
+            }
+        }
+
+        /// <summary>Vulopening voor LiquidSource: alleen diesel telt, ander spul loopt over de rand.</summary>
+        private sealed class DieselFiller : MonoBehaviour, ConductorChaos.Yard.ILiquidInlet
+        {
+            internal TrainDrive Train;
+            public bool HatchOpen => Train && Train.dieselTank;
+            public Vector3 Inlet => transform.position;
+            public float InletRadius => .22f;
+            public void Pour(float liters, ConductorChaos.Yard.LiquidKind what)
+            {
+                if (what == ConductorChaos.Yard.LiquidKind.Diesel && Train) Train.AddDiesel(liters);
+            }
+            private void OnEnable() => ConductorChaos.Yard.LiquidInlets.All.Add(this);
+            private void OnDisable() => ConductorChaos.Yard.LiquidInlets.All.Remove(this);
+        }
+
+        /// <summary>De microfoon op het jaren-60-bureau zit vast in het bureaumodel: zet er een greep op. Plaats volgt uit
+        /// train_consoles.py: zelfde bureauvlak als de knoppen, u = 0,75 tegen -0,60 (claxon) en -0,36 (alarm).</summary>
+        private void CreateMicrophone(Transform horn, Transform alarm)
+        {
+            var grip = new GameObject("Microfoon greep");
+            grip.transform.SetParent(horn.parent, false);
+            grip.transform.position = horn.position + (alarm.position - horn.position) * (1.35f / .24f) + transform.up * .2f;
+            micCollider = grip.AddComponent<SphereCollider>();
+            micCollider.radius = .07f;
+            microphones.Add(this);
+        }
+
         internal void TryRepairSteamPipe(Collider bolt, float impactSpeed)
         {
             if (!IsServer || !IsSpawned || !steamValve || bolt != steamValve || !steamPipeBroken.Value ||
@@ -765,12 +893,13 @@ namespace ConductorChaos.Playground
                 return;
             }
             bool training = service && service.IsTrainingTrain(this);
-            bool needsFuel = canStoke && !training;
+            bool needsFuel = (canStoke || HasDieselTank) && !training;
             bool canDrive = powered.Value && (!needsFuel || fuel.Value > 0f) && (!service || service.AllowsMotion(this));
             float demand = canDrive ? throttle.Value : 0f;
             float requestedSpeed = SteamTargetSpeed(demand, !training);
             if (canDrive && needsFuel && !steamPipeBroken.Value)
-                fuel.Value = Mathf.Max(0f, fuel.Value - Mathf.Abs(requestedSpeed / Mathf.Max(maximumSpeed, .01f)) * Time.fixedDeltaTime / secondsPerFuelUnit);
+                fuel.Value = Mathf.Max(0f, fuel.Value - Mathf.Abs(requestedSpeed / Mathf.Max(maximumSpeed, .01f)) * Time.fixedDeltaTime /
+                    (secondsPerFuelUnit * (dieselTank ? DieselBurnFactor : 1f)));
             speed = Mathf.MoveTowards(speed, requestedSpeed, acceleration * Time.fixedDeltaTime);
             var oldTrack = track;
             float oldDistance = distance;
@@ -2319,6 +2448,14 @@ namespace ConductorChaos.Playground
             else if (startButton) startButton.localScale = Vector3.one;
             if (startButtonRenderer && buttonOriginalProperties != null) startButtonRenderer.SetPropertyBlock(buttonOriginalProperties);
             if (startButtonLight) Destroy(startButtonLight.gameObject);
+            if (dieselLampLight) Destroy(dieselLampLight.gameObject);
+            dieselLampLight = null;
+            foreach (var filler in dieselFillers) if (filler) Destroy(filler);
+            dieselFillers.Clear();
+            if (micCollider) Destroy(micCollider.gameObject);
+            micCollider = null;
+            micHand = null;
+            microphones.Remove(this);
             if (generatedStartButton) Destroy(generatedStartButton.gameObject);
             generatedStartButton = null;
             startButtonRenderer = null;

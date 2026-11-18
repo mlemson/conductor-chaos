@@ -78,8 +78,8 @@ namespace ConductorChaos.EditorTools
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogColor = Haze;
-            RenderSettings.fogStartDistance = 45f;
-            RenderSettings.fogEndDistance = 320f;
+            RenderSettings.fogStartDistance = 360f;
+            RenderSettings.fogEndDistance = 1400f;
             DynamicGI.UpdateEnvironment();
 
             // nabewerking

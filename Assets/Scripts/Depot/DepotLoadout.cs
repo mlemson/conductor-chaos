@@ -53,9 +53,11 @@ namespace ConductorChaos.Depot
         {
             var result = new DepotLoadout { Train = Train };
             if (checkOwnership && !DepotProgress.Owns(result.Train)) result.Train = TrainKind.Steam;
-            foreach (var wagon in Wagons)
+            foreach (var saved in Wagons)
             {
-                if (!DepotCatalog.Fits(wagon, result.Train)) continue;
+                // Oude samenstellingen met het rijtuig zonder deuren krijgen het standaard dieselrijtuig.
+                var wagon = saved == WagonKind.DieselCoach ? WagonKind.DieselCoachDoors : saved;
+                if (!DepotCatalog.Fits(wagon, result.Train) || DepotCatalog.Wagon(wagon).Hidden) continue;
                 if (checkOwnership && !DepotProgress.Owns(wagon)) continue;
                 if (DepotCatalog.IsUnique(wagon) && result.Wagons.Contains(wagon)) continue;
                 result.Wagons.Add(wagon);

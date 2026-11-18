@@ -6,11 +6,6 @@ using UnityEngine.SceneManagement;
 
 namespace ConductorChaos.Stations
 {
-    /// <summary>
-    /// Client-local soundtrack. Menu, introduction and briefing use a continuous
-    /// looping theme. Timed levels use the server-selected Rustynail Express version,
-    /// followed by Chug Chug Along after that clip has finished.
-    /// </summary>
     [DisallowMultipleComponent]
     public sealed class ServiceMusic : MonoBehaviour
     {
@@ -19,185 +14,180 @@ namespace ConductorChaos.Stations
         internal const float DefaultMusicVolume = .5f;
 
         private const float MusicGain = .7f;
-        private const string MenuTrackName = "RustynailExpress2";
-        private const string FollowupTrackName = "ChugChugAlong";
+        private const string Theme = "RustynailExpress2";
+        private const string Results = "ChugChugAlong";
+        private const float StartDelay = .65f, StartTempo = .87f, EndTempo = 1.18f;
+        // Matching phrases in the source recording. The last minute is outside the loop.
+        private const float LoopFrom = 42.690f, LoopAt = 147.841f, FadeLength = .64f;
 
         private readonly Dictionary<string, AudioClip> clips = new();
-
-        private AudioSource source;
+        private AudioSource source, incoming;
         private ServiceRun currentRun;
         private double currentStart;
-        private bool wasListenerPaused;
+        private bool fading, wasPaused;
+        private float voiceStarted = float.NegativeInfinity;
 
         private void Awake()
         {
-            source = gameObject.AddComponent<AudioSource>();
-            source.playOnAwake = false;
-            source.loop = false;
-            source.spatialBlend = 0f;
-            source.priority = 128;
+            source = AddVoice();
+            incoming = AddVoice();
+            WarmUp(Theme);
+            WarmUp(Results);
+        }
 
-            WarmUp(MenuTrackName);
-            WarmUp(FollowupTrackName);
-            foreach (int duration in new[] { 210, 240, 270, 300 }) WarmUp(LevelTrackName(duration));
+        private AudioSource AddVoice()
+        {
+            var voice = gameObject.AddComponent<AudioSource>();
+            voice.playOnAwake = false;
+            voice.spatialBlend = 0f;
+            voice.priority = 128;
+            return voice;
         }
 
         private void Update()
         {
-            // Master volume and master pause remain controlled by PlaygroundMenu.
-            source.volume = MusicGain * Mathf.Clamp01(PlayerPrefs.GetFloat(MusicVolumeKey, DefaultMusicVolume));
-            source.mute = PlayerPrefs.GetInt(MusicEnabledKey, 1) == 0;
-            if (AudioListener.pause) wasListenerPaused = true;
+            float volume = MusicGain * Mathf.Clamp01(PlayerPrefs.GetFloat(MusicVolumeKey, DefaultMusicVolume));
+            source.mute = incoming.mute = PlayerPrefs.GetInt(MusicEnabledKey, 1) == 0;
+            if (AudioListener.pause)
+            {
+                wasPaused = true;
+                return;
+            }
 
-            ServiceRun run = ServiceRun.Active;
+            var run = ServiceRun.Active;
             string sceneName = run ? run.gameObject.scene.name : SceneManager.GetActiveScene().name;
             if (sceneName != "TrainPlayground" && !ServiceRun.IsServiceScene(sceneName))
             {
-                StopAndReset();
-                return;
-            }
-
-            // Keep the same intro theme playing across menu, loading, training and
-            // briefing scene changes. The actual level begins at the server timer.
-            if (!run || run.Introduction || !run.TimerRunning)
-            {
-                PlayMenuTheme();
-                return;
-            }
-
-            NetworkManager network = NetworkManager.Singleton;
-            if (!run.IsSpawned || run.MusicDuration <= 0 || !network || !network.IsListening)
-            {
-                PlayMenuTheme();
-                return;
-            }
-
-            // Langere levels (level 2: 7-10 min) hebben geen eigen versie: dan de 5-minutenversie, daarna de vervolgsong.
-            AudioClip levelClip = ReadyClip(LevelTrackName(run.MusicDuration));
-            if (!levelClip)
-            {
-                if (!currentRun) PlayMenuTheme();
-                return;
-            }
-
-            // ServerTime lets late-joining clients seek to the matching point.
-            // Do not stop at the deadline: result screens can outlive the timer
-            // and should reach the next song when Rustynail Express finishes.
-            double start = run.MusicStartedAt;
-            double elapsed = network.ServerTime.Time - start;
-            if (elapsed < 0d)
-            {
-                PlayMenuTheme();
-                return;
-            }
-
-            if (elapsed < levelClip.length)
-            {
-                PlaySynchronized(run, start, levelClip, false,
-                    Mathf.Clamp((float)elapsed, 0f, Mathf.Max(0f, levelClip.length - .01f)));
-                return;
-            }
-
-            AudioClip followup = ReadyClip(FollowupTrackName);
-            if (!followup) return;
-
-            // Loop the follow-up until the player leaves/restarts the level. Using
-            // server time also gives late clients the same position in this song.
-            float followupTime = (float)((elapsed - levelClip.length) % followup.length);
-            PlaySynchronized(run, start, followup, true, followupTime);
-        }
-
-        private void PlayMenuTheme()
-        {
-            AudioClip menuClip = ReadyClip(MenuTrackName);
-            if (!menuClip) return;
-
-            if (currentRun || source.clip != menuClip || !source.loop)
-            {
-                source.Stop();
+                StopVoices();
                 currentRun = null;
-                currentStart = 0d;
-                source.clip = menuClip;
-                source.loop = true;
-                if (!AudioListener.pause) source.Play();
+                return;
+            }
+            var network = NetworkManager.Singleton;
+            if (!run || run.Introduction || !run.TimerRunning || !run.IsSpawned || !network || !network.IsListening ||
+                run.MusicDuration <= 0)
+            {
+                PlayFull(ReadyClip(Theme), volume);
+                return;
+            }
+            if (run.Phase is ServiceRun.RunPhase.Won or ServiceRun.RunPhase.Failed)
+            {
+                PlayFull(ReadyClip(Results), volume);
                 return;
             }
 
-            // The theme does not have a nine-second fade-out. Let the full song
-            // play and loop naturally until the level timer actually starts.
-            if (!AudioListener.pause && !source.isPlaying) source.Play();
+            var theme = ReadyClip(Theme);
+            if (!theme) return;
+            double elapsed = network.ServerTime.Time - run.MusicStartedAt;
+            if (elapsed < StartDelay)
+            {
+                StopVoices();
+                currentRun = null;
+                return;
+            }
+            float tempo = Mathf.Lerp(StartTempo, EndTempo, 1f - run.TimeLeft / (float)run.MusicDuration);
+            PlayTimed(run, theme, elapsed - StartDelay, tempo, volume);
         }
 
-        private void PlaySynchronized(ServiceRun run, double start, AudioClip clip, bool loop, float seek)
+        private void PlayTimed(ServiceRun run, AudioClip clip, double elapsed, float tempo, float volume)
         {
-            bool changed = currentRun != run || Math.Abs(currentStart - start) > .05 ||
-                           source.clip != clip || source.loop != loop;
-            if (changed)
+            bool hasLoop = clip.length > LoopAt + FadeLength;
+            if (currentRun != run || Math.Abs(currentStart - run.MusicStartedAt) > .05 || wasPaused || Stalled)
             {
-                source.Stop();
+                voiceStarted = Time.unscaledTime;
+                StopVoices();
                 currentRun = run;
-                currentStart = start;
-                source.clip = clip;
-                source.loop = loop;
-                if (seek > .15f) source.time = seek;
-                if (!AudioListener.pause) source.Play();
+                currentStart = run.MusicStartedAt;
+                wasPaused = false;
+                double position = MusicalTime(elapsed, run.MusicDuration);
+                float seek = hasLoop ? LoopPosition(position) : (float)(position % clip.length);
+                StartVoice(source, clip, seek, tempo, volume, !hasLoop);
+            }
+
+            source.pitch = incoming.pitch = tempo;
+            float positionInClip = source.timeSamples / (float)clip.frequency;
+            if (hasLoop && positionInClip >= LoopAt && !fading)
+            {
+                StartVoice(incoming, clip, LoopFrom + positionInClip - LoopAt, tempo, 0f);
+                fading = true;
+            }
+            if (!fading)
+            {
+                source.volume = volume;
                 return;
             }
 
-            if (AudioListener.pause) return;
-            if (wasListenerPaused)
-            {
-                wasListenerPaused = false;
-                source.time = seek;
-            }
-
-            // Avoid repeated seeking while a compressed MP3 plays normally.
-            if (!source.isPlaying)
-            {
-                source.time = seek;
-                source.Play();
-            }
+            float fade = Mathf.Clamp01((positionInClip - LoopAt) / FadeLength);
+            source.volume = volume * Mathf.Sqrt(1f - fade);
+            incoming.volume = volume * Mathf.Sqrt(fade);
+            if (fade < 1f) return;
+            source.Stop();
+            (source, incoming) = (incoming, source);
+            fading = false;
         }
 
-        private static string LevelTrackName(int duration) => duration is 210 or 240 or 270
-            ? $"RustynailExpress_{duration}" : "RustynailExpress_300";
+        private static double MusicalTime(double elapsed, int limit)
+        {
+            double ramp = Math.Max(1d, limit - StartDelay);
+            double within = Math.Min(elapsed, ramp);
+            return within * (StartTempo + (EndTempo - StartTempo) * within / (2d * ramp)) + (elapsed - within) * EndTempo;
+        }
 
-        private AudioClip ReadyClip(string name) => clips.TryGetValue(name, out var clip) &&
-            clip && clip.loadState == AudioDataLoadState.Loaded && clip.length > 0f ? clip : null;
+        private static float LoopPosition(double position) => position < LoopAt
+            ? (float)position
+            : LoopFrom + (float)((position - LoopAt) % (LoopAt - LoopFrom));
+
+        private void PlayFull(AudioClip clip, float volume)
+        {
+            if (!clip) return;
+            if (currentRun || source.clip != clip || !source.loop || Stalled)
+            {
+                voiceStarted = Time.unscaledTime;
+                StopVoices();
+                StartVoice(source, clip, 0f, 1f, volume, true);
+            }
+            currentRun = null;
+            wasPaused = false;
+            source.volume = volume;
+        }
+
+        private static void StartVoice(AudioSource voice, AudioClip clip, float seek, float pitch, float volume, bool loop = false)
+        {
+            voice.clip = clip;
+            voice.loop = loop;
+            voice.pitch = pitch;
+            voice.volume = volume;
+            voice.timeSamples = Mathf.Clamp(Mathf.RoundToInt(seek * clip.frequency), 0, clip.samples - 1);
+            voice.Play();
+        }
+
+        private AudioClip ReadyClip(string name)
+        {
+            if (!clips.TryGetValue(name, out var clip) || !clip) return null;
+            if (clip.loadState == AudioDataLoadState.Unloaded) clip.LoadAudioData();
+            return clip.loadState == AudioDataLoadState.Loaded && clip.samples > 0 ? clip : null;
+        }
+
+        // isPlaying can lag a few frames after Play(); restarting on every such frame kept the music silent.
+        private bool Stalled => !source.isPlaying && Time.unscaledTime - voiceStarted > 1f;
 
         private void WarmUp(string name)
         {
             var request = Resources.LoadAsync<AudioClip>("Music/" + name);
             request.completed += _ =>
             {
-                if (!this) return;
-                if (request.asset is not AudioClip clip)
-                {
-                    Debug.LogWarning($"Muziek ontbreekt: Assets/Resources/Music/{name}.mp3.", this);
-                    return;
-                }
+                if (!this || request.asset is not AudioClip clip) return;
                 clips[name] = clip;
                 if (clip.loadState == AudioDataLoadState.Unloaded) clip.LoadAudioData();
             };
         }
 
-        private void StopAndReset()
-        {
-            if (source.clip)
-            {
-                source.Stop();
-                source.clip = null;
-            }
-
-            source.loop = false;
-            currentRun = null;
-            currentStart = 0d;
-            wasListenerPaused = false;
-        }
-
-        private void OnDestroy()
+        private void StopVoices()
         {
             if (source) source.Stop();
+            if (incoming) incoming.Stop();
+            fading = false;
         }
+
+        private void OnDestroy() => StopVoices();
     }
 }

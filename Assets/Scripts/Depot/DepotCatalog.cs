@@ -13,7 +13,7 @@ namespace ConductorChaos.Depot
     {
         public TrainKind Kind;
         public string Name, Era, Short, Description, SpecialTitle, SpecialText, SpecialIcon, Sprite;
-        public int Speed, Acceleration, MaxWagons, UnlockLevel, Cost;
+        public int Speed, Acceleration, MaxWagons, Cost;
         public float MaximumSpeed, AccelerationRate;
         public string[] Breakdowns;
         public WagonKind SetCoach;
@@ -23,8 +23,8 @@ namespace ConductorChaos.Depot
     {
         public WagonKind Kind;
         public string Name, Capacity, Sprite, Category;
-        public int Seats, Crates, Animals, Tanks, UnlockLevel, Cost, Weight;
-        public bool HasSet;
+        public int Seats, Crates, Animals, Tanks, Cost, Weight;
+        public bool HasSet, Hidden;   // Hidden: model blijft bestaan, maar niet in de shop of samenstelling
         public TrainKind Set;
         public string[] Breakdowns;
     }
@@ -52,23 +52,23 @@ namespace ConductorChaos.Depot
                 Kind = TrainKind.Steam, Name = "Stoomloc", Era = "Stoom · loc met kolenwagen", Short = "Stoom · startloc",
                 Description = "De trouwe rode stoomloc waar elke crew mee begint. Traag, maar vergevingsgezind.",
                 SpecialTitle = "Kolen scheppen", SpecialText = "Houd de ketel bij vanaf de kolenwagen, anders zakt de druk.", SpecialIcon = "coal",
-                Speed = 2, Acceleration = 2, MaxWagons = 3, UnlockLevel = 0, Cost = 0, MaximumSpeed = 6f, AccelerationRate = 2f,
+                Speed = 2, Acceleration = 2, MaxWagons = 3, Cost = 0, MaximumSpeed = 6f, AccelerationRate = 2f,
                 Breakdowns = new[] { "Stoomleiding" }, Sprite = "steam", SetCoach = WagonKind.Regional
             },
             new TrainInfo
             {
                 Kind = TrainKind.Diesel, Name = "Diesel '60", Era = "Jaren 60 · loc met dieselrijtuig", Short = "Jaren 60",
                 Description = "Geen kolen meer, wel een motor die warm draait. Cabinedeur aan beide kanten.",
-                SpecialTitle = "Geen stoker nodig", SpecialText = "Let wel op de motor en de dakventilator.", SpecialIcon = "speed-gauge",
-                Speed = 3, Acceleration = 3, MaxWagons = 4, UnlockLevel = 1, Cost = 1000, MaximumSpeed = 7f, AccelerationRate = 2.4f,
-                Breakdowns = new[] { "Dakventilator", "Motorluik", "Aspot", "Remslang" }, Sprite = "diesel", SetCoach = WagonKind.DieselCoach
+                SpecialTitle = "Dieseltank", SpecialText = "De tank raakt leeg: neem jerrycans mee of tank bij aan de pomp op het perron.", SpecialIcon = "speed-gauge",
+                Speed = 3, Acceleration = 3, MaxWagons = 4, Cost = 1000, MaximumSpeed = 7f, AccelerationRate = 2.4f,
+                Breakdowns = new[] { "Dakventilator", "Motorluik", "Aspot", "Remslang" }, Sprite = "diesel", SetCoach = WagonKind.DieselCoachDoors
             },
             new TrainInfo
             {
                 Kind = TrainKind.Modern, Name = "Modern Express", Era = "2020 · stuurstand met modern rijtuig", Short = "2020",
                 Description = "Snel en elektrisch, met brede schuifdeuren. Meer wagons, meer om in de gaten te houden.",
                 SpecialTitle = "Stroomafnemer", SpecialText = "Valt de pantograaf uit, dan rol je uit.", SpecialIcon = "speed-gauge",
-                Speed = 4, Acceleration = 4, MaxWagons = 5, UnlockLevel = 2, Cost = 2500, MaximumSpeed = 8f, AccelerationRate = 2.8f,
+                Speed = 4, Acceleration = 4, MaxWagons = 5, Cost = 2500, MaximumSpeed = 8f, AccelerationRate = 2.8f,
                 Breakdowns = new[] { "Stroomafnemer", "Omvormer", "Aspot", "Remslang" }, Sprite = "modern", SetCoach = WagonKind.ModernCoach
             },
             new TrainInfo
@@ -76,7 +76,7 @@ namespace ConductorChaos.Depot
                 Kind = TrainKind.Futuristic, Name = "Futuristic Express", Era = "2040 · stuurstand met futuristisch rijtuig", Short = "2040",
                 Description = "Het snelste wat het depot heeft. Automatische deuren en een gloeiende energiecel.",
                 SpecialTitle = "Energiecel", SpecialText = "Laat de energiecel niet oververhitten.", SpecialIcon = "speed-gauge",
-                Speed = 5, Acceleration = 5, MaxWagons = 6, UnlockLevel = 3, Cost = 6000, MaximumSpeed = 9f, AccelerationRate = 3.2f,
+                Speed = 5, Acceleration = 5, MaxWagons = 6, Cost = 6000, MaximumSpeed = 9f, AccelerationRate = 3.2f,
                 Breakdowns = new[] { "Stroomafnemer", "Energiecel", "Aspot", "Remslang" }, Sprite = "futur", SetCoach = WagonKind.FuturisticCoach
             },
         };
@@ -88,14 +88,14 @@ namespace ConductorChaos.Depot
             new WagonInfo { Kind = WagonKind.Flatbed, Name = "Open goederenwagon", Capacity = "Kratten in de open bak", Category = CategoryGoods,
                 Crates = 4, Sprite = "flatbed", Weight = 1, Breakdowns = new string[0] },
             new WagonInfo { Kind = WagonKind.Cargo, Name = "Gesloten goederenwagon", Capacity = "Kratten binnen, doorloopbaar", Category = CategoryGoods,
-                Crates = 4, Sprite = "cargo", UnlockLevel = 1, Cost = 400, Weight = 1, Breakdowns = new[] { "Grendelkast", "Aspot", "Remslang" } },
+                Crates = 4, Sprite = "cargo", Cost = 400, Weight = 1, Breakdowns = new[] { "Grendelkast", "Aspot", "Remslang" } },
             new WagonInfo { Kind = WagonKind.Cattle, Name = "Veewagen", Capacity = "Hooi en ruimte voor dieren", Category = CategoryAnimals,
-                Animals = 2, Sprite = "cattle", UnlockLevel = 2, Cost = 600, Weight = 1, Breakdowns = new string[0] },
+                Animals = 2, Sprite = "cattle", Cost = 600, Weight = 1, Breakdowns = new string[0] },
             new WagonInfo { Kind = WagonKind.Tank, Name = "Ketelwagon", Capacity = "Eén tank voor water of olie", Category = CategoryLiquid,
-                Tanks = 1, Sprite = "tank", UnlockLevel = 3, Cost = 1200, Weight = 2, Breakdowns = new[] { "Afsluiter", "Aspot", "Remslang" } },
-            new WagonInfo { Kind = WagonKind.DieselCoach, Name = "Dieselrijtuig", Capacity = "Extra zitplaatsen", Category = CategoryPassengers,
+                Tanks = 1, Sprite = "tank", Cost = 1200, Weight = 2, Breakdowns = new[] { "Afsluiter", "Aspot", "Remslang" } },
+            new WagonInfo { Kind = WagonKind.DieselCoach, Name = "Dieselrijtuig zonder deuren", Hidden = true, Capacity = "Extra zitplaatsen", Category = CategoryPassengers,
                 Seats = 10, Sprite = "diesel_coach", HasSet = true, Set = TrainKind.Diesel, Weight = 1, Breakdowns = new[] { "Dakventilator", "Aspot", "Remslang" } },
-            new WagonInfo { Kind = WagonKind.DieselCoachDoors, Name = "Dieselrijtuig · zijdeuren", Capacity = "Instappen voor de kaartjesdienst", Category = CategoryPassengers,
+            new WagonInfo { Kind = WagonKind.DieselCoachDoors, Name = "Dieselrijtuig", Capacity = "Hier zitten de reizigers met kaartjes", Category = CategoryPassengers,
                 Seats = 10, Sprite = "diesel_coach", HasSet = true, Set = TrainKind.Diesel, Weight = 1, Breakdowns = new[] { "Dakventilator", "Aspot", "Remslang" } },
             new WagonInfo { Kind = WagonKind.ModernCoach, Name = "Modern rijtuig", Capacity = "Extra zitplaatsen", Category = CategoryPassengers,
                 Seats = 12, Sprite = "modern_coach", HasSet = true, Set = TrainKind.Modern, Weight = 1, Breakdowns = new[] { "Aircon", "Aspot", "Remslang" } },
@@ -121,7 +121,7 @@ namespace ConductorChaos.Depot
                 Summary = "Klim door de sneeuw naar de tunnel en daal af naar het ijsdal.", Distance = "± 1,7 km", Difficulty = 5,
                 Highlights = new[] { "Haarspeldbochten", "Sneeuwlawines" } },
             new LevelInfo { Index = 5, Scene = ServiceRun.FifthLevelScene, Label = "LEVEL 5", Name = "Door het woud", Photo = "Fernwood",
-                Summary = "Dicht loofbos, stammen op het spoor en twee bruggen.", Distance = "± 950 m", Difficulty = 5,
+                Summary = "Dicht loofbos, stammen op het spoor en twee bruggen onder tijdsdruk.", Distance = "± 950 m", Difficulty = 6,
                 Highlights = new[] { "Rollende boomstammen", "Beukenbos" } },
         };
 
