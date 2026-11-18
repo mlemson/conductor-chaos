@@ -131,6 +131,51 @@ namespace ConductorChaos.EditorTools
         const string TrackDir = "Assets/Art/Prefabs/Track";
         const string EnvDir = "Assets/Art/Models/Environment";
         const string PropDir = "Assets/Art/Prefabs/Station/Props";
+
+        internal const string EaglecrestBuilding = "Eaglecrest · stationsgebouw";
+
+        internal static void DressEaglecrest(ServiceStation station)
+        {
+            var root = station.transform.root;
+            if (root.Find(EaglecrestBuilding)) return;
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/Prefabs/Station/Station_Building_Small.prefab");
+            var font = StationSignTools.GetFont();
+            if (!prefab || !font) throw new InvalidOperationException("Het stationsgebouw of de bordletters voor Eaglecrest ontbreken.");
+
+            var building = (GameObject)PrefabUtility.InstantiatePrefab(prefab, root);
+            building.name = EaglecrestBuilding;
+            Vector3 stop = station.TrainStop.transform.TransformPoint(station.TrainStop.center);
+            var anchor = stop + root.right * 12f - root.forward * 5.15f;
+            anchor.y = root.position.y;
+            building.transform.SetPositionAndRotation(anchor, root.rotation);
+            if (StationSignTools.Attach(building, "Station_Building", font) == 0)
+                throw new InvalidOperationException("Het stationsbord van Eaglecrest ontbreekt.");
+            foreach (var sign in building.GetComponentsInChildren<StationSign>(true))
+            {
+                sign.Text = "Eaglecrest";
+                EditorUtility.SetDirty(sign);
+            }
+
+            foreach (Transform child in root)
+            {
+                string source = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(child);
+                if (child.name != "Hoofdgebouw" && source != EnvDir + "/Station/Station_Building.fbx") continue;
+                child.gameObject.SetActive(false);
+                PrefabUtility.RecordPrefabInstancePropertyModifications(child.gameObject);
+            }
+
+            if (station.Role == ServiceStation.StationRole.Vertrek)
+            {
+                var warm = new GameObject("Eaglecrest · warme wachtkamer");
+                warm.transform.SetParent(building.transform, false);
+                var zone = warm.AddComponent<BoxCollider>();
+                zone.center = new Vector3(0f, 2.05f, -2.3f);
+                zone.size = new Vector3(5.1f, 2f, 4.15f);
+                warm.AddComponent<WarmZone>();
+            }
+            PrefabUtility.RecordPrefabInstancePropertyModifications(building.transform);
+            PrefabUtility.RecordPrefabInstancePropertyModifications(building);
+        }
         const string WinterRoot = "Winterdecor";
         const float RailTop = 0.43f;            // sockets liggen op de bovenkant van de rails
         const float StepHeight = 2.4f;          // CliffMass-trede
@@ -322,6 +367,7 @@ namespace ConductorChaos.EditorTools
             TerrainData data;
             Transform propsRoot;
             float departureY;
+            Vector3? snowArrival;
             readonly List<Canyon> canyons = new List<Canyon>();
             readonly Dictionary<string, CliffMass> cliffsByName = new Dictionary<string, CliffMass>();
             Regional regional;
@@ -352,6 +398,12 @@ namespace ConductorChaos.EditorTools
                 departureY = routeStart.EndPosition.y - RailTop;
                 LayRoute(routeStart);
                 MoveArrival(arrivalGroup, arrivalFirst);
+                if (spec.departureName == "Eaglecrest") DressEaglecrest(departure);
+                if (spec.arrivalName == "Eaglecrest")
+                {
+                    DressEaglecrest(arrival);
+                    snowArrival = StopPoint(arrival);
+                }
                 Progress("Spoor bemonsteren", 0.18f);
                 SampleTrack();
                 MeasureStations(arrivalGroup);
@@ -426,6 +478,7 @@ namespace ConductorChaos.EditorTools
                                  n.StartsWith("Bush_") || n.StartsWith("Rock_") || n == "PaintedProps" || n.StartsWith("Landroute") ||
                                  n.StartsWith("Cloud_") || n.StartsWith("Mountain_") || n.StartsWith("Grass_") || n.StartsWith("Flower_") ||
                                  n == NatureDresser.RootName || n == WinterRoot ||
+                                 (spec.arrivalName == "Eaglecrest" && n.StartsWith("Country Run · ")) ||
                                  root.GetComponentInChildren<Terrain>(true);
                     bool parkedTrain = n.Contains("_Blockout") && root != train.gameObject && !IsConsist(root);
                     if (!decor && !parkedTrain) continue;
@@ -850,6 +903,8 @@ namespace ConductorChaos.EditorTools
 
                 var layers = spec.winter ? StylizedTerrainTools.EnsureWinterLayers()
                            : spec.forest ? StylizedTerrainTools.EnsureForestLayers() : StylizedTerrainTools.EnsureLayers();
+                if (snowArrival.HasValue)
+                    layers[1] = StylizedTerrainTools.EnsureWinterLayers()[0];
                 data = new TerrainData { heightmapResolution = res, alphamapResolution = longest > 820f ? 2048 : 1024 };
                 data.size = terrainSize;
                 data.terrainLayers = layers;
@@ -873,9 +928,10 @@ namespace ConductorChaos.EditorTools
                     }
                 }
                 data.SetHeights(0, 0, heights);
-                PaintLayers(layers.Length, noiseX, noiseZ);
-
                 AssetDatabase.CreateAsset(data, DataFolder(spec) + $"/Level{spec.number:00}_Terrain.asset");
+                PaintLayers(layers.Length, noiseX, noiseZ);
+                EditorUtility.SetDirty(data);
+                foreach (var texture in data.alphamapTextures) EditorUtility.SetDirty(texture);
                 var go = Terrain.CreateTerrainGameObject(data);
                 SceneManager.MoveGameObjectToScene(go, scene);
                 go.name = "Terrein · kliffenvallei";
@@ -887,7 +943,7 @@ namespace ConductorChaos.EditorTools
                 terrain.heightmapPixelError = 1f;
                 terrain.treeDistance = 0f;
                 terrain.detailObjectDistance = 0f;
-                if (alpineShoulder == null || !spec.winter) TerrainCliffsEditor.AddTo(terrain);
+                if (alpineShoulder == null && !snowArrival.HasValue) TerrainCliffsEditor.AddTo(terrain);
                 Physics.SyncTransforms();
                 log.AppendLine($"Terrein {terrainSize.x:0} × {terrainSize.z:0} m (hoogte {terrainOrigin.y:0} tot {terrainOrigin.y + terrainSize.y:0} m), heightmap {res}.");
             }
@@ -897,6 +953,13 @@ namespace ConductorChaos.EditorTools
                 terrainOrigin.z + z / (float)(res - 1) * terrainSize.z);
 
             static float Noise(float x, float z, float scale, float ox, float oz) => Mathf.PerlinNoise(ox + x / scale, oz + z / scale);
+
+            float SnowCover(float x, float z)
+            {
+                if (!snowArrival.HasValue) return 0f;
+                float drift = (Noise(x, z, 62f, 151f, 83f) - .5f) * 105f;
+                return Smooth(305f, 82f, HorizontalDistance(snowArrival.Value, x, z) + drift);
+            }
 
             // Boslevel (#246): hoe dicht het bos hier is (0 = open plek, 1 = dicht bos). Vaste ruisverschuiving per level, zodat de
             // bosgrond (terreinkleur) en de bomen precies op elkaar vallen. Rond de stations open weide.
@@ -1184,7 +1247,7 @@ namespace ConductorChaos.EditorTools
                             if (wood > 0.45f && litter > 0.42f) dirt = Mathf.Clamp01((litter - 0.42f) * 4f) * wood * 1.4f;
                             grass = Mathf.Max(0.05f, 1f - wood);
                         }
-                        else if (d > 7f && f > 0.6f) flowers = Mathf.Clamp01((f - 0.6f) * 6f);
+                        else if (!snowArrival.HasValue && d > 7f && f > 0.6f) flowers = Mathf.Clamp01((f - 0.6f) * 6f);
                         if (d > 2.6f && d < 4.6f) dirt = 0.55f;                       // berm naast de bielzen
                         foreach (var c in canyons)
                         {
@@ -1214,12 +1277,19 @@ namespace ConductorChaos.EditorTools
                             flowers += Smooth(.4f, .75f, strata) * Smooth(12f, 44f, d) * .7f;
                             dirt *= .24f;
                         }
+                        else if (alpineShoulder != null)
+                        {
+                            float slope = data.GetSteepness((x + .5f) / ar, (z + .5f) / ar);
+                            rock = Smooth(35f, 54f, slope + (f - .45f) * 23f) * Smooth(9f, 24f, d) * 2.5f;
+                        }
                         float sum = grass + flowers + dirt + stones + rock;
-                        if (layerCount > 0) a[z, x, 0] = grass / sum;
-                        if (layerCount > 1) a[z, x, 1] = flowers / sum;
-                        if (layerCount > 2) a[z, x, 2] = dirt / sum;
-                        if (layerCount > 3) a[z, x, 3] = stones / sum;
-                        if (layerCount > 4) a[z, x, 4] = rock / sum;
+                        float snow = SnowCover(wx, wz);
+                        float blend = (1f - snow) / sum;
+                        if (layerCount > 0) a[z, x, 0] = grass * blend;
+                        if (layerCount > 1) a[z, x, 1] = snowArrival.HasValue ? snow : flowers * blend;
+                        if (layerCount > 2) a[z, x, 2] = dirt * blend;
+                        if (layerCount > 3) a[z, x, 3] = stones * blend;
+                        if (layerCount > 4) a[z, x, 4] = rock * blend;
                     }
                 }
                 data.SetAlphamaps(0, 0, a);
@@ -1832,6 +1902,7 @@ namespace ConductorChaos.EditorTools
                     (Model("Trees", "Bush_01"), 0.7f, 4.2f),
                 };
                 trees = trees.Where(t => t.model).ToArray();
+                var snowyPine = snowArrival.HasValue ? Model("Winter", "Tree_Pine_Snow_Medium") : null;
                 float area = terrainSize.x * terrainSize.z;
                 int maxTrees = spec.forest ? Mathf.RoundToInt(Mathf.Clamp(area / 170f, 1800f, 3400f))
                                            : Mathf.RoundToInt(Mathf.Clamp(area / 260f, 1400f, 3600f));
@@ -1859,6 +1930,7 @@ namespace ConductorChaos.EditorTools
                     }
                     if (rng.NextDouble() > density * 0.55f) continue;
                     var pick = Pick(trees, t => t.weight);
+                    if (snowyPine && SnowCover(p.x, p.z) > 0.45f) pick.model = snowyPine;
                     float treeScale = 0.85f + (float)rng.NextDouble() * 0.45f;
                     // bos: de kruin blijft naast het spoor (kruinstraal schaalt mee), zodat niets boven de trein hangt
                     if (d < pick.clearance * (spec.forest ? treeScale : 1f) || NearStation(p, 4f)) continue;
@@ -2149,7 +2221,7 @@ namespace ConductorChaos.EditorTools
                 float rx = terrainSize.x * 0.5f + 80f, rz = terrainSize.z * 0.5f + 80f;
                 float baseY = (ring != null ? ring.segments.Select(s => s.Top).DefaultIfEmpty(departureY).Average() : departureY) - 8f;
                 int count = 0;
-                int n = alpineShoulder != null ? 6 : Mathf.Clamp(Mathf.RoundToInt((rx + rz) / 45f), 16, 30);
+                int n = snowArrival.HasValue ? 0 : alpineShoulder != null ? 6 : Mathf.Clamp(Mathf.RoundToInt((rx + rz) / 45f), 16, 30);
                 for (int i = 0; i < n && mountains.Length > 0; i++)
                 {
                     float fraction = i / (float)n;
