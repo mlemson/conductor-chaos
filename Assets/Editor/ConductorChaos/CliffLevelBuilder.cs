@@ -80,6 +80,14 @@ namespace ConductorChaos.EditorTools
 
         public sealed class RailSpec { public string tag, title, instructions; }
         public sealed class DamageSpec { public string tag, name; public float chance = 0.6f; }
+        public sealed class MountainSpec
+        {
+            public readonly string Tag;
+            public readonly float Offset, LengthRadius, WidthRadius, Rise;
+
+            public MountainSpec(string tag, float offset, float lengthRadius, float widthRadius, float rise) =>
+                (Tag, Offset, LengthRadius, WidthRadius, Rise) = (tag, offset, lengthRadius, widthRadius, rise);
+        }
 
         public sealed class LevelSpec
         {
@@ -91,6 +99,8 @@ namespace ConductorChaos.EditorTools
             public CliffSpec[] cliffs;
             public RailSpec[] rails;
             public DamageSpec[] damages;
+            public MountainSpec[] mountains;
+            public string tunnelTag;
             public bool rotateDepartureObjectives;
             public bool switchFaults;            // wissels op de hoofdroute kunnen onderweg storen
             public int minimumIncidents = 1;
@@ -145,20 +155,27 @@ namespace ConductorChaos.EditorTools
         }
 
         // ================================================================== hoofdroutine
-        public static void Build(LevelSpec spec)
+        public static void Build(LevelSpec spec, bool interactive = true)
         {
             string tag = $"Level {spec.number}";
             if (EditorApplication.isPlayingOrWillChangePlaymode)
             {
+                if (!interactive) throw new InvalidOperationException("Stop eerst de Play-modus.");
                 EditorUtility.DisplayDialog(tag, "Stop eerst de Play-modus.", "OK");
                 return;
             }
             if (!SourceExists)
             {
+                if (!interactive) throw new InvalidOperationException(SourceScene + " ontbreekt.");
                 EditorUtility.DisplayDialog(tag, SourceScene + $" ontbreekt; level {spec.number} wordt daarvan afgeleid.", "OK");
                 return;
             }
-            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            if (interactive)
+            {
+                if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            }
+            else if (Enumerable.Range(0, SceneManager.sceneCount).Any(i => SceneManager.GetSceneAt(i).isDirty))
+                throw new InvalidOperationException("Er zijn nog niet-opgeslagen scènes open.");
 
             string target = TargetScene(spec), data = DataFolder(spec);
             var log = new StringBuilder();
@@ -166,9 +183,14 @@ namespace ConductorChaos.EditorTools
             try
             {
                 Progress("Scène kopiëren", 0.02f);
-                if (AssetDatabase.LoadAssetAtPath<SceneAsset>(target)) AssetDatabase.DeleteAsset(target);
                 if (AssetDatabase.IsValidFolder(data)) AssetDatabase.DeleteAsset(data);
-                if (!AssetDatabase.CopyAsset(SourceScene, target)) throw new Exception("Kopiëren van level 1 mislukt.");
+                if (AssetDatabase.LoadAssetAtPath<SceneAsset>(target))
+                {
+                    // Keep the saved level's GUID, including its reference in the build list.
+                    System.IO.File.Copy(SourceScene, target, overwrite: true);
+                    AssetDatabase.ImportAsset(target, ImportAssetOptions.ForceUpdate);
+                }
+                else if (!AssetDatabase.CopyAsset(SourceScene, target)) throw new Exception("Kopiëren van level 1 mislukt.");
                 AssetDatabase.CreateFolder("Assets/Scenes", spec.scene + "_Data");
                 var scene = EditorSceneManager.OpenScene(target, OpenSceneMode.Single);
 
@@ -183,7 +205,7 @@ namespace ConductorChaos.EditorTools
                 AssetDatabase.SaveAssets();
                 Debug.Log($"[{tag}] Gebouwd.\n" + log);
                 EditorUtility.ClearProgressBar();
-                EditorUtility.DisplayDialog($"{tag} gebouwd",
+                if (interactive) EditorUtility.DisplayDialog($"{tag} gebouwd",
                     $"{spec.scene} staat klaar en is toegevoegd aan de buildlijst.\n\n" +
                     $"Speel het vorige level uit en kies 'Naar level {spec.number}', of open {spec.scene} en verfijn met de " +
                     "Prop Painter en de Klif Massa Painter. Details staan in de Console.", "OK");
@@ -193,6 +215,7 @@ namespace ConductorChaos.EditorTools
                 EditorUtility.ClearProgressBar();
                 Debug.LogException(e);
                 Debug.LogError($"[{tag}] Bouwen afgebroken.\n" + log);
+                if (!interactive) throw;
                 EditorUtility.DisplayDialog(tag, "Bouwen is mislukt: " + e.Message + "\n\nDetails staan in de Console.", "OK");
             }
             finally
@@ -303,6 +326,10 @@ namespace ConductorChaos.EditorTools
             readonly Dictionary<string, CliffMass> cliffsByName = new Dictionary<string, CliffMass>();
             Regional regional;
             Ring ring;
+            AlpineShoulder alpineShoulder;
+            Vector3 tunnelStart, tunnelForward, tunnelRight;
+            float tunnelLength;
+            readonly List<(MountainSpec spec, Vector3 center, Vector3 forward, Vector3 across)> mountains = new();
 
             public LevelContext(LevelSpec spec, Scene scene, StringBuilder log)
             {
@@ -328,11 +355,22 @@ namespace ConductorChaos.EditorTools
                 Progress("Spoor bemonsteren", 0.18f);
                 SampleTrack();
                 MeasureStations(arrivalGroup);
+                foreach (var mountain in spec.mountains ?? Array.Empty<MountainSpec>())
+                {
+                    var section = route.Where(p => p.tag == mountain.Tag).ToArray();
+                    if (section.Length == 0) throw new Exception($"Berg mist spoorsectie {mountain.Tag}.");
+                    var middle = SampleAt((section[0].arcStart + section[^1].arcEnd) * .5f);
+                    var forward = Flat(middle.dir);
+                    var across = Vector3.Cross(Vector3.up, forward);
+                    mountains.Add((mountain, middle.rail + across * mountain.Offset, forward, across));
+                }
+                if (!string.IsNullOrEmpty(spec.tunnelTag)) MeasureTunnel();
                 Progress("Kloven uitzetten", 0.2f);
                 foreach (var c in spec.canyons ?? new CanyonSpec[0]) PlanCanyon(c);
                 foreach (var c in canyons) CacheWallLevels(c);
                 Progress("Terrein maken", 0.24f);
                 BuildTerrain();
+                if (tunnelLength > 0f) BuildTunnel();
                 propsRoot = Root("PaintedProps").transform;
                 Progress("Kloofwanden", 0.55f);
                 foreach (var c in canyons) BuildCanyonWalls(c);
@@ -803,7 +841,8 @@ namespace ConductorChaos.EditorTools
                 // rondom ruimte voor de vallei, de ring van rotswanden en de hoogvlakte erachter
                 const float margin = 125f;
                 float low = Mathf.Min(samples.Min(s => s.Pivot), canyons.Count > 0 ? canyons.Min(c => c.originY) : 0f) - 6f;
-                float high = samples.Max(s => s.Pivot) + 60f;
+                float high = samples.Max(s => s.Pivot) + Mathf.Max(60f,
+                    mountains.Select(m => m.spec.Rise + 18f).DefaultIfEmpty(0f).Max());
                 terrainOrigin = new Vector3(Mathf.Floor(min.x - margin), Mathf.Floor(low), Mathf.Floor(min.z - margin));
                 terrainSize = new Vector3(Mathf.Ceil(max.x - min.x + 2 * margin), Mathf.Ceil(high - low), Mathf.Ceil(max.z - min.z + 2 * margin));
                 float longest = Mathf.Max(terrainSize.x, terrainSize.z);
@@ -818,6 +857,7 @@ namespace ConductorChaos.EditorTools
                 Progress("Terrein: afstandsvelden", 0.25f);
                 far = new FarField(samples, terrainOrigin, terrainSize, 6f);
                 regional = new Regional(samples, terrainOrigin, terrainSize, 8f, departureY);
+                if (mountains.Count > 0) alpineShoulder = new AlpineShoulder(samples, terrainOrigin, terrainSize, spec.tunnelTag);
                 float noiseX = rng.Next(1000), noiseZ = rng.Next(1000);
                 if (spec.cliffRing) ring = new Ring(terrainOrigin, terrainSize, rng, regional);
 
@@ -847,7 +887,7 @@ namespace ConductorChaos.EditorTools
                 terrain.heightmapPixelError = 1f;
                 terrain.treeDistance = 0f;
                 terrain.detailObjectDistance = 0f;
-                TerrainCliffsEditor.AddTo(terrain);                // steile hellingen (taluds, heuvels) krijgen grond/rots
+                if (alpineShoulder == null || !spec.winter) TerrainCliffsEditor.AddTo(terrain);
                 Physics.SyncTransforms();
                 log.AppendLine($"Terrein {terrainSize.x:0} × {terrainSize.z:0} m (hoogte {terrainOrigin.y:0} tot {terrainOrigin.y + terrainSize.y:0} m), heightmap {res}.");
             }
@@ -883,6 +923,33 @@ namespace ConductorChaos.EditorTools
                 float relief = (n - 0.45f) * (1.6f + 9f * away) + away * 9f * Mathf.Pow(Noise(x, z, 60f, ox + 300f, oz + 90f), 2f);
                 if (ring != null) relief *= Mathf.Lerp(1f, 0.3f, Smooth(-80f, -25f, ring.Inside(x, z)));   // rustig dal voor de rotswand
                 float h = baseY + relief;
+                float mountainHeight = 0f;
+                foreach (var mountain in mountains)
+                {
+                    var delta = new Vector3(x - mountain.center.x, 0f, z - mountain.center.z);
+                    float along = Vector3.Dot(delta, mountain.forward) / mountain.spec.LengthRadius;
+                    float across = Vector3.Dot(delta, mountain.across) / mountain.spec.WidthRadius + (n - .5f) * .48f;
+                    float distance = Mathf.Sqrt(along * along + across * across);
+                    float shoulder = 1f - Smooth(.06f, 1f, distance);
+                    float strata = Noise(x + z * .62f, z * .44f, 26f, ox + 143f, oz + 34f);
+                    mountainHeight = Mathf.Max(mountainHeight, shoulder * (mountain.spec.Rise + (strata - .5f) * 38f));
+                }
+                h += mountainHeight;
+                // The lower traverses limit the rise of the mountainside as well as the upper ones.
+                if (alpineShoulder != null)
+                {
+                    float shoulder = alpineShoulder.Height(x, z);
+                    float blend = Mathf.Max(0f, 1f - Mathf.Abs(h - shoulder) / 10f);
+                    h = Mathf.Min(h, shoulder) - 2.5f * blend * blend;
+                }
+                if (tunnelLength > 0f)
+                {
+                    var delta = new Vector3(x - tunnelStart.x, 0f, z - tunnelStart.z);
+                    float along = Vector3.Dot(delta, tunnelForward);
+                    float across = Vector3.Dot(delta, tunnelRight);
+                    float shoulder = Smooth(-38f, -12f, across) * Smooth(93f, 34f, across);
+                    h += 17f * shoulder * Smooth(-33f, 17f, along) * Smooth(tunnelLength + 37f, tunnelLength - 12f, along);
+                }
 
                 // het land rond een kloof ligt minstens op zijn randhoogte
                 foreach (var c in canyons)
@@ -918,7 +985,8 @@ namespace ConductorChaos.EditorTools
                     float lengthwise = Mathf.Abs((x - near.rail.x) * near.dir.x + (z - near.rail.z) * near.dir.z);
                     d += 1.5f * Mathf.Max(0f, lengthwise - 0.6f);
                     float bed = near.Pivot - 0.03f;
-                    h = Mathf.Lerp(bed, h, Smooth(3.4f, 14f, d));
+                    float bedHalf = spec.tunnelTag != null && near.tag == spec.tunnelTag ? 5.2f : 3.4f;
+                    h = Mathf.Lerp(bed, h, Smooth(bedHalf, alpineShoulder != null ? 12f : 14f, d));
                 }
                 // onder het brugdek: grond altijd onder het dek (bij de brughoofden zakt het dek in de grond)
                 var deck = grid.Nearest(x, z, 6f, s => s.bridge);
@@ -956,6 +1024,125 @@ namespace ConductorChaos.EditorTools
                     if (d < 14f) h = Mathf.Lerp(area.y - 0.03f, h, Smooth(0f, 14f, d));
                 }
                 return Mathf.Clamp(h, terrainOrigin.y + 0.2f, terrainOrigin.y + terrainSize.y - 0.2f);
+            }
+
+            void MeasureTunnel()
+            {
+                var pieces = route.Where(p => p.tag == spec.tunnelTag).ToArray();
+                if (pieces.Length == 0) throw new Exception("Het tunneltraject ontbreekt.");
+                tunnelStart = pieces[0].piece.StartPosition;
+                var end = pieces[^1].piece.EndPosition;
+                tunnelForward = Flat(end - tunnelStart);
+                tunnelRight = Vector3.Cross(Vector3.up, tunnelForward);
+                tunnelLength = Vector3.Distance(tunnelStart, end);
+                if (Mathf.Abs(end.y - tunnelStart.y) > .05f || pieces.Any(p =>
+                    Vector3.Angle(p.piece.StartDirection, tunnelForward) > .5f || Vector3.Angle(p.piece.EndDirection, tunnelForward) > .5f))
+                    throw new Exception("Kies voor de tunnel één aaneengesloten, vlak en recht spoortraject.");
+            }
+
+            void BuildTunnel()
+            {
+                float length = tunnelLength;
+                var tunnel = Root("Sneeuwpas · spoortunnel");
+                tunnel.transform.SetPositionAndRotation(tunnelStart, Quaternion.LookRotation(tunnelForward));
+                const int arches = 12, slices = 12;
+                int points = arches + 3;
+                var inner = new Vector3[slices + 1, points];
+                var outer = new Vector3[slices + 1, points];
+                for (int slice = 0; slice <= slices; slice++)
+                {
+                    float t = (float)slice / slices;
+                    float ridge = Mathf.Pow(Mathf.Max(0f, Mathf.Sin(t * Mathf.PI)), .75f);
+                    float depth = t * length;
+                    const float lowWing = 10.5f, highWing = 12.5f;
+                    inner[slice, 0] = new Vector3(-3.8f, -.85f, depth);
+                    inner[slice, points - 1] = new Vector3(3.8f, -.85f, depth);
+                    float leftGround = GroundAt(tunnel.transform.TransformPoint(-lowWing, 0f, depth)) - tunnelStart.y;
+                    float rightGround = GroundAt(tunnel.transform.TransformPoint(highWing, 0f, depth)) - tunnelStart.y;
+                    outer[slice, 0] = new Vector3(-lowWing, leftGround - .6f, depth);
+                    outer[slice, points - 1] = new Vector3(highWing, rightGround - .6f, depth);
+                    for (int i = 0; i <= arches; i++)
+                    {
+                        float angle = i * Mathf.PI / arches;
+                        float x = -Mathf.Cos(angle), y = Mathf.Sin(angle);
+                        float flankX = x * (x < 0f ? lowWing : highWing);
+                        inner[slice, i + 1] = new Vector3(x * 3.8f, 2.7f + y * 2.65f, depth);
+                        float slope = Mathf.Lerp(leftGround, rightGround, .5f + x * .5f);
+                        float asymmetry = .5f * Mathf.Sin(i * 1.61f + slice * .93f);
+                        float crown = Mathf.Max(6.55f, slope + 1.1f + 1.8f * ridge + asymmetry);
+                        float edge = Smooth(.55f, .99f, Mathf.Abs(x));
+                        outer[slice, i + 1] = new Vector3(flankX, Mathf.Lerp(crown, slope - .6f, edge), depth);
+                    }
+                }
+
+                var vertices = new List<Vector3>();
+                var faces = new[] { new List<int>(), new List<int>(), new List<int>(), new List<int>() };
+                void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 normal, int material)
+                {
+                    int n = vertices.Count;
+                    vertices.Add(a); vertices.Add(b); vertices.Add(c); vertices.Add(d);
+                    var indices = faces[material];
+                    if (Vector3.Dot(Vector3.Cross(b - a, c - a), normal) >= 0f)
+                    { indices.Add(n); indices.Add(n + 1); indices.Add(n + 2); indices.Add(n); indices.Add(n + 2); indices.Add(n + 3); }
+                    else
+                    { indices.Add(n); indices.Add(n + 2); indices.Add(n + 1); indices.Add(n); indices.Add(n + 3); indices.Add(n + 2); }
+                }
+
+                for (int i = 0; i < points - 1; i++)
+                {
+                    for (int z = 0; z < slices; z++)
+                    {
+                        var centroid = (inner[z, i] + inner[z, i + 1]) * .5f;
+                        var inward = new Vector3(-centroid.x, 1.5f - centroid.y, 0f);
+                        Quad(inner[z, i], inner[z, i + 1], inner[z + 1, i + 1], inner[z + 1, i], inward, 0);
+                        var faceCenter = (outer[z, i] + outer[z, i + 1]) * .5f;
+                        var outward = new Vector3(faceCenter.x, faceCenter.y + 1f, 0f);
+                        Quad(outer[z, i], outer[z, i + 1], outer[z + 1, i + 1], outer[z + 1, i], outward,
+                            spec.winter ? 2 : 1);
+                    }
+                    foreach (int z in new[] { 0, slices })
+                    {
+                        Vector3 direction = z == 0 ? Vector3.back : Vector3.forward;
+                        Vector3 RingEdge(Vector3 v) => v + new Vector3(v.x * .20f,
+                            Mathf.Clamp01((v.y - 2.7f) / 2.65f) * .72f, 0f);
+                        Vector3 a = inner[z, i], b = inner[z, i + 1];
+                        Vector3 rimA = RingEdge(a), rimB = RingEdge(b);
+                        Vector3 bevel = direction * .22f;
+                        Quad(rimA, outer[z, i], outer[z, i + 1], rimB, direction, 1);
+                        Quad(a + bevel, rimA + bevel, rimB + bevel, b + bevel, direction, 3);
+                        Quad(a, a + bevel, b + bevel, b, new Vector3(-a.x, 1.5f - a.y, 0f), 0);
+                        Quad(rimA + bevel, rimA, rimB, rimB + bevel, new Vector3(rimA.x, rimA.y, 0f), 3);
+                    }
+                }
+
+                var mesh = new Mesh { name = "Tunnel · rotsmantel en binnenwand", subMeshCount = faces.Length };
+                mesh.SetVertices(vertices);
+                for (int i = 0; i < faces.Length; i++) mesh.SetTriangles(faces[i], i);
+                mesh.RecalculateNormals();
+                mesh.RecalculateBounds();
+                AssetDatabase.CreateAsset(mesh, DataFolder(spec) + "/Tunnel.asset");
+                tunnel.AddComponent<MeshFilter>().sharedMesh = mesh;
+                tunnel.AddComponent<MeshRenderer>().sharedMaterials = new[]
+                {
+                    AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Environment/Station/M_Stn_StoneDark.mat"),
+                    AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Environment/M_Env_CliffStone.mat"),
+                    AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Environment/M_Env_SnowSoft.mat"),
+                    AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Environment/Station/M_Stn_Stone.mat")
+                };
+                tunnel.AddComponent<MeshCollider>().sharedMesh = mesh;
+                for (float z = 5f; z < length; z += 9f)
+                {
+                    var lamp = new GameObject("Tunnellicht");
+                    lamp.transform.SetParent(tunnel.transform, false);
+                    lamp.transform.localPosition = new Vector3(3.25f, 3.25f, z);
+                    var light = lamp.AddComponent<Light>();
+                    light.type = LightType.Point;
+                    light.color = new Color(1f, .78f, .49f);
+                    light.intensity = 2.1f;
+                    light.range = 9f;
+                }
+                log.AppendLine($"Tunnel: {length:0} m lang, 7,6 m tussen de wanden, eigen botsvorm en verlichting.");
+                log.AppendLine($"Hoogteverschil spoor: {samples.Max(s => s.rail.y) - samples.Min(s => s.rail.y):0.0} m.");
             }
 
             // Hoe vrij de ring van rotswanden hier mag staan (1 = helemaal, 0 = niet): weg van spoor, kloven en stations.
@@ -1017,6 +1204,16 @@ namespace ConductorChaos.EditorTools
                         }
                         foreach (var area in stationAreas)
                             if (DistanceToBox(area.bounds, wx, wz) < 3f) { stones = 0.5f; grass = 0.6f; }
+                        if (alpineShoulder != null && spec.winter)
+                        {
+                            float slope = data.GetSteepness((x + .5f) / ar, (z + .5f) / ar);
+                            float strata = Noise(wx + wz * .62f, wz * .44f, 24f, ox + 143f, oz + 34f);
+                            float exposed = Smooth(32f, 58f, slope + (strata - .45f) * 29f);
+                            rock = exposed * Smooth(12f, 28f, d) * 3.1f;
+                            stones += Smooth(.64f, .88f, strata) * Smooth(16f, 25f, slope) * Smooth(12f, 28f, d) * 1.2f;
+                            flowers += Smooth(.4f, .75f, strata) * Smooth(12f, 44f, d) * .7f;
+                            dirt *= .24f;
+                        }
                         float sum = grass + flowers + dirt + stones + rock;
                         if (layerCount > 0) a[z, x, 0] = grass / sum;
                         if (layerCount > 1) a[z, x, 1] = flowers / sum;
@@ -1077,12 +1274,16 @@ namespace ConductorChaos.EditorTools
                     var side = Side(s);
                     // wand iets onregelmatig: per plek een paar meter meer of minder diep
                     float depth = to + (Mathf.PerlinNoise(s.arc * 0.09f, left ? 3f : 7f) - 0.5f) * 5f;
-                    for (float l = from; l <= depth; l += 0.5f)
+                    float taper = alpineShoulder == null ? 1f :
+                        Smooth(0f, 9f, s.arc - section[0].arc) * Smooth(0f, 9f, section[^1].arc - s.arc);
+                    for (float l = Mathf.Lerp(depth - 1f, from, taper); l <= depth; l += 0.5f)
                     {
                         var w = s.rail + side * l;
                         if (grid.Nearest(w.x, w.z, from - 0.3f, q => true) != null) continue;   // nooit te dicht bij ander spoor
                         if (InCanyon(w, 3f)) continue;
                         float top = s.Pivot + above + (l > from + 4f ? StepHeight : 0f) + (l > from + 8f ? StepHeight : 0f);
+                        if (alpineShoulder != null)
+                            top = Mathf.Lerp(GroundAt(w), Mathf.Max(GroundAt(w), top), taper);
                         int level = Mathf.Max(1, Mathf.CeilToInt((top - originY) / StepHeight));
                         var c = mass.CellAt(mass.transform.InverseTransformPoint(w));
                         if (level > mass.GetLevel(c)) { mass.SetLevel(c, level); cells++; }
@@ -1634,6 +1835,7 @@ namespace ConductorChaos.EditorTools
                 float area = terrainSize.x * terrainSize.z;
                 int maxTrees = spec.forest ? Mathf.RoundToInt(Mathf.Clamp(area / 170f, 1800f, 3400f))
                                            : Mathf.RoundToInt(Mathf.Clamp(area / 260f, 1400f, 3600f));
+                if (alpineShoulder != null) maxTrees = Mathf.RoundToInt(Mathf.Clamp(area / 260f, 1200f, 3000f));
                 int planted = 0, onCliffs = 0;
                 float ox = rng.Next(1000), oz = rng.Next(1000);
                 var taken = new SampleFreeGrid(4f);
@@ -1651,6 +1853,8 @@ namespace ConductorChaos.EditorTools
                     {
                         float forest = Noise(p.x, p.z, 55f, ox, oz) * 0.8f + Noise(p.x, p.z, 18f, ox + 40f, oz + 9f) * 0.35f;
                         density = Mathf.Clamp01((forest - 0.48f) * 2.4f) * (0.35f + 0.65f * Smooth(6f, 30f, d));
+                        if (alpineShoulder != null)
+                            density = Smooth(.47f, .70f, forest) * (1f - .83f * Smooth(40f, 85f, GroundAt(p) - departureY));
                         if (NearStation(p, 14f)) density *= 0.15f;
                     }
                     if (rng.NextDouble() > density * 0.55f) continue;
@@ -1945,10 +2149,11 @@ namespace ConductorChaos.EditorTools
                 float rx = terrainSize.x * 0.5f + 80f, rz = terrainSize.z * 0.5f + 80f;
                 float baseY = (ring != null ? ring.segments.Select(s => s.Top).DefaultIfEmpty(departureY).Average() : departureY) - 8f;
                 int count = 0;
-                int n = Mathf.Clamp(Mathf.RoundToInt((rx + rz) / 45f), 16, 30);
+                int n = alpineShoulder != null ? 6 : Mathf.Clamp(Mathf.RoundToInt((rx + rz) / 45f), 16, 30);
                 for (int i = 0; i < n && mountains.Length > 0; i++)
                 {
-                    float angle = i / (float)n * Mathf.PI * 2f + (float)rng.NextDouble() * 0.15f;
+                    float fraction = i / (float)n;
+                    float angle = (alpineShoulder != null ? .15f + fraction * .38f : fraction) * Mathf.PI * 2f + (float)rng.NextDouble() * 0.15f;
                     var p = center + new Vector3(Mathf.Cos(angle) * rx, baseY, Mathf.Sin(angle) * rz);
                     if (Place(mountains[rng.Next(mountains.Length)], "Mountains", p, (float)rng.NextDouble() * 360f,
                             1.4f + (float)rng.NextDouble() * 1.0f, 0.9f + (float)rng.NextDouble() * 0.6f, 0f, false))
@@ -1978,6 +2183,50 @@ namespace ConductorChaos.EditorTools
         {
             float dx = p.x - x, dz = p.z - z;
             return Mathf.Sqrt(dx * dx + dz * dz);
+        }
+
+        // Coarse, continuous height limit over all traverses. A nearest-track switch would create a vertical seam
+        // between the lower and upper traverses even when both of their individual beds fit.
+        sealed class AlpineShoulder
+        {
+            const float Step = 5f;
+            readonly Vector3 origin;
+            readonly float[,] ceiling;
+
+            public AlpineShoulder(List<Sample> samples, Vector3 origin, Vector3 size, string tunnelTag)
+            {
+                this.origin = origin;
+                int width = Mathf.CeilToInt(size.x / Step) + 1, depth = Mathf.CeilToInt(size.z / Step) + 1;
+                ceiling = new float[depth, width];
+                for (int z = 0; z < depth; z++)
+                    for (int x = 0; x < width; x++) ceiling[z, x] = origin.y + size.y;
+
+                const int radius = 31;
+                for (int i = 0; i < samples.Count; i += 2)
+                {
+                    var sample = samples[i];
+                    if (sample.bridge || (tunnelTag != null && sample.tag == tunnelTag)) continue;
+                    int sx = Mathf.RoundToInt((sample.rail.x - origin.x) / Step);
+                    int sz = Mathf.RoundToInt((sample.rail.z - origin.z) / Step);
+                    for (int z = Mathf.Max(0, sz - radius); z <= Mathf.Min(depth - 1, sz + radius); z++)
+                        for (int x = Mathf.Max(0, sx - radius); x <= Mathf.Min(width - 1, sx + radius); x++)
+                        {
+                            float d = HorizontalDistance(sample.rail, origin.x + x * Step, origin.z + z * Step);
+                            float rise = Mathf.Max(0f, d - 4f);
+                            float limit = sample.Pivot + .85f + .34f * rise + .0034f * rise * rise;
+                            ceiling[z, x] = Mathf.Min(ceiling[z, x], limit);
+                        }
+                }
+            }
+
+            public float Height(float x, float z)
+            {
+                float u = Mathf.Clamp((x - origin.x) / Step, 0f, ceiling.GetLength(1) - 1.001f);
+                float v = Mathf.Clamp((z - origin.z) / Step, 0f, ceiling.GetLength(0) - 1.001f);
+                int ix = (int)u, iz = (int)v;
+                return Mathf.Lerp(Mathf.Lerp(ceiling[iz, ix], ceiling[iz, ix + 1], u - ix),
+                    Mathf.Lerp(ceiling[iz + 1, ix], ceiling[iz + 1, ix + 1], u - ix), v - iz);
+            }
         }
 
         static float DistanceToBox(Bounds b, float x, float z)

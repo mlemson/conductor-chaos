@@ -1,9 +1,5 @@
 // Conductor Chaos — level 4 'Over de pas' (issue #242): het winterlevel. Menu: Tools > Conductor Chaos > Level 4 bouwen.
-// Eaglecrest → Frostbury door de sneeuw: een stuk door het besneeuwde bos, steil omhoog naar een richel langs een
-// besneeuwde wand (sneeuwlawine), een houten schraagbrug over de ijskloof met een bevroren rivier, over de pas zelf
-// langs een tweede wand (nog een lawine), een kapotte rail vóór het stenen viaduct over de vallei, en dan omlaag naar
-// Frostbury. Reizigers kunnen bevriezen (#243): buiten in de kou, of in een wagon met een open deur. Het bouwen zelf
-// staat in CliffLevelBuilder (spec.winter zet sneeuwgrond, besneeuwde bomen/kliffen, ijs en de kou aan).
+// Eaglecrest → Frostbury: haarspeldklim, tunnel door de pas, afdaling naar het ijsdal en klim naar het eindstation.
 using ConductorChaos.Stations;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -16,6 +12,11 @@ namespace ConductorChaos.EditorTools
     {
         const string Straight = "Track_Straight_12m", Broken = "Track_Broken_6m", Viaduct = "Track_Bridge_Viaduct_12m";
         const string Right30 = "Track_Curve_R20_30_Right", Left30 = "Track_Curve_R20_30_Left";
+        const string Right15 = "Track_Curve_R20_15_Right", Left15 = "Track_Curve_R20_15_Left";
+
+        static Step[] Slope(string tag, int fullGradePieces, float grade) => Level02Builder.Join(
+            new[] { S(Straight, tag, grade * 0.5f) }, Repeat(fullGradePieces, Straight, tag, grade),
+            new[] { S(Straight, tag, grade * 0.5f) });
 
         public static readonly LevelSpec Spec = new LevelSpec
         {
@@ -27,50 +28,66 @@ namespace ConductorChaos.EditorTools
             arrivalName = "Frostbury",
             seed = 2026_11_17,
             winter = true,
+            cliffRing = false,
             route = Level02Builder.Join(
-                Repeat(2, Straight, "meadow"),
-                new[] { S(Straight, "forest", 1.5f), S(Straight, "forest", 2.5f), S(Left30, "forest", 2.5f), S(Straight, "forest", 1.5f) },
-                Repeat(2, "Track_Ramp_Up_18m_Steep", "climb1"),
-                Repeat(5, Straight, "ledgeA"),
-                Repeat(2, Right30, "turnA"),
-                new[] { S(Straight, "turnA") },
-                Repeat(2, Straight, "ravineA"),
-                Repeat(4, "Track_Bridge_Trestle_6m", "trestle"),
-                Repeat(2, Straight, "ravineB"),
-                new[] { Switch("Track_Switch_20m_Right", "paswissel", false, S(Straight, "zijspoor"), S("Track_BufferStop", "zijspoor")) },
-                Repeat(2, "Track_Ramp_Up_18m_Steep", "climb2"),
-                Repeat(5, Straight, "pass"),
-                Repeat(2, Left30, "turnB"),
+                Repeat(3, Straight, "dal"),
+                new[] { S(Straight, "climb1", 2f) },
+                Repeat(6, Straight, "climb1", 4f),
+                new[] { S(Left15, "climb1", 4f) },
+                Repeat(6, Straight, "climb1", 4f),
+                new[] { S(Right15, "climb1", 4f) },
+                Repeat(3, Straight, "climb1", 4f),
+                new[] { S(Straight, "climb1", 2f) },
+                Repeat(3, Right30, "haarspeld1"),
+                Repeat(3, Straight, "uitloper"),
+                Repeat(3, Right30, "haarspeld1"),
+                new[] { S(Straight, "climb2", 2f) },
+                Repeat(4, Straight, "climb2", 4f),
+                new[] { S(Right15, "climb2", 4f) },
+                Repeat(6, Straight, "climb2", 4f),
+                new[] { S(Left30, "climb2", 4f) },
+                Repeat(3, Straight, "climb2", 4f),
+                new[] { S(Straight, "climb2", 2f) },
+                Repeat(2, Straight, "ledgeA"),
+                Repeat(2, Left30, "haarspeld2"),
+                Repeat(2, Straight, "sneeuwbank"),
+                Repeat(3, Left30, "haarspeld2"),
+                Slope("climb3", 14, 4f),
+                Repeat(2, Straight, "voorportaal"),
+                Repeat(5, Straight, "tunnel"),
+                Repeat(3, Straight, "pass"),
+                new[] { S(Left30, "pass"), S(Left30, "pass") },
+                Slope("descent", 28, -4f),
+                new[] { Switch("Track_Switch_20m_Right", "dalwissel", false, S(Straight, "zijspoor"), S("Track_BufferStop", "zijspoor")) },
                 Repeat(2, Straight, "rimA"),
                 new[] { S(Broken, "bridgeRail") },
-                Repeat(4, Viaduct, "bridge1"),
+                Repeat(3, Viaduct, "bridge1"),
                 Repeat(3, Straight, "rimB"),
-                Repeat(2, "Track_Ramp_Down_18m_Steep", "descent"),
-                Repeat(3, "Track_Ramp_Down_12m", "descent"),
-                new[] { S(Right30, "forest2") },
-                new[] { S(Straight, "forest2", -1.5f), S(Straight, "forest2", -2.5f), S(Straight, "forest2", -1.5f) },
-                new[] { S(Broken, "damage"), S(Straight, "forest2"), S("Track_Curve_R20_15_Left", "forest2") },
-                Repeat(2, Straight, "meadow2")),
+                new[] { S(Right30, "valleyTurn"), S(Right30, "valleyTurn"), S(Broken, "damage") },
+                Slope("finalClimb", 15, 4f),
+                Repeat(3, Straight, "meadow2")),
+            tunnelTag = "tunnel",
+            mountains = new[]
+            {
+                new MountainSpec("climb3", 104f, 213f, 126f, 90f),
+                new MountainSpec("tunnel", 75f, 204f, 132f, 99f),
+                new MountainSpec("tunnel", 36f, 103f, 72f, 51f),
+                new MountainSpec("descent", -123f, 222f, 157f, 52f),
+                new MountainSpec("finalClimb", 88f, 160f, 130f, 46f),
+            },
             canyons = new[]
             {
                 new CanyonSpec
                 {
-                    name = "De ijskloof", parts = new[] { Cross(new[] { "ravineA" }, "trestle", new[] { "ravineB" }, 1) },
-                    tiers = 5, riverHalf = 1.8f, minHalf = 6f, maxHalf = 14f, sideFalls = 1, pillars = 0, gap = 30f,
-                    armStart = new Vector3(16f, 60f, 25f), armEnd = new Vector3(16f, 60f, 25f),
-                },
-                new CanyonSpec
-                {
-                    name = "De sneeuwvallei",
-                    parts = new[] { Along(new[] { "pass" }, 1), Cross(new[] { "rimA" }, "bridge1", new[] { "rimB" }, -1) },
-                    tiers = 12, armStart = new Vector3(26f, 70f, 30f), armEnd = new Vector3(26f, 60f, 30f), pillars = 2,
+                    name = "Het ijsdal", parts = new[] { Cross(new[] { "rimA" }, "bridge1", new[] { "rimB" }, -1) },
+                    tiers = 5, riverHalf = 2.2f, minHalf = 7f, maxHalf = 16f, sideFalls = 0, pillars = 0, gap = 30f,
+                    armStart = new Vector3(20f, 38f, 39f), armEnd = new Vector3(20f, 42f, 42f),
                 },
             },
             cliffs = new[]
             {
-                new CliffSpec { name = "Besneeuwde wand langs de richel", tags = new[] { "climb1", "ledgeA" }, left = false, rockfall = "Sneeuwlawine op de richel" },
-                new CliffSpec { name = "Wand op de pas", tags = new[] { "climb2", "pass" }, left = false, from = 5.6f, to = 13f, above = 5.2f, rockfall = "Sneeuwlawine op de pas" },
-                new CliffSpec { name = "Insnijding bij de afdaling", tags = new[] { "descent" }, left = true, from = 5.4f, to = 10f, above = 3.2f, stone = true },
+                new CliffSpec { name = "Besneeuwde wand boven de haarspeld", tags = new[] { "ledgeA" }, left = true, from = 8f, to = 18f, above = 2f, stone = true, rockfall = "Sneeuwlawine boven het dal" },
+                new CliffSpec { name = "Rotsband na de tunnel", tags = new[] { "pass" }, left = false, from = 9f, to = 22f, above = 3f, stone = true, rockfall = "Sneeuwlawine na de tunnel" },
             },
             rails = new[]
             {
@@ -80,9 +97,9 @@ namespace ConductorChaos.EditorTools
             damages = new[] { new DamageSpec { tag = "damage", name = "Spoorschade in het winterbos", chance = 0.6f } },
             switchFaults = true,
             minimumIncidents = 2,
-            timeLimits = new[] { 840, 780, 720, 660 },
+            timeLimits = new[] { 900, 840, 780, 720 },
             extraWrenches = 2,
-            mesas = 14,
+            mesas = 0,
         };
 
         [MenuItem("Tools/Conductor Chaos/Level 4 openen")]
