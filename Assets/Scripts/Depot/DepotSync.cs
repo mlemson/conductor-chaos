@@ -36,15 +36,6 @@ namespace ConductorChaos.Depot
 
         public static void MarkDirty() => dirty = true;
 
-        public static bool IsHostSide
-        {
-            get
-            {
-                var network = NetworkManager.Singleton;
-                return !network || !network.IsListening || network.IsServer;
-            }
-        }
-
         public static void Open(int level)
         {
             IsOpen = true;
@@ -112,13 +103,13 @@ namespace ConductorChaos.Depot
             var network = NetworkManager.Singleton;
             if (!network || !network.IsListening || network.CustomMessagingManager == null)
             {
-                if (registered)
+                if (!ReferenceEquals(registered, null))
                 {
                     registered = null;
                     Suggestions.Clear();
                     ReadyClients.Clear();
                     LocalReady = false;
-                    if (IsOpen && !IsHostSide) IsOpen = false;
+                    Close();
                 }
                 return;
             }

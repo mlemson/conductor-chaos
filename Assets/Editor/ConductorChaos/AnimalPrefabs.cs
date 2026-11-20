@@ -143,9 +143,9 @@ namespace ConductorChaos.EditorTools
                 Object.DestroyImmediate(go);
             }
         }
-        internal static BoxCollider AddHayBaleCollider(GameObject target)
+        internal static BoxCollider AddHayBaleCollider(GameObject target, bool undo = false)
         {
-            var box = target.AddComponent<BoxCollider>();
+            var box = undo ? Undo.AddComponent<BoxCollider>(target) : target.AddComponent<BoxCollider>();
             box.center = new Vector3(0f, .208f, 0f);
             box.size = new Vector3(.84f, .4f, .52f);
             return box;
@@ -156,19 +156,34 @@ namespace ConductorChaos.EditorTools
     {
         public int callbackOrder => 0;
 
-        public void OnProcessScene(Scene scene, BuildReport report)
+        public void OnProcessScene(Scene scene, BuildReport report) => ReplaceLegacyColliders(scene, false);
+
+        [MenuItem("Tools/Conductor Chaos/Hooibaalcolliders in open scène herstellen")]
+        private static void RepairOpenScene()
         {
-            if (report == null) return;
+            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+            var scene = SceneManager.GetActiveScene();
+            if (ReplaceLegacyColliders(scene, true)) UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);
+        }
+
+        private static bool ReplaceLegacyColliders(Scene scene, bool undo)
+        {
+            bool changed = false;
             // Older scenes contain the baked collider directly on the imported visual.
             foreach (var root in scene.GetRootGameObjects())
                 foreach (var lure in root.GetComponentsInChildren<AnimalLure>(true))
                     foreach (var hull in lure.GetComponentsInChildren<MeshCollider>(true))
                     {
                         if (!hull.sharedMesh || hull.sharedMesh.name != "HayBale") continue;
-                        var box = AnimalPrefabs.AddHayBaleCollider(hull.gameObject);
+                        var box = AnimalPrefabs.AddHayBaleCollider(hull.gameObject, undo);
                         box.sharedMaterial = hull.sharedMaterial;
-                        Object.DestroyImmediate(hull);
+                        box.enabled = hull.enabled;
+                        box.isTrigger = hull.isTrigger;
+                        if (undo) Undo.DestroyObjectImmediate(hull);
+                        else Object.DestroyImmediate(hull);
+                        changed = true;
                     }
+            return changed;
         }
     }
 }

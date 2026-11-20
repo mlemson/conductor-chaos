@@ -327,7 +327,11 @@ namespace ConductorChaos.Playground
             if (phase != previousPhase)
             {
                 if (playing) SetScreen(Screen.Game);
-                else if (offline && screen != Screen.Main) SetScreen(Screen.Main);
+                else if (offline)
+                {
+                    depot.Hide();
+                    if (screen != Screen.Main) SetScreen(Screen.Main);
+                }
                 previousPhase = phase;
             }
             routesStatus.text = networkHost.Message;
