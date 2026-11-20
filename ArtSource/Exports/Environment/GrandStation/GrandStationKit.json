@@ -1,0 +1,1664 @@
+{
+ "assets": {
+  "GS_Hall_Facade": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Hall_Facade.fbx",
+   "category": "Building",
+   "tris": 20656,
+   "min": [
+    -13.67,
+    0.75,
+    -1.2
+   ],
+   "max": [
+    13.67,
+    19.82,
+    1.37
+   ],
+   "nodes": [
+    "GS_Hall_Facade",
+    "Mesh",
+    "Light_Arch_1",
+    "Light_Arch_2",
+    "Light_Arch_3",
+    "Sign_Name",
+    "Sign_Name_Icon",
+    "Sign_Name_Text"
+   ],
+   "boxes": [
+    [
+     -12.65,
+     5.95,
+     0.075,
+     1.6,
+     11.9,
+     2.15,
+     0.0
+    ],
+    [
+     12.65,
+     5.95,
+     0.075,
+     1.6,
+     11.9,
+     2.15,
+     0.0
+    ],
+    [
+     -9.91,
+     3.125,
+     -0.24,
+     4.18,
+     6.25,
+     0.72,
+     0.0
+    ],
+    [
+     -2.8,
+     3.125,
+     -0.24,
+     1.16,
+     6.25,
+     0.72,
+     0.0
+    ],
+    [
+     2.8,
+     3.125,
+     -0.24,
+     1.16,
+     6.25,
+     0.72,
+     0.0
+    ],
+    [
+     9.91,
+     3.125,
+     -0.24,
+     4.18,
+     6.25,
+     0.72,
+     0.0
+    ],
+    [
+     0.0,
+     11.65,
+     -0.1,
+     24.0,
+     10.8,
+     1.0,
+     0.0
+    ]
+   ],
+   "signs": [
+    {
+     "node": "Sign_Name",
+     "iconScale": 1.0,
+     "text": "WHISTLETON",
+     "letterHeight": 0.4,
+     "room": 10.72,
+     "iconWidth": 0.52,
+     "iconGap": 0.18,
+     "textZ": 0.106,
+     "textDepth": 0.035
+    }
+   ]
+  },
+  "GS_Hall_Shell": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Hall_Shell.fbx",
+   "category": "Building",
+   "tris": 32364,
+   "min": [
+    -12.896,
+    0.0,
+    -11.7
+   ],
+   "max": [
+    12.896,
+    17.22,
+    11.7
+   ],
+   "nodes": [
+    "GS_Hall_Shell",
+    "Mesh",
+    "Light_Hall_1",
+    "Light_Hall_2",
+    "Light_Hall_3",
+    "Light_Hall_4",
+    "Light_Hall_5",
+    "Light_Hall_6",
+    "Light_Hall_7",
+    "Light_Hall_8",
+    "Light_Hall_9",
+    "Light_Hall_10",
+    "Light_Hall_11",
+    "Light_Hall_12"
+   ],
+   "boxes": [
+    [
+     -11.7,
+     5.55,
+     -7.9,
+     0.6,
+     9.0,
+     5.0,
+     0.0
+    ],
+    [
+     -11.7,
+     5.55,
+     5.9,
+     0.6,
+     9.0,
+     9.0,
+     0.0
+    ],
+    [
+     -11.7,
+     8.95,
+     -2.0,
+     0.6,
+     2.2,
+     6.8,
+     0.0
+    ],
+    [
+     11.7,
+     5.55,
+     -9.2,
+     0.6,
+     9.0,
+     2.4,
+     0.0
+    ],
+    [
+     11.7,
+     5.55,
+     2.4,
+     0.6,
+     9.0,
+     16.0,
+     0.0
+    ],
+    [
+     11.7,
+     7.35,
+     -6.8,
+     0.6,
+     5.4,
+     2.4,
+     0.0
+    ],
+    [
+     0.0,
+     0.525,
+     0.0,
+     24.0,
+     1.05,
+     22.0,
+     0.0
+    ],
+    [
+     0.0,
+     12.675,
+     0.0,
+     24.8,
+     5.25,
+     23.4,
+     0.0
+    ]
+   ]
+  },
+  "GS_Wing_Link": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Wing_Link.fbx",
+   "category": "Building",
+   "tris": 33176,
+   "min": [
+    -6.1,
+    0.0,
+    -9.45
+   ],
+   "max": [
+    6.1,
+    13.85,
+    9.45
+   ],
+   "nodes": [
+    "GS_Wing_Link",
+    "Mesh",
+    "Light_Room_1",
+    "Light_Room_2"
+   ],
+   "boxes": [
+    [
+     0.0,
+     4.325,
+     8.75,
+     12.0,
+     8.65,
+     0.5,
+     0.0
+    ],
+    [
+     0.0,
+     4.325,
+     -8.75,
+     12.0,
+     8.65,
+     0.5,
+     0.0
+    ],
+    [
+     0.0,
+     0.525,
+     0.0,
+     12.0,
+     1.05,
+     18.0,
+     0.0
+    ],
+    [
+     0.0,
+     6.8,
+     0.0,
+     12.0,
+     3.7,
+     18.0,
+     0.0
+    ],
+    [
+     0.0,
+     9.85,
+     0.0,
+     12.1,
+     2.4,
+     18.7,
+     0.0
+    ]
+   ]
+  },
+  "GS_Wing_Pavilion": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Wing_Pavilion.fbx",
+   "category": "Building",
+   "tris": 64628,
+   "min": [
+    -5.056,
+    0.75,
+    -10.828
+   ],
+   "max": [
+    5.056,
+    15.426,
+    10.828
+   ],
+   "nodes": [
+    "GS_Wing_Pavilion",
+    "Mesh"
+   ],
+   "boxes": [
+    [
+     0.0,
+     4.925,
+     9.725,
+     9.0,
+     9.85,
+     0.55,
+     0.0
+    ],
+    [
+     0.0,
+     4.925,
+     -9.725,
+     9.0,
+     9.85,
+     0.55,
+     0.0
+    ],
+    [
+     4.225,
+     4.925,
+     0.0,
+     0.55,
+     9.85,
+     20.0,
+     0.0
+    ],
+    [
+     -4.225,
+     4.925,
+     0.0,
+     0.55,
+     9.85,
+     20.0,
+     0.0
+    ],
+    [
+     0.0,
+     4.925,
+     0.0,
+     9.0,
+     9.85,
+     20.0,
+     0.0
+    ],
+    [
+     0.0,
+     11.738,
+     0.0,
+     9.0,
+     3.7759,
+     20.0,
+     0.0
+    ]
+   ]
+  },
+  "GS_ClockTower": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_ClockTower.fbx",
+   "category": "Building",
+   "tris": 30118,
+   "min": [
+    -3.3,
+    0.0,
+    -3.3
+   ],
+   "max": [
+    3.3,
+    33.39,
+    3.3
+   ],
+   "nodes": [
+    "GS_ClockTower",
+    "Mesh",
+    "Light_TowerClock"
+   ],
+   "boxes": [
+    [
+     0.0,
+     11.825,
+     0.0,
+     5.7,
+     23.65,
+     5.7,
+     0.0
+    ]
+   ]
+  },
+  "GS_Apron_6m": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Apron_6m.fbx",
+   "category": "Building",
+   "tris": 1384,
+   "min": [
+    -3.0,
+    0.0,
+    5.158
+   ],
+   "max": [
+    3.0,
+    1.05,
+    11.0
+   ],
+   "nodes": [
+    "GS_Apron_6m",
+    "Mesh"
+   ],
+   "boxes": [
+    [
+     0.0,
+     0.525,
+     8.075,
+     6.0,
+     1.05,
+     5.85,
+     0.0
+    ]
+   ]
+  },
+  "GS_Apron_Hall_6m": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Apron_Hall_6m.fbx",
+   "category": "Building",
+   "tris": 1048,
+   "min": [
+    -3.0,
+    0.0,
+    5.158
+   ],
+   "max": [
+    3.0,
+    1.05,
+    9.0
+   ],
+   "nodes": [
+    "GS_Apron_Hall_6m",
+    "Mesh"
+   ],
+   "boxes": [
+    [
+     0.0,
+     0.525,
+     7.075,
+     6.0,
+     1.05,
+     3.85,
+     0.0
+    ]
+   ]
+  },
+  "GS_Platform_Island_6m": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Platform_Island_6m.fbx",
+   "category": "Building",
+   "tris": 1524,
+   "min": [
+    -3.0,
+    0.0,
+    -7.65
+   ],
+   "max": [
+    3.0,
+    1.066,
+    -1.65
+   ],
+   "nodes": [
+    "GS_Platform_Island_6m",
+    "Mesh"
+   ],
+   "boxes": [
+    [
+     0.0,
+     0.525,
+     -4.65,
+     6.0,
+     1.05,
+     6.0,
+     0.0
+    ]
+   ]
+  },
+  "GS_Platform_Island_End": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Platform_Island_End.fbx",
+   "category": "Building",
+   "tris": 700,
+   "min": [
+    -0.039,
+    -0.029,
+    -7.36
+   ],
+   "max": [
+    6.039,
+    2.089,
+    -1.94
+   ],
+   "nodes": [
+    "GS_Platform_Island_End",
+    "Mesh"
+   ],
+   "boxes": [
+    [
+     3.0,
+     0.375,
+     -4.65,
+     6.0912,
+     0.3,
+     5.4,
+     0.0,
+     -9.462
+    ]
+   ]
+  },
+  "GS_PlatformCanopy_Side_6m": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_PlatformCanopy_Side_6m.fbx",
+   "category": "Building",
+   "tris": 3952,
+   "min": [
+    -3.0,
+    1.05,
+    1.68
+   ],
+   "max": [
+    3.0,
+    5.835,
+    9.27
+   ],
+   "nodes": [
+    "GS_PlatformCanopy_Side_6m",
+    "Mesh",
+    "Light_Canopy_1",
+    "Light_Canopy_2"
+   ],
+   "boxes": [
+    [
+     0.0,
+     2.71,
+     5.6,
+     0.6,
+     3.32,
+     0.6,
+     0.0
+    ],
+    [
+     0.0,
+     5.325,
+     5.475,
+     6.0,
+     1.05,
+     7.35,
+     0.0
+    ]
+   ]
+  },
+  "GS_PlatformCanopy_Island_6m": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_PlatformCanopy_Island_6m.fbx",
+   "category": "Building",
+   "tris": 3952,
+   "min": [
+    -3.0,
+    1.05,
+    -7.62
+   ],
+   "max": [
+    3.0,
+    5.835,
+    -1.68
+   ],
+   "nodes": [
+    "GS_PlatformCanopy_Island_6m",
+    "Mesh",
+    "Light_Canopy_1",
+    "Light_Canopy_2"
+   ],
+   "boxes": [
+    [
+     0.0,
+     2.71,
+     -4.65,
+     0.6,
+     3.32,
+     0.6,
+     0.0
+    ],
+    [
+     0.0,
+     5.325,
+     -4.65,
+     6.0,
+     1.05,
+     5.7,
+     0.0
+    ]
+   ]
+  },
+  "GS_Footbridge_Landing": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Footbridge_Landing.fbx",
+   "category": "Building",
+   "tris": 2366,
+   "min": [
+    -1.75,
+    1.05,
+    -1.75
+   ],
+   "max": [
+    1.75,
+    9.48,
+    1.75
+   ],
+   "nodes": [
+    "GS_Footbridge_Landing",
+    "Mesh",
+    "Light_Landing"
+   ],
+   "boxes": [
+    [
+     -1.3,
+     3.45,
+     -1.3,
+     0.28,
+     4.8,
+     0.28,
+     0.0
+    ],
+    [
+     -1.3,
+     3.45,
+     1.3,
+     0.28,
+     4.8,
+     0.28,
+     0.0
+    ],
+    [
+     1.3,
+     3.45,
+     -1.3,
+     0.28,
+     4.8,
+     0.28,
+     0.0
+    ],
+    [
+     1.3,
+     3.45,
+     1.3,
+     0.28,
+     4.8,
+     0.28,
+     0.0
+    ],
+    [
+     0.0,
+     5.65,
+     0.0,
+     3.0,
+     0.4,
+     3.0,
+     0.0
+    ]
+   ]
+  },
+  "GS_Footbridge_Stair": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Footbridge_Stair.fbx",
+   "category": "Building",
+   "tris": 2384,
+   "min": [
+    -1.4,
+    0.0,
+    -0.115
+   ],
+   "max": [
+    1.4,
+    6.891,
+    8.1
+   ],
+   "nodes": [
+    "GS_Footbridge_Stair",
+    "Mesh"
+   ],
+   "boxes": [
+    [
+     0.0,
+     3.3,
+     3.9,
+     2.4,
+     0.3,
+     9.1586,
+     -31.608
+    ]
+   ]
+  },
+  "GS_Footbridge_Span": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Footbridge_Span.fbx",
+   "category": "Building",
+   "tris": 8214,
+   "min": [
+    -1.75,
+    5.4,
+    -0.06
+   ],
+   "max": [
+    1.75,
+    10.2,
+    9.71
+   ],
+   "nodes": [
+    "GS_Footbridge_Span",
+    "Mesh",
+    "Light_Span_1",
+    "Light_Span_2",
+    "Light_Span_3",
+    "Light_Span_4",
+    "Light_Span_5"
+   ],
+   "boxes": [
+    [
+     0.0,
+     5.625,
+     4.825,
+     3.0,
+     0.45,
+     9.65,
+     0.0
+    ],
+    [
+     -1.5,
+     7.15,
+     4.825,
+     0.2,
+     2.6,
+     9.65,
+     0.0
+    ],
+    [
+     1.5,
+     7.15,
+     4.825,
+     0.2,
+     2.6,
+     9.65,
+     0.0
+    ]
+   ]
+  },
+  "GS_EntranceCanopy_6m": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_EntranceCanopy_6m.fbx",
+   "category": "Building",
+   "tris": 2714,
+   "min": [
+    -3.0,
+    1.05,
+    -0.08
+   ],
+   "max": [
+    4.45,
+    6.684,
+    4.53
+   ],
+   "nodes": [
+    "GS_EntranceCanopy_6m",
+    "Mesh",
+    "Light_Porch"
+   ],
+   "boxes": [
+    [
+     3.0,
+     3.475,
+     4.15,
+     0.6,
+     4.85,
+     0.6,
+     0.0
+    ],
+    [
+     0.0,
+     6.175,
+     2.25,
+     6.0,
+     1.35,
+     4.5,
+     0.0
+    ]
+   ]
+  },
+  "GS_EntranceCanopy_Column": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_EntranceCanopy_Column.fbx",
+   "category": "Building",
+   "tris": 868,
+   "min": [
+    -1.45,
+    1.05,
+    2.493
+   ],
+   "max": [
+    1.45,
+    6.202,
+    4.49
+   ],
+   "nodes": [
+    "GS_EntranceCanopy_Column",
+    "Mesh"
+   ],
+   "boxes": [
+    [
+     0.0,
+     3.475,
+     4.15,
+     0.6,
+     4.85,
+     0.6,
+     0.0
+    ]
+   ]
+  },
+  "GS_Forecourt": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Forecourt.fbx",
+   "category": "Building",
+   "tris": 13204,
+   "min": [
+    -33.0,
+    -0.02,
+    29.0
+   ],
+   "max": [
+    33.0,
+    1.05,
+    38.435
+   ],
+   "nodes": [
+    "GS_Forecourt",
+    "Mesh"
+   ],
+   "boxes": [
+    [
+     -28.5,
+     0.525,
+     32.75,
+     9.0,
+     1.05,
+     5.5,
+     0.0
+    ],
+    [
+     -18.0,
+     0.525,
+     32.25,
+     12.0,
+     1.05,
+     6.5,
+     0.0
+    ],
+    [
+     0.0,
+     0.525,
+     33.25,
+     24.0,
+     1.05,
+     4.5,
+     0.0
+    ],
+    [
+     18.0,
+     0.525,
+     32.25,
+     12.0,
+     1.05,
+     6.5,
+     0.0
+    ],
+    [
+     28.5,
+     0.525,
+     32.75,
+     9.0,
+     1.05,
+     5.5,
+     0.0
+    ],
+    [
+     0.0,
+     0.325,
+     36.58,
+     66.0,
+     0.3,
+     2.4017,
+     25.925
+    ]
+   ]
+  },
+  "GS_Square": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Square.fbx",
+   "category": "Building",
+   "tris": 19404,
+   "min": [
+    -46.0,
+    -0.1,
+    37.71
+   ],
+   "max": [
+    46.0,
+    1.2,
+    67.69
+   ],
+   "nodes": [
+    "GS_Square",
+    "Mesh"
+   ],
+   "boxes": [
+    [
+     0.0,
+     0.2,
+     54.0,
+     12.0,
+     0.4,
+     12.0,
+     0.0
+    ]
+   ]
+  },
+  "GS_StreetLamp": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_StreetLamp.fbx",
+   "category": "Building",
+   "tris": 1972,
+   "min": [
+    -0.842,
+    0.0,
+    -0.3
+   ],
+   "max": [
+    0.842,
+    4.49,
+    0.3
+   ],
+   "nodes": [
+    "GS_StreetLamp",
+    "Mesh",
+    "Light_Lamp_L",
+    "Light_Lamp_R"
+   ],
+   "boxes": [
+    [
+     0.0,
+     2.1,
+     0.0,
+     0.6,
+     4.2,
+     0.6,
+     0.0
+    ]
+   ]
+  },
+  "GS_TicketCounter": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_TicketCounter.fbx",
+   "category": "Building",
+   "tris": 10980,
+   "min": [
+    -4.65,
+    1.05,
+    0.05
+   ],
+   "max": [
+    4.65,
+    5.01,
+    2.5
+   ],
+   "nodes": [
+    "GS_TicketCounter",
+    "Mesh",
+    "Spot_TicketWindow_1",
+    "Spot_TicketWindow_2",
+    "Spot_TicketWindow_3",
+    "Sign_Tickets",
+    "Sign_Tickets_Icon",
+    "Sign_Tickets_Text"
+   ],
+   "boxes": [
+    [
+     0.0,
+     2.425,
+     2.025,
+     9.0,
+     2.75,
+     0.95,
+     0.0
+    ],
+    [
+     0.0,
+     2.15,
+     0.325,
+     9.0,
+     2.2,
+     0.55,
+     0.0
+    ]
+   ],
+   "signs": [
+    {
+     "node": "Sign_Tickets",
+     "iconScale": 1.0,
+     "text": "KAARTJES",
+     "letterHeight": 0.248,
+     "room": 3.648,
+     "iconWidth": 0.3224,
+     "iconGap": 0.1116,
+     "textZ": 0.056,
+     "textDepth": 0.035
+    }
+   ]
+  },
+  "GS_InfoDesk": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_InfoDesk.fbx",
+   "category": "Building",
+   "tris": 5096,
+   "min": [
+    -1.4,
+    1.05,
+    -1.4
+   ],
+   "max": [
+    1.4,
+    5.45,
+    1.4
+   ],
+   "nodes": [
+    "GS_InfoDesk",
+    "Mesh",
+    "Spot_InfoDesk"
+   ],
+   "boxes": [
+    [
+     0.0,
+     1.6,
+     0.0,
+     2.6,
+     1.1,
+     2.6,
+     0.0
+    ]
+   ]
+  },
+  "GS_Kiosk": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Kiosk.fbx",
+   "category": "Building",
+   "tris": 7632,
+   "min": [
+    -1.75,
+    1.05,
+    -1.2
+   ],
+   "max": [
+    1.75,
+    4.55,
+    2.107
+   ],
+   "nodes": [
+    "GS_Kiosk",
+    "Mesh",
+    "Spot_KioskCounter",
+    "Sign_Kiosk",
+    "Sign_Kiosk_Icon",
+    "Sign_Kiosk_Text"
+   ],
+   "boxes": [
+    [
+     0.0,
+     2.525,
+     0.0,
+     3.2,
+     2.95,
+     2.2,
+     0.0
+    ]
+   ],
+   "signs": [
+    {
+     "node": "Sign_Kiosk",
+     "iconScale": 1.0,
+     "text": "KOFFIE",
+     "letterHeight": 0.2,
+     "room": 1.72,
+     "iconWidth": 0.26,
+     "iconGap": 0.09,
+     "textZ": 0.056,
+     "textDepth": 0.035
+    }
+   ]
+  },
+  "GS_CafeTable": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_CafeTable.fbx",
+   "category": "Building",
+   "tris": 984,
+   "min": [
+    -0.99,
+    1.028,
+    -0.416
+   ],
+   "max": [
+    0.99,
+    2.0,
+    0.416
+   ],
+   "nodes": [
+    "GS_CafeTable",
+    "Mesh"
+   ],
+   "boxes": [
+    [
+     0.0,
+     1.45,
+     0.0,
+     2.0,
+     0.8,
+     0.9,
+     0.0
+    ]
+   ]
+  },
+  "GS_PedestalClock": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_PedestalClock.fbx",
+   "category": "Building",
+   "tris": 6780,
+   "min": [
+    -0.82,
+    1.05,
+    -0.82
+   ],
+   "max": [
+    0.82,
+    6.91,
+    0.82
+   ],
+   "nodes": [
+    "GS_PedestalClock",
+    "Mesh",
+    "Spot_MeetingPoint"
+   ],
+   "boxes": [
+    [
+     0.0,
+     1.35,
+     0.0,
+     1.5,
+     0.6,
+     1.5,
+     0.0
+    ],
+    [
+     0.0,
+     3.925,
+     0.0,
+     0.6,
+     5.75,
+     0.6,
+     0.0
+    ]
+   ]
+  },
+  "GS_DepartureBoard": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_DepartureBoard.fbx",
+   "category": "Building",
+   "tris": 20584,
+   "min": [
+    -3.56,
+    -1.21,
+    -0.275
+   ],
+   "max": [
+    3.56,
+    5.19,
+    0.275
+   ],
+   "nodes": [
+    "GS_DepartureBoard",
+    "Mesh"
+   ],
+   "boxes": [
+    [
+     0.0,
+     0.0,
+     0.0,
+     7.0,
+     2.3,
+     0.5,
+     0.0
+    ]
+   ]
+  },
+  "GS_Partition_Office": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Partition_Office.fbx",
+   "category": "Building",
+   "tris": 12668,
+   "min": [
+    -5.75,
+    1.05,
+    -0.205
+   ],
+   "max": [
+    5.7,
+    4.75,
+    1.727
+   ],
+   "nodes": [
+    "GS_Partition_Office",
+    "Mesh",
+    "Sign_Room",
+    "Sign_Room_Icon",
+    "Sign_Room_Text",
+    "Sign_Room_Back",
+    "Sign_Room_Back_Icon",
+    "Sign_Room_Back_Text"
+   ],
+   "boxes": [
+    [
+     -4.8,
+     2.9,
+     0.0,
+     1.8,
+     3.7,
+     0.14,
+     0.0
+    ],
+    [
+     1.8,
+     2.9,
+     0.0,
+     7.8,
+     3.7,
+     0.14,
+     0.0
+    ],
+    [
+     -3.0,
+     4.15,
+     0.0,
+     2.0,
+     1.2,
+     0.18,
+     0.0
+    ]
+   ],
+   "signs": [
+    {
+     "node": "Sign_Room",
+     "iconScale": 1.0,
+     "text": "PERSONEEL",
+     "letterHeight": 0.152,
+     "room": 1.492,
+     "iconWidth": 0.1976,
+     "iconGap": 0.0684,
+     "textZ": 0.056,
+     "textDepth": 0.035
+    },
+    {
+     "node": "Sign_Room_Back",
+     "iconScale": 1.0,
+     "text": "PERSONEEL",
+     "letterHeight": 0.152,
+     "room": 1.492,
+     "iconWidth": 0.1976,
+     "iconGap": 0.0684,
+     "textZ": 0.056,
+     "textDepth": 0.035
+    }
+   ]
+  },
+  "GS_Partition_Storage": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Partition_Storage.fbx",
+   "category": "Building",
+   "tris": 9304,
+   "min": [
+    -5.7,
+    1.05,
+    -0.205
+   ],
+   "max": [
+    5.7,
+    4.75,
+    1.727
+   ],
+   "nodes": [
+    "GS_Partition_Storage",
+    "Mesh",
+    "Sign_Room",
+    "Sign_Room_Icon",
+    "Sign_Room_Text",
+    "Sign_Room_Back",
+    "Sign_Room_Back_Icon",
+    "Sign_Room_Back_Text"
+   ],
+   "boxes": [
+    [
+     -3.3,
+     2.9,
+     0.0,
+     4.8,
+     3.7,
+     0.14,
+     0.0
+    ],
+    [
+     3.3,
+     2.9,
+     0.0,
+     4.8,
+     3.7,
+     0.14,
+     0.0
+    ],
+    [
+     0.0,
+     4.15,
+     0.0,
+     2.0,
+     1.2,
+     0.18,
+     0.0
+    ]
+   ],
+   "signs": [
+    {
+     "node": "Sign_Room",
+     "iconScale": 1.0,
+     "text": "OPSLAG",
+     "letterHeight": 0.152,
+     "room": 1.492,
+     "iconWidth": 0.1976,
+     "iconGap": 0.0684,
+     "textZ": 0.056,
+     "textDepth": 0.035
+    },
+    {
+     "node": "Sign_Room_Back",
+     "iconScale": 1.0,
+     "text": "OPSLAG",
+     "letterHeight": 0.152,
+     "room": 1.492,
+     "iconWidth": 0.1976,
+     "iconGap": 0.0684,
+     "textZ": 0.056,
+     "textDepth": 0.035
+    }
+   ]
+  },
+  "GS_OfficeFurniture": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_OfficeFurniture.fbx",
+   "category": "Building",
+   "tris": 3798,
+   "min": [
+    -2.68,
+    1.05,
+    -1.985
+   ],
+   "max": [
+    2.7,
+    3.45,
+    0.5
+   ],
+   "nodes": [
+    "GS_OfficeFurniture",
+    "Mesh",
+    "Spot_Stationmaster"
+   ],
+   "boxes": [
+    [
+     0.0,
+     1.45,
+     0.0,
+     2.0,
+     0.8,
+     1.0,
+     0.0
+    ],
+    [
+     -2.1,
+     1.7,
+     -1.625,
+     1.2,
+     1.3,
+     0.55,
+     0.0
+    ],
+    [
+     2.3,
+     1.5,
+     -1.5,
+     0.8,
+     0.9,
+     0.7,
+     0.0
+    ]
+   ]
+  },
+  "GS_Podium": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Podium.fbx",
+   "category": "Building",
+   "tris": 1468,
+   "min": [
+    -1.85,
+    1.04,
+    -0.95
+   ],
+   "max": [
+    1.85,
+    2.03,
+    0.95
+   ],
+   "nodes": [
+    "GS_Podium",
+    "Mesh",
+    "Spot_Speaker"
+   ],
+   "boxes": [
+    [
+     0.0,
+     1.16,
+     0.0,
+     3.6,
+     0.22,
+     1.8,
+     0.0
+    ],
+    [
+     -0.95,
+     1.525,
+     0.3,
+     0.6,
+     0.95,
+     0.4,
+     0.0
+    ]
+   ]
+  },
+  "GS_MissionTable": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_MissionTable.fbx",
+   "category": "Building",
+   "tris": 1208,
+   "min": [
+    -1.2,
+    1.05,
+    -0.7
+   ],
+   "max": [
+    1.2,
+    2.125,
+    0.7
+   ],
+   "nodes": [
+    "GS_MissionTable",
+    "Mesh",
+    "Spot_MissionSelect"
+   ],
+   "boxes": [
+    [
+     0.0,
+     1.525,
+     0.0,
+     2.4,
+     0.95,
+     1.4,
+     0.0
+    ]
+   ]
+  },
+  "GS_StorageShelf": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_StorageShelf.fbx",
+   "category": "Building",
+   "tris": 588,
+   "min": [
+    -1.23,
+    1.05,
+    -0.33
+   ],
+   "max": [
+    1.23,
+    3.25,
+    0.33
+   ],
+   "nodes": [
+    "GS_StorageShelf",
+    "Mesh"
+   ],
+   "boxes": [
+    [
+     0.0,
+     2.15,
+     0.0,
+     2.4,
+     2.2,
+     0.6,
+     0.0
+    ]
+   ]
+  },
+  "GS_PlatformSign": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_PlatformSign.fbx",
+   "category": "Building",
+   "tris": 3808,
+   "min": [
+    -0.45,
+    -1.4,
+    -0.115
+   ],
+   "max": [
+    0.45,
+    0.02,
+    0.115
+   ],
+   "nodes": [
+    "GS_PlatformSign",
+    "Mesh",
+    "Sign_Platform",
+    "Sign_Platform_Icon",
+    "Sign_Platform_Text",
+    "Sign_Platform_Back",
+    "Sign_Platform_Back_Icon",
+    "Sign_Platform_Back_Text"
+   ],
+   "boxes": [],
+   "signs": [
+    {
+     "node": "Sign_Platform",
+     "iconScale": 0.11962,
+     "text": "1",
+     "letterHeight": 0.24,
+     "room": 0.06,
+     "iconWidth": 0.312,
+     "iconGap": 0.108,
+     "textZ": 0.016,
+     "textDepth": 0.035
+    },
+    {
+     "node": "Sign_Platform_Back",
+     "iconScale": 0.11962,
+     "text": "1",
+     "letterHeight": 0.24,
+     "room": 0.06,
+     "iconWidth": 0.312,
+     "iconGap": 0.108,
+     "textZ": 0.016,
+     "textDepth": 0.035
+    }
+   ]
+  },
+  "GS_DirectionSign": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_DirectionSign.fbx",
+   "category": "Building",
+   "tris": 9644,
+   "min": [
+    -1.6,
+    -1.22,
+    -0.11
+   ],
+   "max": [
+    1.6,
+    0.02,
+    0.11
+   ],
+   "nodes": [
+    "GS_DirectionSign",
+    "Mesh",
+    "Sign_Direction",
+    "Sign_Direction_Icon",
+    "Sign_Direction_Text",
+    "Sign_Direction_Back",
+    "Sign_Direction_Back_Icon",
+    "Sign_Direction_Back_Text"
+   ],
+   "boxes": [],
+   "signs": [
+    {
+     "node": "Sign_Direction",
+     "iconScale": 1.0,
+     "text": "PERRONS",
+     "letterHeight": 0.18,
+     "room": 1.95,
+     "iconWidth": 0.234,
+     "iconGap": 0.081,
+     "textZ": 0.016,
+     "textDepth": 0.035
+    },
+    {
+     "node": "Sign_Direction_Back",
+     "iconScale": 1.0,
+     "text": "PERRONS",
+     "letterHeight": 0.18,
+     "room": 1.95,
+     "iconWidth": 0.234,
+     "iconGap": 0.081,
+     "textZ": 0.016,
+     "textDepth": 0.035
+    }
+   ]
+  },
+  "GS_WallSign": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_WallSign.fbx",
+   "category": "Building",
+   "tris": 5090,
+   "min": [
+    -1.5,
+    -0.31,
+    0.0
+   ],
+   "max": [
+    1.5,
+    0.31,
+    0.13
+   ],
+   "nodes": [
+    "GS_WallSign",
+    "Mesh",
+    "Sign_Wall",
+    "Sign_Wall_Icon",
+    "Sign_Wall_Text"
+   ],
+   "boxes": [],
+   "signs": [
+    {
+     "node": "Sign_Wall",
+     "iconScale": 1.0,
+     "text": "BRIEFING",
+     "letterHeight": 0.168,
+     "room": 2.068,
+     "iconWidth": 0.2184,
+     "iconGap": 0.0756,
+     "textZ": 0.016,
+     "textDepth": 0.035
+    }
+   ]
+  },
+  "GS_Poster": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Poster.fbx",
+   "category": "Building",
+   "tris": 7468,
+   "min": [
+    -0.6,
+    0.0,
+    0.0
+   ],
+   "max": [
+    0.6,
+    1.7,
+    0.06
+   ],
+   "nodes": [
+    "GS_Poster",
+    "Mesh"
+   ],
+   "boxes": []
+  },
+  "GS_Rug": {
+   "fbx": "Assets/Art/Models/Environment/GrandStation/GS_Rug.fbx",
+   "category": "Building",
+   "tris": 2448,
+   "min": [
+    -1.7,
+    1.04,
+    -1.7
+   ],
+   "max": [
+    1.7,
+    1.082,
+    1.7
+   ],
+   "nodes": [
+    "GS_Rug",
+    "Mesh"
+   ],
+   "boxes": []
+  }
+ }
+}

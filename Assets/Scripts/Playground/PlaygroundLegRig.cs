@@ -13,7 +13,7 @@ namespace ConductorChaos.Playground
         private readonly Rigidbody torso;
         private readonly MeshRenderer original;
         private readonly SkinnedMeshRenderer skin;
-        private readonly Mesh mesh;
+        private Mesh mesh;
         private readonly Leg left;
         private readonly Leg right;
         private readonly RaycastHit[] contacts = new RaycastHit[16];
@@ -56,25 +56,11 @@ namespace ConductorChaos.Playground
                 return null;
             }
 
-            Mesh mesh = Object.Instantiate(filter.sharedMesh);
-            mesh.name = filter.sharedMesh.name + " (playground leg rig)";
             var bones = new[] { body, legL, legR };
             var bindposes = new Matrix4x4[bones.Length];
             for (int i = 0; i < bones.Length; i++)
                 bindposes[i] = bones[i].worldToLocalMatrix * body.localToWorldMatrix;
-            Vector3[] vertices = mesh.vertices;
-            var weights = new BoneWeight[vertices.Length];
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                Vector3 point = model.InverseTransformPoint(body.TransformPoint(vertices[i]));
-                float legWeight = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.32f, 0.12f, point.y));
-                // Leg anchors are named from the model's local coordinate system.
-                bool useLeft = Mathf.Abs(point.x - legL.localPosition.x) <= Mathf.Abs(point.x - legR.localPosition.x);
-                weights[i] = new BoneWeight { boneIndex0 = 0, weight0 = 1f - legWeight,
-                    boneIndex1 = useLeft ? 1 : 2, weight1 = legWeight };
-            }
-            mesh.bindposes = bindposes;
-            mesh.boneWeights = weights;
+            Mesh mesh = SkinMesh(filter.sharedMesh, model, body, legL, legR, bindposes);
             var skinObject = new GameObject("Playground skinned body");
             skinObject.transform.SetParent(body, false);
             var skin = skinObject.AddComponent<SkinnedMeshRenderer>();
@@ -91,6 +77,46 @@ namespace ConductorChaos.Playground
             var right = new Leg(legR, torso, server);
             if (left.Collider && right.Collider) Physics.IgnoreCollision(left.Collider, right.Collider);
             return new PlaygroundLegRig(model, torso, renderer, skin, mesh, left, right);
+        }
+
+        // Weights from the hip height, using the bind poses taken at rest when the rig was created.
+        private static Mesh SkinMesh(Mesh source, Transform model, Transform body, Transform legL, Transform legR, Matrix4x4[] bindposes)
+        {
+            Mesh mesh = Object.Instantiate(source);
+            mesh.name = source.name + " (playground leg rig)";
+            Vector3[] vertices = mesh.vertices;
+            var weights = new BoneWeight[vertices.Length];
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                Vector3 point = model.InverseTransformPoint(body.TransformPoint(vertices[i]));
+                float legWeight = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.32f, 0.12f, point.y));
+                // Leg anchors are named from the model's local coordinate system.
+                bool useLeft = Mathf.Abs(point.x - legL.localPosition.x) <= Mathf.Abs(point.x - legR.localPosition.x);
+                weights[i] = new BoneWeight { boneIndex0 = 0, weight0 = 1f - legWeight,
+                    boneIndex1 = useLeft ? 1 : 2, weight1 = legWeight };
+            }
+            mesh.bindposes = bindposes;
+            mesh.boneWeights = weights;
+            return mesh;
+        }
+
+        /// <summary>Re-skins the body after its mesh or materials changed (crew outfit); leg physics stay as they are.</summary>
+        public void RefreshBody()
+        {
+            if (!original || !skin || !original.TryGetComponent<MeshFilter>(out var filter) || !filter.sharedMesh) return;
+            if (!filter.sharedMesh.isReadable)
+            {
+                Debug.LogError($"Playground: outfit body mesh '{filter.sharedMesh.name}' needs Read/Write enabled.");
+                return;
+            }
+            Transform[] bones = skin.bones;
+            Mesh next = SkinMesh(filter.sharedMesh, model, bones[0], bones[1], bones[2], mesh.bindposes);
+            Object.Destroy(mesh);
+            mesh = next;
+            skin.sharedMesh = mesh;
+            skin.sharedMaterials = original.sharedMaterials;
+            skin.localBounds = filter.sharedMesh.bounds;
+            original.enabled = false;
         }
 
         public bool Step(Vector3 velocity, Vector2 input, bool grounded, float targetSpeed, bool sprinting, out bool stepped)

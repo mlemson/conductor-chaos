@@ -610,6 +610,88 @@
           "#FDDB78"
         ]
       }
+    },
+    "Groot station": {
+      "gs_brick": {
+        "name": "Baksteen",
+        "ramp": [
+          "#523338",
+          "#7E4640",
+          "#AA5948",
+          "#BD7B68",
+          "#CA9380"
+        ]
+      },
+      "gs_sandstone": {
+        "name": "Zandsteen en pleister",
+        "ramp": [
+          "#635B59",
+          "#9C8E7C",
+          "#D6C2A0",
+          "#DFCDAD",
+          "#E6D4B7"
+        ]
+      },
+      "gs_roof": {
+        "name": "Metalen dak (leisteenblauw)",
+        "ramp": [
+          "#313B54",
+          "#425373",
+          "#536C92",
+          "#798AA2",
+          "#949FAE"
+        ]
+      },
+      "gs_steel": {
+        "name": "Constructie (marine staal)",
+        "ramp": [
+          "#252C3F",
+          "#2D394E",
+          "#34465C",
+          "#616C78",
+          "#81878C"
+        ]
+      },
+      "gs_brass": {
+        "name": "Messingaccenten",
+        "ramp": [
+          "#5B4F3F",
+          "#8E784D",
+          "#C1A15B",
+          "#CFB377",
+          "#D9C08C"
+        ]
+      },
+      "gs_tiles": {
+        "name": "Perrontegels",
+        "ramp": [
+          "#525057",
+          "#7D7A78",
+          "#A9A49A",
+          "#BCB5A8",
+          "#CAC2B3"
+        ]
+      },
+      "gs_wood": {
+        "name": "Hout",
+        "ramp": [
+          "#4A3B38",
+          "#705340",
+          "#956C48",
+          "#AC8A68",
+          "#BD9F80"
+        ]
+      },
+      "gs_light": {
+        "name": "Verlichting",
+        "ramp": [
+          "#6D645A",
+          "#B09F7E",
+          "#F2DAA2",
+          "#F5DFAF",
+          "#F7E3B8"
+        ]
+      }
     }
   },
   "lighting": {

@@ -1,0 +1,1821 @@
+{
+ "modules": [
+  {
+   "module": "GS_Hall_Shell",
+   "position": [
+    0,
+    0.0,
+    20
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Hall_Facade",
+   "position": [
+    0,
+    0.0,
+    31.0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Hall_Facade",
+   "position": [
+    0,
+    0.0,
+    9.0
+   ],
+   "yaw": 180,
+   "sign": "WHISTLETON"
+  },
+  {
+   "module": "GS_Wing_Link",
+   "position": [
+    18,
+    0.0,
+    20
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Wing_Link",
+   "position": [
+    -18,
+    0.0,
+    20
+   ],
+   "yaw": 180
+  },
+  {
+   "module": "GS_Wing_Pavilion",
+   "position": [
+    28.5,
+    0.0,
+    20
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Wing_Pavilion",
+   "position": [
+    -28.5,
+    0.0,
+    20
+   ],
+   "yaw": 180
+  },
+  {
+   "module": "GS_ClockTower",
+   "position": [
+    15.0,
+    0.0,
+    29.2
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Forecourt",
+   "position": [
+    0,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Square",
+   "position": [
+    0,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_EntranceCanopy_6m",
+   "position": [
+    -9,
+    0.0,
+    31.0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_EntranceCanopy_6m",
+   "position": [
+    -3,
+    0.0,
+    31.0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_EntranceCanopy_6m",
+   "position": [
+    3,
+    0.0,
+    31.0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_EntranceCanopy_6m",
+   "position": [
+    9,
+    0.0,
+    31.0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_EntranceCanopy_Column",
+   "position": [
+    -12,
+    0.0,
+    31.0
+   ],
+   "yaw": 0,
+   "offset_x": -3.0
+  },
+  {
+   "module": "GS_EntranceCanopy_6m",
+   "position": [
+    -21,
+    0.0,
+    29.0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_EntranceCanopy_6m",
+   "position": [
+    -15,
+    0.0,
+    29.0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_EntranceCanopy_6m",
+   "position": [
+    21,
+    0.0,
+    29.0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    -31.0,
+    1.05,
+    34.9
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    -27.0,
+    1.05,
+    34.9
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    27.0,
+    1.05,
+    34.9
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    31.0,
+    1.05,
+    34.9
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    -15.0,
+    1.05,
+    34.9
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    15.0,
+    1.05,
+    34.9
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    -20,
+    0.06,
+    40.5
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    20,
+    0.06,
+    40.5
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    -38,
+    0.06,
+    46
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    38,
+    0.06,
+    46
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    -38,
+    0.06,
+    62
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    38,
+    0.06,
+    62
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    -14,
+    0.06,
+    64
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StreetLamp",
+   "position": [
+    14,
+    0.06,
+    64
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_6m",
+   "position": [
+    -33,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_6m",
+   "position": [
+    -27,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_6m",
+   "position": [
+    -21,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_6m",
+   "position": [
+    -15,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_Hall_6m",
+   "position": [
+    -9,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_Hall_6m",
+   "position": [
+    -3,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_Hall_6m",
+   "position": [
+    3,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_Hall_6m",
+   "position": [
+    9,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_6m",
+   "position": [
+    15,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_6m",
+   "position": [
+    21,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_6m",
+   "position": [
+    27,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_6m",
+   "position": [
+    33,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_6m",
+   "position": [
+    39,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Apron_6m",
+   "position": [
+    45,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    -33,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    -27,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    -21,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    -15,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    -9,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    -3,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    3,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    9,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    15,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    21,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    27,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    33,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    39,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_6m",
+   "position": [
+    45,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_End",
+   "position": [
+    48,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Platform_Island_End",
+   "position": [
+    -36,
+    0.0,
+    0
+   ],
+   "yaw": 180
+  },
+  {
+   "module": "GS_PlatformCanopy_Side_6m",
+   "position": [
+    -27,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Island_6m",
+   "position": [
+    -27,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Side_6m",
+   "position": [
+    -21,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Island_6m",
+   "position": [
+    -21,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Side_6m",
+   "position": [
+    -15,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Island_6m",
+   "position": [
+    -15,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Side_6m",
+   "position": [
+    -9,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Island_6m",
+   "position": [
+    -9,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Side_6m",
+   "position": [
+    -3,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Island_6m",
+   "position": [
+    -3,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Side_6m",
+   "position": [
+    3,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Island_6m",
+   "position": [
+    3,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Side_6m",
+   "position": [
+    9,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Island_6m",
+   "position": [
+    9,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Side_6m",
+   "position": [
+    15,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Island_6m",
+   "position": [
+    15,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Side_6m",
+   "position": [
+    21,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Island_6m",
+   "position": [
+    21,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Side_6m",
+   "position": [
+    27,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_PlatformCanopy_Island_6m",
+   "position": [
+    27,
+    0.0,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Footbridge_Landing",
+   "position": [
+    33.0,
+    0.0,
+    8.0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Footbridge_Landing",
+   "position": [
+    33.0,
+    0.0,
+    -4.65
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Footbridge_Span",
+   "position": [
+    33.0,
+    0.0,
+    -3.1500000000000004
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Footbridge_Stair",
+   "position": [
+    42.3,
+    0.0,
+    8.0
+   ],
+   "yaw": -90
+  },
+  {
+   "module": "GS_Footbridge_Stair",
+   "position": [
+    42.3,
+    0.0,
+    -4.65
+   ],
+   "yaw": -90
+  },
+  {
+   "module": "GS_PlatformSign",
+   "position": [
+    -15,
+    5.2,
+    3.4
+   ],
+   "yaw": 0,
+   "sign": "1"
+  },
+  {
+   "module": "GS_PlatformSign",
+   "position": [
+    15,
+    5.2,
+    3.4
+   ],
+   "yaw": 0,
+   "sign": "1"
+  },
+  {
+   "module": "GS_PlatformSign",
+   "position": [
+    -15,
+    5.2,
+    -2.6
+   ],
+   "yaw": 180,
+   "sign": "2",
+   "sign_back": "3"
+  },
+  {
+   "module": "GS_PlatformSign",
+   "position": [
+    15,
+    5.2,
+    -2.6
+   ],
+   "yaw": 180,
+   "sign": "2",
+   "sign_back": "3"
+  },
+  {
+   "module": "GS_DirectionSign",
+   "position": [
+    0,
+    5.35,
+    7.4
+   ],
+   "yaw": 180,
+   "sign": "UITGANG"
+  },
+  {
+   "module": "GS_PedestalClock",
+   "position": [
+    0,
+    0.0,
+    20
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_DepartureBoard",
+   "position": [
+    0,
+    6.6499999999999995,
+    12.6
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_TicketCounter",
+   "position": [
+    11.4,
+    0.0,
+    22.0
+   ],
+   "yaw": -90
+  },
+  {
+   "module": "GS_InfoDesk",
+   "position": [
+    -6.6,
+    0.0,
+    24.6
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Kiosk",
+   "position": [
+    -9.2,
+    0.0,
+    13.4
+   ],
+   "yaw": 90
+  },
+  {
+   "module": "GS_CafeTable",
+   "position": [
+    -5.4,
+    0.0,
+    11.6
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_CafeTable",
+   "position": [
+    -5.4,
+    0.0,
+    15.4
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_DirectionSign",
+   "position": [
+    -5.6,
+    6.05,
+    11.0
+   ],
+   "yaw": 0,
+   "sign": "PERRONS"
+  },
+  {
+   "module": "GS_DirectionSign",
+   "position": [
+    5.6,
+    6.05,
+    11.0
+   ],
+   "yaw": 0,
+   "sign": "PERRONS"
+  },
+  {
+   "module": "GS_WallSign",
+   "position": [
+    -11.35,
+    8.450000000000001,
+    18.0
+   ],
+   "yaw": 90,
+   "sign": "BRIEFING"
+  },
+  {
+   "module": "GS_Poster",
+   "position": [
+    -11.38,
+    1.9500000000000002,
+    25.6
+   ],
+   "yaw": 90
+  },
+  {
+   "module": "GS_Poster",
+   "position": [
+    -11.38,
+    1.9500000000000002,
+    28.4
+   ],
+   "yaw": 90
+  },
+  {
+   "module": "GS_Poster",
+   "position": [
+    11.38,
+    1.9500000000000002,
+    17.2
+   ],
+   "yaw": -90
+  },
+  {
+   "module": "GS_Partition_Office",
+   "position": [
+    17.75,
+    0.0,
+    18.6
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_OfficeFurniture",
+   "position": [
+    19.5,
+    0.0,
+    14.8
+   ],
+   "yaw": 90
+  },
+  {
+   "module": "GS_StorageShelf",
+   "position": [
+    15.5,
+    0.0,
+    28.0
+   ],
+   "yaw": 180
+  },
+  {
+   "module": "GS_StorageShelf",
+   "position": [
+    18.5,
+    0.0,
+    28.0
+   ],
+   "yaw": 180
+  },
+  {
+   "module": "GS_StorageShelf",
+   "position": [
+    21.5,
+    0.0,
+    28.0
+   ],
+   "yaw": 180
+  },
+  {
+   "module": "GS_Partition_Storage",
+   "position": [
+    -17.75,
+    0.0,
+    14.4
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StorageShelf",
+   "position": [
+    -21.5,
+    0.0,
+    11.9
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_StorageShelf",
+   "position": [
+    -18.0,
+    0.0,
+    11.9
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Podium",
+   "position": [
+    -21.6,
+    0.0,
+    21.5
+   ],
+   "yaw": 90
+  },
+  {
+   "module": "GS_WallSign",
+   "position": [
+    -23.42,
+    4.1,
+    21.5
+   ],
+   "yaw": 90,
+   "sign": "BRIEFING"
+  },
+  {
+   "module": "GS_MissionTable",
+   "position": [
+    -14.3,
+    0.0,
+    25.0
+   ],
+   "yaw": 0
+  },
+  {
+   "module": "GS_Rug",
+   "position": [
+    -17.0,
+    0.0,
+    18.6
+   ],
+   "yaw": 0
+  }
+ ],
+ "props": [
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    -3.25,
+    1.05,
+    15.6
+   ],
+   "yaw": -90
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    -2.3499999999999996,
+    1.05,
+    15.6
+   ],
+   "yaw": 90
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    -3.25,
+    1.05,
+    23.6
+   ],
+   "yaw": -90
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    -2.3499999999999996,
+    1.05,
+    23.6
+   ],
+   "yaw": 90
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    2.3499999999999996,
+    1.05,
+    15.6
+   ],
+   "yaw": -90
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    3.25,
+    1.05,
+    15.6
+   ],
+   "yaw": 90
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    2.3499999999999996,
+    1.05,
+    23.6
+   ],
+   "yaw": -90
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    3.25,
+    1.05,
+    23.6
+   ],
+   "yaw": 90
+  },
+  {
+   "prop": "Props/Prop_TrashBin",
+   "position": [
+    -1.4,
+    1.05,
+    13.4
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_TrashBin",
+   "position": [
+    1.4,
+    1.05,
+    26.6
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_TrashBin",
+   "position": [
+    6.8,
+    1.05,
+    27.8
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_Planter",
+   "position": [
+    -10.6,
+    1.05,
+    29.6
+   ],
+   "yaw": 90
+  },
+  {
+   "prop": "Props/Prop_Planter",
+   "position": [
+    10.6,
+    1.05,
+    29.6
+   ],
+   "yaw": -90
+  },
+  {
+   "prop": "Props/Prop_Planter",
+   "position": [
+    -10.6,
+    1.05,
+    10.4
+   ],
+   "yaw": 90
+  },
+  {
+   "prop": "Props/Prop_Planter",
+   "position": [
+    10.6,
+    1.05,
+    10.4
+   ],
+   "yaw": -90
+  },
+  {
+   "prop": "Props/Prop_LuggageCart",
+   "position": [
+    8.0,
+    1.05,
+    12.2
+   ],
+   "yaw": 20
+  },
+  {
+   "prop": "Props/Prop_LuggageCart",
+   "position": [
+    -9.6,
+    1.05,
+    28.2
+   ],
+   "yaw": 160
+  },
+  {
+   "prop": "Props/Prop_Timetable",
+   "position": [
+    -11.0,
+    1.05,
+    27.0
+   ],
+   "yaw": 90
+  },
+  {
+   "prop": "Props/Prop_CoatStand",
+   "position": [
+    13.0,
+    1.05,
+    17.6
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_CrateStack",
+   "position": [
+    22.6,
+    1.05,
+    22.0
+   ],
+   "yaw": 30
+  },
+  {
+   "prop": "Props/Prop_Barrel",
+   "position": [
+    13.2,
+    1.05,
+    27.6
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_Lockers",
+   "position": [
+    23.0,
+    1.05,
+    22.5
+   ],
+   "yaw": -90
+  },
+  {
+   "prop": "Props/Prop_Barrel",
+   "position": [
+    -14.0,
+    1.05,
+    12.4
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_CrateStack",
+   "position": [
+    -13.2,
+    1.05,
+    13.4
+   ],
+   "yaw": -20
+  },
+  {
+   "prop": "Props/Prop_RouteBoard",
+   "position": [
+    -23.1,
+    1.05,
+    21.5
+   ],
+   "yaw": 90
+  },
+  {
+   "prop": "Props/Prop_NoticeBoard",
+   "position": [
+    -23.0,
+    1.05,
+    25.8
+   ],
+   "yaw": 90
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    -19.5,
+    1.05,
+    19.6
+   ],
+   "yaw": -90
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    -19.5,
+    1.05,
+    23.4
+   ],
+   "yaw": -90
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    -18.2,
+    1.05,
+    19.6
+   ],
+   "yaw": -90
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    -18.2,
+    1.05,
+    23.4
+   ],
+   "yaw": -90
+  },
+  {
+   "prop": "Props/Prop_Lockers",
+   "position": [
+    -22.2,
+    1.05,
+    28.2
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_Lockers",
+   "position": [
+    -20.3,
+    1.05,
+    28.2
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_CrewWardrobe",
+   "position": [
+    -17.4,
+    1.05,
+    28.05
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_AccessoryTable",
+   "position": [
+    -14.5,
+    1.05,
+    27.95
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_CoffeeCounter",
+   "position": [
+    -22.6,
+    1.05,
+    16.3
+   ],
+   "yaw": 90
+  },
+  {
+   "prop": "Props/Prop_CoatStand",
+   "position": [
+    -12.7,
+    1.05,
+    27.6
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_PendantLamp",
+   "position": [
+    -20.5,
+    4.67,
+    16.8
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_PendantLamp",
+   "position": [
+    -20.5,
+    4.67,
+    21.5
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_PendantLamp",
+   "position": [
+    -20.5,
+    4.67,
+    26.2
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_PendantLamp",
+   "position": [
+    -16.0,
+    4.67,
+    16.8
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_PendantLamp",
+   "position": [
+    -16.0,
+    4.67,
+    21.5
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_PendantLamp",
+   "position": [
+    -16.0,
+    4.67,
+    26.2
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    -21,
+    1.05,
+    7.9
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_TrashBin",
+   "position": [
+    -19.4,
+    1.05,
+    8.4
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    -9,
+    1.05,
+    7.9
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_TrashBin",
+   "position": [
+    -7.4,
+    1.05,
+    8.4
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    9,
+    1.05,
+    7.9
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_TrashBin",
+   "position": [
+    10.6,
+    1.05,
+    8.4
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    21,
+    1.05,
+    7.9
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_TrashBin",
+   "position": [
+    22.6,
+    1.05,
+    8.4
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    -15,
+    1.05,
+    -4.2
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    -15,
+    1.05,
+    -5.1
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    15,
+    1.05,
+    -4.2
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    15,
+    1.05,
+    -5.1
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_LuggageCart",
+   "position": [
+    13.5,
+    1.05,
+    8.3
+   ],
+   "yaw": 80
+  },
+  {
+   "prop": "Props/Prop_LuggageCart",
+   "position": [
+    -26.0,
+    1.05,
+    8.6
+   ],
+   "yaw": -70
+  },
+  {
+   "prop": "Props/Prop_TicketMachine",
+   "position": [
+    -3.0,
+    1.05,
+    8.6
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_TicketMachine",
+   "position": [
+    3.0,
+    1.05,
+    8.6
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    -8,
+    0.06,
+    44.0
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_Bench",
+   "position": [
+    8,
+    0.06,
+    44.0
+   ],
+   "yaw": 180
+  },
+  {
+   "prop": "Props/Prop_Planter",
+   "position": [
+    -30,
+    0.06,
+    39.0
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "Props/Prop_Planter",
+   "position": [
+    30,
+    0.06,
+    39.0
+   ],
+   "yaw": 0
+  }
+ ],
+ "anchors": [
+  {
+   "anchor": "Spawn_Crew",
+   "position": [
+    -16.2,
+    1.05,
+    18.0
+   ],
+   "yaw": -90
+  },
+  {
+   "anchor": "Spot_CrewGather",
+   "position": [
+    -17.0,
+    1.05,
+    21.5
+   ],
+   "yaw": -90
+  },
+  {
+   "anchor": "Spot_PassengerSpawn_Square",
+   "position": [
+    0.0,
+    0.06,
+    42.0
+   ],
+   "yaw": 180
+  },
+  {
+   "anchor": "Spot_PassengerSpawn_Hall",
+   "position": [
+    0.0,
+    1.05,
+    27.5
+   ],
+   "yaw": 180
+  },
+  {
+   "anchor": "Spot_PassengerWait_1",
+   "position": [
+    -2.8,
+    1.05,
+    15.6
+   ],
+   "yaw": 0
+  },
+  {
+   "anchor": "Spot_PassengerWait_2",
+   "position": [
+    2.8,
+    1.05,
+    23.6
+   ],
+   "yaw": 0
+  },
+  {
+   "anchor": "Spot_PassengerWait_3",
+   "position": [
+    -9,
+    1.05,
+    7.9
+   ],
+   "yaw": 0
+  },
+  {
+   "anchor": "Spot_PassengerWait_4",
+   "position": [
+    9,
+    1.05,
+    7.9
+   ],
+   "yaw": 0
+  },
+  {
+   "anchor": "Spot_PassengerWait_5",
+   "position": [
+    -15,
+    1.05,
+    -4.6
+   ],
+   "yaw": 0
+  },
+  {
+   "anchor": "Spot_PassengerWait_6",
+   "position": [
+    15,
+    1.05,
+    -4.6
+   ],
+   "yaw": 0
+  },
+  {
+   "anchor": "Spot_TicketInspection",
+   "position": [
+    0.0,
+    1.05,
+    10.6
+   ],
+   "yaw": 180
+  },
+  {
+   "anchor": "Spot_LuggageLoading",
+   "position": [
+    8.0,
+    1.05,
+    6.2
+   ],
+   "yaw": 180
+  },
+  {
+   "anchor": "Spot_TrainPrep",
+   "position": [
+    26.0,
+    1.05,
+    3.0
+   ],
+   "yaw": 180
+  },
+  {
+   "anchor": "Spot_TrainStop_P1",
+   "position": [
+    0.0,
+    0.43,
+    0.0
+   ],
+   "yaw": 90
+  },
+  {
+   "anchor": "Spot_TrainStop_P2",
+   "position": [
+    0.0,
+    0.43,
+    -9.3
+   ],
+   "yaw": 90
+  },
+  {
+   "anchor": "Spot_Announcer",
+   "position": [
+    3.0,
+    4.65,
+    5.6
+   ],
+   "yaw": 180
+  },
+  {
+   "anchor": "Spot_DepotKiosk",
+   "position": [
+    -6.6,
+    1.05,
+    22.8
+   ],
+   "yaw": 180
+  },
+  {
+   "anchor": "Spot_Event_1",
+   "position": [
+    0,
+    0.06,
+    48
+   ],
+   "yaw": 0
+  },
+  {
+   "anchor": "Spot_Event_2",
+   "position": [
+    0,
+    1.05,
+    18
+   ],
+   "yaw": 0
+  },
+  {
+   "anchor": "Spot_Event_3",
+   "position": [
+    -20,
+    1.05,
+    4
+   ],
+   "yaw": 0
+  },
+  {
+   "anchor": "Spot_Event_4",
+   "position": [
+    20,
+    1.05,
+    -4.6
+   ],
+   "yaw": 0
+  }
+ ]
+}

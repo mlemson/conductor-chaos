@@ -1,0 +1,289 @@
+{
+  "model": "Stoker",
+  "height_m": 1.19,
+  "stats": {
+    "parts": 28,
+    "tris": 47304,
+    "verts": 23852,
+    "materials": 15
+  },
+  "materials": {
+    "M_Stoker_Skin": {
+      "base": "#DB9966",
+      "ramp": [
+        "#BA7756",
+        "#D28658",
+        "#DB9966",
+        "#E7A773",
+        "#EFB27C"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1
+      }
+    },
+    "M_Stoker_EyeWhite": {
+      "base": "#FDEEDC",
+      "ramp": [
+        "#352F3C",
+        "#BDABC1",
+        "#DCC7C5",
+        "#FDEEDC",
+        "#FDF6E8"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.35,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.45,
+        "noShadow": true
+      }
+    },
+    "M_Stoker_Pupil": {
+      "base": "#0D0B0C",
+      "ramp": [
+        "#1C0F0E",
+        "#291D1B",
+        "#351B13",
+        "#382520",
+        "#5A4038"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.45,
+      "opts": {
+        "spec": 0.25,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "noShadow": true
+      }
+    },
+    "M_Stoker_Mouth": {
+      "base": "#662C23",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": -0.55,
+      "smoothness": 0.2,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Stoker_Tongue": {
+      "base": "#B84A3C",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Stoker_Sweater": {
+      "base": "#D1B29E",
+      "ramp": [
+        "#393540",
+        "#4E3F3F",
+        "#BB9A89",
+        "#D1B29E",
+        "#E8D3C2"
+      ],
+      "rampShift": 0.32,
+      "smoothness": 0.2,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2
+      }
+    },
+    "M_Stoker_SweaterRib": {
+      "base": "#D1B29E",
+      "ramp": [
+        "#393540",
+        "#4E3F3F",
+        "#BB9A89",
+        "#D1B29E",
+        "#E8D3C2"
+      ],
+      "rampShift": 0.18,
+      "smoothness": 0.2,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Stoker_Trousers": {
+      "base": "#393540",
+      "ramp": [
+        "#393540",
+        "#4E3F3F",
+        "#BB9A89",
+        "#D1B29E",
+        "#E8D3C2"
+      ],
+      "rampShift": -0.38,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Stoker_Boot": {
+      "base": "#503936",
+      "ramp": [
+        "#3E2C2A",
+        "#47322F",
+        "#503936",
+        "#563F3E",
+        "#886B66"
+      ],
+      "rampShift": -0.1,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Stoker_Glove": {
+      "base": "#804936",
+      "ramp": [
+        "#693B2E",
+        "#774332",
+        "#804936",
+        "#8F5039",
+        "#B46D4B"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1
+      }
+    },
+    "M_Stoker_Beanie": {
+      "base": "#7A59B0",
+      "ramp": [
+        "#5A457E",
+        "#7958AF",
+        "#7A59B0",
+        "#A370D2",
+        "#B17BDD"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.18,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2
+      }
+    },
+    "M_Stoker_BeanieDark": {
+      "base": "#7958AF",
+      "ramp": [
+        "#5A457E",
+        "#7958AF",
+        "#7A59B0",
+        "#A370D2",
+        "#B17BDD"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.18,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Stoker_Scarf": {
+      "base": "#A44543",
+      "ramp": [
+        "#783638",
+        "#9C4140",
+        "#A44543",
+        "#B24946",
+        "#B64B48"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.18,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2
+      }
+    },
+    "M_Stoker_ScarfDark": {
+      "base": "#9C4140",
+      "ramp": [
+        "#783638",
+        "#9C4140",
+        "#A44543",
+        "#B24946",
+        "#B64B48"
+      ],
+      "rampShift": -0.28,
+      "smoothness": 0.18,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Stoker_Soot": {
+      "base": "#33303B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.1,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    }
+  }
+}

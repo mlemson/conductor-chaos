@@ -927,6 +927,23 @@ namespace ConductorChaos.Playground
             return true;
         }
 
+        internal Transform Visual => visual;
+        internal Transform LeftArm => leftArm;
+        internal Transform RightArm => rightArm;
+        internal bool VisualReady => IsSpawned && (legs != null || !visual);
+
+        /// <summary>Called by CrewOutfit after it swapped body, arm or clothing meshes.</summary>
+        internal void RefreshOutfitVisual()
+        {
+            legs?.RefreshBody();
+            if (cameraBodyRenderers == null) return;
+            bool hidden = cameraHidesBody;
+            SetCameraBodyHidden(false);
+            cameraBodyRenderers = visual ? visual.GetComponentsInChildren<Renderer>(true) : System.Array.Empty<Renderer>();
+            cameraBodyRenderingOff = new bool[cameraBodyRenderers.Length];
+            SetCameraBodyHidden(hidden);
+        }
+
         private void SetCameraBodyHidden(bool hidden)
         {
             if (cameraBodyRenderers == null || cameraHidesBody == hidden) return;

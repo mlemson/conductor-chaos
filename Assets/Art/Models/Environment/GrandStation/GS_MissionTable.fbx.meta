@@ -1,0 +1,70 @@
+fileFormatVersion: 2
+guid: b8c6519dfb61314affc1d31e0f912d1b
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Brass
+    second: {fileID: 2100000, guid: e98795d7ad4990268059c1869a53a88b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Chalk
+    second: {fileID: 2100000, guid: 12e2db3813517f253cbbfddf4de4438f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Cream
+    second: {fileID: 2100000, guid: 644a6fabfd1e94e5f39e30682cb4cdca, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Red
+    second: {fileID: 2100000, guid: 5fade34154b5f4d881c31bc03a080a1e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Steel
+    second: {fileID: 2100000, guid: bb7ba3c2aa205f3598f5a46dfe55be0f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Wood
+    second: {fileID: 2100000, guid: 9afc699b399e26811fd5f9aff1dbe77d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_WoodDark
+    second: {fileID: 2100000, guid: b6e3b1fe39e5dbc9a508fb8df25022c6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Yellow
+    second: {fileID: 2100000, guid: de0bec620de5ad6522ce7da3881c9950, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

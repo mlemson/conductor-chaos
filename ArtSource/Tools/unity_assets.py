@@ -305,7 +305,8 @@ def export_unity(root, scene, fbx_rel, mat_dir_rel):
     for name, md in scene.materials.items():
         guids[name] = material(root, f"{mat_dir_rel}/{name}.mat", name, md["base"], md["smoothness"], md.get("emissive"),
                                (md.get("opts") or {}).get("opacity"), md.get("ramp"), md.get("ramp_shift", 0.0), md.get("opts"))
-    model_meta(root, fbx_rel, guids, readable=fbx_rel.startswith("Assets/Art/Models/Train/"))
+    # personages: de spelers-rig (PlaygroundLegRig, CrewOutfit) leest het lijf-mesh uit
+    model_meta(root, fbx_rel, guids, readable=fbx_rel.startswith(("Assets/Art/Models/Train/", "Assets/Art/Models/Characters/")))
     return guids
 
 

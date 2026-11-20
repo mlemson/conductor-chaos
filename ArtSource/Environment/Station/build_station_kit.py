@@ -28,6 +28,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import main_station as main_station  # noqa: E402
+import crew_props  # noqa: E402
 import farm_props as farm  # noqa: E402
 import bell_props as bell  # noqa: E402
 import service_markers as markers  # noqa: E402
@@ -69,6 +70,10 @@ def write_sign_data():
     data = {"spacing": 0.30, "space": 0.50,
             "glyphs": [{"c": ch, "advance": GLYPHS[ch][0]} for ch in sorted(GLYPHS)],
             "signs": [dict(asset=name, **s) for name, a in sorted(kit.items()) for s in a.get("signs", [])]}
+    grand = os.path.join(ROOT, "ArtSource", "Exports", "Environment", "GrandStation", "GrandStationKit.json")
+    if os.path.exists(grand):                          # borden van het grote station (GrandStation/gs_kit.py)
+        g = json.load(open(grand, encoding="utf-8"))["assets"]
+        data["signs"] += [dict(asset=name, **s) for name, a in sorted(g.items()) for s in a.get("signs", [])]
     rel = GLYPH_DIR + "/StationGlyphs.json"
     unity_assets.folder_meta(ROOT, GLYPH_DIR)
     json.dump(data, open(os.path.join(ROOT, rel), "w", encoding="utf-8", newline="\n"), indent=1)
@@ -169,6 +174,11 @@ def build_main(manifest):
                   "briefingRoom": [main_station.XI0, main_station.XI1, main_station.ZI0, main_station.ZI1]})
 
 
+def build_crew(manifest):
+    for name, make in crew_props.CREW_PROPS.items():
+        export(name, "Props", make(), density=900, radius=0.12, manifest=manifest)
+
+
 def build_platform(manifest, *, tactile=True):
     rng = np.random.default_rng([2026, 182])
     mods = {f"Platform_Straight_{length}m": platform.straight(length, rng, tactile=tactile) for length in (3, 6)}
@@ -205,7 +215,8 @@ def build_building_variants(manifest):
         build_building_variant(manifest, name)
 
 
-ALL = ("props", "briefing", "tools", "farm", "service", "yard", "platform", "building", "variants", "main", "glyphs")
+ALL = ("props", "briefing", "tools", "farm", "service", "yard", "platform", "building", "variants", "main", "crew",
+       "glyphs")
 
 
 def main(which=ALL):
@@ -232,6 +243,8 @@ def main(which=ALL):
         build_building_variants(manifest)
     if "main" in which:
         build_main(manifest)
+    if "crew" in which:
+        build_crew(manifest)
     if "glyphs" in which:
         build_glyphs(manifest)
     write_manifest(manifest)

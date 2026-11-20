@@ -1,0 +1,106 @@
+fileFormatVersion: 2
+guid: 5cdbbaa7d0b52a8470c68b9b9cbee86c
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_Skin
+    second: {fileID: 2100000, guid: cc0b9577eb27740232f02ee5bb815e08, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_EyeWhite
+    second: {fileID: 2100000, guid: d63ef5d023ffb3aca83cf71d899c662a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_Pupil
+    second: {fileID: 2100000, guid: 47f2edd6b9516515bb121d3676f2c4b6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_Mouth
+    second: {fileID: 2100000, guid: bd26ae7e675f8456b8f96c2fc342820a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_Tongue
+    second: {fileID: 2100000, guid: 895af0117340da4c954cc84fed30c077, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_Sweater
+    second: {fileID: 2100000, guid: 212418eb3792101ae5110abbad4e4db0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_SweaterRib
+    second: {fileID: 2100000, guid: 6286e319e7176586d3d636c3cd10b26a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_Trousers
+    second: {fileID: 2100000, guid: 229b9a3acb617cf9e4b2e302d449d1f1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_Boot
+    second: {fileID: 2100000, guid: 805ea2fd8a5b780e992efcd85c5b1645, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_Glove
+    second: {fileID: 2100000, guid: bcfb0d64105c90282ce75dc216d2f69b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_Beanie
+    second: {fileID: 2100000, guid: daf7b3bb58cdef06c4da10c631278175, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_BeanieDark
+    second: {fileID: 2100000, guid: 40367d4ffea69c693cec64fc60550dfb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_Scarf
+    second: {fileID: 2100000, guid: 9a3adebd6db7284ca0b6581716b3f768, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_ScarfDark
+    second: {fileID: 2100000, guid: 7c3eee683330a7c67ea8999be9428ca3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Stoker_Soot
+    second: {fileID: 2100000, guid: cb92fc646dc6ea441c30d9c0bac5a52a, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+    isReadable: 1
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,0 +1,55 @@
+fileFormatVersion: 2
+guid: f64fefaa4149e9d8275c92d76f65c230
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Brass
+    second: {fileID: 2100000, guid: e98795d7ad4990268059c1869a53a88b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Cream
+    second: {fileID: 2100000, guid: 644a6fabfd1e94e5f39e30682cb4cdca, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Sandstone
+    second: {fileID: 2100000, guid: 0d89670132a01ae2033343556de1771e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Steel
+    second: {fileID: 2100000, guid: bb7ba3c2aa205f3598f5a46dfe55be0f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_SteelLight
+    second: {fileID: 2100000, guid: 300b1ca5ccabde540f81f0b2c477e3b1, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -2368,6 +2368,54 @@
         "Col_Loop",
         "Point_Loop"
       ]
+    },
+    "Prop_CrewWardrobe": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_CrewWardrobe.fbx",
+      "category": "Props",
+      "tris": 10042,
+      "min": [
+        -1.23,
+        -0.01,
+        -0.338
+      ],
+      "max": [
+        1.23,
+        2.74,
+        0.338
+      ],
+      "nodes": [
+        "Prop_CrewWardrobe",
+        "Rack",
+        "Col_Rack",
+        "Outfit_Conductor",
+        "Col_Outfit_Conductor",
+        "Outfit_Engineer",
+        "Col_Outfit_Engineer",
+        "Outfit_Stoker",
+        "Col_Outfit_Stoker"
+      ]
+    },
+    "Prop_AccessoryTable": {
+      "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_AccessoryTable.fbx",
+      "category": "Props",
+      "tris": 3124,
+      "min": [
+        -0.75,
+        -0.035,
+        -0.364
+      ],
+      "max": [
+        0.75,
+        1.559,
+        0.38
+      ],
+      "nodes": [
+        "Prop_AccessoryTable",
+        "Table",
+        "Col_Table",
+        "Spot_Item_1",
+        "Spot_Item_2"
+      ]
     }
   },
   "station": {
@@ -3201,6 +3249,71 @@
       "rampShift": -0.5,
       "opts": {
         "cells": 0.2
+      }
+    },
+    "M_Stn_Glass": {
+      "ramp": [
+        "#6E83BA",
+        "#7D99D5",
+        "#85A4EC",
+        "#92BAF8",
+        "#98C4FC"
+      ],
+      "smoothness": 0.7,
+      "rampShift": 0.2,
+      "opts": {
+        "opacity": 0.42,
+        "flat": 0.6,
+        "cells": 0.0,
+        "grime": 0.0,
+        "rim": 0.3
+      }
+    },
+    "M_Stn_Beanie": {
+      "ramp": [
+        "#5A457E",
+        "#7958AF",
+        "#7A59B0",
+        "#A370D2",
+        "#B17BDD"
+      ],
+      "smoothness": 0.1,
+      "rampShift": 0.0,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.4,
+        "paint": 1.2
+      }
+    },
+    "M_Stn_BeanieDark": {
+      "ramp": [
+        "#5A457E",
+        "#7958AF",
+        "#7A59B0",
+        "#A370D2",
+        "#B17BDD"
+      ],
+      "smoothness": 0.1,
+      "rampShift": -0.3,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 0.4
+      }
+    },
+    "M_Stn_Scarf": {
+      "ramp": [
+        "#783638",
+        "#9C4140",
+        "#A44543",
+        "#B24946",
+        "#B64B48"
+      ],
+      "smoothness": 0.1,
+      "rampShift": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.4,
+        "paint": 1.2
       }
     }
   }

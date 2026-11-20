@@ -97,6 +97,12 @@ MATERIALS = {
     "M_Stn_Dirt": (R["track_wood"], 0.05, -0.15, {"cells": 0.6, "cellSize": 0.6, "grime": 0.2}),
     "M_Stn_Sack": (R["safari_hat"], 0.05, 0.15, {"cells": 0.5, "cellSize": 0.3}),
     "M_Stn_SackDark": (R["safari_hat"], 0.05, -0.50, {"cells": 0.2}),
+    # spiegel op de accessoiretafel (crew_props.py)
+    "M_Stn_Glass": (R["sky"], 0.70, 0.20, {"opacity": 0.42, "flat": 0.6, "cells": 0.0, "grime": 0.0, "rim": 0.3}),
+    # kledingrek met crew-tenues (crew_props.py): muts en sjaal van de stoker
+    "M_Stn_Beanie": (R["beanie"], 0.10, 0.00, {"cells": 0.5, "cellSize": 0.4, "paint": 1.2}),
+    "M_Stn_BeanieDark": (R["beanie"], 0.10, -0.30, {"cells": 0.4, "cellSize": 0.4}),
+    "M_Stn_Scarf": (R["scarf"], 0.10, 0.05, {"cells": 0.5, "cellSize": 0.4, "paint": 1.2}),
 }
 
 
@@ -246,6 +252,38 @@ def clean_loop(P, eps=1e-4):
     return out
 
 
+def _trapezoids(loops):
+    """Kapvlak van een polygoon met gaten (even-oneven-regel) als verticale trapezia: tussen elk paar opeenvolgende
+    hoekpunt-x'en zijn alle randen recht, dus de stukken vullen het vlak precies, zonder overlap (robuust bij veel gaten,
+    waar oorknippen met bruggen kan vouwen). Geeft driehoeken als lijst van drie (x, y)-punten, CCW."""
+    edges = []
+    for L in loops:
+        n = len(L)
+        for i in range(n):
+            a, b = L[i], L[(i + 1) % n]
+            if abs(a[0] - b[0]) > 1e-9:
+                edges.append((a, b) if a[0] < b[0] else (b, a))
+    xs = sorted({round(p[0], 9) for L in loops for p in L})
+    tris = []
+
+    def y_at(e, x):
+        (ax, ay), (bx, by) = e
+        return ay + (by - ay) * (x - ax) / (bx - ax)
+    for xa, xb in zip(xs[:-1], xs[1:]):
+        if xb - xa < 1e-7:
+            continue
+        xm = (xa + xb) / 2
+        live = sorted((e for e in edges if e[0][0] < xm < e[1][0]), key=lambda e: y_at(e, xm))
+        for lo, hi in zip(live[0::2], live[1::2]):
+            p0, p1 = (xa, y_at(lo, xa)), (xb, y_at(lo, xb))
+            p2, p3 = (xb, y_at(hi, xb)), (xa, y_at(hi, xa))
+            if p2[1] - p1[1] > 1e-9:
+                tris.append((p0, p1, p2))
+            if p3[1] - p0[1] > 1e-9:
+                tris.append((p0, p2, p3))
+    return tris
+
+
 def slab(outer, holes=(), z0=0.0, z1=0.1, c=0.02, mat="M_Stn_Plaster"):
     """Polygoon (XY) met gaten, geëxtrudeerd langs Z met afgeschuinde randen (ook rond de gaten). Eén gesloten stuk."""
     outer = _ccw(clean_loop(outer))
@@ -253,6 +291,7 @@ def slab(outer, holes=(), z0=0.0, z1=0.1, c=0.02, mat="M_Stn_Plaster"):
     loops = [outer] + holes
     V, F = [], []
     cap0, cap1 = [], []
+    rings_z = (z0, z1)
     for L in loops:
         n = len(L)
         Li = _offset_loop(L, c) if c > 0 else L
@@ -267,6 +306,15 @@ def slab(outer, holes=(), z0=0.0, z1=0.1, c=0.02, mat="M_Stn_Plaster"):
         cap0.append([(tuple(Li[i]), base + i) for i in range(n)])
         cap1.append([(tuple(Li[i]), base + (len(rings) - 1) * n + i) for i in range(n)])
     for caps, top in ((cap0, False), (cap1, True)):
+        if len(caps) > 1:                                  # met gaten: trapezia (geen bruggen, geen vouwen)
+            z = rings_z[1] if top else rings_z[0]
+            for tri in _trapezoids([[p for p, _ in loop] for loop in caps]):
+                ids = []
+                for (px, py) in tri:
+                    ids.append(len(V))
+                    V.append((px, py, z))
+                F.append(tuple(ids) if top else (ids[0], ids[2], ids[1]))
+            continue
         poly = _bridge([p for p, _ in caps[0]], [[p for p, _ in h] for h in caps[1:]])
         lookup = {}
         for loop in caps:
@@ -595,8 +643,9 @@ def clock(r, depth, rim_mat="M_Stn_Yellow", face_mat="M_Stn_Cream", hand_mat="M_
         rr = r * 0.66
         parts.append(rbox(-w / 2, w / 2, -L / 2, L / 2, depth * 0.6, depth * 0.6 + r * 0.04, w * 0.4, hand_mat)
                      .transform(R=mk.rot_z(-a), t=(rr * math.sin(a), rr * math.cos(a), 0)))
-    for ang, L, w in ((hour, r * 0.42, r * 0.10), (minute, r * 0.62, r * 0.075)):
-        hand = rbox(-w / 2, w / 2, -w * 0.6, L, depth * 0.6 + 0.004, depth * 0.6 + r * 0.06, w * 0.45, hand_mat)
+    for k, (ang, L, w) in enumerate(((hour, r * 0.42, r * 0.10), (minute, r * 0.62, r * 0.075))):
+        lift = 0.004 + k * max(0.008, r * 0.02)            # wijzers niet in hetzelfde vlak (geen z-fighting)
+        hand = rbox(-w / 2, w / 2, -w * 0.6, L, depth * 0.6 + lift, depth * 0.6 + lift + r * 0.06, w * 0.45, hand_mat)
         parts.append(hand.transform(R=mk.rot_z(-ang)))
     return mk.merge(*parts)
 

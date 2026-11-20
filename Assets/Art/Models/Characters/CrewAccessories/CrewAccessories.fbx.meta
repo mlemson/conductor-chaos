@@ -1,0 +1,90 @@
+fileFormatVersion: 2
+guid: 9477195c25d81aee939636a416d278b4
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_CrewAcc_Frame
+    second: {fileID: 2100000, guid: 804dfbdfeadb16deaf1a5a15b2f610d4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_CrewAcc_Lens
+    second: {fileID: 2100000, guid: 464bf649328fe4db2d8a1c23c356cdaa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_CrewAcc_Gold
+    second: {fileID: 2100000, guid: ff2162cf2b588d1f7f845fb03cb55ebb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_CrewAcc_Felt
+    second: {fileID: 2100000, guid: 6b68e3c61f424ab89b0191c2315ebd45, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_CrewAcc_FeltDark
+    second: {fileID: 2100000, guid: a884e4081c8a2dc947ab071d59ca2b25, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_CrewAcc_Red
+    second: {fileID: 2100000, guid: 51c95470f489ae294725175c504a4a8b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_CrewAcc_RedDark
+    second: {fileID: 2100000, guid: e53ed1cffd7b2cd235c00ccaa345d43b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_CrewAcc_Straw
+    second: {fileID: 2100000, guid: 63c7f7cbb51f6bd3e0181295669c99cb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_CrewAcc_StrawDark
+    second: {fileID: 2100000, guid: 87eebbbb41741becffcbb0fb692b29ed, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_CrewAcc_Navy
+    second: {fileID: 2100000, guid: 9242d9a862b2e0de2ff6b2ae18548a5b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_CrewAcc_Cream
+    second: {fileID: 2100000, guid: 662055654ec30257a12162fc5fb54f6a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_CrewAcc_Hair
+    second: {fileID: 2100000, guid: 3446201968d0309ccce73a92f8e88faa, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

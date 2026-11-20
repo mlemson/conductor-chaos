@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7874026908894456343}
   - component: {fileID: 5636035424286304266}
   - component: {fileID: 6800553713305275164}
+  - component: {fileID: 5021840385275044976}
   m_Layer: 0
   m_Name: RemotePlayer
   m_TagString: Untagged
@@ -22,25 +23,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &6800553713305275164
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5847273723029415449}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8fcee59aaae740c080b55ac33db449f4, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.Characters.CharacterFace
-  eyes: 0
-  mouth: 0
-  blink: 1
-  blinkInterval: {x: 2.2, y: 5.5}
-  blinkDuration: 0.11
-  doubleBlinkChance: 0.18
-  captured: 1
 --- !u!4 &8415762413312844944
 Transform:
   m_ObjectHideFlags: 0
@@ -197,9 +179,46 @@ MonoBehaviour:
   leftArm: {fileID: 6746538072336496764}
   rightArm: {fileID: 7270730386065365361}
   speed: 3.5
+  sprintSpeed: 4.7
   acceleration: 18
   reach: 1.8
   jumpSpeed: 5
+  balanceLean: 7
+  climbAcceleration: 28
+  climbUpSpeed: 2
+  climbHandsRequired: 1
+--- !u!114 &6800553713305275164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5847273723029415449}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fcee59aaae740c080b55ac33db449f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.Characters.CharacterFace
+  eyes: 0
+  mouth: 0
+  blink: 1
+  blinkInterval: {x: 2.2, y: 5.5}
+  blinkDuration: 0.11
+  doubleBlinkChance: 0.18
+  captured: 1
+--- !u!114 &5021840385275044976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5847273723029415449}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5659e69fe6cd8654595cc1b37d5a4b0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.Playground.CrewOutfit
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1001 &6165014403412138096
 PrefabInstance:
   m_ObjectHideFlags: 0

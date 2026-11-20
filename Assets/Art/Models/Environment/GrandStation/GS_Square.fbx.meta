@@ -1,0 +1,75 @@
+fileFormatVersion: 2
+guid: 6af723a4839345570760e79a615fe954
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Asphalt
+    second: {fileID: 2100000, guid: a4131b85cd0fba53eea8af6fc7c30d45, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Flower
+    second: {fileID: 2100000, guid: f4036258fa8204c11c4c4ccf8e9923f9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Leaf
+    second: {fileID: 2100000, guid: 4cfe89e741cd04638c3f291e527c9b43, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_LeafDark
+    second: {fileID: 2100000, guid: 887dfbd66ae3d354416f5a5fe9378a7f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Sandstone
+    second: {fileID: 2100000, guid: 0d89670132a01ae2033343556de1771e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_SandstoneDark
+    second: {fileID: 2100000, guid: 57823243ed0245757d503b236ee8fc05, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Tiles
+    second: {fileID: 2100000, guid: 472532cf70427c9eb7e7e58b43c2b924, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_TilesLight
+    second: {fileID: 2100000, guid: ed3741cf39077c3c715d4c68056a95fd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GS_Yellow
+    second: {fileID: 2100000, guid: de0bec620de5ad6522ce7da3881c9950, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
