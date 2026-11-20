@@ -67,6 +67,8 @@ namespace ConductorChaos.Playground
                 if (gear) RegisterNetworkPrefab(gear);
             }
             transport = GetComponent<UnityTransport>();
+            // A campaign scene load can deliver a burst of object spawns and transform updates.
+            transport.MaxPacketQueueSize = Mathf.Max(transport.MaxPacketQueueSize, 1024);
             manager.NetworkConfig.TickRate = (uint)Mathf.RoundToInt(1f / Time.fixedDeltaTime);
             manager.OnClientConnectedCallback += OnConnected;
             manager.OnClientDisconnectCallback += OnDisconnected;

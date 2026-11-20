@@ -20,6 +20,13 @@ namespace ConductorChaos.Playground
         private readonly NetworkVariable<bool> powered = new(false);
         private readonly NetworkVariable<bool> buttonDown = new(false);
         private readonly NetworkVariable<float> throttle = new(0f);
+        private readonly NetworkVariable<bool> snowPlow = new();
+        private GameObject snowPlowModel;
+
+        internal void InstallSnowPlow(bool installed)
+        {
+            if (IsServer) snowPlow.Value = installed;
+        }
         private readonly NetworkVariable<float> displayedSpeed = new(0f);
         private readonly NetworkVariable<float> steamHeat = new();
         private readonly NetworkVariable<bool> steamPipeBroken = new();
@@ -444,6 +451,8 @@ namespace ConductorChaos.Playground
         private const float CouplingRange = 1.05f;
         private readonly Dictionary<TrackPiece, TrackPiece> previous = new();
         private readonly Dictionary<TrackPiece, TrackPiece> following = new();
+        private CampaignShortcut campaignShortcut;
+        private bool usedShortcut;
         private TrackPiece[] railPieces = System.Array.Empty<TrackPiece>();
         private readonly RaycastHit[] railObstacleHits = new RaycastHit[32];
         private readonly Collider[] lowRailObstacleHits = new Collider[32];
@@ -552,6 +561,7 @@ namespace ConductorChaos.Playground
             body = GetComponent<Rigidbody>();
             originalTrainMass = body.mass;
             derailed = false;
+            usedShortcut = false;
             body.isKinematic = true;
             body.useGravity = false;
             tiltLever = false;
@@ -721,6 +731,7 @@ namespace ConductorChaos.Playground
         private void Update()
         {
             if (!IsSpawned) return;
+            if (snowPlow.Value && !snowPlowModel) BuildSnowPlow();
             if (!IsServer && leverPivot) PresentLever(throttle.Value);
             if (startButton && tiltLever)
                 startButton.localPosition = startButtonRest - startButton.localRotation * Vector3.up * (buttonDown.Value ? 0.02f : 0f);
@@ -916,7 +927,24 @@ namespace ConductorChaos.Playground
             bool towardTail = remaining * rearwardRailSign > 0f;
             float leadingEnd = Mathf.Sign(remaining) * (towardTail ? ConsistRearExtent() : FrontExtent(body));
             bool wagonsFit = coupledWagons.Count == 0 || CanPlaceWagons(track, distance);
-            bool blocked = Mathf.Abs(remaining) > 0.0001f && RailMovementBlocked(body, oldTrack, oldDistance, track, distance, leadingEnd);
+            Rigidbody obstruction = null;
+            bool blocked = Mathf.Abs(remaining) > 0.0001f && RailMovementBlocked(body, oldTrack, oldDistance, track, distance, leadingEnd, out obstruction);
+            if ((!reachedEnd && !blocked && DangerousSpeed(track, requestedSpeed)) || (blocked && IsLogImpact(obstruction)))
+            {
+                track = oldTrack;
+                distance = oldDistance;
+                SampleRail(track, distance, out _, out var direction);
+                Derail(direction * (remaining / Time.fixedDeltaTime));
+                return;
+            }
+            if (blocked && !towardTail && snowPlow.Value && Mathf.Abs(speed) <= 2.6f &&
+                IsTrackDebris(obstruction) && obstruction.mass < 15f)
+            {
+                SampleRail(oldTrack, oldDistance, out var rail, out var direction);
+                Vector3 side = Vector3.Cross(Vector3.up, direction).normalized;
+                if (Vector3.Dot(obstruction.worldCenterOfMass - rail, side) < 0f) side = -side;
+                obstruction.AddForce((side + direction * .2f) * 13f, ForceMode.Acceleration);
+            }
             if ((reachedEnd || (towardTail && !wagonsFit)) && !blocked && Mathf.Abs(speed) > 0.01f)
             {
                 var endTrack = track;
@@ -941,11 +969,50 @@ namespace ConductorChaos.Playground
                 PlaceWagons();
                 return;
             }
+            if (campaignShortcut && oldTrack != track && TrackSwitch.For(track) == campaignShortcut.Switch)
+                usedShortcut = track == campaignShortcut.FastEntry;
             SampleRail(oldTrack, oldDistance, out var oldRailPosition, out _);
             SampleRail(track, distance, out var railPosition, out _);
             displayedSpeed.Value = Vector3.Distance(oldRailPosition, railPosition) / Time.fixedDeltaTime;
             MoveGuidedBody(body, target, rotation);
             PlaceWagons();
+        }
+
+        private bool DangerousSpeed(TrackPiece piece, float requestedSpeed)
+        {
+            if (!piece || Mathf.Abs(throttle.Value) < .96f || Mathf.Abs(requestedSpeed) < .01f ||
+                Mathf.Abs(speed) < Mathf.Abs(requestedSpeed) * .98f) return false;
+            return piece.DangerousCurve || (gameObject.scene.name == ServiceRun.FifthLevelScene && Mathf.Abs(piece.TurnDegrees) >= 25f);
+        }
+
+        private bool IsLogImpact(Rigidbody obstacle) => gameObject.scene.name == ServiceRun.FifthLevelScene &&
+            Mathf.Abs(speed) >= 4.5f && IsTrackDebris(obstacle);
+
+        private static bool IsTrackDebris(Rigidbody obstacle) => obstacle && !obstacle.isKinematic &&
+            (obstacle.TryGetComponent<LowTrackObstacle>(out _) ||
+                (ServiceIncidents.Active && ServiceIncidents.Active.IsFallenObstacle(obstacle)));
+
+        private void BuildSnowPlow()
+        {
+            var layout = GetCouplers(transform);
+            Vector3 front = layout.FrontSign > 0 ? layout.Positive : layout.Negative;
+            var asset = Resources.Load<GameObject>(ServiceGear.PusherResource);
+            var blade = asset ? RepairPoint.FindDeep(asset.transform, "Blad") : null;
+            var look = blade ? blade.GetComponent<Renderer>() : null;
+            snowPlowModel = new GameObject("Sneeuwploeg");
+            snowPlowModel.transform.SetParent(transform, false);
+            snowPlowModel.transform.localPosition = new Vector3(front.x + layout.FrontSign * .28f, -.31f, layout.Center);
+            snowPlowModel.transform.localRotation = Quaternion.LookRotation(Vector3.right * layout.FrontSign, Vector3.up);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                var wing = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                wing.transform.SetParent(snowPlowModel.transform, false);
+                wing.transform.localPosition = new Vector3(side * .63f, 0f, -.16f);
+                wing.transform.localRotation = Quaternion.Euler(-12f, side * 24f, 0f);
+                wing.transform.localScale = new Vector3(1.4f, .57f, .10f);
+                wing.GetComponent<BoxCollider>().enabled = false;
+                if (look) wing.GetComponent<MeshRenderer>().sharedMaterial = look.sharedMaterial;
+            }
         }
 
         private void Derail(Vector3 velocity)
@@ -1034,6 +1101,8 @@ namespace ConductorChaos.Playground
         private void BuildRailLinks()
         {
             railPieces = FindObjectsByType<TrackPiece>();
+            foreach (var shortcut in FindObjectsByType<CampaignShortcut>())
+                if (shortcut.gameObject.scene == gameObject.scene) { campaignShortcut = shortcut; break; }
             foreach (var piece in railPieces)
             {
                 if (!piece.HasSockets || !piece.next) continue;
@@ -1085,6 +1154,8 @@ namespace ConductorChaos.Playground
                 bool forward = target > length;
                 var links = forward ? following : previous;
                 links.TryGetValue(piece, out var next);
+                if (!forward && campaignShortcut && piece == campaignShortcut.Merge)
+                    next = usedShortcut ? campaignShortcut.Shortcut : campaignShortcut.LastSafe;
                 // oprijden vanaf het begin van een wissel (issue #214): de stand van de wissel kiest de route
                 var junction = forward ? TrackSwitch.For(next) : null;
                 if (junction && previous.TryGetValue(next, out var entry) && entry == piece) next = junction.ActiveRoute;
@@ -1134,8 +1205,13 @@ namespace ConductorChaos.Playground
             return true;
         }
 
-        private bool RailMovementBlocked(Rigidbody vehicle, TrackPiece from, float before, TrackPiece to, float after, float lead)
+        private bool RailMovementBlocked(Rigidbody vehicle, TrackPiece from, float before, TrackPiece to, float after, float lead) =>
+            RailMovementBlocked(vehicle, from, before, to, after, lead, out _);
+
+        private bool RailMovementBlocked(Rigidbody vehicle, TrackPiece from, float before, TrackPiece to, float after, float lead,
+            out Rigidbody obstruction)
         {
+            obstruction = null;
             Vector3 start = RailProbePoint(from, before, lead, out var facing);
             Vector3 end = RailProbePoint(to, after, lead, out _);
             Vector3 move = end - start;
@@ -1146,7 +1222,11 @@ namespace ConductorChaos.Playground
                 lowRailObstacleHits, facing, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < lowCount; i++)
                 if (lowRailObstacleHits[i].attachedRigidbody is { } obstacle &&
-                    obstacle.TryGetComponent<LowTrackObstacle>(out _)) return true;
+                    obstacle.TryGetComponent<LowTrackObstacle>(out _))
+                {
+                    obstruction = obstacle;
+                    return true;
+                }
             int count = Physics.BoxCastNonAlloc(start, new Vector3(1.05f, 0.55f, 0.06f), move / length,
                 railObstacleHits, facing, length + 0.05f, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
@@ -1155,6 +1235,7 @@ namespace ConductorChaos.Playground
                 if (obstacle.transform.IsChildOf(vehicle.transform) || (vehicle == body && IsCoupledWagon(obstacle)) ||
                     obstacle is TerrainCollider || obstacle.GetComponentInParent<TrackPiece>() ||
                     obstacle.GetComponentInParent<PlaygroundPlayer>()) continue;
+                obstruction = obstacle.attachedRigidbody;
                 return true;
             }
             return false;
@@ -2443,6 +2524,7 @@ namespace ConductorChaos.Playground
                 derailBoxes.Clear();
                 derailColliders.Clear();
                 derailed = false;
+            usedShortcut = false;
             }
             if (startButton && tiltLever) startButton.localPosition = startButtonRest;
             else if (startButton) startButton.localScale = Vector3.one;

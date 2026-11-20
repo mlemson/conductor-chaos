@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ConductorChaos.Playground;
 using ConductorChaos.Track;
+using ConductorChaos.Yard;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -23,10 +24,10 @@ namespace ConductorChaos.Stations
         private static readonly int[][] CampaignTimeLimits =
         {
             null,
-            new[] { 300, 270, 240, 210 },
-            new[] { 390, 360, 330, 300 },
-            new[] { 630, 585, 550, 515 },
-            new[] { 645, 600, 565, 530 },
+            new[] { 300, 300, 240, 210 },
+            new[] { 360, 330, 300, 270 },
+            new[] { 600, 555, 520, 485 },
+            new[] { 585, 540, 505, 470 },
             new[] { 405, 375, 345, 320 }   // kortste route maar krapste marge: level 5 is het zwaarst
         };
         public static bool IsServiceScene(string scene) => System.Array.IndexOf(ServiceScenes, scene) >= 0;
@@ -101,6 +102,9 @@ namespace ConductorChaos.Stations
         private float stopSeconds;
         private int breakdownsRemaining;
         private bool gearSpawned;
+        private ServiceWaterDelivery waterDelivery;
+        private readonly NetworkVariable<int> waterPercent = new();
+        internal int WaterPercent => waterPercent.Value;
         private float breakdownDelay;
         private Vector2 breakdownInterval;
         private double resultReadyAt;
@@ -265,6 +269,18 @@ namespace ConductorChaos.Stations
         public override void OnNetworkSpawn()
         {
             Active = this;
+            if (gameObject.scene.name == FifthLevelScene && !waterDelivery)
+            {
+                foreach (var source in FindObjectsByType<LiquidSource>())
+                {
+                    if (source.gameObject.scene != gameObject.scene || source.name != "Yard_WaterTower") continue;
+                    waterDelivery = gameObject.AddComponent<ServiceWaterDelivery>();
+                    waterDelivery.Setup(train, source);
+                    System.Array.Resize(ref objectives, objectives.Length + 1);
+                    objectives[objectives.Length - 1] = waterDelivery;
+                    break;
+                }
+            }
             if (IsServer)
             {
                 var (limit, first, interval) = gameObject.scene.name switch
@@ -301,6 +317,14 @@ namespace ConductorChaos.Stations
                     if (objective is ServiceTickets tickets) tickets.AssignWrongTicket();
             bool depot = !introduction && Depot.DepotVehicles.AppliesToScene(gameObject.scene.name);
             var plan = depot ? new List<Depot.WagonKind>(Depot.DepotLoadout.Active.Wagons) : null;
+            bool needsTank = depot && waterDelivery;
+            if (needsTank && !plan.Contains(Depot.WagonKind.Tank))
+            {
+                int capacity = Depot.DepotCatalog.Train(Depot.DepotLoadout.Active.Train).MaxWagons;
+                if (plan.Count >= capacity)
+                    plan.RemoveAt(Depot.DepotCatalog.PassengerCoachIndex(plan) == plan.Count - 1 ? plan.Count - 2 : plan.Count - 1);
+                plan.Add(Depot.WagonKind.Tank);
+            }
             int coachIndex = depot ? Depot.DepotCatalog.PassengerCoachIndex(plan) : -1;
             withoutPassengerCoach.Value = depot && coachIndex < 0 &&
                 // Valt er zonder kaartjes niets te doen, dan rijdt het regionale rijtuig met de reizigers toch mee.
@@ -335,8 +359,10 @@ namespace ConductorChaos.Stations
                     // Depot (#239): precies het treinstel van de host. Geen verplichte wagons: vracht en oma mogen
                     // in of op elke wagon mee, als ze maar fysiek van perron naar perron komen.
                     var passengerKind = coachIndex >= 0 ? plan[coachIndex] : Depot.WagonKind.Regional;
-                    if (!train.PrepareServiceConsist(plan, kind => kind == passengerKind && !withoutPassengerCoach.Value,
+                    if (!train.PrepareServiceConsist(plan, kind => (kind == passengerKind && !withoutPassengerCoach.Value) ||
+                            (needsTank && kind == Depot.WagonKind.Tank),
                             out freightBay)) return false;
+                    if (needsTank && !waterDelivery.HasTank()) return false;
                 }
                 else
                 {
@@ -376,6 +402,7 @@ namespace ConductorChaos.Stations
                 if (depot && !gearSpawned)
                 {
                     gearSpawned = true;
+                    train.InstallSnowPlow(gameObject.scene.name == FourthLevelScene && Depot.DepotProgress.OwnsSnowPlow);
                     ServiceGear.SpawnAtDeparture(departure, train.transform, Depot.DepotLoadout.Active.Train == Depot.TrainKind.Diesel,
                         gameObject.scene.name == FourthLevelScene);
                 }
@@ -387,6 +414,12 @@ namespace ConductorChaos.Stations
 
         private bool Usable(ServiceObjective objective) => objective && objective.IsConfigured &&
             !(withoutPassengerCoach.Value && objective is ServiceTickets);
+
+        internal void RecordWaterDelivery(LiquidSource source, LiquidTank tank)
+        {
+            if (IsServer && waterDelivery && Phase is (RunPhase.Travelling or RunPhase.Arrival) &&
+                waterDelivery.RecordFill(source, tank)) waterPercent.Value = Mathf.FloorToInt(tank.Level * 100f);
+        }
 
         private int PickDepartureObjectives()
         {

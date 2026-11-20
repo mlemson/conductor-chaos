@@ -168,7 +168,7 @@ namespace ConductorChaos.UI
             kicker.text = loading ? "SAMEN OP REIS" : briefing ? "BRIEFING  /  " + (intro ? "HOOFDSTATION" : run.LevelLabel) :
                 won ? "DIENST GESLAAGD" : "DIENST AFGEBROKEN";
             heading.text = loading ? "Even geduld…" : briefing && intro ? "Je eerste werkdag" :
-                briefing ? (run.CombinesObjectives ? "Over het ravijn" : run.Objective?.Title ?? "Eerste dienst") :
+                briefing ? (run.CombinesObjectives ? DepotCatalog.LevelForScene(run.gameObject.scene.name)?.Name ?? "Dienst" : run.Objective?.Title ?? "Eerste dienst") :
                 won ? "Goed gewerkt, conducteurs!" :
                 run.OffTrack ? "De trein is ontspoord" : "De tijd is om";
             route.text = loading ? "De crew laadt dezelfde scène." : intro ? $"{run.Departure.StationName}  ·  Oefenrit zonder tijdslimiet" :
@@ -235,7 +235,8 @@ namespace ConductorChaos.UI
             if (warningPanel.activeSelf != (warning != null)) warningPanel.SetActive(warning != null);
             if (warning != null) warningText.text = warning;
             foreach (var objective in run.ActiveObjectives)
-                rows.Add(new ObjectiveCard.Row(objective.Title, run.ProgressOf(objective), objective.Target));
+                rows.Add(new ObjectiveCard.Row(objective is ServiceWaterDelivery ? $"{objective.Title} · {run.WaterPercent}% / 40%" : objective.Title,
+                    run.ProgressOf(objective), objective.Target));
             string icon = run.Objective ? run.Objective.Icon : "route";
             if (!ChaosUISpriteCatalog.Find(icon)) icon = "route";
             string step = run.CombinesObjectives ? CombinedStep(run) : NextServiceStep(run);
@@ -348,6 +349,14 @@ namespace ConductorChaos.UI
             text.Append(switches
                 ? ".\nOnderweg kan het misgaan: wissels die naar een zijspoor staan, rotsen op het spoor, spoorschade en kolen die opraken."
                 : ".\nOnderweg kan het misgaan: rotsen op het spoor, spoorschade en kolen die opraken.");
+            text.Append(run.gameObject.scene.name switch
+            {
+                ServiceRun.SecondLevelScene => "\nLet op de gele waarschuwingsborden voor steenslag en spoorschade.",
+                ServiceRun.ThirdLevelScene => "\nVolg het hoofdspoor of neem de gemarkeerde doorsteek. Neem op de doorsteek gas terug.",
+                ServiceRun.FourthLevelScene => "\nPak de gratis sneeuwschep op het vertrekperron of rijd stapvoets met de gekochte sneeuwploeg.",
+                ServiceRun.FifthLevelScene => "\nStop met de ketelwagon onder de vulpijp in de beukenlaan. Open het tankluik, laat de pijp zakken en draai de kraan open. Breng minstens 40% water naar Fernwood. Rem voor boomstammen en neem gas terug in scherpe bochten.",
+                _ => string.Empty
+            });
             if (checksTickets) text.AppendLine().Append(TicketInstructions);
             return text.ToString();
         }
@@ -393,6 +402,8 @@ namespace ConductorChaos.UI
                         : "Duw de wisselhendel naar rechtdoor.";
                 if (objective is ServiceTrackRepair rail && !Done(run, objective) && rail.IsBroken)
                     return "Sla de gele bout bij de brug vast." + Count(rail.Hits, rail.RequiredHits);
+                if (objective is ServiceWaterDelivery && run.WaterPercent < 40)
+                    return "Vul de ketelwagon bij de watertoren in de beukenlaan.";
                 if (objective is ServiceSwitchRoute && !Done(run, objective))
                     return "Duw de wisselhendel om." + Count(run.ProgressOf(objective), objective.Target);
             }

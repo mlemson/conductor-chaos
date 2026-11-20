@@ -8,6 +8,7 @@
 // De server kiest bij het begin welke incidenten deze run gebeuren, start ze en ziet wanneer ze opgelost zijn.
 // Clients krijgen alleen de status (bitmaskers) en tonen een waarschuwing in de HUD.
 using System;
+using System.Collections.Generic;
 using ConductorChaos.Track;
 using Unity.Netcode;
 using UnityEngine;
@@ -69,6 +70,8 @@ namespace ConductorChaos.Stations
         private readonly NetworkVariable<int> resolved = new();
         private bool planMade;
         private float nextCheck;
+        private readonly HashSet<Rigidbody> fallenObstacles = new();
+        internal bool IsFallenObstacle(Rigidbody body) => body && !body.isKinematic && fallenObstacles.Contains(body);
 
         public static ServiceIncidents Active { get; private set; }
 
@@ -87,6 +90,7 @@ namespace ConductorChaos.Stations
             if (!IsServer) return;
             planned.Value = triggered.Value = resolved.Value = 0;
             planMade = false;
+            fallenObstacles.Clear();
             foreach (var site in rockfalls)
                 if (site?.rocks != null)
                     foreach (var rock in site.rocks)
@@ -135,7 +139,8 @@ namespace ConductorChaos.Stations
             if (switchWarnings.Length == 0 || !run || !run.Train) return false;
             Vector3 rail = run.Train.ServiceRailPosition;
             foreach (var w in switchWarnings)
-                if (w?.junction && w.approach && w.junction.IsDiverging != w.mainDiverges && ServiceStation.Contains(w.approach, rail))
+                if (w?.junction && w.approach && !CampaignShortcut.IsRouteChoice(w.junction) &&
+                    w.junction.IsDiverging != w.mainDiverges && ServiceStation.Contains(w.approach, rail))
                     return true;
             return false;
         }
@@ -184,10 +189,11 @@ namespace ConductorChaos.Stations
         private void Plan()
         {
             planMade = true;
-            int mask = 0, possible = 0, railSites = 0;
+            int mask = 0, possible = 0, railSites = 0, fallingSites = 0;
             for (int i = 0; i < rockfalls.Length && i < 16; i++)
             {
                 if (!Usable(rockfalls[i])) continue;
+                fallingSites |= RockBit(i);
                 possible |= RockBit(i);
                 if (UnityEngine.Random.value < rockfalls[i].chance) mask |= RockBit(i);
             }
@@ -206,6 +212,13 @@ namespace ConductorChaos.Stations
                 if (UnityEngine.Random.value < site.chance) mask |= bit;
             }
             if (railSites != 0) mask |= PickBit(railSites);
+            string scene = gameObject.scene.name;
+            if (scene == ServiceRun.SecondLevelScene && (mask & fallingSites) == 0 && fallingSites != 0)
+                mask |= PickBit(fallingSites);
+            if (scene == ServiceRun.FourthLevelScene && fallingSites != 0)
+                mask |= fallingSites & -fallingSites;
+            if (scene == ServiceRun.FifthLevelScene && (mask & fallingSites) == 0 && fallingSites != 0)
+                mask |= PickBit(fallingSites);
             int minimum = gameObject.scene.name == ServiceRun.FifthLevelScene ? Mathf.Max(3, minimumIncidents) : minimumIncidents;
             while (CountBits(mask) < minimum && (possible & ~mask) != 0)
                 mask |= PickBit(possible & ~mask);
@@ -238,6 +251,7 @@ namespace ConductorChaos.Stations
                 var rock = site.rocks[k];
                 var target = site.landing[k];
                 if (!rock || !target) continue;
+                fallenObstacles.Add(rock);
                 rock.isKinematic = false;
                 rock.WakeUp();
                 // Ballistische worp: na fallTime seconden ligt het midden van het blok op het landingspunt.

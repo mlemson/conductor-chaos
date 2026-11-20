@@ -839,6 +839,10 @@ namespace ConductorChaos.UI.Depot
             var bottom = BottomBar();
             if (crew) { CrewReady(bottom); return; }
             DepotUi.Txt(bottom, "Je keuze wordt bewaard voor de volgende dienst.", 34, 10, 800, 84, 16, ChaosUI.Muted);
+            if (level == 4)
+                DepotUi.Btn(bottom, DepotProgress.OwnsSnowPlow ? "Sneeuwploeg gemonteerd" : $"Sneeuwploeg · {DepotProgress.SnowPlowCost} kaartjes",
+                    878, 22, 418, 58, ChaosUI.Gold, ConfirmSnowPlow, 18,
+                    !DepotProgress.OwnsSnowPlow && DepotProgress.CanAfford(DepotProgress.SnowPlowCost), "wrench");
             DepotUi.Btn(bottom, "Terug naar wagons", 1336, 22, 250, 58, ChaosUI.Paper, () => SetMode(Mode.Wagons), 20);
         }
 
@@ -877,6 +881,19 @@ namespace ConductorChaos.UI.Depot
         }
 
         // ------------------------------------------------------------------ ontgrendelen
+
+        private void ConfirmSnowPlow()
+        {
+            modal = () => UnlockDialog("Sneeuwploeg", "steam", DepotProgress.SnowPlowCost,
+                "De ploeg wordt in level 4 op je loc gezet. Duw losse sneeuw stapvoets opzij.",
+                "De handschep op het perron is gratis", () =>
+                {
+                    if (!DepotProgress.BuySnowPlow()) return;
+                    modal = null;
+                    Flash("Sneeuwploeg gekocht en gemonteerd");
+                });
+            Render();
+        }
 
         private void ConfirmTrain(TrainKind kind)
         {

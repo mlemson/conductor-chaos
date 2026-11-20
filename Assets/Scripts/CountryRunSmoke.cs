@@ -47,13 +47,14 @@ internal sealed class CountryRunSmoke : MonoBehaviour
         yield return WaitFor(() => ServiceRun.Active && !ServiceRun.Active.Introduction &&
             (server ? ServiceRun.Active.Phase == ServiceRun.RunPhase.Briefing : ServiceRun.Active.Phase != ServiceRun.RunPhase.Loading), "Level 1 loaded for host and client", 50);
         var run = ServiceRun.Active;
+        int duoTime = run.TimeLimit(2);
         var train = Value<TrainDrive>(run, "train");
         float arrivalX = run.Arrival.TrainStop.bounds.center.x;
         float startX = train.ServiceRailPosition.x;
         Require(arrivalX - startX > 820 && arrivalX - startX < 1000, $"Puddleford is {arrivalX - startX:F0} m farther east.");
         if (!server)
         {
-            yield return WaitFor(() => run.TimerRunning && run.TimeLeft > 400, "client gets extended duo timer");
+            yield return WaitFor(() => run.TimerRunning && run.TimeLeft > duoTime - 20, "client gets the configured duo timer");
             yield return WaitFor(() => train.ServiceRailPosition.x > startX + 550, "client sees train cross the bridge section", 95);
             yield return WaitFor(() => run.Phase == ServiceRun.RunPhase.Won && run.Progress == 3,
                 "client sees the mission completed at Puddleford", 135);
@@ -87,7 +88,7 @@ internal sealed class CountryRunSmoke : MonoBehaviour
             body.constraints = RigidbodyConstraints.FreezeAll;
         }
         Physics.SyncTransforms();
-        yield return WaitFor(() => run.TimerRunning && run.TimeLeft >= 418, "server starts the 7:00 duo timer");
+        yield return WaitFor(() => run.TimerRunning && run.TimeLeft >= duoTime - 2, "server starts the configured duo timer");
         Require(Math.Abs(network.ServerTime.Time - run.MusicStartedAt) < 2, "music starts with elongated timer");
         Value<NetworkVariable<bool>>(run, "bellRung").Value = true;
         var pieces = Value<Rigidbody[]>(cargo, "pieces");

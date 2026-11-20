@@ -33,7 +33,8 @@ namespace ConductorChaos.Stations
             int count = 0;
             for (int i = 0; i < switches.Length; i++)
             {
-                if (!done[i] && switches[i] && !switches[i].IsBroken && switches[i].IsDiverging == mainDiverges[i]) done[i] = true;
+                if (!done[i] && switches[i] && !switches[i].IsBroken &&
+                    (CampaignShortcut.IsRouteChoice(switches[i]) || switches[i].IsDiverging == mainDiverges[i])) done[i] = true;
                 if (done[i]) count++;
             }
             return count;

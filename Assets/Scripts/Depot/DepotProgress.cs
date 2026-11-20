@@ -19,6 +19,17 @@ namespace ConductorChaos.Depot
         private const string Prefix = "Depot.";
         public const int TicketsPerWin = 300, TicketsPerIntro = 100, TicketsPerSecond = 2, TicketsPerObjective = 20, TicketsForRepairs = 40;
         public const int TicketsPerExtraPassenger = 15;
+        public const int SnowPlowCost = 400;
+        private const string SnowPlowKey = Prefix + "SnowPlow";
+        public static bool OwnsSnowPlow => PlayerPrefs.GetInt(SnowPlowKey, 0) != 0;
+
+        public static bool BuySnowPlow()
+        {
+            if (OwnsSnowPlow || !CanAfford(SnowPlowCost)) return false;
+            PlayerPrefs.SetInt(SnowPlowKey, 1);
+            Tickets -= SnowPlowCost;
+            return true;
+        }
 
         public static event System.Action Changed;
 
@@ -123,6 +134,7 @@ namespace ConductorChaos.Depot
         /// <summary>Voor de unlock-test in de editor: alles terug naar een nieuw profiel.</summary>
         public static void ResetProgress()
         {
+            PlayerPrefs.DeleteKey(SnowPlowKey);
             foreach (var train in DepotCatalog.Trains)
                 PlayerPrefs.DeleteKey(Prefix + "Train." + train.Kind);
             foreach (var wagon in DepotCatalog.Wagons) PlayerPrefs.DeleteKey(Prefix + "Wagon." + wagon.Kind);

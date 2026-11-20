@@ -28,6 +28,8 @@ namespace ConductorChaos.Track
         [Tooltip("Volgend stuk (optioneel, wordt gezet door de Track Builder). Handig voor een route (#54).")]
         public TrackPiece next;
 
+        internal bool DangerousCurve { get; set; }
+
         public bool HasSockets => start != null && startForward != null && end != null && endForward != null;
 
         public Vector3 StartPosition => start.position;

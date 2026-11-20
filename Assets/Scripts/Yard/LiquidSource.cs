@@ -83,7 +83,10 @@ namespace ConductorChaos.Yard
 
         void FixedUpdate()
         {
-            if (target != null && amount > 0.5f && Authority) target.Pour(litersPerSecond * amount * Time.fixedDeltaTime, kind);
+            if (target == null || amount <= .5f || !Authority) return;
+            target.Pour(litersPerSecond * amount * Time.fixedDeltaTime, kind);
+            var run = Stations.ServiceRun.Active;
+            if (run && target is LiquidTank tank) run.RecordWaterDelivery(this, tank);
         }
 
         void Update()
