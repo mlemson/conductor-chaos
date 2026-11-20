@@ -2,7 +2,7 @@
 
 Een warme, speelse co-opgame in ontwikkeling: 1–6 spelers proberen samen een treinreis te voltooien. Singleplayer moet mogelijk blijven. Werknaam; ontwerp en omvang kunnen veranderen.
 
-**Status (3 november 2026):** er zijn 3D-assets, een lokale Netcode/physics-proef in `TrainPlayground`, UI-basiscomponenten en meerdere art-/editor-tools. Nog geen volledige speelbare conducteurreis met rijdende trein, NPC-opdrachten en online lobby. Bekijk de actuele issues en code: oudere projectstatusdocumenten kunnen achterlopen.
+**Status (20 november 2026).** `main` bevat een depot, een gezamenlijke introductie, vijf dienstritten en een online sessie met Unity Relay. De game is in ontwikkeling. De actuele issues en het testplan geven aan welke onderdelen nog worden uitgewerkt of getest.
 
 ## 🚂 Live roadmap en samenwerken
 
@@ -10,11 +10,14 @@ Een warme, speelse co-opgame in ontwikkeling: 1–6 spelers proberen samen een t
 
 Het bord toont automatisch *te doen*, *bezig*, *review*, *geblokkeerd* en *klaar* via [de GitHub-workflow](.github/workflows/update-development-board.yml). De daadwerkelijke status komt uit GitHub Issues en gekoppelde PR's; niet uit losse commitberichten.
 
-## UI en menu proef
+## Aan de slag
 
-[**UI-stijlgids**](Docs/UI_STYLE_GUIDE.md) · [**Originele UI-concepten (beeld 1 en 3)**](Docs/References/UI/README.md) · [**Zo open je de interactieve Unity-menu-preview**](Docs/UI_TESTING.md)
+1. Installeer Git LFS en voer `git lfs install` uit voordat je de repository kloont. Voer in een bestaande checkout `git lfs pull` uit als de grote scènes niet zijn opgehaald. Levels 2 t/m 5 staan in Git LFS.
+2. Open de hoofdmap van de Git-checkout in Unity Hub met **6000.6.8f1**. Laat Unity de packages importeren en controleer de Console.
+3. Open `Assets/Scenes/TrainPlayground.unity` en druk op Play voor het menu. Kies solo of maak een online sessie en deel de Relay-code. Online spelen vereist een gekoppeld Unity Cloud-project met Relay.
+4. Maak een Windows-build via **File > Build Profiles**. De standaardscènelijst begint met `TrainPlayground`, gevolgd door de introductie en levels 1 t/m 5. De losse `ChaosMenuPreview` is bedoeld voor UI-ontwikkeling.
 
-De runtime HUD in `TrainPlayground` toont alleen echte netwerkproefinformatie. Het losse hoofdmenu/lobby-preview wordt eenmalig in Unity aangemaakt via `Tools > Conductor Chaos > UI > Create or Open Menu Preview`. De lobby is nog geen werkende online sessie; het menu kan de lokale physics-proef wel starten. Niet als afgeronde gameplay-UI presenteren voordat de editorchecks zijn uitgevoerd.
+De [UI-stijlgids](Docs/UI_STYLE_GUIDE.md) en [UI-testinstructies](Docs/UI_TESTING.md) beschrijven de losse menuproef.
 
 ## Begin hier
 
@@ -27,13 +30,5 @@ De runtime HUD in `TrainPlayground` toont alleen echte netwerkproefinformatie. H
 ## Eerstvolgende agenttaak
 
 **Kies één [kleine uitvoertaak](Docs/AI/SMALL_TASK_INDEX.md)**. Lees [tokenzuinige agentregels](Docs/AI/SMALL_TASK_PLAYBOOK.md), check actuele PR's en inspecteer eerst de bestaande code. De [oude P0-01 prompt](Docs/AI/NEXT_AGENT_TASK.md) is historisch; niet opnieuw de baseline bouwen alleen omdat een oud document dat zegt.
-
-## Project openen
-
-Open de hoofdmap in Unity Hub met **6000.5.7f1**, laat packages oplossen en lees Console en Package Manager. Het project is nog niet met de editor gevalideerd; werk [setup-taak P0-01](Docs/ROADMAP.md) af voordat je daarop vertrouwt. Er staan bewust geen scènes in Build Settings. De URP-configuratiebestanden zijn technische instellingen uit de Unity-template, geen spelassets. Netcode, Relay en Lobby zijn nog niet geïnstalleerd of geconfigureerd.
-
-## Eerste doel
-
-Een technische test met twee verbonden spelers in één bewegende wagon, één gedeelde deur en één oppakbare koffer. Beide spelers bedienen de deur, dragen de koffer en botsen met elkaar; de server blijft de enige bron van gedeelde waarheid. Eerst betrouwbaar in solo/host + client, daarna pas uitbreiden naar 4 en uiteindelijk 6 spelers.
 
 Voor bijdragen: [CONTRIBUTING.md](CONTRIBUTING.md). Houd concrete status en testbewijs actueel; vink geplande functies nooit af omdat alleen documentatie bestaat.
