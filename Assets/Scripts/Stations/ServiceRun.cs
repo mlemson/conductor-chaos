@@ -120,6 +120,7 @@ namespace ConductorChaos.Stations
         internal int BonusPassengers => bonusPassengers.Value;
         private ServiceStop[] stops = System.Array.Empty<ServiceStop>();
         private ServiceTickets stopTickets;
+        private ServiceNoticeboard noticeboard;
         private readonly NetworkVariable<int> bonusPost = new();
         internal int BonusPost => bonusPost.Value;
         internal bool HasStops => stops.Length != 0;
@@ -302,6 +303,7 @@ namespace ConductorChaos.Stations
                     found.AddRange(root.GetComponentsInChildren<ServiceStop>());
                 stops = found.ToArray();
                 stopTickets = System.Array.Find(objectives, objective => objective is ServiceTickets) as ServiceTickets;
+                if (HasStops && !noticeboard) noticeboard = ServiceNoticeboard.Place(this);
             }
             if (gameObject.scene.name == FifthLevelScene && !waterDelivery)
             {

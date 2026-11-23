@@ -17,17 +17,17 @@ namespace ConductorChaos.UI
 
         internal ManifestBoard(Transform parent)
         {
-            var board = ChaosUI.Rect(parent, "Briefingbord", V(.023f, .022f), V(.977f, .71f), Vector2.zero, Vector2.zero);
+            var board = ChaosUI.Rect(parent, "Briefingbord", V(.028f, .04f), V(.972f, .79f), Vector2.zero, Vector2.zero);
             root = board.gameObject;
             var fare = Tile(board, 0, "Geldige kaartjes");
             for (int i = 0; i < fareLabels.Length; i++)
             {
-                float left = .065f + i * .46f;
-                var paper = ChaosUI.Panel(fare, "Kaartje", V(left, .29f), V(left + .41f, .69f), ChaosUI.Paper);
-                var stub = ChaosUI.Panel(paper, "Kleurstrook", V(.48f, 0f), V(1f, 1f), ChaosUI.Gold);
+                float bottom = .47f - i * .33f;
+                var paper = ChaosUI.Panel(fare, "Kaartje", V(.10f, bottom), V(.90f, bottom + .27f), ChaosUI.Muted);
+                var stub = ChaosUI.Panel(paper, "Kleurstrook", V(.64f, 0f), V(1f, 1f), ChaosUI.Gold);
                 fareStubs[i] = stub.GetComponent<Image>();
-                fareMarks[i] = Text(stub, "Letter", 21, ChaosUI.Ink, V(0f, 0f), V(1f, 1f));
-                fareLabels[i] = Text(fare, "Kleur", 15, ChaosUI.Paper, V(left - .02f, .035f), V(left + .43f, .26f));
+                fareMarks[i] = Text(stub, "Letter", 28, ChaosUI.Ink, V(0f, 0f), V(1f, 1f));
+                fareLabels[i] = Text(paper, "Kleur", 23, ChaosUI.Ink, V(0f, 0f), V(.65f, 1f));
             }
 
             var atlas = Resources.Load<Texture2D>("ManifestPictures");
@@ -37,7 +37,7 @@ namespace ConductorChaos.UI
             var tiles = new Transform[] { collect, leave, refuse };
             for (int i = 0; i < tiles.Length; i++)
             {
-                var frame = ChaosUI.Rect(tiles[i], "Afbeelding", V(.08f, .22f), V(.92f, .75f), Vector2.zero, Vector2.zero);
+                var frame = ChaosUI.Rect(tiles[i], "Afbeelding", V(.08f, .22f), V(.92f, .73f), Vector2.zero, Vector2.zero);
                 var image = ChaosUI.Rect(frame, "Illustratie", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
                 var fit = image.gameObject.AddComponent<AspectRatioFitter>();
                 fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
@@ -45,7 +45,7 @@ namespace ConductorChaos.UI
                 pictures[i] = image.gameObject.AddComponent<RawImage>();
                 pictures[i].texture = atlas;
                 pictures[i].raycastTarget = false;
-                captions[i] = Text(tiles[i], "Naam", 17, ChaosUI.Paper, V(0f, .025f), V(1f, .21f));
+                captions[i] = Text(tiles[i], "Naam", 23, ChaosUI.Ink, V(0f, .025f), V(1f, .21f));
             }
             Hide();
         }
@@ -61,7 +61,7 @@ namespace ConductorChaos.UI
                 fareMarks[i].color = code == 3 ? ChaosUI.Ink : Color.white;
                 fareLabels[i].text = ServiceManifest.FareName(code);
             }
-            collectTitle.text = "Verplicht · " + pickupStation;
+            collectTitle.text = "Ophalen · " + pickupStation;
             Picture(0, manifest.RequiredFreight, false, ServiceManifest.FreightNames[manifest.RequiredFreight]);
             Picture(1, manifest.ExcludedFreight, false, ServiceManifest.FreightNames[manifest.ExcludedFreight]);
             Picture(2, manifest.ExcludedTraveller, true, ServiceManifest.TravellerNames[manifest.ExcludedTraveller]);
@@ -79,9 +79,9 @@ namespace ConductorChaos.UI
 
         private static RectTransform Tile(Transform parent, int i, string header, out Text title)
         {
-            var tile = ChaosUI.Panel(parent, header, V(i * .254f, 0f), V(i * .254f + .238f, 1f), ChaosUI.Dark);
-            title = Text(tile, header, 16, i >= 2 ? new Color32(244, 177, 157, 255) : ChaosUI.GoldLight,
-                V(0f, .76f), V(1f, .97f));
+            var tile = ChaosUI.Panel(parent, header, V(i * .254f, 0f), V(i * .254f + .238f, 1f), ChaosUI.Paper);
+            title = Text(tile, header, 23, i >= 2 ? ChaosUI.TrainRedDark : ChaosUI.Ink,
+                V(0f, .75f), V(1f, .97f));
             title.text = header;
             return tile;
         }
@@ -90,7 +90,8 @@ namespace ConductorChaos.UI
         {
             var caption = ChaosUI.Label(parent, name, "", size, ink, TextAnchor.MiddleCenter, FontStyle.Bold, min, max);
             caption.resizeTextForBestFit = true;
-            caption.resizeTextMinSize = 10;
+            caption.resizeTextMinSize = 15;
+            caption.raycastTarget = false;
             caption.resizeTextMaxSize = size;
             return caption;
         }
