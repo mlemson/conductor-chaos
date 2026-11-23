@@ -118,6 +118,26 @@ namespace ConductorChaos.Stations
         public ServiceStation Arrival => arrival;
         public RunPhase Phase => phase.Value;
         internal int BonusPassengers => bonusPassengers.Value;
+        private ServiceStop[] stops = System.Array.Empty<ServiceStop>();
+        private ServiceTickets stopTickets;
+        private readonly NetworkVariable<int> bonusPost = new();
+        internal int BonusPost => bonusPost.Value;
+        internal bool HasStops => stops.Length != 0;
+
+        internal ServiceStop NearbyStop()
+        {
+            if (Phase != RunPhase.Travelling) return null;
+            ServiceStop result = null;
+            float nearest = 42f * 42f;
+            foreach (var stop in stops)
+            {
+                float distance = (stop.transform.position - train.ServiceRailPosition).sqrMagnitude;
+                if (distance >= nearest) continue;
+                nearest = distance;
+                result = stop;
+            }
+            return result;
+        }
         public Lesson CurrentLesson => lesson.Value;
         public bool CombinesObjectives => combineObjectives && !introduction;
         internal bool RotatesDepartureObjectives => CombinesObjectives && rotateDepartureObjectives;
@@ -269,6 +289,14 @@ namespace ConductorChaos.Stations
         public override void OnNetworkSpawn()
         {
             Active = this;
+            if (CombinesObjectives)
+            {
+                var found = new List<ServiceStop>(2);
+                foreach (var root in gameObject.scene.GetRootGameObjects())
+                    found.AddRange(root.GetComponentsInChildren<ServiceStop>());
+                stops = found.ToArray();
+                stopTickets = System.Array.Find(objectives, objective => objective is ServiceTickets) as ServiceTickets;
+            }
             if (gameObject.scene.name == FifthLevelScene && !waterDelivery)
             {
                 foreach (var source in FindObjectsByType<LiquidSource>())
@@ -298,6 +326,7 @@ namespace ConductorChaos.Stations
                 breakdownInterval = interval;
             }
             if (departure && departure.DepartureBell) bellButton = departure.DepartureBell.GetComponent<BoxCollider>();
+            if (bellButton) AddSolidBell(bellButton);
             bellSound = Resources.Load<AudioClip>("ServiceDepartureBell");
             bellRung.OnValueChanged += PresentBell;
         }
@@ -482,6 +511,18 @@ namespace ConductorChaos.Stations
             }
         }
 
+        /// <summary>De bel in de scènes is alleen een trigger (de drukzone). Een vaste kopie, iets lager dan de knop, laat
+        /// handen en spelers erop rusten; de bovenkant valt nog in de drukzone. Op een kind, zodat GetComponent op de
+        /// knop de trigger blijft vinden.</summary>
+        private static void AddSolidBell(BoxCollider button)
+        {
+            if (button.transform.Find("Bel (vast)")) return;
+            var solid = new GameObject("Bel (vast)").AddComponent<BoxCollider>();
+            solid.transform.SetParent(button.transform, false);
+            solid.center = button.center - new Vector3(0f, button.size.y * .1f, 0f);
+            solid.size = Vector3.Scale(button.size, new Vector3(1f, .8f, 1f));
+        }
+
         private void PresentBell(bool previous, bool rung)
         {
             if (!rung || !bellButton || Application.isBatchMode) return;
@@ -598,6 +639,9 @@ namespace ConductorChaos.Stations
                 stopSeconds = stopped ? stopSeconds + Time.fixedDeltaTime : 0;
                 docked = stopSeconds >= 1f;
                 if (Phase is RunPhase.Travelling or RunPhase.Arrival)
+                    foreach (var stop in stops)
+                        stop.UpdateOnServer(train, stopTickets, arrival.Platform);
+                if (Phase is RunPhase.Travelling or RunPhase.Arrival)
                     phase.Value = docked ? RunPhase.Arrival : RunPhase.Travelling;
                 if (train.ServiceSpeed >= .22f)
                     foreach (var objective in active) objective.ObserveTravelOnServer();
@@ -707,6 +751,11 @@ namespace ConductorChaos.Stations
                     if (objective is ServiceTickets tickets)
                         extraPassengers += tickets.BonusBoardedCount;
             bonusPassengers.Value = extraPassengers;
+            int deliveredPost = 0;
+            if (succeeded)
+                foreach (var stop in stops)
+                    deliveredPost += stop.DeliveredPost;
+            bonusPost.Value = deliveredPost;
             resultReadyAt = NetworkManager.ServerTime.Time + .75;
             phase.Value = succeeded ? RunPhase.Won : RunPhase.Failed;
         }
