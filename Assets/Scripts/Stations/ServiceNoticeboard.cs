@@ -24,12 +24,65 @@ namespace ConductorChaos.Stations
             var station = service.Departure;
             if (!station || !station.Platform || !station.TrainStop) return null;
 
-            FindSpot(station, out var place, out var rotation, out var surface);
-            var board = new GameObject("Dienstbord · vertrekperron").AddComponent<ServiceNoticeboard>();
+            bool inHall = TryHall(station, out var place, out var rotation, out var surface, out float scale);
+            if (!inHall) FindSpot(station, out place, out rotation, out surface);
+            var board = new GameObject(inHall ? "Dienstbord · stationshal" : "Dienstbord · vertrekperron").AddComponent<ServiceNoticeboard>();
             SceneManager.MoveGameObjectToScene(board.gameObject, station.gameObject.scene);
             board.transform.SetPositionAndRotation(place, rotation);
+            if (inHall) board.transform.localScale = Vector3.one * scale;
             board.Build(service, surface);
             return board;
+        }
+
+        private static bool TryHall(ServiceStation station, out Vector3 place, out Quaternion rotation, out Material surface, out float scale)
+        {
+            scale = .70f;
+            place = default;
+            rotation = Quaternion.identity;
+            surface = null;
+            MeshCollider shell = null;
+            Vector3 platform = station.Platform.bounds.center;
+            float nearest = 34f * 34f;
+            foreach (var root in station.gameObject.scene.GetRootGameObjects())
+                foreach (var part in root.GetComponentsInChildren<MeshCollider>())
+                {
+                    var building = part.transform.parent;
+                    if (part.name != "Col_Main" || !part.enabled || !part.gameObject.activeInHierarchy || !building ||
+                        !(building.Find("Spawn_Briefing") || building.Find("Spawn_Ticket"))) continue;
+                    float distance = (building.position - platform).sqrMagnitude;
+                    if (distance >= nearest) continue;
+                    nearest = distance;
+                    shell = part;
+                }
+
+            if (!shell) return false;
+            var hall = shell.transform.parent;
+            var briefing = hall.Find("Spawn_Briefing");
+            var ticketOffice = hall.Find("Spawn_Ticket");
+            Vector3 floor;
+            Vector3 outward;
+            if (briefing)
+            {
+                // Leave the central aisle and the fixtures on both walls accessible.
+                floor = hall.TransformPoint(new Vector3(-2.92f, 0f, -2.87f));
+                floor.y = briefing.position.y;
+                outward = Vector3.left;
+                scale = .87f;
+            }
+            else if (ticketOffice)
+            {
+                // Place the board diagonally in the open hall beside the ticket office.
+                floor = hall.TransformPoint(new Vector3(.55f, 0f, -2.75f));
+                floor.y = ticketOffice.position.y;
+                outward = new Vector3(1f, 0f, -.37f);
+            }
+            else return false;
+
+            place = floor;
+            rotation = Quaternion.LookRotation(hall.TransformDirection(outward));
+            var walls = hall.Find("Walls");
+            if (walls && walls.TryGetComponent<MeshRenderer>(out var renderer)) surface = renderer.sharedMaterial;
+            return true;
         }
 
         private static void FindSpot(ServiceStation station, out Vector3 place, out Quaternion rotation, out Material surface)

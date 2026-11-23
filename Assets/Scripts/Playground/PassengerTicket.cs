@@ -25,6 +25,7 @@ namespace ConductorChaos.Playground
         readonly NetworkVariable<bool> wrong = new(false);
         readonly NetworkVariable<byte> fare = new();
         private TextMesh[] fareMarks;
+        private static Material fareInk;
         internal int Fare => fare.Value - 1;
         static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
 
@@ -113,7 +114,7 @@ namespace ConductorChaos.Playground
             {
                 if (modelTicket) modelTicket.gameObject.SetActive(false);
                 ticket.gameObject.SetActive(true);
-                ShowFareMark();
+                PresentFare(ticket, Fare, ref fareMarks);
                 return;
             }
             if (modelTicket)
@@ -133,36 +134,66 @@ namespace ConductorChaos.Playground
             renderer.SetPropertyBlock(block);
         }
 
-        private void ShowFareMark()
+        internal static Transform CreateDisplayTicket(Transform parent)
         {
-            var renderer = ticket.GetComponentInChildren<MeshRenderer>();
+            var passenger = Resources.Load<GameObject>(ServiceTickets.BonusPassengerResource);
+            var ticketing = passenger ? passenger.GetComponent<PassengerTicket>() : null;
+            if (!ticketing || !ticketing.ticketPrefab) return null;
+
+            var display = Instantiate(ticketing.ticketPrefab, parent, false).transform;
+            foreach (var collider in display.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
+            var hole = RepairPoint.FindDeep(display, "Ticket_Hole");
+            if (hole) hole.gameObject.SetActive(false);
+            return display;
+        }
+
+        internal static void PresentFare(Transform model, int code, ref TextMesh[] marks)
+        {
+            if (!model) return;
+            var renderer = model.GetComponentInChildren<MeshRenderer>();
             if (!renderer) return;
-            Color color = ServiceManifest.FareColor(Fare);
+            Color color = ServiceManifest.FareColor(code);
             var block = new MaterialPropertyBlock();
             block.SetColor(BaseColor, color);
+            block.SetColor("_Ramp0", Color.Lerp(color, Color.black, .16f));
+            block.SetColor("_Ramp1", Color.Lerp(color, Color.black, .08f));
+            block.SetColor("_Ramp2", color);
+            block.SetColor("_Ramp3", Color.Lerp(color, Color.white, .09f));
+            block.SetColor("_Ramp4", Color.Lerp(color, Color.white, .16f));
             var materials = renderer.sharedMaterials;
             int stub = System.Array.FindIndex(materials, material => material && material.name.Contains("Navy"));
             if (stub >= 0) renderer.SetPropertyBlock(block, stub);
             else renderer.SetPropertyBlock(block);
-            if (fareMarks == null)
+
+            if (marks == null)
             {
-                fareMarks = new TextMesh[2];
-                for (int i = 0; i < fareMarks.Length; i++)
+                marks = new TextMesh[2];
+                for (int i = 0; i < marks.Length; i++)
                 {
                     var label = new GameObject("Kaartcode").AddComponent<TextMesh>();
-                    label.transform.SetParent(ticket, false);
-                    label.transform.SetLocalPositionAndRotation(new Vector3(.046f, 0f, i == 0 ? -.005f : .005f),
+                    label.transform.SetParent(model, false);
+                    label.transform.SetLocalPositionAndRotation(new Vector3(-.048f, 0f, i == 0 ? -.005f : .005f),
                         Quaternion.Euler(0f, 180f * i, 0f));
                     label.anchor = TextAnchor.MiddleCenter;
                     label.alignment = TextAlignment.Center;
                     label.fontSize = 42;
                     label.characterSize = .007f;
-                    label.color = new Color32(255, 241, 213, 255);
-                    fareMarks[i] = label;
+                    marks[i] = label;
+                    if (!fareInk && Shader.Find("Sprites/Default") is { } shader)
+                        fareInk = new Material(shader);
+                    if (fareInk)
+                    {
+                        // Use scene depth so the print on the back of the ticket cannot show through.
+                        label.GetComponent<MeshRenderer>().sharedMaterial = fareInk;
+                    }
                 }
             }
-            foreach (var label in fareMarks)
-                label.text = ServiceManifest.FareMark(Fare);
+            foreach (var label in marks)
+            {
+                label.text = ServiceManifest.FareMark(code);
+                label.color = new Color32(55, 28, 19, 255);
+                if (fareInk) fareInk.mainTexture = label.font.material.mainTexture;
+            }
         }
 
         public override void OnNetworkDespawn()

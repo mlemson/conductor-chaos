@@ -345,7 +345,7 @@ namespace ConductorChaos.UI
         private static string CombinedBriefing(ServiceRun run)
         {
             var text = new System.Text.StringBuilder();
-            if (run.HasStops) text.AppendLine("Lees het dienstbord op het vertrekperron. Het sluit zodra de trein wegrijdt.");
+            if (run.HasStops) text.AppendLine("Lees het dienstbord in de vertrekhal. Het sluit zodra de trein wegrijdt.");
             text.Append("Opdrachten voor deze rit: ");
             bool first = true, checksTickets = false;
             foreach (var objective in run.ActiveObjectives)
@@ -383,7 +383,7 @@ namespace ConductorChaos.UI
             var objectives = run.ActiveObjectives;
             if (run.Phase == ServiceRun.RunPhase.Departure)
             {
-                if (!run.TimerRunning) return run.HasStops ? "Lees het dienstbord op het vertrekperron." : "Loop naar het vertrekperron.";
+                if (!run.TimerRunning) return run.HasStops ? "Lees het dienstbord in de vertrekhal." : "Loop naar het vertrekperron.";
                 foreach (var objective in objectives)
                 {
                     if (objective is ServiceTickets tickets)

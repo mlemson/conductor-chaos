@@ -1,3 +1,4 @@
+using ConductorChaos.Playground;
 using ConductorChaos.Stations;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,9 +8,8 @@ namespace ConductorChaos.UI
     internal sealed class ManifestBoard
     {
         private readonly GameObject root;
-        private readonly Text[] fareLabels = new Text[2];
-        private readonly Text[] fareMarks = new Text[2];
-        private readonly Image[] fareStubs = new Image[2];
+        private readonly Transform[] fareTickets = new Transform[2];
+        private readonly TextMesh[][] fareMarks = new TextMesh[2][];
         private readonly RawImage[] pictures = new RawImage[3];
         private readonly Text[] captions = new Text[3];
         private readonly Text collectTitle;
@@ -20,14 +20,14 @@ namespace ConductorChaos.UI
             var board = ChaosUI.Rect(parent, "Briefingbord", V(.028f, .04f), V(.972f, .79f), Vector2.zero, Vector2.zero);
             root = board.gameObject;
             var fare = Tile(board, 0, "Geldige kaartjes");
-            for (int i = 0; i < fareLabels.Length; i++)
+            for (int i = 0; i < fareTickets.Length; i++)
             {
-                float bottom = .47f - i * .33f;
-                var paper = ChaosUI.Panel(fare, "Kaartje", V(.10f, bottom), V(.90f, bottom + .27f), ChaosUI.Muted);
-                var stub = ChaosUI.Panel(paper, "Kleurstrook", V(.64f, 0f), V(1f, 1f), ChaosUI.Gold);
-                fareStubs[i] = stub.GetComponent<Image>();
-                fareMarks[i] = Text(stub, "Letter", 28, ChaosUI.Ink, V(0f, 0f), V(1f, 1f));
-                fareLabels[i] = Text(paper, "Kleur", 23, ChaosUI.Ink, V(0f, 0f), V(.65f, 1f));
+                var anchor = V(.5f, .545f - i * .31f);
+                ChaosUI.Panel(fare, "Kaartmat", V(.085f, anchor.y - .145f), V(.915f, anchor.y + .145f), ChaosUI.Hex("#BEB6A5"));
+                var holder = ChaosUI.Rect(fare, "Voorbeeldkaartje", anchor, anchor, Vector2.zero, Vector2.zero);
+                holder.localPosition += Vector3.back * 4.3f;
+                fareTickets[i] = PassengerTicket.CreateDisplayTicket(holder);
+                if (fareTickets[i]) fareTickets[i].localScale = Vector3.one * 920f;
             }
 
             var atlas = Resources.Load<Texture2D>("ManifestPictures");
@@ -53,14 +53,8 @@ namespace ConductorChaos.UI
         internal void Show(ServiceManifest manifest, string pickupStation)
         {
             root.SetActive(true);
-            for (int i = 0; i < fareMarks.Length; i++)
-            {
-                int code = i == 0 ? manifest.FirstFare : manifest.SecondFare;
-                fareStubs[i].color = ServiceManifest.FareColor(code);
-                fareMarks[i].text = ServiceManifest.FareMark(code);
-                fareMarks[i].color = code == 3 ? ChaosUI.Ink : Color.white;
-                fareLabels[i].text = ServiceManifest.FareName(code);
-            }
+            PassengerTicket.PresentFare(fareTickets[0], manifest.FirstFare, ref fareMarks[0]);
+            PassengerTicket.PresentFare(fareTickets[1], manifest.SecondFare, ref fareMarks[1]);
             collectTitle.text = "Ophalen · " + pickupStation;
             Picture(0, manifest.RequiredFreight, false, ServiceManifest.FreightNames[manifest.RequiredFreight]);
             Picture(1, manifest.ExcludedFreight, false, ServiceManifest.FreightNames[manifest.ExcludedFreight]);

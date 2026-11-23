@@ -9,7 +9,6 @@ namespace ConductorChaos.Stations
             new(70, 111, 186, 255), new(197, 77, 62, 255), new(74, 137, 89, 255), new(226, 168, 48, 255)
         };
 
-        private static readonly string[] ColorNames = { "Blauw", "Rood", "Groen", "Geel" };
         internal static readonly string[] TravellerNames = { "Zakenreiziger", "Toerist", "Oudere reiziger", "Kind" };
         internal static readonly string[] FreightNames = { "Postkist", "Houten vat", "Hijskist" };
         private readonly int card;
@@ -49,6 +48,5 @@ namespace ConductorChaos.Stations
 
         internal static Color FareColor(int fare) => Colors[fare];
         internal static string FareMark(int fare) => ((char)('A' + fare)).ToString();
-        internal static string FareName(int fare) => ColorNames[fare];
     }
 }
