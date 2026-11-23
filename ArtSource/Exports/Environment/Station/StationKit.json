@@ -2372,15 +2372,15 @@
     "Prop_CrewWardrobe": {
       "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_CrewWardrobe.fbx",
       "category": "Props",
-      "tris": 10042,
+      "tris": 10246,
       "min": [
-        -1.23,
+        -1.63,
         -0.01,
         -0.338
       ],
       "max": [
-        1.23,
-        2.74,
+        1.63,
+        2.32,
         0.338
       ],
       "nodes": [
@@ -2398,7 +2398,7 @@
     "Prop_AccessoryTable": {
       "fbx": "Assets/Art/Models/Environment/Station/Props/Prop_AccessoryTable.fbx",
       "category": "Props",
-      "tris": 3124,
+      "tris": 3212,
       "min": [
         -0.75,
         -0.035,
@@ -2406,8 +2406,8 @@
       ],
       "max": [
         0.75,
-        1.559,
-        0.38
+        1.139,
+        0.382
       ],
       "nodes": [
         "Prop_AccessoryTable",

@@ -10,13 +10,16 @@ namespace ConductorChaos.Playground
     public sealed class CrewAccessoryPickup : MonoBehaviour
     {
         [SerializeField] private int accessory;
+        private const float ReachRadius = 0.25f;
         private Rigidbody body;
+        private Collider grabZone;
 
         public void Configure(int index) => accessory = index;
 
         private void Awake()
         {
             body = GetComponent<Rigidbody>();
+            grabZone = GetComponent<Collider>();
             body.isKinematic = true;
             body.useGravity = false;
         }
@@ -26,7 +29,8 @@ namespace ConductorChaos.Playground
             var network = NetworkManager.Singleton;
             if (!network || !network.IsServer) return;
             foreach (var player in PlaygroundPlayer.SpawnedPlayers)
-                if (player && player.IsSpawned && player.TryGetControlHand(body, out _, out _, out _) &&
+                if (player && player.IsSpawned &&
+                    (player.TryGetControlHand(body, out _, out _, out _) || player.IsReachingFor(grabZone, ReachRadius)) &&
                     player.TryGetComponent<CrewOutfit>(out var outfit))
                     outfit.ServerWearAccessory(accessory);
         }

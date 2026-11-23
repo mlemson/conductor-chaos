@@ -8,6 +8,7 @@ using System.Linq;
 using ConductorChaos.Characters;
 using ConductorChaos.Playground;
 using ConductorChaos.Stations;
+using Unity.Netcode;
 using UnityEditor;
 using UnityEngine;
 
@@ -110,11 +111,15 @@ namespace ConductorChaos.EditorTools
                 Pickup(catalog, catalog.IndexOf("Acc_Mustache"), props, briefingLockers[1].TransformPoint(new Vector3(0.23f, 0.15f, -0.02f)),
                     briefingLockers[1].rotation);
             }
-            // strohoed op een hoek van de kaarttafel (missiekeuze)
-            var map = arch.Cast<Transform>().FirstOrDefault(t => t.name.StartsWith("GS_MissionTable"));
-            if (map)
+            // strohoed vergeten op de achterste bank van de briefing (zitting 0,48 m: binnen handbereik; de kaarttafel
+            // is met 0,92 m te hoog voor de crew)
+            var bench = props.Cast<Transform>()
+                .Where(t => t.name.StartsWith("Prop_Bench") && station.InverseTransformPoint(t.position).x > 12f)
+                .OrderByDescending(t => station.InverseTransformPoint(t.position).z)
+                .ThenBy(t => station.InverseTransformPoint(t.position).x).FirstOrDefault();
+            if (bench)
             {
-                Pickup(catalog, catalog.IndexOf("Acc_StrawHat"), props, map.TransformPoint(new Vector3(-0.70f, 1.97f, 0.30f)), map.rotation);
+                Pickup(catalog, catalog.IndexOf("Acc_StrawHat"), props, bench.TransformPoint(new Vector3(0.45f, 0.49f, -0.02f)), bench.rotation);
             }
 
             // stationschef op het podium, kijkt naar de banken
@@ -143,6 +148,9 @@ namespace ConductorChaos.EditorTools
             if (!body) body = go.AddComponent<Rigidbody>();
             body.isKinematic = true;
             body.useGravity = false;
+            // De handen grijpen alleen lijven onder een gespawnd servereigen NetworkObject (TryGripCast); vast object
+            // in de scène, dus geen NetworkTransform nodig.
+            if (!go.GetComponent<NetworkObject>()) go.AddComponent<NetworkObject>();
             return body;
         }
 
@@ -165,7 +173,9 @@ namespace ConductorChaos.EditorTools
             var box = root.AddComponent<BoxCollider>();
             box.center = root.transform.InverseTransformPoint(b.center) + Vector3.up * 0.005f;
             box.size = Quaternion.Inverse(rotation) * b.size;
-            box.size = new Vector3(Mathf.Abs(box.size.x), Mathf.Abs(box.size.y), Mathf.Abs(box.size.z)) + Vector3.one * 0.04f;
+            // minstens een handvol groot: snor en vlinderdas zijn anders te klein om met de korte grijpcast te raken
+            box.size = Vector3.Max(new Vector3(Mathf.Abs(box.size.x), Mathf.Abs(box.size.y), Mathf.Abs(box.size.z)) + Vector3.one * 0.06f,
+                Vector3.one * 0.2f);
             Kinematic(root);
             root.AddComponent<CrewAccessoryPickup>().Configure(index);
         }

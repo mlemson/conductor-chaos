@@ -59,6 +59,15 @@ namespace ConductorChaos.Playground
             surface = holding?.GripSurface;
             return holding != null;
         }
+        /// <summary>Server: houdt de speler een grijpknop in met die hand binnen `radius` van `target`? Voor kleine vaste
+        /// dingen (extraatjes in een smal kluisvak, de vertrekbel), waar de grijpcast eerst iets ernaast raakt.
+        /// `minHandY`: de hand moet minstens zo hoog zijn (wereld), bv. opgeheven naar een hoge knop.</summary>
+        internal bool IsReachingFor(Collider target, float radius, float minHandY = float.NegativeInfinity)
+        {
+            bool Near(ArmPhysics arm, bool held) => held && arm != null && arm.HandPosition.y >= minHandY &&
+                (target.ClosestPoint(arm.HandPosition) - arm.HandPosition).sqrMagnitude <= radius * radius;
+            return target && (Near(left, leftHeld) || Near(right, rightHeld));
+        }
         internal bool HasCabControlInput => Time.unscaledTime <= lastLeverInputAt;
         internal float CabAimPitch => requestedPitch;
         internal Vector3 CabAimForward => Quaternion.Euler(requestedPitch, requestedYaw, 0f) * Vector3.forward;

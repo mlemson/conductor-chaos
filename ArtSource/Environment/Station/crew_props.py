@@ -15,8 +15,10 @@ import numpy as np
 from station_common import ball, capsule, col_box, cyl, disc, mk, rbox, slab, text_mesh, tube, circle_loop
 import main_station_props as mp
 
-RAIL_Y = 1.78
-HOOK_X = (-0.78, 0.0, 0.78)
+# crew is ~1,25 m: stang op borsthoogte zodat de handen (schouder ~0,73 m) midden in de tenues grijpen
+RAIL_Y = 1.36
+HOOK_X = (-0.92, 0.0, 0.92)                    # haakafstand ~ handbreedte: twee handen grijpen hetzelfde tenue
+SHELF_Y = 1.66
 
 
 def _hanger(mat="M_Stn_Metal"):
@@ -90,38 +92,38 @@ def beanie():
 
 
 def wardrobe():
-    W = 2.3
+    W = 3.1
     parts, cols = [], []
     for x in (-W / 2, W / 2):                                   # poten met voet en gele bol
         parts.append(rbox(x - 0.05, x + 0.05, 0.0, 0.06, -0.32, 0.32, 0.02, "M_Stn_Navy"))
         for z in (-0.30, 0.30):
             parts.append(ball(0.04, "M_Stn_Dark", 8, 5).transform(t=(x, 0.03, z)))
-        parts.append(cyl(0.035, 2.1, 12, 0.0, "M_Stn_Navy", axis="y").transform(t=(x, 1.08, 0.0)))
-        parts.append(ball(0.06, "M_Stn_Yellow", 10, 6).transform(t=(x, 2.17, 0.0)))
-        cols.append(col_box(x - 0.06, x + 0.06, 0.0, 2.2, -0.34, 0.34))
+        parts.append(cyl(0.035, SHELF_Y + 0.08, 12, 0.0, "M_Stn_Navy", axis="y").transform(t=(x, (SHELF_Y + 0.08) / 2 + 0.02, 0.0)))
+        parts.append(ball(0.06, "M_Stn_Yellow", 10, 6).transform(t=(x, SHELF_Y + 0.13, 0.0)))
+        cols.append(col_box(x - 0.05, x + 0.05, 0.0, SHELF_Y + 0.16, -0.34, 0.34))
     parts.append(cyl(0.025, W, 14, 0.0, "M_Stn_Yellow", axis="x").transform(t=(0.0, RAIL_Y, 0.0)))   # koperen stang
-    parts.append(rbox(-W / 2 - 0.08, W / 2 + 0.08, 2.03, 2.08, -0.22, 0.22, 0.01, "M_Stn_Timber"))     # plank
-    cols.append(col_box(-W / 2 - 0.08, W / 2 + 0.08, 2.03, 2.08, -0.22, 0.22))
-    parts.append(mp.conductor_cap().transform(R=mk.rot_y(0.2), t=(HOOK_X[0], 2.08, 0.0)))
-    parts.append(helmet().transform(R=mk.rot_y(-0.15), t=(HOOK_X[1], 2.08, 0.0)))
-    parts.append(beanie().transform(R=mk.rot_y(0.3), t=(HOOK_X[2], 2.08, 0.0)))
+    parts.append(rbox(-W / 2 - 0.08, W / 2 + 0.08, SHELF_Y, SHELF_Y + 0.05, -0.22, 0.22, 0.01, "M_Stn_Timber"))     # plank
+    cols.append(col_box(-W / 2 - 0.08, W / 2 + 0.08, SHELF_Y, SHELF_Y + 0.05, -0.22, 0.22))
+    parts.append(mp.conductor_cap().transform(R=mk.rot_y(0.2), t=(HOOK_X[0], SHELF_Y + 0.05, 0.0)))
+    parts.append(helmet().transform(R=mk.rot_y(-0.15), t=(HOOK_X[1], SHELF_Y + 0.05, 0.0)))
+    parts.append(beanie().transform(R=mk.rot_y(0.3), t=(HOOK_X[2], SHELF_Y + 0.05, 0.0)))
     # bord CREW boven de plank
     board = mp.hub_sign("CREW", 1.3, 0.38)
-    parts.append(board.transform(t=(0.0, 2.55, 0.05)))
+    parts.append(board.transform(t=(0.0, SHELF_Y + 0.47, 0.05)))
     for x in (-0.4, 0.4):
-        parts.append(capsule((x, 2.08, 0.0), (x, 2.40, 0.0), 0.012, mat="M_Stn_Dark", seg=5, rings=1))
+        parts.append(capsule((x, SHELF_Y + 0.05, 0.0), (x, SHELF_Y + 0.32, 0.0), 0.012, mat="M_Stn_Dark", seg=5, rings=1))
     nodes = [("Rack", mk.merge(*parts), None, (0, 0, 0), None, True),
              ("Col_Rack", mk.merge(*cols), None, (0, 0, 0), None, False)]
     hanger = _hanger()
     for (name, garment), x in zip((("Outfit_Conductor", conductor_outfit()), ("Outfit_Engineer", engineer_outfit()),
                                     ("Outfit_Stoker", stoker_outfit())), HOOK_X):
         nodes.append((name, mk.merge(hanger, garment), None, (x, RAIL_Y, 0.0), None, True))
-        nodes.append((f"Col_{name}", col_box(-0.27, 0.27, -1.10, 0.06, -0.12, 0.12), name, (0, 0, 0), None, False))
+        nodes.append((f"Col_{name}", col_box(-0.45, 0.45, -1.08, 0.06, -0.20, 0.20), name, (0, 0, 0), None, False))
     return nodes
 
 
 def accessory_table():
-    L, D, H = 1.5, 0.72, 0.84
+    L, D, H = 1.5, 0.72, 0.42              # lage tafel: handen van de crew hangen op ~0,3-0,7 m, het blad op handhoogte
     parts = [rbox(-L / 2, L / 2, H - 0.05, H, -D / 2, D / 2, 0.02, "M_Stn_Timber")]
     for sx in (-1, 1):
         for sz in (-1, 1):
@@ -130,7 +132,7 @@ def accessory_table():
     # kleed: loper over het blad met een overhang aan de voorkant, gele zoom
     parts.append(rbox(-L / 2 + 0.12, L / 2 - 0.12, H, H + 0.008, -D / 2 - 0.004, D / 2 + 0.004, 0.003, "M_Stn_Navy"))
     parts.append(rbox(-L / 2 + 0.12, L / 2 - 0.12, H - 0.26, H + 0.006, D / 2 + 0.004, D / 2 + 0.014, 0.003, "M_Stn_Navy"))
-    parts.append(rbox(-L / 2 + 0.11, L / 2 - 0.11, H - 0.29, H - 0.24, D / 2 + 0.006, D / 2 + 0.020, 0.005, "M_Stn_Yellow"))
+    parts.append(rbox(-L / 2 + 0.11, L / 2 - 0.11, H - 0.29, H - 0.24, D / 2 + 0.010, D / 2 + 0.022, 0.005, "M_Stn_Yellow"))
     # staande spiegel achterop
     mirror = mk.merge(slab(circle_loop(0, 0, 0.30, 28), [circle_loop(0, 0, 0.25, 28)], -0.02, 0.02, 0.008, "M_Stn_Yellow")
                       .transform(s=(0.75, 1.0, 1.0)),

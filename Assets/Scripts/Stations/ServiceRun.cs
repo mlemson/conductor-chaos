@@ -111,6 +111,7 @@ namespace ConductorChaos.Stations
         private BoxCollider bellButton;
         private AudioClip bellSound;
         private readonly Collider[] bellContacts = new Collider[12];
+        private const float BellReach = .55f;
 
         public static ServiceRun Active { get; private set; }
         public bool Introduction => introduction;
@@ -516,8 +517,18 @@ namespace ConductorChaos.Stations
                 if (!player || !player.IsSpawned || !player.IsHandCollider(hand) || !hand.attachedRigidbody) continue;
                 if (Vector3.Dot(hand.attachedRigidbody.GetPointVelocity(hand.bounds.center), button.up) >= -.12f) continue;
                 bellRung.Value = true;
-                break;
+                return;
             }
+            // De knop zit op ~1 m boven het perron; staand komen de handen tot ~0,75 m en omhoog gestrekt staan ze ~1 m
+            // uit elkaar, met de bel ertussen. Omhoog reiken en de bel vastpakken (grijpknop in, opgeheven hand vlakbij)
+            // telt dus ook als luiden. Lage handen (koffer dragen langs de paal) tellen niet.
+            float raised = bellButton.bounds.min.y - .12f;
+            foreach (var player in PlaygroundPlayer.SpawnedPlayers)
+                if (player && player.IsSpawned && player.IsReachingFor(bellButton, BellReach, raised))
+                {
+                    bellRung.Value = true;
+                    return;
+                }
         }
 
         /// <summary>De bel in de scènes is alleen een trigger (de drukzone). Een vaste kopie, iets lager dan de knop, laat
