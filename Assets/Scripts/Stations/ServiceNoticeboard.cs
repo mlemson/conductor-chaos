@@ -218,7 +218,7 @@ namespace ConductorChaos.Stations
         private void Update()
         {
             if (!shutter) return;
-            bool open = run && run.IsSpawned && run.Manifest.IsReady &&
+            bool open = run && run.IsSpawned && run.Manifest.IsReady && !run.TimerRunning &&
                 run.Phase is ServiceRun.RunPhase.Briefing or ServiceRun.RunPhase.Departure;
             if (open != readable)
             {
