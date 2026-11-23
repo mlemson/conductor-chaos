@@ -23,6 +23,9 @@ namespace ConductorChaos.Playground
         readonly NetworkVariable<bool> punched = new NetworkVariable<bool>(false);
 
         readonly NetworkVariable<bool> wrong = new(false);
+        readonly NetworkVariable<byte> fare = new();
+        private TextMesh[] fareMarks;
+        internal int Fare => fare.Value - 1;
         static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
 
         Transform arm, ticket, modelTicket, hole;
@@ -43,6 +46,13 @@ namespace ConductorChaos.Playground
         internal void ServerSetWrong()
         {
             if (IsServer && IsSpawned) wrong.Value = true;
+        }
+
+        internal void ServerSetFare(int color, bool rejected)
+        {
+            if (!IsServer || !IsSpawned) return;
+            fare.Value = (byte)(color + 1);
+            wrong.Value = rejected;
         }
 
         public override void OnNetworkSpawn()
@@ -68,10 +78,12 @@ namespace ConductorChaos.Playground
             {
                 punched.Value = false;
                 wrong.Value = false;
+                fare.Value = 0;
                 ticketCollider = AddTicketCollider(ticket);
                 if (modelTicket) modelTicketCollider = AddTicketCollider(modelTicket);
             }
             wrong.OnValueChanged += OnWrongChanged;
+            fare.OnValueChanged += OnFareChanged;
             punched.OnValueChanged += OnPunched;
             ShowTicket();
             ShowPunched(punched.Value);
@@ -92,9 +104,18 @@ namespace ConductorChaos.Playground
         }
 
         void OnWrongChanged(bool before, bool now) => ShowTicket();
+        void OnFareChanged(byte before, byte now) => ShowTicket();
 
         void ShowTicket()
         {
+            if (!ticket) return;
+            if (Fare >= 0)
+            {
+                if (modelTicket) modelTicket.gameObject.SetActive(false);
+                ticket.gameObject.SetActive(true);
+                ShowFareMark();
+                return;
+            }
             if (modelTicket)
             {
                 modelTicket.gameObject.SetActive(IsWrong);
@@ -112,9 +133,43 @@ namespace ConductorChaos.Playground
             renderer.SetPropertyBlock(block);
         }
 
+        private void ShowFareMark()
+        {
+            var renderer = ticket.GetComponentInChildren<MeshRenderer>();
+            if (!renderer) return;
+            Color color = ServiceManifest.FareColor(Fare);
+            var block = new MaterialPropertyBlock();
+            block.SetColor(BaseColor, color);
+            var materials = renderer.sharedMaterials;
+            int stub = System.Array.FindIndex(materials, material => material && material.name.Contains("Navy"));
+            if (stub >= 0) renderer.SetPropertyBlock(block, stub);
+            else renderer.SetPropertyBlock(block);
+            if (fareMarks == null)
+            {
+                fareMarks = new TextMesh[2];
+                for (int i = 0; i < fareMarks.Length; i++)
+                {
+                    var label = new GameObject("Kaartcode").AddComponent<TextMesh>();
+                    label.transform.SetParent(ticket, false);
+                    label.transform.SetLocalPositionAndRotation(new Vector3(.046f, 0f, i == 0 ? -.005f : .005f),
+                        Quaternion.Euler(0f, 180f * i, 0f));
+                    label.anchor = TextAnchor.MiddleCenter;
+                    label.alignment = TextAlignment.Center;
+                    label.fontSize = 42;
+                    label.characterSize = .007f;
+                    label.color = new Color32(255, 241, 213, 255);
+                    fareMarks[i] = label;
+                }
+            }
+            foreach (var label in fareMarks)
+                label.text = ServiceManifest.FareMark(Fare);
+        }
+
         public override void OnNetworkDespawn()
         {
             wrong.OnValueChanged -= OnWrongChanged;
+            fare.OnValueChanged -= OnFareChanged;
+            fareMarks = null;
             punched.OnValueChanged -= OnPunched;
             CancelInvoke(nameof(Smile));
             if (shoulder && armRaised) shoulder.slerpDrive = new JointDrive();

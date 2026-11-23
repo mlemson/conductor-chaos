@@ -191,6 +191,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f182d338a52cc464a8d981c1b05ae81c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.Playground.PlaygroundPassenger
+  stopModels:
+  - {fileID: 919132149155446097, guid: 8ca6be13683843b587b2412aecdcda1f, type: 3}
+  - {fileID: 919132149155446097, guid: 5526120ab61cb0e8ac703c4b8104f87e, type: 3}
+  - {fileID: 919132149155446097, guid: 227ba7336d2899f2d2a6f3ec61e9b885, type: 3}
   ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &4759555098908480377
 MonoBehaviour:

@@ -123,6 +123,12 @@ namespace ConductorChaos.Stations
         private readonly NetworkVariable<int> bonusPost = new();
         internal int BonusPost => bonusPost.Value;
         internal bool HasStops => stops.Length != 0;
+        private readonly NetworkVariable<int> manifestCard = new();
+        private readonly NetworkVariable<bool> forbiddenFreight = new();
+        internal ServiceManifest Manifest => new(manifestCard.Value);
+        internal bool LostForForbiddenFreight => forbiddenFreight.Value;
+        internal string PickupStation => HasStops && Manifest.IsReady ? stops[Manifest.PickupStop].name : "";
+        private bool ManifestFreightReady => !HasStops || stops[Manifest.PickupStop].DeliveredRequired;
 
         internal ServiceStop NearbyStop()
         {
@@ -341,9 +347,10 @@ namespace ConductorChaos.Stations
         internal bool BeginOnServer()
         {
             if (!IsServer || !IsSpawned || !IsConfigured || Phase != RunPhase.Loading) return false;
+            if (HasStops && !Manifest.IsReady) manifestCard.Value = ServiceManifest.Roll(stops.Length);
             if (!introduction)
                 foreach (var objective in objectives)
-                    if (objective is ServiceTickets tickets) tickets.AssignWrongTicket();
+                    if (objective is ServiceTickets tickets) tickets.AssignWrongTicket(Manifest);
             bool depot = !introduction && Depot.DepotVehicles.AppliesToScene(gameObject.scene.name);
             var plan = depot ? new List<Depot.WagonKind>(Depot.DepotLoadout.Active.Wagons) : null;
             bool needsTank = depot && waterDelivery;
@@ -424,7 +431,7 @@ namespace ConductorChaos.Stations
                     int bonus = (gameObject.scene.name == ThirdLevelScene ? 2 : 1) + extra;
                     foreach (var objective in objectives)
                         if (objective is ServiceTickets tickets && tickets.IsConfigured)
-                            tickets.SpawnBonusPassengers(departure.Platform, bonus);
+                            tickets.SpawnBonusPassengers(departure.Platform, bonus, Manifest);
                 }
                 cargoLoaded.Value = 0;
                 cargoTravelled.Value = 0;
@@ -639,8 +646,13 @@ namespace ConductorChaos.Stations
                 stopSeconds = stopped ? stopSeconds + Time.fixedDeltaTime : 0;
                 docked = stopSeconds >= 1f;
                 if (Phase is RunPhase.Travelling or RunPhase.Arrival)
-                    foreach (var stop in stops)
-                        stop.UpdateOnServer(train, stopTickets, arrival.Platform);
+                    for (int i = 0; i < stops.Length; i++)
+                        if (stops[i].UpdateOnServer(train, stopTickets, arrival.Platform, Manifest, i == Manifest.PickupStop))
+                        {
+                            forbiddenFreight.Value = true;
+                            Finish(false);
+                            return;
+                        }
                 if (Phase is RunPhase.Travelling or RunPhase.Arrival)
                     phase.Value = docked ? RunPhase.Arrival : RunPhase.Travelling;
                 if (train.ServiceSpeed >= .22f)
@@ -662,7 +674,7 @@ namespace ConductorChaos.Stations
                 if (value < objective.Target) complete = false;
             }
             progress.Value = total;
-            if (TimerRunning && docked && complete) Finish(true);
+            if (TimerRunning && docked && complete && ManifestFreightReady) Finish(true);
         }
 
         private void UpdateTrainBreakdowns()

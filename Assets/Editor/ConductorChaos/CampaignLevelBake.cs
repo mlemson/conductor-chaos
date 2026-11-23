@@ -237,10 +237,10 @@ namespace ConductorChaos.EditorTools
             return track;
         }
 
-        private static float Ground(Terrain terrain, Vector3 p, float fallback) => terrain
+        internal static float Ground(Terrain terrain, Vector3 p, float fallback) => terrain
             ? terrain.SampleHeight(p) + terrain.transform.position.y : fallback;
 
-        private static void Sign(Transform root, Terrain terrain, Vector3 rail, Vector3 forward, string message)
+        internal static void Sign(Transform root, Terrain terrain, Vector3 rail, Vector3 forward, string message)
         {
             forward = Vector3.ProjectOnPlane(forward, Vector3.up).normalized;
             if (forward.sqrMagnitude < .5f) return;
@@ -262,7 +262,7 @@ namespace ConductorChaos.EditorTools
             label.color = new Color(.11f, .07f, .045f);
         }
 
-        private static GameObject Box(Transform root, string name, Vector3 position, Quaternion rotation,
+        internal static GameObject Box(Transform root, string name, Vector3 position, Quaternion rotation,
             Vector3 size, Material material, bool solid)
         {
             var box = GameObject.CreatePrimitive(PrimitiveType.Cube);

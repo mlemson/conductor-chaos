@@ -22,6 +22,8 @@ namespace ConductorChaos.UI
         internal System.Action<int> OpenDepot;
         private readonly Text engineMeters;
         private readonly Image modalBadge;
+        private readonly RectTransform modalCard, modalPaper;
+        private readonly ManifestBoard manifestBoard;
         private readonly Text kicker, heading, detail, route, actionText, waitText;
         private readonly Button advance, leave;
         private float nextUpdate;
@@ -39,17 +41,18 @@ namespace ConductorChaos.UI
             var fit = stage.gameObject.AddComponent<AspectRatioFitter>();
             fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
             fit.aspectRatio = 16f / 9f;
-            var card = ChaosUI.MenuPanel(stage, "Dienstkaart", V(.245f, .175f), V(.755f, .825f));
+            var card = modalCard = ChaosUI.MenuPanel(stage, "Dienstkaart", V(.245f, .175f), V(.755f, .825f));
             var badge = ChaosUI.Panel(card, "Sectie", V(.05f, .84f), V(.95f, .95f), ChaosUI.Paper);
             modalBadge = badge.GetComponent<Image>();
             kicker = Label(badge, "Sectie", 21, ChaosUI.Ink, V(.03f, 0), V(.97f, 1));
             heading = Label(card, "Titel", 38, ChaosUI.Paper, V(.055f, .67f), V(.95f, .83f));
             route = Label(card, "Route", 20, ChaosUI.GoldLight, V(.055f, .56f), V(.95f, .67f));
-            var paper = ChaosUI.Panel(card, "Opdracht", V(.05f, .25f), V(.95f, .55f), ChaosUI.Paper);
+            var paper = modalPaper = ChaosUI.Panel(card, "Opdracht", V(.05f, .25f), V(.95f, .55f), ChaosUI.Paper);
             detail = Label(paper, "Details", 23, ChaosUI.Ink, V(.04f, .08f), V(.96f, .93f), FontStyle.Normal);
             detail.resizeTextForBestFit = true;          // lange briefing (level 2) krimpt mee in plaats van af te kappen
             detail.resizeTextMinSize = 14;
             detail.resizeTextMaxSize = 23;
+            manifestBoard = new ManifestBoard(paper);
             advance = ChaosUI.Action(card, "Verder", "Verder", V(.05f, .055f), V(.59f, .195f),
                 ChaosUI.Gold, ChaosUI.Ink, () => ServiceRun.Active?.Continue(), 25, iconKey: "play");
             actionText = advance.GetComponentInChildren<Text>();
@@ -102,6 +105,7 @@ namespace ConductorChaos.UI
             bool modalChanged = modal.activeSelf != showModal;
             bool hudChanged = hud.activeSelf != showHud;
             if (modalChanged) modal.SetActive(showModal);
+            if (!showModal) manifestBoard.Hide();
             if (hudChanged) hud.SetActive(showHud);
             if (!showModal && !showHud) return;
 
@@ -139,7 +143,7 @@ namespace ConductorChaos.UI
                     if (wagon)
                         foreach (var point in wagon.GetComponentsInChildren<Track.RepairPoint>())
                             if (point.IsSpawned && point.IsBroken) repaired = false;
-            reward = DepotProgress.AwardWin(level != null ? level.Index : 0, run.TimeLeft, done, repaired, run.BonusPassengers);
+            reward = DepotProgress.AwardWin(level != null ? level.Index : 0, run.TimeLeft, done, repaired, run.BonusPassengers, run.BonusPost);
         }
 
         private void ShowResults(PlaygroundHost host, ServiceRun run)
@@ -163,6 +167,13 @@ namespace ConductorChaos.UI
             bool briefing = !loading && run.Phase == ServiceRun.RunPhase.Briefing;
             bool won = !loading && run.Phase == ServiceRun.RunPhase.Won;
             bool intro = !loading && run.Introduction;
+            bool onBoard = briefing && run.HasStops && run.Manifest.IsReady;
+            modalCard.anchorMin = onBoard ? V(.095f, .075f) : V(.245f, .175f);
+            modalCard.anchorMax = onBoard ? V(.905f, .925f) : V(.755f, .825f);
+            modalPaper.anchorMin = onBoard ? V(.05f, .207f) : V(.05f, .25f);
+            detail.rectTransform.anchorMin = onBoard ? V(.04f, .725f) : V(.04f, .08f);
+            if (onBoard) manifestBoard.Show(run.Manifest, run.PickupStation);
+            else manifestBoard.Hide();
             modalBadge.color = loading || briefing ? ChaosUI.Paper : won ? ChaosUI.Green : ChaosUI.TrainRed;
             kicker.color = !loading && !briefing && !won ? ChaosUI.Paper : ChaosUI.Ink;
             kicker.text = loading ? "SAMEN OP REIS" : briefing ? "BRIEFING  /  " + (intro ? "HOOFDSTATION" : run.LevelLabel) :
@@ -170,11 +181,12 @@ namespace ConductorChaos.UI
             heading.text = loading ? "Even geduld…" : briefing && intro ? "Je eerste werkdag" :
                 briefing ? (run.CombinesObjectives ? DepotCatalog.LevelForScene(run.gameObject.scene.name)?.Name ?? "Dienst" : run.Objective?.Title ?? "Eerste dienst") :
                 won ? "Goed gewerkt, conducteurs!" :
-                run.OffTrack ? "De trein is ontspoord" : "De tijd is om";
+                run.OffTrack ? "De trein is ontspoord" : run.LostForForbiddenFreight ? "Verboden vracht meegenomen" : "De tijd is om";
             route.text = loading ? "De crew laadt dezelfde scène." : intro ? $"{run.Departure.StationName}  ·  Oefenrit zonder tijdslimiet" :
                 $"{run.Departure.StationName}   →   {run.Arrival.StationName}";
             detail.text = loading ? $"Verbonden crew  ·  {host.PlayerCount}" : briefing
                 ? intro ? "Loop naar het perron, oefen met bagage en de treindeur en rijd een klein stukje. Eén geslaagde handeling telt voor de hele crew."
+                    : onBoard ? MemoryBriefing(run, host.PlayerCount)
                     : run.CombinesObjectives
                         ? $"{CombinedBriefing(run)}\n\nTijdslimiet {FormatTime(run.TimeLimit(host.PlayerCount))}. De klok start op het vertrekperron."
                         : $"{(run.Objective is ServiceTickets ? TicketInstructions : run.Objective?.Instructions)}\n\nTijdslimiet {FormatTime(run.TimeLimit(host.PlayerCount))}. De klok start zodra een teamgenoot het vertrekperron bereikt."
@@ -231,7 +243,7 @@ namespace ConductorChaos.UI
             }
 
             string warning = run.SteamWarning ?? (ServiceIncidents.Active ? ServiceIncidents.Active.Warning : null) ?? SuitcaseWarning(run) ??
-                             ColdWarning() ?? BreakdownNotice.For(run);
+                             ColdWarning() ?? BreakdownNotice.For(run) ?? StopNotice(run);
             if (warningPanel.activeSelf != (warning != null)) warningPanel.SetActive(warning != null);
             if (warning != null) warningText.text = warning;
             foreach (var objective in run.ActiveObjectives)
@@ -242,6 +254,15 @@ namespace ConductorChaos.UI
             string step = run.CombinesObjectives ? CombinedStep(run) : NextServiceStep(run);
             objectiveCard.Show(run.LevelLabel, icon, run.TimerRunning ? FormatTime(run.TimeLeft) : "Klaar?",
                 run.TimerRunning && run.TimeLeft <= 30, step, rows);
+        }
+
+        private static string StopNotice(ServiceRun run)
+        {
+            var stop = run.NearbyStop();
+            if (!stop) return null;
+            return run.Train.ServiceCoachVisible
+                ? $"{stop.name} · reizigers en vracht"
+                : $"{stop.name} · vracht";
         }
 
         // Winter (#243): alleen melden dat het koud is of dat iemand bevroren is, niet wat je moet doen.
@@ -333,6 +354,10 @@ namespace ConductorChaos.UI
         private static string TicketInstructions => $"Knip de crème kaartjes met de donkerblauwe strook. " +
             $"Een verkeerd kaartje knippen kost {ServiceRun.WrongTicketPenaltySeconds} seconden. Open de perrondeur voor de reizigers.";
 
+        private static string MemoryBriefing(ServiceRun run, int crew) =>
+            $"Onthoud het bord samen. Bij ‘Begin dienst’ verdwijnt het.\n" +
+            $"Tijd {FormatTime(run.TimeLimit(crew))} · Verkeerd knippen kost {ServiceRun.WrongTicketPenaltySeconds} s · Verboden vracht beëindigt de rit.";
+
         private static string CombinedBriefing(ServiceRun run)
         {
             var text = new System.Text.StringBuilder("Opdrachten voor deze rit: ");
@@ -358,6 +383,7 @@ namespace ConductorChaos.UI
                 _ => string.Empty
             });
             if (checksTickets) text.AppendLine().Append(TicketInstructions);
+            if (run.HasStops) text.Append("\nTussenhaltes zijn optioneel. Knip geldige kaartjes en open de perrondeur of neem de postkist mee voor bonuskaartjes.");
             return text.ToString();
         }
 
@@ -390,6 +416,8 @@ namespace ConductorChaos.UI
                     if (objective is ServiceCargo && !Done(run, objective)) return UnloadCargo(objective, run.ProgressOf(objective));
                     if (objective is ServiceEscort && !Done(run, objective)) return AlightEscort(run);
                 }
+            if (run.HasStops && run.Phase == ServiceRun.RunPhase.Arrival && run.Progress >= run.TotalTarget)
+                return "Controleer samen of jullie de afspraken uit de briefing hebben uitgevoerd.";
             if (!run.DoorsClosed) return "Schuif de wagondeuren dicht.";
             if (!run.PowerOn) return "Druk op de startknop in de cabine.";
             if (run.NeedsCoal) return "Het vuur is uit: schep kolen in de vuurkist.";

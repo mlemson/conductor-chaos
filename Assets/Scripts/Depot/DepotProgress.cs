@@ -7,9 +7,9 @@ namespace ConductorChaos.Depot
 {
     public sealed class RunReward
     {
-        public int Base, TimeBonus, ObjectiveBonus, RepairBonus, PassengerBonus;
-        public int SecondsLeft, ObjectivesDone, ExtraPassengers;
-        public int Total => Base + TimeBonus + ObjectiveBonus + RepairBonus + PassengerBonus;
+        public int Base, TimeBonus, ObjectiveBonus, RepairBonus, PassengerBonus, PostBonus;
+        public int SecondsLeft, ObjectivesDone, ExtraPassengers, DeliveredPost;
+        public int Total => Base + TimeBonus + ObjectiveBonus + RepairBonus + PassengerBonus + PostBonus;
         public int BalanceBefore, BalanceAfter;
         public bool FirstWin;
     }
@@ -18,7 +18,7 @@ namespace ConductorChaos.Depot
     {
         private const string Prefix = "Depot.";
         public const int TicketsPerWin = 300, TicketsPerIntro = 100, TicketsPerSecond = 2, TicketsPerObjective = 20, TicketsForRepairs = 40;
-        public const int TicketsPerExtraPassenger = 15;
+        public const int TicketsPerExtraPassenger = 15, TicketsPerPost = 25;
         public const int SnowPlowCost = 400;
         private const string SnowPlowKey = Prefix + "SnowPlow";
         public static bool OwnsSnowPlow => PlayerPrefs.GetInt(SnowPlowKey, 0) != 0;
@@ -77,7 +77,7 @@ namespace ConductorChaos.Depot
         }
 
         /// <summary>Kaartjes voor een gehaalde dienst. Per run één keer aanroepen (op elke client voor zijn eigen profiel).</summary>
-        public static RunReward AwardWin(int level, int secondsLeft, int objectivesDone, bool allRepaired, int extraPassengers = 0)
+        public static RunReward AwardWin(int level, int secondsLeft, int objectivesDone, bool allRepaired, int extraPassengers = 0, int deliveredPost = 0)
         {
             var reward = new RunReward
             {
@@ -99,6 +99,8 @@ namespace ConductorChaos.Depot
                 reward.RepairBonus = allRepaired ? TicketsForRepairs : 0;
                 reward.ExtraPassengers = Mathf.Max(0, extraPassengers);
                 reward.PassengerBonus = reward.ExtraPassengers * TicketsPerExtraPassenger;
+                reward.DeliveredPost = Mathf.Max(0, deliveredPost);
+                reward.PostBonus = reward.DeliveredPost * TicketsPerPost;
             }
 
             if (level > 0)

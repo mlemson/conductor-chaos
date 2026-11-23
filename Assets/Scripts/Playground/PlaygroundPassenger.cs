@@ -15,6 +15,11 @@ namespace ConductorChaos.Playground
         private readonly RaycastHit[] groundHits = new RaycastHit[24];
         // Winter (#243): hoe koud (0..100) en of de reiziger bevroren is. De server rekent, iedereen toont het ijs.
         private readonly NetworkVariable<byte> coldPercent = new();
+        [SerializeField] private GameObject[] stopModels;
+        private readonly NetworkVariable<byte> stopAppearance = new();
+        private byte initialStopAppearance;
+        internal int StopAppearanceCount => (stopModels?.Length ?? 0) + 1;
+        internal void SelectStopAppearance(byte variant) => initialStopAppearance = variant;
         private readonly NetworkVariable<bool> frozen = new();
         private float cold;
         private GameObject iceShell;
@@ -55,6 +60,18 @@ namespace ConductorChaos.Playground
 
         public override void OnNetworkSpawn()
         {
+            if (IsServer) stopAppearance.Value = initialStopAppearance;
+            int appearance = stopAppearance.Value;
+            if (appearance > 0 && appearance < StopAppearanceCount && stopModels[appearance - 1] && transform.childCount > 0)
+            {
+                var original = transform.GetChild(0);
+                var replacement = Instantiate(stopModels[appearance - 1], transform, false).transform;
+                replacement.SetLocalPositionAndRotation(original.localPosition, original.localRotation);
+                replacement.localScale = original.localScale;
+                replacement.SetSiblingIndex(0);
+                original.gameObject.SetActive(false);
+                Destroy(original.gameObject);
+            }
             body = GetComponent<Rigidbody>();
             Transform model = transform.childCount > 0 ? transform.GetChild(0) : null;
             Transform left = null, right = null;

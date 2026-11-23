@@ -36,6 +36,20 @@ namespace ConductorChaos.Stations
             train = value;
             trainVolumes.Clear();
         }
+        internal void SetBonusCargo(Rigidbody parcel, BoxCollider arrivalPlatform, TrainDrive locomotive)
+        {
+            pieces = new[] { parcel };
+            destination = arrivalPlatform;
+            SetTrain(locomotive);
+            BeginOnServer();
+        }
+
+        internal int CountBonusDelivery()
+        {
+            var parcel = pieces[0];
+            return parcel && travelled.Contains(parcel) && (aboard.Contains(parcel) || Overlaps(destination, parcel)) ? 1 : 0;
+        }
+
         public int AboardCount => aboard.Count;
         public int TravelledCount => travelled.Count;
         public override bool ReadyToDepart => IsConfigured && aboard.Count == Target;
