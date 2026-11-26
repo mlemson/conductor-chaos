@@ -188,7 +188,8 @@ namespace ConductorChaos.UI
             bool hasNext = next != null && Application.CanStreamedLevelBeLoaded(next);
             actionText.text = briefing ? (intro ? "Begin training" : "Begin dienst") :
                 hasNext ? (next == ServiceRun.FirstLevelScene ? "Naar level 1" : next == ServiceRun.SecondLevelScene ? "Naar level 2" :
-                    next == ServiceRun.ThirdLevelScene ? "Naar level 3" : next == ServiceRun.FourthLevelScene ? "Naar level 4" : next == ServiceRun.FifthLevelScene ? "Naar level 5" : "Volgende dienst") :
+                    next == ServiceRun.ThirdLevelScene ? "Naar level 3" : next == ServiceRun.FourthLevelScene ? "Naar level 4" : next == ServiceRun.FifthLevelScene ? "Naar level 5" :
+                    next == ServiceRun.SixthLevelScene ? "Naar level 6" : next == ServiceRun.SeventhLevelScene ? "Naar level 7" : "Volgende dienst") :
                 "Opnieuw spelen";
             waitText.text = loading ? "Wachten op de crew…" : "Wachten op de host…";
             waitText.gameObject.SetActive(!advance.gameObject.activeSelf);
@@ -366,6 +367,8 @@ namespace ConductorChaos.UI
                 ServiceRun.ThirdLevelScene => "\nVolg het hoofdspoor of neem de gemarkeerde doorsteek. Neem op de doorsteek gas terug.",
                 ServiceRun.FourthLevelScene => "\nPak de gratis sneeuwschep op het vertrekperron of rijd stapvoets met de gekochte sneeuwploeg.",
                 ServiceRun.FifthLevelScene => "\nStop met de ketelwagon onder de vulpijp in de beukenlaan. Open het tankluik, laat de pijp zakken en draai de kraan open. Breng minstens 40% water naar Fernwood. Rem voor boomstammen en neem gas terug in scherpe bochten.",
+                ServiceRun.SixthLevelScene => "\nHoud de vlakte goed in de gaten en wees klaar om te remmen. Op de richel langs de kloof kan steenslag vallen.",
+                ServiceRun.SeventhLevelScene => "\nRichels langs de afgrond: neem gas terug in de bochten. In de zandstorm en bij de goudmijn kan er van alles op het spoor belanden.",
                 _ => string.Empty
             });
             if (run.HasStops)

@@ -1,0 +1,90 @@
+fileFormatVersion: 2
+guid: 0413c4881645d489ac3e897e7834f1cb
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bison_EyeWhite
+    second: {fileID: 2100000, guid: ab913e76858d12e521f83e536d48090a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bison_Pupil
+    second: {fileID: 2100000, guid: 0fa324e3fcaae8e901e342042d1f99cd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bison_Mouth
+    second: {fileID: 2100000, guid: b31de9e23891d5ddf7e85939035bde95, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bison_Tongue
+    second: {fileID: 2100000, guid: cc98c6e1f3748af50de6b7313dee2c23, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bison_Coat
+    second: {fileID: 2100000, guid: fef96420dd9af067a7d181e1ee6215a1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bison_Mane
+    second: {fileID: 2100000, guid: cb2eab9b49790659457bb3d306ccbd00, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bison_Muzzle
+    second: {fileID: 2100000, guid: 67d7b18eb3d4528a1b441743f65d2cef, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bison_Nostril
+    second: {fileID: 2100000, guid: d0bb1259638b19ea34e8e59a1710a270, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bison_EarInner
+    second: {fileID: 2100000, guid: a92886b2d1945e6130569c60f8a1be3a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bison_Horn
+    second: {fileID: 2100000, guid: d80cedb7d0816467b78243f4a05d2244, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bison_Hoof
+    second: {fileID: 2100000, guid: 488f04e066996c669ef753c33483fca5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bison_Alert
+    second: {fileID: 2100000, guid: 1ae1f24e87285e7129dfe87965861505, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

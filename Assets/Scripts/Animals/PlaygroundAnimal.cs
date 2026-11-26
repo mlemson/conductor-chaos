@@ -7,6 +7,11 @@
 //          paar spelers tegelijk krijg je hem wel opzij; of lok hem weg met een hooibaal (AnimalLure): wie het hooi
 //          ziet, sjokt erheen en blijft daar.
 //
+//  Kudde   (woestijn, levels 6-7) de kudde wacht onzichtbaar onder de grond (kinematisch). ServiceIncidents laat hem
+//          op het juiste moment opduiken (ServerEmerge) en in volle galop met een stofwolk over het spoor stormen
+//          (ServerCross). Komt de trein te hard aan, dan bevriezen de dieren op de rails (ServerHold): duw er één ver
+//          genoeg opzij en hij geeft het op en loopt aan die kant verder, of lok hem weg met hooi.
+//
 // Netwerk: de server simuleert (NetworkTransform + NetworkRigidbody op hetzelfde object, gezet door de prefabbouwer,
 // Conductor Chaos > Art > Animals). Clients krijgen de stand van het lijf en het humeur (NetworkVariable); poten, kop,
 // staart en oren bewegen daar alleen cosmetisch mee.
@@ -29,6 +34,10 @@ namespace ConductorChaos.Animals
         [SerializeField] float roamRadius = 6f;
         [SerializeField] float walkSpeed = 0.65f;
         [SerializeField] float runSpeed = 1.8f;
+        [Tooltip("Galopsnelheid bij een stormloop over het spoor (m/s).")]
+        [SerializeField] float stampedeSpeed = 7f;
+        [Tooltip("Kudde: wacht kinematisch en onzichtbaar (onder de grond) tot ServiceIncidents hem laat opduiken.")]
+        [SerializeField] bool waitHidden;
         [Tooltip("Hoe hard het dier zich schrap zet als je duwt (m/s² tegenwerking). Hoger = meer spelers nodig.")]
         [SerializeField] float brace = 1.6f;
         [Tooltip("Een klap boven deze snelheidsverandering (m/s) laat het dier schrikken.")]
@@ -54,7 +63,122 @@ namespace ConductorChaos.Animals
         bool grounded;
         Mood shownMood = (Mood)255;
 
+        enum Cross : byte { None, Waiting, ToTrack, Holding, ToFar }
+        Cross cross;
+        Vector3 crossVia, crossAcross, crossTo;
+        float crossStart;
+        bool crossStubborn;
+        const float GiveUpDistance = 2.9f;        // zo ver van de spoorlijn geduwd geeft een koppig dier het op
+
         public bool IsDown => (Mood)mood.Value == Mood.Fallen;
+        /// <summary>Server: dit dier is nog in de stormloop of staat op het spoor (kudde-incident niet klaar).</summary>
+        public bool CrossingBusy => cross != Cross.None;
+
+        /// <summary>Server: ren na <paramref name="delay"/> s over het spoor via <paramref name="via"/> (op de rails) naar
+        /// <paramref name="to"/>. Koppig = blijf op de rails staan tot je weggeduwd of weggelokt wordt.</summary>
+        public void ServerCross(Vector3 via, Vector3 to, bool stubborn, float delay)
+        {
+            if (!IsServer) return;
+            crossVia = via;
+            crossTo = to;
+            crossAcross = Flat(to - via);
+            crossStubborn = stubborn;
+            crossStart = Time.time + delay;
+            cross = Cross.Waiting;
+            temperament = Temperament.Wander;
+        }
+
+        /// <summary>Server: duik op uit de verborgen wachtplek (kinematisch onder de grond) op <paramref name="at"/>.</summary>
+        public void ServerEmerge(Vector3 at, Quaternion rotation)
+        {
+            if (!IsServer || !body) return;
+            waitHidden = false;
+            body.isKinematic = false;
+            if (TryGetComponent<Unity.Netcode.Components.NetworkTransform>(out var sync)) sync.Teleport(at, rotation, transform.localScale);
+            else transform.SetPositionAndRotation(at, rotation);
+            body.position = at;
+            body.rotation = rotation;
+            body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+            home = target = lastPos = at;
+        }
+
+        /// <summary>Server: de trein komt te hard aan, blijf op de rails staan (koppig) tot je weggeduwd of weggelokt wordt.</summary>
+        public bool ServerHold()
+        {
+            if (!IsServer || cross is not (Cross.ToTrack or Cross.ToFar)) return false;
+            cross = Cross.Holding;
+            temperament = Temperament.Blocker;
+            home = crossVia;
+            moodUntil = 0f;
+            nextThink = Time.time;
+            SetMood(Mood.Idle);
+            return true;
+        }
+
+        /// <summary>Server: dit dier staat nu op de rails (gestopt voor de trein).</summary>
+        public bool IsHolding => cross == Cross.Holding;
+        public bool IsStampeding => cross is Cross.ToTrack or Cross.ToFar;
+
+        // true = de kudde-logica heeft deze denkstap afgehandeld
+        bool ThinkCrossing()
+        {
+            switch (cross)
+            {
+                case Cross.Waiting:
+                    if (Time.time < crossStart) { SetMood(Mood.Idle); nextThink = crossStart; return true; }
+                    // koppig: naar de rails en daar blijven; anders in één ruk door naar de overkant
+                    cross = crossStubborn ? Cross.ToTrack : Cross.ToFar;
+                    Run(crossStubborn ? crossVia : crossTo, 14f);
+                    return true;
+                case Cross.ToTrack:
+                    if (Flat3(transform.position - crossVia).magnitude > 1.2f) { Run(crossVia, 6f); return true; }
+                    if (crossStubborn)
+                    {
+                        cross = Cross.Holding;
+                        temperament = Temperament.Blocker;
+                        home = crossVia;
+                        SetMood(Mood.Idle);
+                        return false;
+                    }
+                    cross = Cross.ToFar;
+                    Run(crossTo, 14f);
+                    return true;
+                case Cross.ToFar:
+                    if (Flat3(transform.position - crossTo).magnitude > 1.5f) { Run(crossTo, 8f); return true; }
+                    cross = Cross.None;
+                    home = transform.position;
+                    roamRadius = Mathf.Min(roamRadius, 3f);
+                    return false;
+            }
+            return false;
+        }
+
+        // Koppig dier ver genoeg van de rails geduwd (of weggelokt): het geeft het op en loopt aan die kant verder.
+        void CheckGiveUp()
+        {
+            if (cross != Cross.Holding) return;
+            Vector3 off = Flat3(transform.position - crossVia);
+            float side = Vector3.Dot(off, crossAcross);
+            bool lured = AnimalLure.Nearest(transform.position, lureRadius);
+            if (Mathf.Abs(side) < GiveUpDistance && !lured) return;
+            cross = Cross.None;
+            temperament = Temperament.Wander;
+            roamRadius = Mathf.Min(roamRadius, 3f);
+            if (lured) return;                                      // het hooi houdt hem verder vast
+            float reach = Flat3(crossTo - crossVia).magnitude;
+            home = crossVia + crossAcross * Mathf.Sign(side) * reach;
+            Run(home, 12f);
+        }
+
+        void Run(Vector3 to, float maxSeconds)
+        {
+            target = to;
+            moodUntil = Time.time + maxSeconds;
+            SetMood(Mood.Startled);
+        }
+
+        static Vector3 Flat3(Vector3 v) { v.y = 0f; return v; }
         public Temperament Kind => temperament;
 
         public override void OnNetworkSpawn()
@@ -92,7 +216,14 @@ namespace ConductorChaos.Animals
         // ---------------------------------------------------------------- server: lijf en gedrag
         void FixedUpdate()
         {
-            if (!IsSpawned || !IsServer || !body || body.isKinematic) return;
+            if (!IsSpawned || !IsServer || !body) return;
+            if (waitHidden)
+            {
+                // NetworkRigidbody zet de server bij het spawnen op niet-kinematisch: hier vasthouden op de wachtplek
+                if (!body.isKinematic) body.isKinematic = true;
+                return;
+            }
+            if (body.isKinematic) return;
             Vector3 up = transform.up;
             bool upright = Vector3.Dot(up, Vector3.up) > 0.5f;
             grounded = false;
@@ -130,8 +261,10 @@ namespace ConductorChaos.Animals
             Vector3 w = body.angularVelocity;
             body.AddTorque(tilt * 40f - new Vector3(w.x, 0f, w.z) * 9f, ForceMode.Acceleration);
 
+            CheckGiveUp();
             if (beingDragged)
             {
+                if (cross == Cross.Holding) { nextThink = Time.time + .5f; return; }   // wordt weggetrokken: niet terug
                 home = transform.position;
                 SetMood(Mood.Idle);
                 nextThink = Time.time + .5f;
@@ -145,7 +278,7 @@ namespace ConductorChaos.Animals
             {
                 Vector3 to = target - transform.position;
                 to.y = 0f;
-                float speed = m == Mood.Startled ? runSpeed : walkSpeed;
+                float speed = m == Mood.Startled ? (IsStampeding ? stampedeSpeed : runSpeed) : walkSpeed;
                 if (to.sqrMagnitude > 0.04f)
                 {
                     Vector3 dir = to.normalized;
@@ -160,7 +293,8 @@ namespace ConductorChaos.Animals
             if (grounded)
             {
                 // lopen = naar de gewenste snelheid trekken; stilstaan = schrap zetten (begrensd: hard genoeg duwen werkt)
-                float cap = wanted == Vector3.zero ? brace : 2.5f;
+                // galop: hard optrekken; net bevroren voor de trein: hard remmen. Daarna weer het gewone schrap zetten.
+                float cap = IsStampeding || (cross == Cross.Holding && flat.magnitude > 1.5f) ? 14f : wanted == Vector3.zero ? brace : 2.5f;
                 Vector3 accel = Vector3.ClampMagnitude((wanted - flat) * 4f, cap);
                 body.AddForce(accel, ForceMode.Acceleration);
             }
@@ -173,6 +307,7 @@ namespace ConductorChaos.Animals
             if ((m == Mood.Startled || m == Mood.Walk) && Time.time < moodUntil) return;
             if (Time.time < nextThink && m != Mood.Startled && m != Mood.Walk) return;
             nextThink = Time.time + Random.Range(1.5f, 4f);
+            if (cross != Cross.None && cross != Cross.Holding && ThinkCrossing()) return;
 
             var lure = AnimalLure.Nearest(transform.position, lureRadius);
             if (lure)
@@ -214,6 +349,7 @@ namespace ConductorChaos.Animals
         {
             moodUntil = 0f;
             nextThink = Time.time + (m == Mood.Startled ? 1f : Random.Range(2f, 5f));
+            if (cross is Cross.ToTrack or Cross.ToFar) nextThink = Time.time;          // kudde: meteen door
             SetMood(Random.value < 0.6f ? Mood.Graze : Mood.Idle);
         }
 
@@ -265,6 +401,7 @@ namespace ConductorChaos.Animals
             float dt = Mathf.Max(Time.deltaTime, 1e-4f);
             Vector3 p = transform.position;
             Vector3 d = p - lastPos;
+            bool jumped = d.sqrMagnitude > 25f;                 // opgedoken uit de verborgen wachtplek
             lastPos = p;
             d.y = 0f;
             speedSeen = Mathf.Lerp(speedSeen, d.magnitude / dt, 1f - Mathf.Exp(-dt * 8f));
@@ -298,6 +435,7 @@ namespace ConductorChaos.Animals
             float flick = Mathf.Sin(earTwitch / 0.35f * Mathf.PI) * 25f;
             if (earL && earL.parent) earL.localRotation = Quaternion.AngleAxis(flick, earL.parent.InverseTransformDirection(transform.forward)) * earLRest;
             if (earR && earR.parent) earR.localRotation = Quaternion.AngleAxis(-flick * 0.5f, earR.parent.InverseTransformDirection(transform.forward)) * earRRest;
+            KickUpDust(m, dt, jumped);
             if (m != shownMood)
             {
                 shownMood = m;
@@ -309,6 +447,113 @@ namespace ConductorChaos.Animals
                         m == Mood.Graze ? MouthShape.Happy : MouthShape.Neutral);
                 }
             }
+        }
+
+        // ---------------------------------------------------------------- iedereen: stofwolk bij een stormloop (cosmetisch)
+        ParticleSystem dust;
+        static Mesh dustMesh;
+        static Material dustMaterial;
+        float dustDue;
+
+        void KickUpDust(Mood m, float dt, bool teleported)
+        {
+            bool running = m == Mood.Startled && speedSeen > 2.6f;
+            if (!running && !teleported) return;
+            if (!dust && !MakeDust()) return;
+            var emit = new ParticleSystem.EmitParams { applyShapeToPosition = false };
+            if (teleported)                                          // opgedoken: grote wolk waar hij uit tevoorschijn komt
+            {
+                for (int i = 0; i < 26; i++)
+                {
+                    Vector2 c = Random.insideUnitCircle * 1.6f;
+                    emit.position = transform.position + new Vector3(c.x, Random.Range(0f, 1.2f), c.y);
+                    emit.velocity = new Vector3(c.x, Random.Range(.6f, 1.6f), c.y) * 1.2f;
+                    emit.startSize = Random.Range(.6f, 1.3f);
+                    emit.startLifetime = Random.Range(1.2f, 2.2f);
+                    dust.Emit(emit, 1);
+                }
+                return;
+            }
+            dustDue -= dt;
+            if (dustDue > 0f) return;
+            dustDue = 0.03f;
+            Vector3 back = -transform.forward;
+            Vector2 j = Random.insideUnitCircle * 0.45f;
+            emit.position = transform.position + back * 0.6f + new Vector3(j.x, 0.15f, j.y);
+            emit.velocity = back * Random.Range(.4f, 1.2f) + Vector3.up * Random.Range(.5f, 1.2f);
+            emit.startSize = Random.Range(.55f, 1.15f) * Mathf.Clamp(stride / .5f, .6f, 1.3f);
+            emit.startLifetime = Random.Range(1.0f, 1.7f);
+            dust.Emit(emit, 1);
+        }
+
+        bool MakeDust()
+        {
+            if (!dustMaterial)
+            {
+                var shader = Resources.Load<Shader>("AmbientDust");
+                if (!shader) return false;
+                dustMaterial = new Material(shader) { name = "Stofwolk" };
+                dustMesh = DustPuffMesh();
+            }
+            var go = new GameObject("Stofwolk (cosmetisch)");
+            go.transform.SetParent(transform, false);
+            dust = go.AddComponent<ParticleSystem>();
+            dust.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = dust.main;
+            main.playOnAwake = false;
+            main.loop = false;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.startSpeed = 0f;
+            main.maxParticles = 320;
+            main.gravityModifier = -0.04f;
+            // desert_sand / desert_band (palette.json): licht zand met hier en daar een roder plukje
+            main.startColor = new ParticleSystem.MinMaxGradient(new Color32(253, 198, 121, 255), new Color32(231, 140, 96, 255));
+            main.startRotation3D = true;
+            var angle = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+            main.startRotationX = main.startRotationY = main.startRotationZ = angle;
+            var emission = dust.emission;
+            emission.enabled = false;
+            var shape = dust.shape;
+            shape.enabled = false;
+            var size = dust.sizeOverLifetime;
+            size.enabled = true;
+            size.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(new Keyframe(0f, .45f), new Keyframe(.25f, 1f), new Keyframe(1f, 0f)));
+            var drag = dust.limitVelocityOverLifetime;
+            drag.enabled = true;
+            drag.drag = 1.6f;
+            var renderer = go.GetComponent<ParticleSystemRenderer>();
+            renderer.renderMode = ParticleSystemRenderMode.Mesh;
+            renderer.mesh = dustMesh;
+            renderer.SetActiveVertexStreams(new List<ParticleSystemVertexStream>
+                { ParticleSystemVertexStream.Position, ParticleSystemVertexStream.Normal, ParticleSystemVertexStream.Color });
+            renderer.sharedMaterial = dustMaterial;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            dust.Play();
+            return true;
+        }
+
+        // grove low-poly wolkbol (icosaëder), zoals de stoomwolkjes in het concept
+        static Mesh DustPuffMesh()
+        {
+            float t = (1f + Mathf.Sqrt(5f)) / 2f;
+            var v = new List<Vector3>
+            {
+                new(-1, t, 0), new(1, t, 0), new(-1, -t, 0), new(1, -t, 0), new(0, -1, t), new(0, 1, t),
+                new(0, -1, -t), new(0, 1, -t), new(t, 0, -1), new(t, 0, 1), new(-t, 0, -1), new(-t, 0, 1),
+            };
+            for (int i = 0; i < v.Count; i++) v[i] = v[i].normalized * .5f;
+            int[] f = { 0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11, 1, 5, 9, 5, 11, 4, 11, 10, 2, 10, 7, 6, 7, 1, 8,
+                        3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9, 4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7, 9, 8, 1 };
+            // platte facetten: elk vlak eigen hoekpunten
+            var verts = new List<Vector3>();
+            var tris = new List<int>();
+            for (int i = 0; i < f.Length; i++) { verts.Add(v[f[i]]); tris.Add(i); }
+            var mesh = new Mesh { name = "Stofbol" };
+            mesh.SetVertices(verts);
+            mesh.SetTriangles(tris, 0);
+            mesh.RecalculateNormals();
+            return mesh;
         }
 
         void OnDrawGizmosSelected()

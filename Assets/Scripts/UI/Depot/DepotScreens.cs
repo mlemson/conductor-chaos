@@ -249,56 +249,22 @@ namespace ConductorChaos.UI.Depot
 
         // ------------------------------------------------------------------ levelkeuze
 
+        // Links de gekozen dienst groot (foto, route, moeilijkheid, beschrijving, hoogtepunten, record), rechts een raster
+        // van compacte tegels in twee kolommen. Past bij elk aantal levels; titels krimpen in plaats van af te breken.
         private void RenderLevels()
         {
             TopBar("Kies je dienst", "Terug", () => { DepotSync.Close(); Hide(); OnBack?.Invoke(); }, false);
             var levels = DepotCatalog.Levels;
             int next = 1;
             while (next < levels.Length - 1 && DepotProgress.LevelEverWon(next)) next++;
-            float cw = (1552f - 16f * (levels.Length - 1)) / levels.Length;      // kaartbreedte: past bij elk aantal levels
-            for (int i = 0; i < levels.Length; i++)
-            {
-                var info = levels[i];
-                int index = i;
-                bool available = Application.CanStreamedLevelBeLoaded(info.Scene);
-                bool selected = selectedLevel == i;
-                float x = 24 + i * (cw + 16);
-                var card = DepotUi.Panel(stage, "Level " + info.Label, x, 150, cw, 580, DepotUi.PanelFace, selected ? ChaosUI.Gold : DepotUi.Edge, selected ? 3 : 2);
-                var photo = DepotUi.Panel(card, "Foto", 12, 12, cw - 24, 232, DepotUi.Inset);
-                photo.gameObject.AddComponent<RectMask2D>();
-                var texture = Resources.Load<Texture2D>("Routes/" + info.Photo);
-                if (texture)
-                {
-                    var raw = DepotUi.Box(photo, "Stationsfoto", 0, 0, cw - 24, 232).gameObject.AddComponent<RawImage>();
-                    raw.texture = texture;
-                    raw.raycastTarget = false;
-                    float aspect = (float)texture.width / texture.height, target = (cw - 24f) / 232f;
-                    raw.uvRect = aspect > target ? new Rect((1f - target / aspect) / 2f, 0f, target / aspect, 1f)
-                        : new Rect(0f, (1f - aspect / target) / 2f, 1f, aspect / target);
-                    if (!available) raw.color = new Color(.45f, .43f, .45f, 1f);
-                }
-                DepotUi.Chip(card, info.Label, 22, 22, ChaosUI.Paper, ChaosUI.Ink, null, 14, 28);
-                if (!available) DepotUi.Chip(card, "Niet in deze build", cw - 22, 22, ChaosUI.Slate, ChaosUI.Paper, "warning", 13, 30, true);
-                else if (i > 0 && DepotProgress.LevelEverWon(i)) DepotUi.Chip(card, "Gehaald", cw - 22, 22, ChaosUI.Green, DepotUi.GreenText, "ready", 13, 30, true);
-                else if (i == next) DepotUi.Chip(card, "Volgende", cw - 22, 22, ChaosUI.Gold, ChaosUI.Ink, null, 13, 30, true);
+            selectedLevel = Mathf.Clamp(selectedLevel, 0, levels.Length - 1);
+            LevelFeature(levels[selectedLevel], selectedLevel, next, 24, 138, 620, 662);
 
-                DepotUi.Txt(card, info.Name, 20, 254, cw - 40, 40, cw < 280 ? 22 : cw < 340 ? 26 : 30, ChaosUI.Paper, true);
-                string from = ServiceStationName(i, false), to = ServiceStationName(i, true);
-                DepotUi.Txt(card, string.IsNullOrEmpty(to) ? from : $"{from} → {to}", 20, 298, cw - 40, 24, cw < 280 ? 15 : 17, ChaosUI.Paper);
-                bool roomy = cw >= 340f;
-                if (roomy) DepotUi.Txt(card, "Moeilijkheid", 20, 340, 112, 22, 14, ChaosUI.Muted);
-                DepotUi.Segments(card, roomy ? 128 : 20, 345, roomy ? 108 : cw < 280 ? 84 : 100, 12, info.Difficulty, DepotCatalog.Levels.Length);
-                if (i >= 2)
-                    DepotUi.Txt(card, info.Distance, cw - 130, 340, 110, 22, 14, ChaosUI.Muted, false, TextAnchor.MiddleRight);
-                DepotUi.Txt(card, info.Summary, 20, 380, cw - 40, 66, cw < 280 ? 14 : cw < 340 ? 15 : 16, ChaosUI.Muted, false, TextAnchor.UpperLeft);
-                int best = DepotProgress.BestSecondsLeft(i);
-                if (i > 0 && best >= 0)
-                {
-                    DepotUi.Icon(card, "speed-gauge", 18, 452, 28);
-                    DepotUi.Txt(card, $"Record · {DepotUi.Time(best)} over", 52, 452, cw - 76, 28, 15, ChaosUI.Paper);
-                }
-                if (available) DepotUi.Hit(card, () => { selectedLevel = index; Render(); });
-            }
+            const float gridX = 664, gridY = 138, gridW = 912, gridH = 662, gap = 12;
+            int rows = (levels.Length + 1) / 2;
+            float tileW = (gridW - gap) / 2f, tileH = Mathf.Min(156f, (gridH - gap * (rows - 1)) / rows);
+            for (int i = 0; i < levels.Length; i++)
+                LevelTile(levels[i], i, next, gridX + (i % 2) * (tileW + gap), gridY + (i / 2) * (tileH + gap), tileW, tileH);
 
             var bottom = BottomBar();
             bool canStart = Application.CanStreamedLevelBeLoaded(DepotCatalog.Levels[selectedLevel].Scene);
@@ -306,6 +272,109 @@ namespace ConductorChaos.UI.Depot
                 DepotUi.Btn(bottom, "Start oefenrit", 1314, 22, 272, 58, ChaosUI.Gold, () => StartScene(DepotCatalog.Levels[0].Scene), 24, canStart, "play");
             else
                 DepotUi.Btn(bottom, "Naar het depot", 1314, 22, 272, 58, ChaosUI.Gold, () => ShowDepot(selectedLevel, false), 24, canStart);
+        }
+
+        private void LevelFeature(LevelInfo info, int index, int next, float x, float y, float w, float h)
+        {
+            bool available = Application.CanStreamedLevelBeLoaded(info.Scene);
+            var card = DepotUi.Panel(stage, "Gekozen dienst", x, y, w, h, DepotUi.PanelFace, ChaosUI.Gold, 3);
+            RoutePhoto(card, info, 14, 14, w - 28, 300, available);
+            DepotUi.Chip(card, info.Label, 28, 28, ChaosUI.Paper, ChaosUI.Ink, null, 15, 32);
+            LevelStatus(card, index, next, available, w - 28, 28, 15, 32);
+            float inner = w - 48;
+            FitTitle(card, info.Name, 24, 330, inner, 46, 34, 24);
+            string from = ServiceStationName(index, false), to = ServiceStationName(index, true);
+            DepotUi.Txt(card, string.IsNullOrEmpty(to) ? from : $"{from} → {to}", 24, 378, inner, 26, 18, ChaosUI.Paper, true);
+            DepotUi.Txt(card, "Moeilijkheid", 24, 414, 120, 24, 15, ChaosUI.Muted);
+            DepotUi.Segments(card, 140, 420, 220, 12, info.Difficulty, DepotCatalog.Levels.Length);
+            if (index >= 2)
+            {
+                DepotUi.Icon(card, "route", w - 164, 412, 26);
+                DepotUi.Txt(card, info.Distance, w - 134, 412, 110, 28, 15, ChaosUI.Muted, false, TextAnchor.MiddleRight);
+            }
+            DepotUi.Txt(card, info.Summary, 24, 452, inner, 64, 17, ChaosUI.Paper, false, TextAnchor.UpperLeft);
+            float cx = 24;
+            foreach (string highlight in info.Highlights ?? System.Array.Empty<string>())
+            {
+                float width = DepotUi.Measure(highlight, 15, false) + 52f;
+                if (cx + width > w - 24) break;
+                cx += DepotUi.Chip(card, highlight, cx, 530, DepotUi.Background, ChaosUI.Paper, "warning", 15, 36) + 10;
+            }
+            int best = DepotProgress.BestSecondsLeft(index);
+            DepotUi.Icon(card, "speed-gauge", 22, h - 54, 30);
+            DepotUi.Txt(card, index == 0 ? "Oefenen zonder tijdslimiet" : best >= 0 ? $"Record · {DepotUi.Time(best)} over" : "Nog geen record",
+                60, h - 54, inner - 40, 30, 16, best >= 0 ? ChaosUI.Paper : ChaosUI.Muted);
+        }
+
+        private void LevelTile(LevelInfo info, int index, int next, float x, float y, float w, float h)
+        {
+            bool available = Application.CanStreamedLevelBeLoaded(info.Scene);
+            bool selected = selectedLevel == index;
+            var tile = DepotUi.Panel(stage, "Level " + info.Label, x, y, w, h, selected ? DepotUi.Tab : DepotUi.PanelFace,
+                selected ? ChaosUI.Gold : DepotUi.Edge, selected ? 3 : 2);
+            float thumb = Mathf.Round((h - 16) * 1.25f);
+            RoutePhoto(tile, info, 8, 8, thumb, h - 16, available);
+            DepotUi.Chip(tile, info.Label, 14, 14, ChaosUI.Paper, ChaosUI.Ink, null, 12, 24);
+            float tx = thumb + 22, tw = w - tx - 14;
+            FitTitle(tile, info.Name, tx, 12, tw, 32, 23, 17);
+            string from = ServiceStationName(index, false), to = ServiceStationName(index, true);
+            FitLine(tile, string.IsNullOrEmpty(to) ? from : $"{from} → {to}", tx, 44, tw, 22, 15, ChaosUI.Muted);
+            DepotUi.Segments(tile, tx, 78, Mathf.Min(150f, tw - 90f), 10, info.Difficulty, DepotCatalog.Levels.Length);
+            if (index >= 2) DepotUi.Txt(tile, info.Distance, w - 104, 70, 90, 24, 13, ChaosUI.Muted, false, TextAnchor.MiddleRight);
+            LevelStatus(tile, index, next, available, tx, h - 40, 12, 26, false);
+            int best = DepotProgress.BestSecondsLeft(index);
+            if (index > 0 && best >= 0)
+                DepotUi.Txt(tile, $"Record {DepotUi.Time(best)}", w - 130, h - 40, 116, 26, 13, ChaosUI.Paper, false, TextAnchor.MiddleRight);
+            if (available) DepotUi.Hit(tile, () => { selectedLevel = index; Render(); });
+        }
+
+        private static void LevelStatus(Transform parent, int index, int next, bool available, float x, float y, int size, float height,
+            bool rightAligned = true)
+        {
+            if (!available) DepotUi.Chip(parent, "Niet in deze build", x, y, ChaosUI.Slate, ChaosUI.Paper, "warning", size, height, rightAligned);
+            else if (index > 0 && DepotProgress.LevelEverWon(index)) DepotUi.Chip(parent, "Gehaald", x, y, ChaosUI.Green, DepotUi.GreenText, "ready", size, height, rightAligned);
+            else if (index == next) DepotUi.Chip(parent, "Volgende", x, y, ChaosUI.Gold, ChaosUI.Ink, null, size, height, rightAligned);
+        }
+
+        // Routefoto (Resources/Routes/<station>.png) bijgesneden op het vak; zonder foto een effen vlak met het treinpictogram.
+        private static void RoutePhoto(Transform parent, LevelInfo info, float x, float y, float w, float h, bool available)
+        {
+            var photo = DepotUi.Panel(parent, "Foto", x, y, w, h, DepotUi.Inset);
+            photo.gameObject.AddComponent<RectMask2D>();
+            var texture = Resources.Load<Texture2D>("Routes/" + info.Photo);
+            if (!texture)
+            {
+                DepotUi.Icon(photo, "train", w / 2f - 24f, h / 2f - 24f, 48, ChaosUI.Muted);
+                return;
+            }
+            var raw = DepotUi.Box(photo, "Stationsfoto", 0, 0, w, h).gameObject.AddComponent<RawImage>();
+            raw.texture = texture;
+            raw.raycastTarget = false;
+            float aspect = (float)texture.width / texture.height, target = w / h;
+            raw.uvRect = aspect > target ? new Rect((1f - target / aspect) / 2f, 0f, target / aspect, 1f)
+                : new Rect(0f, (1f - aspect / target) / 2f, 1f, aspect / target);
+            if (!available) raw.color = new Color(.45f, .43f, .45f, 1f);
+        }
+
+        // Kop op één regel: eerst kleiner, pas daarna afkappen met een beletselteken.
+        private static void FitTitle(Transform parent, string caption, float x, float y, float w, float h, int maxSize, int minSize)
+        {
+            int size = maxSize;
+            while (size > minSize && DepotUi.Measure(caption, size, true) > w) size--;
+            string shown = caption;
+            while (shown.Length > 3 && DepotUi.Measure(shown + "…", size, true) > w) shown = shown.Substring(0, shown.Length - 1);
+            if (shown != caption) shown = shown.TrimEnd() + "…";
+            var text = DepotUi.Txt(parent, shown, x, y, w, h, size, ChaosUI.Paper, true);
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+        }
+
+        private static void FitLine(Transform parent, string caption, float x, float y, float w, float h, int size, Color color)
+        {
+            string shown = caption;
+            while (shown.Length > 3 && DepotUi.Measure(shown + "…", size, false) > w) shown = shown.Substring(0, shown.Length - 1);
+            if (shown != caption) shown = shown.TrimEnd() + "…";
+            var text = DepotUi.Txt(parent, shown, x, y, w, h, size, color);
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
         }
 
         private void StartScene(string scene)

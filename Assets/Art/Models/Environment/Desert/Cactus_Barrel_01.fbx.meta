@@ -1,0 +1,50 @@
+fileFormatVersion: 2
+guid: 097602b00bb06a774cdbce2678a96036
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_Cactus
+    second: {fileID: 2100000, guid: e1091c1ced9afa3706cd29ab01369421, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_CactusFlower
+    second: {fileID: 2100000, guid: 83fc7d66889711bdc40eb15eb9c6ede4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_CactusSpine
+    second: {fileID: 2100000, guid: afdefd5b0aa0c119c1c0ad74a7c23f2d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Env_FlowerHeart
+    second: {fileID: 2100000, guid: 9af565d9a64d7577df9d0af73563ed72, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

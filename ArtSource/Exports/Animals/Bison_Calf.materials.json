@@ -1,0 +1,238 @@
+{
+  "model": "Bison_Calf",
+  "height_m": 0.69,
+  "stats": {
+    "parts": 26,
+    "tris": 33213,
+    "verts": 16776,
+    "materials": 12
+  },
+  "materials": {
+    "M_BisonCalf_EyeWhite": {
+      "base": "#FDEEDC",
+      "ramp": [
+        "#352F3C",
+        "#BDABC1",
+        "#DCC7C5",
+        "#FDEEDC",
+        "#FDF6E8"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.35,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.45,
+        "noShadow": true,
+        "cells": 0.0
+      }
+    },
+    "M_BisonCalf_Pupil": {
+      "base": "#0D0B0C",
+      "ramp": [
+        "#1C0F0E",
+        "#291D1B",
+        "#351B13",
+        "#382520",
+        "#5A4038"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.45,
+      "opts": {
+        "spec": 0.25,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "noShadow": true
+      }
+    },
+    "M_BisonCalf_Mouth": {
+      "base": "#662C23",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": -0.55,
+      "smoothness": 0.2,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_BisonCalf_Tongue": {
+      "base": "#B84A3C",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_BisonCalf_Coat": {
+      "base": "#EFBF86",
+      "ramp": [
+        "#C2925E",
+        "#DDAC73",
+        "#EFBF86",
+        "#F4C892",
+        "#FCD8A4"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.0,
+        "cells": 0.35
+      }
+    },
+    "M_BisonCalf_Mane": {
+      "base": "#DDAC73",
+      "ramp": [
+        "#C2925E",
+        "#DDAC73",
+        "#EFBF86",
+        "#F4C892",
+        "#FCD8A4"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.0,
+        "cells": 0.5
+      }
+    },
+    "M_BisonCalf_Muzzle": {
+      "base": "#563F3E",
+      "ramp": [
+        "#3E2C2A",
+        "#47322F",
+        "#503936",
+        "#563F3E",
+        "#886B66"
+      ],
+      "rampShift": 0.35,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.0,
+        "cells": 0.3
+      }
+    },
+    "M_BisonCalf_Nostril": {
+      "base": "#3E2C2A",
+      "ramp": [
+        "#3E2C2A",
+        "#47322F",
+        "#503936",
+        "#563F3E",
+        "#886B66"
+      ],
+      "rampShift": -0.45,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_BisonCalf_EarInner": {
+      "base": "#DB9966",
+      "ramp": [
+        "#BA7756",
+        "#D28658",
+        "#DB9966",
+        "#E7A773",
+        "#EFB27C"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_BisonCalf_Horn": {
+      "base": "#EECAA1",
+      "ramp": [
+        "#D3AA81",
+        "#E7C198",
+        "#EBC69D",
+        "#EECAA1",
+        "#FCDBB4"
+      ],
+      "rampShift": 0.15,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_BisonCalf_Hoof": {
+      "base": "#47322F",
+      "ramp": [
+        "#3E2C2A",
+        "#47322F",
+        "#503936",
+        "#563F3E",
+        "#886B66"
+      ],
+      "rampShift": -0.2,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_BisonCalf_Alert": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "noShadow": true
+      }
+    }
+  }
+}

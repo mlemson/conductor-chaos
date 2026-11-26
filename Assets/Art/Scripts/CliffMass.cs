@@ -20,6 +20,8 @@ namespace ConductorChaos.Art
         public bool stone;
         [Tooltip("Winter (#242): sneeuw in plaats van gras op de bovenkant en de plukjes.")]
         public bool snow;
+        [Tooltip("Woestijn (levels 6-7): rode gelaagde rots, zand op de bovenkant en droge plukjes.")]
+        public bool desert;
         [Tooltip("Variatie in facetten en bolletjes.")]
         public int seed = 1;
 

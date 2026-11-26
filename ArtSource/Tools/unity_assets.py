@@ -66,6 +66,8 @@ def stylized_material(root, rel_path, name, ramp, ramp_shift=0.0, opts=None, emi
         "_Bubble": float(o.get("bubble", 0.0)), "_BubbleSpeed": float(o.get("bubbleSpeed", 1.0)),
         "_SrcBlend": 5.0 if alpha < 1 else 1.0, "_DstBlend": 10.0 if alpha < 1 else 0.0, "_ZWrite": 0.0 if alpha < 1 else 1.0,
     }
+    if "strata" in o:                       # alleen woestijnrots: bestaande materialen blijven byte-gelijk
+        floats["_Strata"] = float(o["strata"])
     gy = o.get("grimeY", [-0.35, 0.85])
     colors = {"_Ramp%d" % k: tuple(_hex(h)) + (1.0,) for k, h in enumerate(ramp)}
     colors.update({"_BaseColor": tuple(_hex(ramp[2])) + (alpha,), "_RimColor": tuple(_hex("#B2C5F3")) + (1.0,),

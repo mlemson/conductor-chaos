@@ -982,7 +982,8 @@ namespace ConductorChaos.Playground
         {
             if (!piece || Mathf.Abs(throttle.Value) < .96f || Mathf.Abs(requestedSpeed) < .01f ||
                 Mathf.Abs(speed) < Mathf.Abs(requestedSpeed) * .98f) return false;
-            return piece.DangerousCurve || (gameObject.scene.name == ServiceRun.FifthLevelScene && Mathf.Abs(piece.TurnDegrees) >= 25f);
+            return piece.DangerousCurve || ((gameObject.scene.name == ServiceRun.FifthLevelScene || ServiceRun.IsDesertScene(gameObject.scene.name)) &&
+                Mathf.Abs(piece.TurnDegrees) >= 25f);
         }
 
         private bool IsLogImpact(Rigidbody obstacle) => gameObject.scene.name == ServiceRun.FifthLevelScene &&

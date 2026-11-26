@@ -38,6 +38,7 @@ Shader "ConductorChaos/StylizedRamp"
         _FlowStreaks ("Water Flow Streaks", Range(0, 1)) = 0.6
         _Bubble ("Bubble (m, schuim/mist)", Float) = 0
         _BubbleSpeed ("Bubble Speed", Float) = 1
+        _Strata ("Strata band height (m, 0 = uit)", Float) = 0
         _HasShade ("Use Vertex Shade", Float) = 1
         _ReceiveShadowsF ("Receive Shadows", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
@@ -61,6 +62,7 @@ Shader "ConductorChaos/StylizedRamp"
             float4 _GrimeY;
             half _RampShift, _Flat, _Edge, _Rim, _Spec, _Cells, _CellSize, _Grime, _Emissive, _Opacity, _HasShade, _SoftEdge;
             half _Flow, _FlowStreaks, _Bubble, _BubbleSpeed;
+            float _Strata;
             half _ReceiveShadowsF, _SrcBlend, _DstBlend, _ZWrite, _Cull;
         CBUFFER_END
 
@@ -219,6 +221,13 @@ Shader "ConductorChaos/StylizedRamp"
                     float nz = lerp(lerp(n00, n10, u.x), lerp(n01, n11, u.x), u.y);
                     half streak = smoothstep(0.62, 0.80, nz) * _FlowStreaks;
                     t += streak * 0.28 - (1.0 - smoothstep(0.15, 0.40, nz)) * 0.06 * _FlowStreaks;
+                }
+                // woestijnrots (levels 6-7): horizontale gesteentelagen in wereldruimte, licht golvend, elk een eigen helderheid
+                if (_Strata > 0.0)
+                {
+                    float sy = i.positionWS.y / _Strata + sin(i.positionWS.x * 0.061) * 0.22 + sin(i.positionWS.z * 0.047 + 1.3) * 0.22;
+                    half layer = Hash33(float3(floor(sy), 17.0, 3.0)).x;
+                    t += (layer - 0.5) * 0.24 * (1.0 - _Flat);
                 }
                 half3 col = SampleRamp(t);
                 col = lerp(col, _DirtColor.rgb, grime * 0.22);

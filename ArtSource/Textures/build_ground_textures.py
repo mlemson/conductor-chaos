@@ -21,7 +21,26 @@ import sys
 
 import numpy as np
 from PIL import Image
-from scipy.spatial import cKDTree
+try:
+    from scipy.spatial import cKDTree
+except ImportError:                                          # zelfde (exacte) uitkomst zonder SciPy, alleen trager
+    cKDTree = None
+
+
+def _nearest2(points, P, chunk=65536):
+    """Afstanden en indices van de twee dichtstbijzijnde punten (vervangt cKDTree(points).query(P, k=2))."""
+    if cKDTree is not None:
+        return cKDTree(points).query(P, k=2)
+    d_out, k_out = np.empty((len(P), 2)), np.empty((len(P), 2), int)
+    for i in range(0, len(P), chunk):
+        q = P[i:i + chunk]
+        d2 = ((q[:, None, :] - points[None]) ** 2).sum(-1)
+        k = np.argpartition(d2, 1, axis=1)[:, :2]
+        dk = np.take_along_axis(d2, k, 1)
+        order = np.argsort(dk, 1)
+        k_out[i:i + chunk] = np.take_along_axis(k, order, 1)
+        d_out[i:i + chunk] = np.sqrt(np.take_along_axis(dk, order, 1))
+    return d_out, k_out
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
@@ -77,7 +96,7 @@ def voronoi(n_seeds, jitter=1.0):
     ids = np.tile(np.arange(len(seeds)), 9)
     yy, xx = np.mgrid[0:N, 0:N]
     P = np.stack([xx.ravel() + 0.5, yy.ravel() + 0.5], -1)
-    d, k = cKDTree(tiles).query(P, k=2)
+    d, k = _nearest2(tiles, P)
     near = tiles[k[:, 0]]
     edge = ((d[:, 1] - d[:, 0]) / 2).reshape(N, N)
     vec = (P - near).reshape(N, N, 2)
@@ -294,6 +313,63 @@ FOREST = {
 }
 
 
+# Woestijn (levels 6-7): zelfde vijf rollen. 0 = zand, 1 = licht zand (duinen), 2 = rode aangestampte grond met kiezels,
+# 3 = kiezelvlakte, 4 = rode rots met horizontale lagen. Kleuren: groep 'Woestijn' in palette.json.
+def desert_sand(lo, hi):
+    """Effen zandvlakken met heel zachte windribbels (anisotrope ruis), zoals het zand in de conceptbladen."""
+    img = flat("desert_sand", lo, hi, cells=81, facet=0.025)
+    ripple = pnoise(14, aniso=5.0, angle=0.35)
+    return img * (1 + 0.035 * np.clip(ripple, -1.5, 1.5))[..., None]
+
+
+def desert_dirt():
+    v = 0.5 + 0.17 * pnoise(150) + 0.08 * pnoise(45)
+    img = ramp("desert_rock", 0.42 + 0.30 * soft_bands(np.clip(v, 0, 1), 5, 0.45))
+    lo, hi = ramp("desert_rock", np.array(0.1)), ramp("desert_band", np.array(0.8))
+    for _ in range(380):
+        cx, cy = rng.uniform(0, N, 2)
+        rx, ry = rng.uniform(3, 7), rng.uniform(2, 5)
+        stamp(img, cx + 1.5, cy + 1.5, lambda X, Y: (1 - (X / rx) ** 2 - (Y / ry) ** 2) * rx / 1.2, lo, rx + 2)
+        stamp(img, cx, cy, lambda X, Y: (1 - (X / rx) ** 2 - (Y / ry) ** 2) * rx / 1.2, hi, rx + 2)
+    return img
+
+
+def desert_pebbles():
+    """Kiezelvlakte: rode en oranje platte stenen met zand in de voegen."""
+    ids, edge, vec, n = voronoi(90, 0.6)
+    tone = rng.uniform(0.35, 0.8, n)[ids]
+    pick = rng.random(n)[ids] < 0.5
+    img = np.where(pick[..., None], ramp("desert_rock", tone), ramp("desert_band", tone * 0.8))
+    L = np.array([-0.6, -0.8])
+    dirn = vec / (np.linalg.norm(vec, axis=-1, keepdims=True) + 1e-6)
+    lam = dirn @ L
+    bevel = np.clip(1 - (edge - 6.0) / 12.0, 0, 1)
+    img = img * (1 + 0.14 * bevel[..., None] * np.clip(-lam, 0, 1)[..., None])
+    img = img * (1 - 0.20 * bevel[..., None] * np.clip(lam, 0, 1)[..., None])
+    sand = ramp("desert_sand", 0.45 + 0.1 * np.clip(pnoise(80), -1, 1))
+    m = np.clip((6.0 - edge) / 1.5, 0, 1)[..., None]
+    return img * (1 - m) + sand * m
+
+
+def desert_rock():
+    ids, edge, vec, n = voronoi(36, 0.65)
+    tone = rng.uniform(0.35, 0.75, n)[ids]
+    y = np.arange(N)[:, None] * np.ones((1, N))
+    band = np.sin(y / N * 2 * np.pi * 6 + 0.6 * pnoise(260))            # tegelbaar: 6 lagen per tegel
+    img = ramp("desert_rock", tone * 0.7 + 0.12 + 0.10 * band + 0.04 * pnoise(200))
+    m = np.clip((3.0 - edge) / 1.5, 0, 1)[..., None]
+    return img * (1 - 0.22 * m)
+
+
+DESERT = {
+    "T_Desert_Sand": lambda: desert_sand(0.42, 0.66),
+    "T_Desert_SandLight": lambda: desert_sand(0.62, 0.86),
+    "T_Desert_Dirt": lambda: desert_dirt(),
+    "T_Desert_Pebbles": lambda: desert_pebbles(),
+    "T_Desert_Rock": lambda: desert_rock(),
+}
+
+
 def save(name, img):
     rel = f"{OUT}/{name}.png"
     path = os.path.join(ROOT, rel)
@@ -332,6 +408,9 @@ def main():
     for k, (name, make) in enumerate(FOREST.items()):
         seeded(300 + k)
         save(name, make())
+    for k, (name, make) in enumerate(DESERT.items()):
+        seeded(400 + k)
+        save(name, make())
 
 
 if __name__ == "__main__":
@@ -342,6 +421,10 @@ if __name__ == "__main__":
     elif sys.argv[1:] == ["forest"]:                       # alleen de bostexturen
         for k, (name, make) in enumerate(FOREST.items()):
             rng = np.random.default_rng([38, 300 + k])
+            save(name, make())
+    elif sys.argv[1:] == ["desert"]:                       # alleen de woestijntexturen
+        for k, (name, make) in enumerate(DESERT.items()):
+            rng = np.random.default_rng([38, 400 + k])
             save(name, make())
     else:
         main()

@@ -17,9 +17,15 @@ namespace ConductorChaos.Stations
         public const string ThirdLevelScene = "ServiceLevel03";
         public const string FourthLevelScene = "ServiceLevel04";        // winterlevel 'Over de pas' (#242)
         public const string FifthLevelScene = "ServiceLevel05";         // boslevel 'Door het woud' (#246)
+        public const string SixthLevelScene = "ServiceLevel06";         // woestijnlevel 'Door de rode kloof'
+        public const string SeventhLevelScene = "ServiceLevel07";       // woestijnlevel 'De goudmijnkloof'
+
+        /// <summary>Woestijnlevels: bizonkuddes, gelaagde rode rots, cactussen en (level 7) zandstormen.</summary>
+        public static bool IsDesertScene(string scene) => scene is SixthLevelScene or SeventhLevelScene;
 
         /// <summary>Alle dienstscènes in speelvolgorde (introductie, level 1, 2, 3).</summary>
-        public static readonly string[] ServiceScenes = { IntroScene, FirstLevelScene, SecondLevelScene, ThirdLevelScene, FourthLevelScene, FifthLevelScene };
+        public static readonly string[] ServiceScenes = { IntroScene, FirstLevelScene, SecondLevelScene, ThirdLevelScene, FourthLevelScene, FifthLevelScene,
+            SixthLevelScene, SeventhLevelScene };
         // Complete campaign budgets, including the longer journeys. No inherited travel bonus.
         private static readonly int[][] CampaignTimeLimits =
         {
@@ -28,10 +34,13 @@ namespace ConductorChaos.Stations
             new[] { 360, 330, 300, 270 },
             new[] { 600, 555, 520, 485 },
             new[] { 585, 540, 505, 470 },
-            new[] { 405, 375, 345, 320 }   // kortste route maar krapste marge: level 5 is het zwaarst
+            new[] { 405, 375, 345, 320 },  // kortste route maar krapste marge
+            new[] { 400, 370, 340, 315 },  // woestijn (± 650 m): stormloop, steenlawine en schraagbrug
+            new[] { 445, 410, 380, 350 }   // goudmijnkloof (± 850 m): twee kuddes, twee bruggen, zandstorm en mijnkarretje
         };
         public static bool IsServiceScene(string scene) => System.Array.IndexOf(ServiceScenes, scene) >= 0;
-        private static readonly string[] CampaignStops = { "Whistleton", "Bumblewick", "Puddleford", "Craggleton", "Eaglecrest", "Frostbury", "Fernwood" };
+        private static readonly string[] CampaignStops = { "Whistleton", "Bumblewick", "Puddleford", "Craggleton", "Eaglecrest", "Frostbury", "Fernwood", "Redrock",
+            "Goldspur" };
 
         internal static string PlannedStationName(string scene, ServiceStation.StationRole role)
         {
@@ -328,6 +337,8 @@ namespace ConductorChaos.Stations
                     ThirdLevelScene => (5, new Vector2(8f, 14f), new Vector2(16f, 26f)),
                     FourthLevelScene => (6, new Vector2(8f, 14f), new Vector2(13f, 22f)),
                     FifthLevelScene => (7, new Vector2(6f, 12f), new Vector2(10f, 16f)),
+                    SixthLevelScene => (7, new Vector2(6f, 12f), new Vector2(10f, 16f)),
+                    SeventhLevelScene => (8, new Vector2(6f, 11f), new Vector2(9f, 15f)),
                     _ => (0, Vector2.zero, Vector2.zero)
                 };
                 breakdownsRemaining = limit;

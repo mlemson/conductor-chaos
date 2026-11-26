@@ -692,6 +692,48 @@
           "#F7E3B8"
         ]
       }
+    },
+    "Woestijn": {
+      "desert_rock": {
+        "name": "Rode kloofrots (koel-violette schaduw)",
+        "ramp": [
+          "#6A4052",
+          "#863A3C",
+          "#A54C49",
+          "#C56554",
+          "#D07C6F"
+        ]
+      },
+      "desert_band": {
+        "name": "Lichte rotslaag / zandsteenband",
+        "ramp": [
+          "#7D4B62",
+          "#C4613B",
+          "#E77B4C",
+          "#F7935E",
+          "#FAA572"
+        ]
+      },
+      "desert_sand": {
+        "name": "Woestijnzand & kliftop",
+        "ramp": [
+          "#B0685A",
+          "#E58C4C",
+          "#FBB76B",
+          "#FDC679",
+          "#FECE84"
+        ]
+      },
+      "desert_flower": {
+        "name": "Cactusbloem (magenta)",
+        "ramp": [
+          "#8A2440",
+          "#D42A43",
+          "#D14959",
+          "#E6586D",
+          "#F2617B"
+        ]
+      }
     }
   },
   "lighting": {
@@ -701,5 +743,6 @@
     "Mist / atmosfeer": "#91A8E6",
     "Rim light (koel)": "#B2C5F3",
     "Koplamp / lampen": "#FEF2B0"
-  }
+  },
+  "desert_note": "Woestijn (levels 6-7): gemeten met percentielen per hue-gebied in Docs/References/Desert/desert-concept-0*.webp; de diepste schaduw van rots, band en zand is doorgetrokken naar de gemeten violette schaduwkant van de kloofwanden. Cactusgroen = dino_green, bizonvacht = hair_brown/leather, kalf = safari_hat."
 }

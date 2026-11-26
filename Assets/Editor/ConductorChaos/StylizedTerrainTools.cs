@@ -68,6 +68,18 @@ namespace ConductorChaos.EditorTools
 
         public static TerrainLayer[] EnsureForestLayers() => EnsureLayers(ForestDefs);
 
+        // woestijn (levels 6-7): dezelfde vijf rollen: zand, licht zand (duinen), rode grond, kiezelvlakte, gelaagde rots
+        static readonly (string tex, string layer, float tile)[] DesertDefs =
+        {
+            ("T_Desert_Sand", "TL_Desert_Sand", 10f),
+            ("T_Desert_SandLight", "TL_Desert_SandLight", 10f),
+            ("T_Desert_Dirt", "TL_Desert_Dirt", 6f),
+            ("T_Desert_Pebbles", "TL_Desert_Pebbles", 4f),
+            ("T_Desert_Rock", "TL_Desert_Rock", 8f),
+        };
+
+        public static TerrainLayer[] EnsureDesertLayers() => EnsureLayers(DesertDefs);
+
         static void EnsureFolder(string path)
         {
             if (AssetDatabase.IsValidFolder(path)) return;

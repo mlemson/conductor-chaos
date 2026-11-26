@@ -123,6 +123,12 @@ namespace ConductorChaos.Depot
             new LevelInfo { Index = 5, Scene = ServiceRun.FifthLevelScene, Label = "LEVEL 5", Name = "Door het woud", Photo = "Fernwood",
                 Summary = "Dicht loofbos, stammen op het spoor en twee bruggen onder tijdsdruk.", Distance = "± 950 m", Difficulty = 6,
                 Highlights = new[] { "Rollende boomstammen", "Beukenbos" } },
+            new LevelInfo { Index = 6, Scene = ServiceRun.SixthLevelScene, Label = "LEVEL 6", Name = "Door de rode kloof", Photo = "Redrock",
+                Summary = "De woestijn in: langs de rode kloof, steenlawines en een schraagbrug over het ravijn.", Distance = "± 650 m", Difficulty = 7,
+                Highlights = new[] { "Bizonkudde", "Rotsboog" } },
+            new LevelInfo { Index = 7, Scene = ServiceRun.SeventhLevelScene, Label = "LEVEL 7", Name = "De goudmijnkloof", Photo = "Goldspur",
+                Summary = "Over smalle richels naar de goudmijn, door zandstorm en twee kuddes.", Distance = "± 850 m", Difficulty = 8,
+                Highlights = new[] { "Zandstorm", "Goudmijn" } },
         };
 
         /// <summary>Treinstel voor een nieuwe speler. Niets is verplicht: alles mag in of op elke wagon mee.</summary>

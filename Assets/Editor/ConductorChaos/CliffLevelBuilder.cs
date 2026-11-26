@@ -31,7 +31,7 @@ using Random = System.Random;
 
 namespace ConductorChaos.EditorTools
 {
-    public static class CliffLevelBuilder
+    public static partial class CliffLevelBuilder
     {
         // ================================================================== spec
         public sealed class Step
@@ -109,6 +109,13 @@ namespace ConductorChaos.EditorTools
             public bool cliffRing = true;
             public bool winter;                  // sneeuwlevel (#242): sneeuwgrond, besneeuwde bomen/kliffen, ijs, kou (#243)
             public bool forest;                  // boslevel (#246): dicht loofbos, bosgrond, varens, stammen die van de helling rollen
+            public bool desert;                  // woestijn (levels 6-7): zand, gelaagde rode rots, cactussen, tafelbergen
+            public bool sandstorm;               // cosmetische zandstormvlagen rond de camera (level 7)
+            public HerdSpec[] herds;             // bizonkuddes die het spoor oversteken (incident)
+            public DropSpec[] drops;             // tumbleweeds / mijnkarretje die op het spoor belanden (incident)
+            public string archTag;               // rotsboog over deze spoorsectie
+            public string mineTag;               // zijspoor (tag van de takstukken) dat in een mijningang eindigt
+            public int windmills;                // windmolens langs de route
         }
 
         public static Step S(string prefab, string tag, float grade = 0f) => new Step { prefab = prefab, tag = tag, grade = grade };
@@ -351,7 +358,7 @@ namespace ConductorChaos.EditorTools
             public float y;
         }
 
-        sealed class LevelContext
+        sealed partial class LevelContext
         {
             readonly LevelSpec spec;
             readonly Scene scene;
@@ -444,6 +451,12 @@ namespace ConductorChaos.EditorTools
                 Progress("Bos en rotsen", 0.72f);
                 PlantNature();
                 if (spec.winter) DressWinter();
+                if (spec.desert)
+                {
+                    Progress("Woestijndecor", 0.86f);
+                    Physics.SyncTransforms();
+                    DressDesert();
+                }
                 if (spec.forest)
                 {
                     Progress("Bosgrond en water", 0.86f);
@@ -485,8 +498,9 @@ namespace ConductorChaos.EditorTools
                     bool decor = n.StartsWith("Tree_") || n.StartsWith("Hill_Grass") || n.StartsWith("Farm_") || n == "Grasland" ||
                                  n.StartsWith("Bush_") || n.StartsWith("Rock_") || n == "PaintedProps" || n.StartsWith("Landroute") ||
                                  n.StartsWith("Cloud_") || n.StartsWith("Mountain_") || n.StartsWith("Grass_") || n.StartsWith("Flower_") ||
-                                 n == NatureDresser.RootName || n == WinterRoot ||
+                                 n == NatureDresser.RootName || n == WinterRoot || n == DesertRoot ||
                                  (spec.arrivalName == "Eaglecrest" && n.StartsWith("Country Run · ")) ||
+                                 (spec.desert && n == "Country Run · Heuvels aan de horizon") ||
                                  root.GetComponentInChildren<Terrain>(true);
                     bool parkedTrain = n.Contains("_Blockout") && root != train.gameObject && !IsConsist(root);
                     if (!decor && !parkedTrain) continue;
@@ -910,7 +924,8 @@ namespace ConductorChaos.EditorTools
                 res = longest > 820f ? 2049 : longest > 420f ? 1025 : 513;
 
                 var layers = spec.winter ? StylizedTerrainTools.EnsureWinterLayers()
-                           : spec.forest ? StylizedTerrainTools.EnsureForestLayers() : StylizedTerrainTools.EnsureLayers();
+                           : spec.forest ? StylizedTerrainTools.EnsureForestLayers()
+                           : spec.desert ? StylizedTerrainTools.EnsureDesertLayers() : StylizedTerrainTools.EnsureLayers();
                 if (snowArrival.HasValue)
                     layers[1] = StylizedTerrainTools.EnsureWinterLayers()[0];
                 data = new TerrainData { heightmapResolution = res, alphamapResolution = longest > 820f ? 2048 : 1024 };
@@ -950,7 +965,11 @@ namespace ConductorChaos.EditorTools
                 terrain.heightmapPixelError = 1f;
                 terrain.treeDistance = 0f;
                 terrain.detailObjectDistance = 0f;
-                if (alpineShoulder == null && !snowArrival.HasValue) TerrainCliffsEditor.AddTo(terrain);
+                if (alpineShoulder == null && !snowArrival.HasValue)
+                {
+                    var slopes = TerrainCliffsEditor.AddTo(terrain);
+                    if (spec.desert) DesertSlopes(slopes);
+                }
                 Physics.SyncTransforms();
                 log.AppendLine($"Terrein {terrainSize.x:0} × {terrainSize.z:0} m (hoogte {terrainOrigin.y:0} tot {terrainOrigin.y + terrainSize.y:0} m), heightmap {res}.");
             }
@@ -1245,7 +1264,11 @@ namespace ConductorChaos.EditorTools
                         float grass = 1f, flowers = 0f, dirt = 0f, stones = 0f, rock = 0f;
                         float d = far.Distance(wx, wz);
                         float f = Noise(wx, wz, 22f, ox + 500f, oz + 500f);
-                        if (spec.forest)
+                        if (spec.desert)
+                        {
+                            DesertGround(wx, wz, d, f, ox, oz, out grass, out flowers, out dirt);
+                        }
+                        else if (spec.forest)
                         {
                             // bos: laag 1 = schaduwgras onder het bladerdak, laag 2 = bosgrond met blad (plekken in het dichte bos)
                             float wood = ForestAt(wx, wz) * Smooth(5f, 16f, d);
@@ -1321,6 +1344,7 @@ namespace ConductorChaos.EditorTools
                 mass.stepHeight = StepHeight;
                 mass.stone = stone;
                 mass.snow = spec.winter;
+                mass.desert = spec.desert;
                 mass.tufts = true;
                 mass.seed = seed;
                 go.AddComponent<PaintedProp>().followGround = false;
@@ -1723,7 +1747,14 @@ namespace ConductorChaos.EditorTools
                     approach = Trigger(incidentsGo.transform, "Nadering wissel " + j.tag, j.arc - 24f, 40f),
                     junction = j.sw, mainDiverges = j.mainDiverges,
                 }).ToArray();
-                incidents.Configure(rockfalls.ToArray(), damages.ToArray(), spec.minimumIncidents, warnings, spec.rotateDepartureObjectives);
+                foreach (var drop in spec.drops ?? Array.Empty<DropSpec>())
+                {
+                    var rf = MakeDrop(incidentsGo.transform, drop);
+                    if (rf != null) rockfalls.Add(rf);
+                }
+                var herds = (spec.herds ?? Array.Empty<HerdSpec>()).Select(h => MakeHerd(incidentsGo.transform, h)).Where(h => h != null).ToArray();
+                incidents.Configure(rockfalls.ToArray(), damages.ToArray(), spec.minimumIncidents, warnings, spec.rotateDepartureObjectives, herds);
+                if (herds.Length > 0) log.AppendLine($"Kuddes: {herds.Length} ({herds.Sum(h => h.animals.Length)} dieren).");
                 EditorUtility.SetDirty(incidents);
                 log.AppendLine($"Incidenten: {rockfalls.Count} steenlawines, {damages.Count} spoorschade/wisselstoringen " +
                                $"(minstens {spec.minimumIncidents} per rit), {warnings.Length} wisselwaarschuwingen.");
@@ -1797,7 +1828,8 @@ namespace ConductorChaos.EditorTools
                 siteMarker.SetParent(group, false);
                 siteMarker.SetPositionAndRotation(site.rail, Quaternion.LookRotation(site.dir));
 
-                string modelPath = spec.winter ? $"{EnvDir}/Winter/Snow_Pile_Track.fbx" : spec.forest ? $"{EnvDir}/Wood/Log_Fallen_02.fbx" : $"{EnvDir}/Rocks/Rock_Medium_01.fbx";
+                string modelPath = spec.winter ? $"{EnvDir}/Winter/Snow_Pile_Track.fbx" : spec.forest ? $"{EnvDir}/Wood/Log_Fallen_02.fbx"
+                    : spec.desert ? $"{EnvDir}/Desert/Rock_Desert_Boulder_01.fbx" : $"{EnvDir}/Rocks/Rock_Medium_01.fbx";
                 var model = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
                 if (!model) throw new Exception($"{modelPath} ontbreekt.");
                 var rocks = new List<Rigidbody>();
@@ -1811,6 +1843,7 @@ namespace ConductorChaos.EditorTools
                     float top = TopOf(perch, cliff);
                     var rock = MakeRock(rockRoot, $"{name} · {(spec.winter ? "sneeuw" : spec.forest ? "stam" : "blok")} {k + 1}", model, new Vector3(perch.x, top, perch.z),
                         spec.winter ? 0.6f + 0.08f * k : spec.forest ? 0.78f + 0.06f * k : 0.85f + 0.12f * k);
+                    if (spec.desert) rock.gameObject.AddComponent<LowTrackObstacle>();     // ook de lage veegzone van de trein ziet hem
                     rocks.Add(rock);
                     var land = new GameObject($"Landing {k + 1}").transform;
                     land.SetParent(group, false);
@@ -1892,7 +1925,7 @@ namespace ConductorChaos.EditorTools
 
             void PlantNature()
             {
-                var trees = spec.forest ? ForestTrees() : spec.winter ? new (GameObject model, float weight, float clearance)[]
+                var trees = spec.forest ? ForestTrees() : spec.desert ? DesertTrees() : spec.winter ? new (GameObject model, float weight, float clearance)[]
                 {
                     (Model("Winter", "Tree_Pine_Snow_Medium"), 1.0f, 6.5f),
                     (Model("Winter", "Tree_Pine_Snow_Large"), 0.7f, 7.5f),
@@ -1908,7 +1941,8 @@ namespace ConductorChaos.EditorTools
                 trees = trees.Where(t => t.model).ToArray();
                 var snowyPine = snowArrival.HasValue ? Model("Winter", "Tree_Pine_Snow_Medium") : null;
                 float area = terrainSize.x * terrainSize.z;
-                int maxTrees = spec.forest ? Mathf.RoundToInt(Mathf.Clamp(area / 170f, 1800f, 3400f))
+                int maxTrees = spec.desert ? Mathf.RoundToInt(Mathf.Clamp(area / 650f, 380f, 1100f))
+                             : spec.forest ? Mathf.RoundToInt(Mathf.Clamp(area / 170f, 1800f, 3400f))
                                            : Mathf.RoundToInt(Mathf.Clamp(area / 260f, 1400f, 3600f));
                 if (alpineShoulder != null) maxTrees = Mathf.RoundToInt(Mathf.Clamp(area / 260f, 1200f, 3000f));
                 int planted = 0, onCliffs = 0;
@@ -1924,6 +1958,7 @@ namespace ConductorChaos.EditorTools
                     // bos in plukken: dicht waar de ruis hoog is, open weides rond de stations
                     float density;
                     if (spec.forest) density = ForestAt(p.x, p.z) * 1.6f;          // dicht loofbos tot vlak langs het spoor
+                    else if (spec.desert) density = DesertPlantDensity(p, d, ox, oz);
                     else
                     {
                         float forest = Noise(p.x, p.z, 55f, ox, oz) * 0.8f + Noise(p.x, p.z, 18f, ox + 40f, oz + 9f) * 0.35f;
@@ -1966,6 +2001,7 @@ namespace ConductorChaos.EditorTools
 
                 // rotsen bij klifvoeten en kloofranden
                 var rockModels = (spec.winter ? new[] { Model("Rocks", "Rock_Small_01"), Model("Winter", "Rock_Snow_Medium"), Model("Winter", "Rock_Snow_Large") }
+                    : spec.desert ? new[] { Model("Desert", "Rock_Desert_Small_01"), Model("Desert", "Rock_Desert_Small_01"), Model("Desert", "Rock_Desert_Medium_01"), Model("Desert", "Rock_Desert_Large_01") }
                     : new[] { Model("Rocks", "Rock_Small_01"), Model("Rocks", "Rock_Medium_01"), Model("Rocks", "Rock_Large_01") })
                     .Where(m => m).ToArray();
                 int rocks = 0, maxRocks = Mathf.RoundToInt(Mathf.Clamp(area / 2500f, 140f, 360f));
@@ -1978,7 +2014,7 @@ namespace ConductorChaos.EditorTools
                     if (RiverDist(p) < 0.4f) continue;
                     if (CliffTop(p, out var overhead, out _) && overhead > p.y + 0.3f) continue;      // onder een rotswand
                     bool interesting = InCanyon(p, 4f) || SteepnessAt(p) > 18f || NearCliff(p, 4f);
-                    if (!interesting && rng.NextDouble() > 0.06) continue;
+                    if (!interesting && rng.NextDouble() > (spec.desert ? 0.16 : 0.06)) continue;
                     var model = rockModels[rng.Next(rockModels.Length)];
                     if (model.name.Contains("Large") && d < 9f) continue;
                     float scale = 0.6f + (float)rng.NextDouble() * 0.9f;
@@ -1990,6 +2026,8 @@ namespace ConductorChaos.EditorTools
                 // gras en bloemen op vlakke stukken langs het spoor, rond de stations en op de kloofbodem (geen colliders)
                 var plants = (spec.winter ? new[] { Model("Winter", "Snow_Drift_01"), Model("Winter", "Snow_Drift_01"), Model("Winter", "Snow_Drift_02"), Model("Winter", "Rock_Snow_Medium") }
                     : spec.forest ? new[] { Model("Plants", "Grass_Tuft_01"), Model("Plants", "Grass_Tuft_02"), Model("Plants", "Fern_01"), Model("Plants", "Flower_Wild_01") }
+                    : spec.desert ? new[] { Model("Desert", "Desert_GrassTuft_01"), Model("Desert", "Desert_GrassTuft_01"), Model("Desert", "Desert_Agave_01"),
+                                            Model("Desert", "Desert_Scrub_01"), Model("Desert", "Cactus_Barrel_01"), Model("Desert", "Cactus_Prickly_01") }
                     : new[] { Model("Plants", "Grass_Tuft_01"), Model("Plants", "Grass_Tuft_02"), Model("Plants", "Flower_Patch_01"), Model("Plants", "Flower_Daisy_01") })
                     .Where(m => m).ToArray();
                 int plantCount = 0, maxPlants = Mathf.RoundToInt(Mathf.Clamp(area / 600f, 560f, 1200f));
@@ -2219,7 +2257,8 @@ namespace ConductorChaos.EditorTools
 
             void BuildBackdrop()
             {
-                var mountains = new[] { Model("Mountains", "Mountain_Back_01"), Model("Mountains", "Mountain_Back_02"), Model("Mountains", "Mountain_Back_03") }
+                var mountains = (spec.desert ? new[] { Model("Desert", "Mesa_Back_01"), Model("Desert", "Mesa_Back_02"), Model("Desert", "Mesa_Back_03") }
+                    : new[] { Model("Mountains", "Mountain_Back_01"), Model("Mountains", "Mountain_Back_02"), Model("Mountains", "Mountain_Back_03") })
                     .Where(m => m).ToArray();
                 var center = terrainOrigin + new Vector3(terrainSize.x * 0.5f, 0f, terrainSize.z * 0.5f);
                 float rx = terrainSize.x * 0.5f + 80f, rz = terrainSize.z * 0.5f + 80f;

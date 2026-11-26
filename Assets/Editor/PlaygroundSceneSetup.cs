@@ -169,7 +169,8 @@ namespace ConductorChaos.Editor
                 $"Assets/Scenes/{ServiceRun.FirstLevelScene}.unity"
             };
             // Level 2 en 3 (issues #224, #228) gaan mee zodra ze gebouwd zijn (Tools > Conductor Chaos > Level 2/3 bouwen).
-            foreach (string level in new[] { ServiceRun.SecondLevelScene, ServiceRun.ThirdLevelScene, ServiceRun.FourthLevelScene, ServiceRun.FifthLevelScene })
+            foreach (string level in new[] { ServiceRun.SecondLevelScene, ServiceRun.ThirdLevelScene, ServiceRun.FourthLevelScene, ServiceRun.FifthLevelScene,
+                ServiceRun.SixthLevelScene, ServiceRun.SeventhLevelScene })
             {
                 string path = $"Assets/Scenes/{level}.unity";
                 if (AssetDatabase.LoadAssetAtPath<SceneAsset>(path)) scenes = scenes.Append(path).ToArray();

@@ -28,6 +28,8 @@ namespace ConductorChaos.EditorTools
                 ServiceRun.ThirdLevelScene => new[] { "Bergweide", "Windkam" },
                 ServiceRun.FourthLevelScene => new[] { "Sneeuwzicht", "IJsdal" },
                 ServiceRun.FifthLevelScene => new[] { "Beukenwacht" },
+                ServiceRun.SixthLevelScene => new[] { "Bizonvlakte" },
+                ServiceRun.SeventhLevelScene => new[] { "Windmolenput", "Mijnkamp" },
                 _ => null
             };
             if (names == null) return;

@@ -1,0 +1,90 @@
+fileFormatVersion: 2
+guid: 7cbd80b7c1aa75ff96e4501e3960fe9f
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BisonCalf_EyeWhite
+    second: {fileID: 2100000, guid: b07953a925edf3b6725490f4150988f7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BisonCalf_Pupil
+    second: {fileID: 2100000, guid: f979d698187dcb8823ce2ef2ecf610f9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BisonCalf_Mouth
+    second: {fileID: 2100000, guid: fe025ab94b39dbe3111bf4d6a4675685, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BisonCalf_Tongue
+    second: {fileID: 2100000, guid: 66d08d0e9e1248ba9680014317c9da73, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BisonCalf_Coat
+    second: {fileID: 2100000, guid: bbd965940f29e4fac665222caaa775a9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BisonCalf_Mane
+    second: {fileID: 2100000, guid: 1e8ad52eefdc1bd10661f77499501401, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BisonCalf_Muzzle
+    second: {fileID: 2100000, guid: fbe6463d13e6dbeb8e5566e8dd86a2d5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BisonCalf_Nostril
+    second: {fileID: 2100000, guid: a46d7f27492a2bc1de63bad3a5bb707a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BisonCalf_EarInner
+    second: {fileID: 2100000, guid: 8249d1d6a5d6a8109969580c81a19b6e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BisonCalf_Horn
+    second: {fileID: 2100000, guid: dfeaf4dbba2cf8fb748e5216b6a6c014, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BisonCalf_Hoof
+    second: {fileID: 2100000, guid: 3e75e9ffc9c14174609a6ef2b3e7aa31, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BisonCalf_Alert
+    second: {fileID: 2100000, guid: 31e3f47f6078ae811cb3163189d7dd5b, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

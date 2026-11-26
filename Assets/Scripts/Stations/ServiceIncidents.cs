@@ -3,12 +3,18 @@
 //     het spoor. TrainDrive stopt voor alles wat op de rails ligt, dus de crew moet uitstappen en ze opzij duwen.
 //   * Spoorschade: een spoorstuk verderop (Track_Broken_6m met RepairPoint) breekt. Wie eroverheen rijdt ontspoort;
 //     stoppen en de bout met de moersleutel vastslaan. Een spoorschade kan ook een wissel zijn (wisselstoring).
+//   * Kudde (woestijn, levels 6-7): uit het niets stormt een kudde bizons in galop over het spoor, getimed op de trein:
+//     de kudde wacht verborgen tot de trein bij zijn huidige snelheid ongeveer tegelijk met de dieren bij de oversteek
+//     zou zijn. Remt de machinist, dan is de stroom binnen een paar seconden voorbij. Komt de trein te hard aan, dan
+//     bevriezen de dieren die op de rails staan (koppig): duw ze opzij of lok ze weg met hooi. Opgelost als er niemand
+//     meer op of richting het spoor loopt. Er komt bewust geen HUD-melding: je ziet ze aankomen of niet.
 //   * Wisselwaarschuwing (level 3): nadert de trein een wissel die naar het zijspoor staat, dan zegt de HUD het. Puur
 //     weergave; de stand van de wissel zelf is server-autoritatief (TrackSwitch).
 // De server kiest bij het begin welke incidenten deze run gebeuren, start ze en ziet wanneer ze opgelost zijn.
 // Clients krijgen alleen de status (bitmaskers) en tonen een waarschuwing in de HUD.
 using System;
 using System.Collections.Generic;
+using ConductorChaos.Animals;
 using ConductorChaos.Track;
 using Unity.Netcode;
 using UnityEngine;
@@ -45,6 +51,32 @@ namespace ConductorChaos.Stations
         }
 
         [Serializable]
+        public sealed class Herd
+        {
+            public string name = "Overstekende bizons";
+            [Tooltip("Naderingszone: rijdt de trein hierin, dan ligt de kudde op de loer en duikt hij op zodra de timing klopt.")]
+            public BoxCollider trigger;
+            [Tooltip("Per dier: waar het opduikt (de dieren wachten kinematisch, recht eronder, onder de grond).")]
+            public Transform[] start;
+            [Tooltip("Zo lang (s) doet de kudde over de sprint van de opduikplek naar de rails.")]
+            [Min(0.5f)] public float runSeconds = 4.5f;
+            [Tooltip("Komt de trein binnen deze afstand (m) van de oversteek terwijl er dieren op de rails lopen, dan blijven ze staan.")]
+            [Min(5f)] public float freezeDistance = 32f;
+            [Tooltip("De dieren van de kudde (NetworkObject + PlaygroundAnimal); ze grazen tot het incident begint.")]
+            public PlaygroundAnimal[] animals;
+            [Tooltip("Per dier: waar het het spoor oversteekt (op de rails).")]
+            public Transform[] crossing;
+            [Tooltip("Per dier: waar het aan de overkant naartoe rent.")]
+            public Transform[] destination;
+            [Tooltip("Zoveel dieren blijven hoogstens koppig op de rails staan als de trein te hard aankomt.")]
+            [Min(0)] public int stubborn = 2;
+            [Tooltip("Punt op het spoor met forward in rijrichting: hier wordt gemeten of het spoor weer vrij is.")]
+            public Transform site;
+            [Range(0f, 1f)] public float chance = 0.85f;
+            // geen HUD-melding: de kudde zelf (galop, stofwolk) is de waarschuwing
+        }
+
+        [Serializable]
         public sealed class SwitchWarning
         {
             [Tooltip("Rijdt de trein (railpositie) hierin terwijl de wissel verkeerd staat, dan waarschuwt de HUD.")]
@@ -57,6 +89,8 @@ namespace ConductorChaos.Stations
         [SerializeField] private Rockfall[] rockfalls = Array.Empty<Rockfall>();
         [SerializeField] private TrackDamage[] damages = Array.Empty<TrackDamage>();
         [SerializeField] private SwitchWarning[] switchWarnings = Array.Empty<SwitchWarning>();
+        [Tooltip("Kuddes die het spoor oversteken (woestijn). Telt samen met de steenlawines mee tot 16.")]
+        [SerializeField] private Herd[] herds = Array.Empty<Herd>();
         [Tooltip("Minstens zoveel incidenten per run (willekeurig gekozen als het lot er te weinig gaf).")]
         [SerializeField, Min(0)] private int minimumIncidents = 1;
         [Tooltip("Kies één kapotte rail uit alle ingestelde locaties. Wisselstoringen blijven los daarvan.")]
@@ -64,19 +98,22 @@ namespace ConductorChaos.Stations
         [Tooltip("Vliegtijd van een vallend rotsblok tot het spoor (s).")]
         [SerializeField, Min(0.3f)] private float fallTime = 1.15f;
 
-        // bit i = rockfalls[i], bit 16 + j = damages[j]
+        // bit i = rockfalls[i], bit rockfalls.Length + h = herds[h], bit 16 + j = damages[j]
         private readonly NetworkVariable<int> planned = new();
         private readonly NetworkVariable<int> triggered = new();
         private readonly NetworkVariable<int> resolved = new();
         private bool planMade;
+        private int herdArmed, herdFrozen;
         private float nextCheck;
         private readonly HashSet<Rigidbody> fallenObstacles = new();
         internal bool IsFallenObstacle(Rigidbody body) => body && !body.isKinematic && fallenObstacles.Contains(body);
 
         public static ServiceIncidents Active { get; private set; }
 
-        public void Configure(Rockfall[] rockfallSites, TrackDamage[] damageSites, int minimum, SwitchWarning[] warnings = null, bool randomRail = false)
+        public void Configure(Rockfall[] rockfallSites, TrackDamage[] damageSites, int minimum, SwitchWarning[] warnings = null, bool randomRail = false,
+            Herd[] herdSites = null)
         {
+            herds = herdSites ?? Array.Empty<Herd>();
             rockfalls = rockfallSites ?? Array.Empty<Rockfall>();
             damages = damageSites ?? Array.Empty<TrackDamage>();
             minimumIncidents = minimum;
@@ -90,6 +127,11 @@ namespace ConductorChaos.Stations
             if (!IsServer) return;
             planned.Value = triggered.Value = resolved.Value = 0;
             planMade = false;
+            herdArmed = herdFrozen = 0;
+            foreach (var herd in herds)
+                if (herd?.animals != null)
+                    foreach (var animal in herd.animals)
+                        if (animal && animal.TryGetComponent<Rigidbody>(out var hidden)) hidden.isKinematic = true;   // wachten verborgen
             fallenObstacles.Clear();
             foreach (var site in rockfalls)
                 if (site?.rocks != null)
@@ -147,6 +189,8 @@ namespace ConductorChaos.Stations
 
         private static int RockBit(int i) => 1 << i;
         private static int DamageBit(int j) => 1 << (16 + j);
+        private int HerdBit(int h) => 1 << (rockfalls.Length + h);
+        private bool HerdSlot(int h) => rockfalls.Length + h < 16;
 
         private void FixedUpdate()
         {
@@ -161,6 +205,14 @@ namespace ConductorChaos.Stations
                 if (Due(RockBit(i), rockfalls[i]?.trigger, rail)) StartRockfall(i);
             for (int j = 0; j < damages.Length && j < 15; j++)
                 if (DamageDue(j, rail)) StartDamage(j);
+            for (int h = 0; h < herds.Length && HerdSlot(h); h++)
+            {
+                if (Due(HerdBit(h), herds[h]?.trigger, rail)) herdArmed |= 1 << h;
+                if ((herdArmed & (1 << h)) != 0 && (triggered.Value & HerdBit(h)) == 0 && HerdTimingRight(herds[h], rail, run.Train.ServiceSpeed))
+                    StartHerd(h);
+                if ((triggered.Value & HerdBit(h)) != 0 && (herdFrozen & (1 << h)) == 0 && FreezeHerd(herds[h], rail, run.Train.ServiceSpeed))
+                    herdFrozen |= 1 << h;
+            }
 
             if (Time.time < nextCheck) return;
             nextCheck = Time.time + 0.25f;
@@ -169,6 +221,8 @@ namespace ConductorChaos.Stations
                 if ((triggered.Value & RockBit(i)) != 0 && TrackClear(rockfalls[i])) done |= RockBit(i);
             for (int j = 0; j < damages.Length && j < 15; j++)
                 if ((triggered.Value & DamageBit(j)) != 0 && damages[j]?.repair && !damages[j].repair.IsBroken) done |= DamageBit(j);
+            for (int h = 0; h < herds.Length && HerdSlot(h); h++)
+                if ((triggered.Value & HerdBit(h)) != 0 && HerdClear(herds[h])) done |= HerdBit(h);
             if (done != resolved.Value) resolved.Value = done;
         }
 
@@ -211,7 +265,16 @@ namespace ConductorChaos.Stations
                 possible |= bit;
                 if (UnityEngine.Random.value < site.chance) mask |= bit;
             }
+            int herdSites = 0;
+            for (int h = 0; h < herds.Length && HerdSlot(h); h++)
+            {
+                if (!Usable(herds[h])) continue;
+                herdSites |= HerdBit(h);
+                possible |= HerdBit(h);
+                if (UnityEngine.Random.value < herds[h].chance) mask |= HerdBit(h);
+            }
             if (railSites != 0) mask |= PickBit(railSites);
+            if ((mask & herdSites) == 0 && herdSites != 0) mask |= PickBit(herdSites);     // de woestijn heeft altijd een kudde
             string scene = gameObject.scene.name;
             if (scene == ServiceRun.SecondLevelScene && (mask & fallingSites) == 0 && fallingSites != 0)
                 mask |= PickBit(fallingSites);
@@ -234,6 +297,74 @@ namespace ConductorChaos.Stations
 
         private static bool Usable(Rockfall site) => site != null && site.trigger && site.site && site.rocks != null &&
             site.landing != null && site.rocks.Length > 0 && site.landing.Length >= site.rocks.Length;
+
+        private static bool Usable(Herd herd) => herd != null && herd.trigger && herd.site && herd.animals != null &&
+            herd.animals.Length > 0 && herd.crossing != null && herd.destination != null && herd.start != null &&
+            herd.crossing.Length >= herd.animals.Length && herd.destination.Length >= herd.animals.Length &&
+            herd.start.Length >= herd.animals.Length;
+
+        // De kudde duikt op als de trein, bij zijn huidige snelheid, ongeveer tegelijk met de eerste dieren bij de
+        // oversteek zou zijn (of als hij er al dichtbij is). Staat de trein stil, dan wacht de kudde.
+        private static bool HerdTimingRight(Herd herd, Vector3 rail, float trainSpeed)
+        {
+            float distance = Vector3.ProjectOnPlane(herd.site.position - rail, Vector3.up).magnitude;
+            if (distance < 40f) return true;
+            return trainSpeed > 0.5f && distance / trainSpeed <= herd.runSeconds + 2.5f;
+        }
+
+        private void StartHerd(int h)
+        {
+            triggered.Value |= HerdBit(h);
+            var herd = herds[h];
+            for (int k = 0; k < herd.animals.Length; k++)
+            {
+                var animal = herd.animals[k];
+                if (!animal || !herd.crossing[k] || !herd.destination[k] || !herd.start[k]) continue;
+                Vector3 to = herd.destination[k].position;
+                animal.ServerEmerge(herd.start[k].position, Quaternion.LookRotation(Vector3.ProjectOnPlane(to - herd.start[k].position, Vector3.up)));
+                // in golfjes: de voorste groep meteen, de rest (en de kalveren) vlak erachter
+                float delay = k * 0.28f + UnityEngine.Random.Range(0f, 0.35f);
+                animal.ServerCross(herd.crossing[k].position, to, false, delay);
+            }
+        }
+
+        // Trein komt te hard aan (binnen ~3,5 s bij de oversteek) terwijl er nog dieren over de rails stormen: de
+        // dichtstbijzijnde blijven staan. Wie op tijd remt, laat de stroom gewoon voorbijtrekken.
+        private static bool FreezeHerd(Herd herd, Vector3 rail, float trainSpeed)
+        {
+            Vector3 site = herd.site.position;
+            float distance = Vector3.ProjectOnPlane(site - rail, Vector3.up).magnitude;
+            if (distance > herd.freezeDistance || (distance > 10f && distance / Mathf.Max(trainSpeed, 0.1f) > 3.5f)) return false;
+            Vector3 along = Vector3.ProjectOnPlane(herd.site.forward, Vector3.up).normalized;
+            var onRails = new List<(PlaygroundAnimal animal, float lateral)>();
+            bool stillComing = false;
+            foreach (var animal in herd.animals)
+            {
+                if (!animal || !animal.IsStampeding) continue;
+                stillComing = true;
+                Vector3 offset = Vector3.ProjectOnPlane(animal.transform.position - site, Vector3.up);
+                float lengthwise = Vector3.Dot(offset, along);
+                float lateral = (offset - along * lengthwise).magnitude;
+                if (Mathf.Abs(lengthwise) < 22f && lateral < 4f) onRails.Add((animal, lateral));
+            }
+            if (onRails.Count == 0) return !stillComing;           // de stroom is al voorbij: niets meer te bevriezen
+            onRails.Sort((a, b) => a.lateral.CompareTo(b.lateral));
+            for (int i = 0; i < onRails.Count && i < Mathf.Max(1, herd.stubborn); i++) onRails[i].animal.ServerHold();
+            return true;
+        }
+
+        // Klaar als geen dier meer op weg is naar of staat op het spoor, en er niets meer op de rails staat.
+        private static bool HerdClear(Herd herd)
+        {
+            var bodies = new List<Rigidbody>();
+            foreach (var animal in herd.animals)
+            {
+                if (!animal) continue;
+                if (animal.CrossingBusy) return false;
+                if (animal.TryGetComponent<Rigidbody>(out var body)) bodies.Add(body);
+            }
+            return TrackClear(herd.site, bodies);
+        }
 
         private static int CountBits(int mask)
         {
@@ -269,12 +400,13 @@ namespace ConductorChaos.Stations
         }
 
         // Ligt er nog een rotsblok op of vlak naast de rails bij deze plek?
-        private static bool TrackClear(Rockfall site)
+        private static bool TrackClear(Rockfall site) => site?.site == null || site.rocks == null || TrackClear(site.site, site.rocks);
+
+        private static bool TrackClear(Transform place, IEnumerable<Rigidbody> obstacles)
         {
-            if (site?.site == null || site.rocks == null) return true;
-            Vector3 origin = site.site.position;
-            Vector3 along = Vector3.ProjectOnPlane(site.site.forward, Vector3.up).normalized;
-            foreach (var rock in site.rocks)
+            Vector3 origin = place.position;
+            Vector3 along = Vector3.ProjectOnPlane(place.forward, Vector3.up).normalized;
+            foreach (var rock in obstacles)
             {
                 if (!rock) continue;
                 Vector3 offset = rock.worldCenterOfMass - origin;

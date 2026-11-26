@@ -1,6 +1,7 @@
 // Conductor Chaos — prefabs voor de dieren (issue #236): Conductor Chaos > Art > Animals > Build Animal Prefabs.
 //   Cow, Sheep        lopen rond (PlaygroundAnimal, Wander)
 //   Cow_Blocker       koppige koe voor op het spoor (Blocker): zwaarder, zet zich harder schrap
+//   Bison, Bison_Calf woestijnkudde (levels 6-7): zwaar en sterk, rent hard; ServiceIncidents laat ze oversteken
 //   Prop_HayBale      losse hooibaal (pakken en dragen) die dieren lokt (AnimalLure)
 // Elk dier is een eigen netwerkobject (NetworkObject + NetworkTransform + NetworkRigidbody): zet ze gewoon in de
 // scène. Botsvormen komen uit de modellen: een capsule om de romp en een bol om de kop; de poten hebben er geen,
@@ -29,13 +30,16 @@ namespace ConductorChaos.EditorTools
             made += MakeAnimal("Cow", "Cow", 140f, PlaygroundAnimal.Temperament.Wander, 1.6f, 0.65f, 0.42f) ? 1 : 0;
             made += MakeAnimal("Cow", "Cow_Blocker", 180f, PlaygroundAnimal.Temperament.Blocker, 3.2f, 0.45f, 0.42f) ? 1 : 0;
             made += MakeAnimal("Sheep", "Sheep", 45f, PlaygroundAnimal.Temperament.Wander, 1.2f, 0.75f, 0.30f) ? 1 : 0;
+            // bizon: zwaar en zet zich hard schrap (twee à drie spelers nodig), rent bij de oversteek
+            made += MakeAnimal("Bison", "Bison", 260f, PlaygroundAnimal.Temperament.Wander, 3.6f, 0.7f, 0.62f, 3.4f) ? 1 : 0;
+            made += MakeAnimal("Bison_Calf", "Bison_Calf", 55f, PlaygroundAnimal.Temperament.Wander, 1.4f, 0.75f, 0.36f, 3.0f) ? 1 : 0;
             made += MakeHayBale() ? 1 : 0;
             AssetDatabase.SaveAssets();
             Debug.Log($"[Animals] {made} prefabs gemaakt in {PrefabDir}.");
         }
 
         static bool MakeAnimal(string model, string name, float mass, PlaygroundAnimal.Temperament temperament, float brace,
-            float walkSpeed, float stride)
+            float walkSpeed, float stride, float runSpeed = 1.8f)
         {
             var asset = AssetDatabase.LoadAssetAtPath<GameObject>($"{ModelDir}/{model}/{model}.fbx");
             if (!asset) { Debug.LogWarning($"[Animals] Model ontbreekt: {model}"); return false; }
@@ -60,6 +64,7 @@ namespace ConductorChaos.EditorTools
                 so.FindProperty("brace").floatValue = brace;
                 so.FindProperty("walkSpeed").floatValue = walkSpeed;
                 so.FindProperty("stride").floatValue = stride;
+                so.FindProperty("runSpeed").floatValue = runSpeed;
                 if (model == "Sheep") so.FindProperty("roamRadius").floatValue = 4f;
                 so.ApplyModifiedPropertiesWithoutUndo();
                 go.name = name;

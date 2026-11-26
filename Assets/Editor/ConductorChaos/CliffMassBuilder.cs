@@ -62,9 +62,9 @@ namespace ConductorChaos.EditorTools
 
             var mats = new[]
             {
-                Load(mass.stone ? "M_Env_CliffStone" : "M_Env_Cliff"),
-                Load(mass.snow ? "M_Env_SnowSoft" : "M_Env_Grass"),
-                Load(mass.snow ? "M_Env_SnowSoft" : "M_Env_Bush"),
+                Load(mass.desert ? (mass.stone ? "M_Env_DesertCliffStone" : "M_Env_DesertCliff") : mass.stone ? "M_Env_CliffStone" : "M_Env_Cliff"),
+                Load(mass.snow ? "M_Env_SnowSoft" : mass.desert ? "M_Env_DesertSand" : "M_Env_Grass"),
+                Load(mass.snow ? "M_Env_SnowSoft" : mass.desert ? "M_Env_DesertScrub" : "M_Env_Bush"),
             };
             if (!SameMaterials(mr.sharedMaterials, mats)) mr.sharedMaterials = mats;
 

@@ -1,0 +1,923 @@
+{
+  "assets": {
+    "Cactus_Saguaro_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Cactus_Saguaro_01.fbx",
+      "tris": 2152,
+      "min": [
+        -1.017,
+        -0.14,
+        -0.296
+      ],
+      "max": [
+        1.035,
+        3.311,
+        0.488
+      ],
+      "materials": [
+        "M_Env_Cactus",
+        "M_Env_CactusFlower",
+        "M_Env_CactusSpine",
+        "M_Env_FlowerHeart"
+      ]
+    },
+    "Cactus_Saguaro_02": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Cactus_Saguaro_02.fbx",
+      "tris": 3136,
+      "min": [
+        -1.071,
+        -0.14,
+        -0.675
+      ],
+      "max": [
+        1.13,
+        4.42,
+        0.33
+      ],
+      "materials": [
+        "M_Env_Cactus",
+        "M_Env_CactusFlower",
+        "M_Env_CactusSpine",
+        "M_Env_FlowerHeart"
+      ]
+    },
+    "Cactus_Saguaro_Small_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Cactus_Saguaro_Small_01.fbx",
+      "tris": 1138,
+      "min": [
+        -0.21,
+        -0.14,
+        -0.21
+      ],
+      "max": [
+        0.682,
+        1.799,
+        0.212
+      ],
+      "materials": [
+        "M_Env_Cactus",
+        "M_Env_CactusFlower",
+        "M_Env_CactusSpine",
+        "M_Env_FlowerHeart"
+      ]
+    },
+    "Cactus_Barrel_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Cactus_Barrel_01.fbx",
+      "tris": 1736,
+      "min": [
+        -0.388,
+        -0.05,
+        -0.379
+      ],
+      "max": [
+        0.404,
+        0.674,
+        0.394
+      ],
+      "materials": [
+        "M_Env_Cactus",
+        "M_Env_CactusFlower",
+        "M_Env_CactusSpine",
+        "M_Env_FlowerHeart"
+      ]
+    },
+    "Cactus_Prickly_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Cactus_Prickly_01.fbx",
+      "tris": 1816,
+      "min": [
+        -0.472,
+        -0.03,
+        -0.154
+      ],
+      "max": [
+        0.593,
+        1.529,
+        0.327
+      ],
+      "materials": [
+        "M_Env_Cactus",
+        "M_Env_CactusFlower",
+        "M_Env_CactusSpine",
+        "M_Env_FlowerHeart"
+      ]
+    },
+    "Desert_Agave_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Desert_Agave_01.fbx",
+      "tris": 248,
+      "min": [
+        -0.479,
+        -0.052,
+        -0.43
+      ],
+      "max": [
+        0.416,
+        0.635,
+        0.439
+      ],
+      "materials": [
+        "M_Env_Agave"
+      ]
+    },
+    "Desert_Scrub_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Desert_Scrub_01.fbx",
+      "tris": 468,
+      "min": [
+        -0.552,
+        -0.063,
+        -0.508
+      ],
+      "max": [
+        0.593,
+        0.778,
+        0.562
+      ],
+      "materials": [
+        "M_Env_DesertScrub",
+        "M_Env_DryWood"
+      ]
+    },
+    "Desert_GrassTuft_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Desert_GrassTuft_01.fbx",
+      "tris": 44,
+      "min": [
+        -0.249,
+        -0.02,
+        -0.265
+      ],
+      "max": [
+        0.285,
+        0.434,
+        0.28
+      ],
+      "materials": [
+        "M_Env_Agave"
+      ]
+    },
+    "Rock_Desert_Small_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Rock_Desert_Small_01.fbx",
+      "tris": 36,
+      "min": [
+        -0.303,
+        -0.049,
+        -0.308
+      ],
+      "max": [
+        0.314,
+        0.313,
+        0.329
+      ],
+      "materials": [
+        "M_Env_DesertRock"
+      ]
+    },
+    "Rock_Desert_Medium_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Rock_Desert_Medium_01.fbx",
+      "tris": 72,
+      "min": [
+        -0.903,
+        -0.098,
+        -0.758
+      ],
+      "max": [
+        1.124,
+        0.679,
+        0.79
+      ],
+      "materials": [
+        "M_Env_DesertRock"
+      ]
+    },
+    "Rock_Desert_Large_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Rock_Desert_Large_01.fbx",
+      "tris": 72,
+      "min": [
+        -1.926,
+        -0.196,
+        -1.361
+      ],
+      "max": [
+        2.228,
+        1.54,
+        1.783
+      ],
+      "materials": [
+        "M_Env_DesertRock"
+      ]
+    },
+    "Rock_Desert_Boulder_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Rock_Desert_Boulder_01.fbx",
+      "tris": 56,
+      "min": [
+        -0.473,
+        0.0,
+        -0.561
+      ],
+      "max": [
+        0.479,
+        0.912,
+        0.474
+      ],
+      "materials": [
+        "M_Env_DesertRock"
+      ]
+    },
+    "Hoodoo_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Hoodoo_01.fbx",
+      "tris": 290,
+      "min": [
+        -1.806,
+        -0.4,
+        -1.542
+      ],
+      "max": [
+        1.709,
+        6.675,
+        1.636
+      ],
+      "materials": [
+        "M_Env_DesertCliff",
+        "M_Env_DesertCliffStone",
+        "M_Env_DesertSand"
+      ]
+    },
+    "Hoodoo_02": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Hoodoo_02.fbx",
+      "tris": 332,
+      "min": [
+        -2.278,
+        -0.4,
+        -2.256
+      ],
+      "max": [
+        2.383,
+        9.776,
+        2.167
+      ],
+      "materials": [
+        "M_Env_DesertCliff",
+        "M_Env_DesertCliffStone",
+        "M_Env_DesertSand"
+      ]
+    },
+    "Rock_Arch_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Rock_Arch_01.fbx",
+      "tris": 864,
+      "min": [
+        -11.23,
+        -2.657,
+        -2.937
+      ],
+      "max": [
+        11.425,
+        14.242,
+        3.263
+      ],
+      "materials": [
+        "M_Env_DesertCliff",
+        "M_Env_DesertCliffStone",
+        "M_Env_DesertRock",
+        "M_Env_DesertSand"
+      ]
+    },
+    "Mesa_Back_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Mesa_Back_01.fbx",
+      "tris": 99,
+      "min": [
+        -26.659,
+        -3.0,
+        -14.677
+      ],
+      "max": [
+        24.958,
+        26.01,
+        15.068
+      ],
+      "materials": [
+        "M_Env_DesertMesaFar"
+      ]
+    },
+    "Mesa_Back_02": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Mesa_Back_02.fbx",
+      "tris": 63,
+      "min": [
+        -35.642,
+        -3.0,
+        -17.88
+      ],
+      "max": [
+        42.713,
+        20.01,
+        17.701
+      ],
+      "materials": [
+        "M_Env_DesertMesaFar"
+      ]
+    },
+    "Mesa_Back_03": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Mesa_Back_03.fbx",
+      "tris": 88,
+      "min": [
+        -21.398,
+        -3.0,
+        -9.994
+      ],
+      "max": [
+        19.069,
+        32.01,
+        9.179
+      ],
+      "materials": [
+        "M_Env_DesertMesaFar"
+      ]
+    },
+    "Skull_Bull_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Skull_Bull_01.fbx",
+      "tris": 762,
+      "min": [
+        -0.481,
+        -0.03,
+        -0.193
+      ],
+      "max": [
+        0.482,
+        0.406,
+        0.377
+      ],
+      "materials": [
+        "M_Env_Bone",
+        "M_Env_BoneHorn"
+      ]
+    },
+    "Tumbleweed_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Tumbleweed_01.fbx",
+      "tris": 2276,
+      "min": [
+        -0.45,
+        0.0,
+        -0.486
+      ],
+      "max": [
+        0.489,
+        0.914,
+        0.426
+      ],
+      "materials": [
+        "M_Env_Tumbleweed"
+      ]
+    },
+    "Mine_Entrance_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Mine_Entrance_01.fbx",
+      "tris": 2472,
+      "min": [
+        -6.905,
+        -1.91,
+        -3.333
+      ],
+      "max": [
+        7.068,
+        6.502,
+        0.504
+      ],
+      "materials": [
+        "M_Env_DesertCliff",
+        "M_Env_IronBand",
+        "M_Env_Lantern",
+        "M_Env_MineDark",
+        "M_Env_Timber",
+        "M_Env_TimberDark"
+      ]
+    },
+    "MineCart_Gold_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/MineCart_Gold_01.fbx",
+      "tris": 2424,
+      "min": [
+        -0.6,
+        0.0,
+        -0.84
+      ],
+      "max": [
+        0.6,
+        0.956,
+        0.84
+      ],
+      "materials": [
+        "M_Env_Gold",
+        "M_Env_IronBand",
+        "M_Env_TimberDark"
+      ]
+    },
+    "Mine_Crane_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Mine_Crane_01.fbx",
+      "tris": 1072,
+      "min": [
+        -0.958,
+        -0.3,
+        -0.659
+      ],
+      "max": [
+        2.8,
+        4.4,
+        0.659
+      ],
+      "materials": [
+        "M_Env_IronBand",
+        "M_Env_Rope",
+        "M_Env_Timber",
+        "M_Env_TimberDark"
+      ]
+    },
+    "Sign_BisonCrossing_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Sign_BisonCrossing_01.fbx",
+      "tris": 508,
+      "min": [
+        -0.69,
+        -0.4,
+        -0.18
+      ],
+      "max": [
+        0.69,
+        2.84,
+        0.075
+      ],
+      "materials": [
+        "M_Env_IronBand",
+        "M_Env_SignBlack",
+        "M_Env_SignYellow",
+        "M_Env_Timber"
+      ]
+    },
+    "Sign_Chevron_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Sign_Chevron_01.fbx",
+      "tris": 564,
+      "min": [
+        -1.0,
+        -0.4,
+        -0.14
+      ],
+      "max": [
+        1.0,
+        1.62,
+        0.075
+      ],
+      "materials": [
+        "M_Env_SignBlack",
+        "M_Env_SignYellow",
+        "M_Env_Timber"
+      ]
+    },
+    "Flag_Pennant_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Flag_Pennant_01.fbx",
+      "tris": 164,
+      "min": [
+        -0.067,
+        -0.3,
+        -0.067
+      ],
+      "max": [
+        1.1,
+        3.5,
+        0.067
+      ],
+      "materials": [
+        "M_Env_FlagRed",
+        "M_Env_Gold",
+        "M_Env_TimberDark"
+      ]
+    },
+    "Windmill_01": {
+      "fbx": "Assets/Art/Models/Environment/Desert/Windmill_01.fbx",
+      "tris": 3708,
+      "min": [
+        -1.55,
+        -0.311,
+        -2.001
+      ],
+      "max": [
+        1.55,
+        9.506,
+        1.416
+      ],
+      "materials": [
+        "M_Env_IronBand",
+        "M_Env_RustBlade",
+        "M_Env_Timber",
+        "M_Env_TimberDark"
+      ]
+    }
+  },
+  "materials": {
+    "M_Env_DesertRock": {
+      "base": "#A54C49",
+      "ramp": [
+        "#6A4052",
+        "#863A3C",
+        "#A54C49",
+        "#C56554",
+        "#D07C6F"
+      ],
+      "rampShift": 0.02,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.7,
+        "cellSize": 0.9,
+        "rim": 0.22
+      }
+    },
+    "M_Env_DesertCliff": {
+      "base": "#A54C49",
+      "ramp": [
+        "#6A4052",
+        "#863A3C",
+        "#A54C49",
+        "#C56554",
+        "#D07C6F"
+      ],
+      "rampShift": 0.06,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.55,
+        "cellSize": 1.1,
+        "rim": 0.22,
+        "strata": 1.15
+      }
+    },
+    "M_Env_DesertCliffStone": {
+      "base": "#E77B4C",
+      "ramp": [
+        "#7D4B62",
+        "#C4613B",
+        "#E77B4C",
+        "#F7935E",
+        "#FAA572"
+      ],
+      "rampShift": -0.02,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.55,
+        "cellSize": 1.1,
+        "rim": 0.22,
+        "strata": 0.9
+      }
+    },
+    "M_Env_DesertMesaFar": {
+      "base": "#C56554",
+      "ramp": [
+        "#6A4052",
+        "#863A3C",
+        "#A54C49",
+        "#C56554",
+        "#D07C6F"
+      ],
+      "rampShift": 0.16,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 6.0,
+        "rim": 0.3,
+        "edge": 0.6,
+        "strata": 4.5
+      }
+    },
+    "M_Env_DesertSand": {
+      "base": "#FBB76B",
+      "ramp": [
+        "#B0685A",
+        "#E58C4C",
+        "#FBB76B",
+        "#FDC679",
+        "#FECE84"
+      ],
+      "rampShift": 0.02,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.7,
+        "cellSize": 0.9
+      }
+    },
+    "M_Env_DesertScrub": {
+      "base": "#7B6B3A",
+      "ramp": [
+        "#574D2C",
+        "#655931",
+        "#706236",
+        "#7B6B3A",
+        "#9A8548"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.5
+      }
+    },
+    "M_Env_Cactus": {
+      "base": "#82A740",
+      "ramp": [
+        "#6F8C35",
+        "#7A9B3C",
+        "#82A740",
+        "#92BC4B",
+        "#A3D25B"
+      ],
+      "rampShift": -0.04,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 0.5,
+        "rim": 0.28
+      }
+    },
+    "M_Env_CactusSpine": {
+      "base": "#E7CCBD",
+      "ramp": [
+        "#DABDAE",
+        "#E1C5B5",
+        "#E4C9B8",
+        "#E7CCBD",
+        "#EBD1C1"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.1
+      }
+    },
+    "M_Env_CactusFlower": {
+      "base": "#E6586D",
+      "ramp": [
+        "#8A2440",
+        "#D42A43",
+        "#D14959",
+        "#E6586D",
+        "#F2617B"
+      ],
+      "rampShift": 0.04,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.2
+      }
+    },
+    "M_Env_Agave": {
+      "base": "#A1B044",
+      "ramp": [
+        "#566D3A",
+        "#6B7F38",
+        "#8B9F3B",
+        "#A1B044",
+        "#ADBC4A"
+      ],
+      "rampShift": 0.12,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 0.4,
+        "rim": 0.25
+      }
+    },
+    "M_Env_DryWood": {
+      "base": "#9A6146",
+      "ramp": [
+        "#885642",
+        "#9A6146",
+        "#DB945C",
+        "#EBA462",
+        "#F4B06C"
+      ],
+      "rampShift": -0.22,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.4,
+        "cellSize": 0.4
+      }
+    },
+    "M_Env_Tumbleweed": {
+      "base": "#EBA462",
+      "ramp": [
+        "#885642",
+        "#9A6146",
+        "#DB945C",
+        "#EBA462",
+        "#F4B06C"
+      ],
+      "rampShift": -0.04,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.3,
+        "cellSize": 0.3,
+        "rim": 0.2
+      }
+    },
+    "M_Env_Bone": {
+      "base": "#E7CCBD",
+      "ramp": [
+        "#DABDAE",
+        "#E1C5B5",
+        "#E4C9B8",
+        "#E7CCBD",
+        "#EBD1C1"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.3,
+        "cellSize": 0.3
+      }
+    },
+    "M_Env_BoneHorn": {
+      "base": "#643C39",
+      "ramp": [
+        "#392828",
+        "#583430",
+        "#603935",
+        "#643C39",
+        "#714644"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0
+      }
+    },
+    "M_Env_Timber": {
+      "base": "#DB945C",
+      "ramp": [
+        "#885642",
+        "#9A6146",
+        "#DB945C",
+        "#EBA462",
+        "#F4B06C"
+      ],
+      "rampShift": -0.16,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.6,
+        "cellSize": 0.5,
+        "grime": 0.3
+      }
+    },
+    "M_Env_TimberDark": {
+      "base": "#8D543A",
+      "ramp": [
+        "#6C422A",
+        "#814C32",
+        "#8D543A",
+        "#A56945",
+        "#E59843"
+      ],
+      "rampShift": -0.12,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.5,
+        "cellSize": 0.5,
+        "grime": 0.3
+      }
+    },
+    "M_Env_IronBand": {
+      "base": "#7B7582",
+      "ramp": [
+        "#6F696E",
+        "#7B7582",
+        "#8E8796",
+        "#958E9C",
+        "#B5AAAC"
+      ],
+      "rampShift": -0.2,
+      "smoothness": 0.2,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.3
+      }
+    },
+    "M_Env_RustBlade": {
+      "base": "#A3685D",
+      "ramp": [
+        "#503330",
+        "#995F53",
+        "#A3685D",
+        "#B27261",
+        "#BB8472"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.3,
+        "cellSize": 0.6
+      }
+    },
+    "M_Env_MineDark": {
+      "base": "#351B13",
+      "ramp": [
+        "#1C0F0E",
+        "#291D1B",
+        "#351B13",
+        "#382520",
+        "#5A4038"
+      ],
+      "rampShift": -0.1,
+      "smoothness": 0.0,
+      "opts": {
+        "cells": 0.0,
+        "flat": 0.8,
+        "rim": 0.0,
+        "edge": 0.0
+      }
+    },
+    "M_Env_Lantern": {
+      "base": "#FEECA1",
+      "ramp": [
+        "#F9DA7C",
+        "#FDE080",
+        "#FEECA1",
+        "#FEF2B0",
+        "#FFF8DA"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "emissive": 1.0,
+        "cells": 0.0
+      }
+    },
+    "M_Env_Gold": {
+      "base": "#FBBA39",
+      "ramp": [
+        "#9D662F",
+        "#AD7031",
+        "#DA993A",
+        "#FBBA39",
+        "#FCCF53"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.4,
+      "opts": {
+        "cells": 0.0,
+        "spec": 1.4,
+        "rim": 0.4
+      }
+    },
+    "M_Env_Rope": {
+      "base": "#EFBF86",
+      "ramp": [
+        "#C2925E",
+        "#DDAC73",
+        "#EFBF86",
+        "#F4C892",
+        "#FCD8A4"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0
+      }
+    },
+    "M_Env_SignYellow": {
+      "base": "#F2B23A",
+      "ramp": [
+        "#853A33",
+        "#C28C2F",
+        "#C6902F",
+        "#F2B23A",
+        "#FABF34"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.15
+      }
+    },
+    "M_Env_SignBlack": {
+      "base": "#382520",
+      "ramp": [
+        "#1C0F0E",
+        "#291D1B",
+        "#351B13",
+        "#382520",
+        "#5A4038"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "rim": 0.1
+      }
+    },
+    "M_Env_FlagRed": {
+      "base": "#CD4C2C",
+      "ramp": [
+        "#9E3A22",
+        "#B8432A",
+        "#CD4C2C",
+        "#E06A48",
+        "#E79E80"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.05,
+      "opts": {
+        "cells": 0.0,
+        "cull": 0.0
+      }
+    }
+  }
+}
