@@ -51,6 +51,8 @@ namespace ConductorChaos.Playground
                 return;
             }
             persistentHost = this;
+            // A host in another window must keep simulating the shared world, and a client must keep its connection.
+            Application.runInBackground = true;
             manager = GetComponent<NetworkManager>();
             var freightPrefab = Resources.Load<GameObject>("ServiceFreightWagon");
             if (freightPrefab)

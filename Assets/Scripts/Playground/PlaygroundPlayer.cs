@@ -1065,7 +1065,9 @@ namespace ConductorChaos.Playground
                 rigid = arm.gameObject.AddComponent<Rigidbody>();
                 rigid.mass = 0.35f;
                 rigid.isKinematic = !server;
-                rigid.interpolation = RigidbodyInterpolation.Interpolate;
+                // Clients move the arm with its NetworkTransform-driven parent; interpolating a kinematic child
+                // writes stale physics poses back and leaves the hand metres behind the body.
+                rigid.interpolation = server ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
                 collider = arm.gameObject.AddComponent<CapsuleCollider>();
                 collider.direction = 1;
                 // Keep the shoulder clear of the torso; the forearm/hand remains
