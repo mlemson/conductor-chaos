@@ -17,6 +17,7 @@ namespace ConductorChaos.Playground
         private readonly NetworkVariable<byte> coldPercent = new();
         [SerializeField] private GameObject[] stopModels;
         private readonly NetworkVariable<byte> stopAppearance = new();
+        private readonly NetworkVariable<byte> look = new();
         private byte initialStopAppearance;
         internal int StopAppearanceCount => (stopModels?.Length ?? 0) + 1;
         internal void SelectStopAppearance(byte variant) => initialStopAppearance = variant;
@@ -79,6 +80,11 @@ namespace ConductorChaos.Playground
                 foreach (Transform part in model.GetComponentsInChildren<Transform>(true))
                 {
                     if (part.name == "Arm_L") left = part;
+            // Look (kleding/haar/hoed): de server kiest, iedereen kleedt het model hetzelfde aan.
+            var wardrobe = PassengerWardrobe.Load();
+            int kind = wardrobe && model ? wardrobe.KindOf(model) : -1;
+            if (IsServer) look.Value = (byte)Random.Range(0, (wardrobe ? wardrobe.LookCount(kind) : 0) + 1);
+            if (wardrobe && model) wardrobe.Dress(model, kind, look.Value);
                     if (part.name == "Arm_R") right = part;
                 }
             if (!model || !left || !right) { Debug.LogError("Passenger model or arm anchors missing.", this); return; }

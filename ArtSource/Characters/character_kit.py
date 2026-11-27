@@ -301,8 +301,9 @@ def tube(points, radius, mat, n=None, seg=10, smooth=True, r_end=None):
     return mesh
 
 
-def blob(spheres, mat, spacing=0.011, k=0.03):
-    """Gladde massa uit overlappende bollen [(centrum, straal)], als één gesloten oppervlak."""
+def blob(spheres, mat, spacing=0.011, k=0.03, margin=0.03):
+    """Gladde massa uit overlappende bollen [(centrum, straal)], als één gesloten oppervlak.
+    margin: ruimte rond de bollen; veel overlappende bollen zwellen (~k*ln N) en worden anders afgesneden."""
     C = np.array([s[0] for s in spheres], float)
     R = np.array([s[1] for s in spheres], float)
 
@@ -315,8 +316,8 @@ def blob(spheres, mat, spacing=0.011, k=0.03):
         s = np.exp(-(d - m[:, None]) / k).sum(1)
         return (m - k * np.log(s)).reshape(shp)
 
-    lo = (C - R[:, None]).min(0) - 0.03
-    hi = (C + R[:, None]).max(0) + 0.03
+    lo = (C - R[:, None]).min(0) - margin
+    hi = (C + R[:, None]).max(0) + margin
     xs, ys, zs = (np.arange(lo[a], hi[a] + spacing, spacing) for a in range(3))
     verts, faces = implicit_body.polygonize(fld, xs, ys, zs)
     V = np.asarray(verts)

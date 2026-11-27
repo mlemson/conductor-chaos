@@ -1,0 +1,453 @@
+{
+  "model": "Musician",
+  "height_m": 1.1,
+  "stats": {
+    "parts": 29,
+    "tris": 49008,
+    "verts": 24694,
+    "materials": 24
+  },
+  "materials": {
+    "M_Musician_Skin": {
+      "base": "#DB9966",
+      "ramp": [
+        "#BA7756",
+        "#D28658",
+        "#DB9966",
+        "#E7A773",
+        "#EFB27C"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1
+      }
+    },
+    "M_Musician_EyeWhite": {
+      "base": "#FDEEDC",
+      "ramp": [
+        "#352F3C",
+        "#BDABC1",
+        "#DCC7C5",
+        "#FDEEDC",
+        "#FDF6E8"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.35,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.45,
+        "noShadow": true
+      }
+    },
+    "M_Musician_Pupil": {
+      "base": "#0D0B0C",
+      "ramp": [
+        "#1C0F0E",
+        "#291D1B",
+        "#351B13",
+        "#382520",
+        "#5A4038"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.45,
+      "opts": {
+        "spec": 0.25,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "noShadow": true
+      }
+    },
+    "M_Musician_Mouth": {
+      "base": "#662C23",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": -0.55,
+      "smoothness": 0.2,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_Tongue": {
+      "base": "#B84A3C",
+      "ramp": [
+        "#50221A",
+        "#662C23",
+        "#AB4337",
+        "#B84A3C",
+        "#C15648"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_Shirt": {
+      "base": "#F4DCC0",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.3,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1
+      }
+    },
+    "M_Musician_ShirtDark": {
+      "base": "#F2D8BB",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_Vest": {
+      "base": "#5B6C41",
+      "ramp": [
+        "#4F5F3A",
+        "#576840",
+        "#5B6C41",
+        "#5E6F41",
+        "#647544"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.3
+      }
+    },
+    "M_Musician_VestDark": {
+      "base": "#576840",
+      "ramp": [
+        "#4F5F3A",
+        "#576840",
+        "#5B6C41",
+        "#5E6F41",
+        "#647544"
+      ],
+      "rampShift": -0.25,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_Button": {
+      "base": "#DA993A",
+      "ramp": [
+        "#9D662F",
+        "#AD7031",
+        "#DA993A",
+        "#FBBA39",
+        "#FCCF53"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.35,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_Trousers": {
+      "base": "#372B47",
+      "ramp": [
+        "#221B2C",
+        "#2F253C",
+        "#372B47",
+        "#3C2D4C",
+        "#574E6C"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2
+      }
+    },
+    "M_Musician_Shoe": {
+      "base": "#503936",
+      "ramp": [
+        "#3E2C2A",
+        "#47322F",
+        "#503936",
+        "#563F3E",
+        "#886B66"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_Scarf": {
+      "base": "#CD4C2C",
+      "ramp": [
+        "#9E3A22",
+        "#B8432A",
+        "#CD4C2C",
+        "#E06A48",
+        "#E79E80"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1
+      }
+    },
+    "M_Musician_ScarfDot": {
+      "base": "#F4DCC0",
+      "ramp": [
+        "#9C8978",
+        "#CAA791",
+        "#F2D8BB",
+        "#F4DCC0",
+        "#FAECDC"
+      ],
+      "rampShift": 0.35,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_Hair": {
+      "base": "#603935",
+      "ramp": [
+        "#392828",
+        "#583430",
+        "#603935",
+        "#643C39",
+        "#714644"
+      ],
+      "rampShift": -0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.14,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_Hat": {
+      "base": "#A3685D",
+      "ramp": [
+        "#503330",
+        "#995F53",
+        "#A3685D",
+        "#B27261",
+        "#BB8472"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.2
+      }
+    },
+    "M_Musician_HatDark": {
+      "base": "#995F53",
+      "ramp": [
+        "#503330",
+        "#995F53",
+        "#A3685D",
+        "#B27261",
+        "#BB8472"
+      ],
+      "rampShift": -0.3,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_HatBand": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.0,
+      "smoothness": 0.22,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_Case": {
+      "base": "#403E4B",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": 0.15,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15,
+        "paint": 1.1
+      }
+    },
+    "M_Musician_CaseDark": {
+      "base": "#302629",
+      "ramp": [
+        "#2A2730",
+        "#302629",
+        "#33303B",
+        "#403E4B",
+        "#4A4852"
+      ],
+      "rampShift": -0.2,
+      "smoothness": 0.3,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_Latch": {
+      "base": "#DA993A",
+      "ramp": [
+        "#9D662F",
+        "#AD7031",
+        "#DA993A",
+        "#FBBA39",
+        "#FCCF53"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.4,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_Sticker": {
+      "base": "#FABF34",
+      "ramp": [
+        "#C68C2C",
+        "#F6BC33",
+        "#FABF34",
+        "#FBC838",
+        "#FDDB78"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_StickerInk": {
+      "base": "#351B13",
+      "ramp": [
+        "#1C0F0E",
+        "#291D1B",
+        "#351B13",
+        "#382520",
+        "#5A4038"
+      ],
+      "rampShift": 0.1,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    },
+    "M_Musician_StickerRed": {
+      "base": "#CD4C2C",
+      "ramp": [
+        "#9E3A22",
+        "#B8432A",
+        "#CD4C2C",
+        "#E06A48",
+        "#E79E80"
+      ],
+      "rampShift": 0.05,
+      "smoothness": 0.25,
+      "opts": {
+        "spec": 0.0,
+        "rim": 0.1,
+        "edge": 0.35,
+        "flat": 0.15
+      }
+    }
+  }
+}

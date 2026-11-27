@@ -1,0 +1,210 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71536bcd5f219ea499d5a0e3a3675587, type: 3}
+  m_Name: PassengerWardrobe
+  m_EditorClassIdentifier: Assembly-CSharp::ConductorChaos.Characters.PassengerWardrobe
+  kinds:
+  - materialPrefix: M_BusinessTraveler_
+    looksModel: {fileID: 919132149155446097, guid: 05aad398a96eac3557451c550c3bf807, type: 3}
+    looks:
+    - label: Bun
+      hide:
+      - Hair
+      - Glasses
+      add:
+      - Look_Bun_Hair
+      from:
+      - {fileID: 2100000, guid: b325c6714a8ee0c1eb635c81bd0d1729, type: 2}
+      - {fileID: 2100000, guid: bc7c611beae8bfedfe831859736c8d4a, type: 2}
+      - {fileID: 2100000, guid: ba414ac5b158a74dd5be68ad2d1d76d7, type: 2}
+      - {fileID: 2100000, guid: 2abd1e51a15058220b77fa66f97ed89a, type: 2}
+      - {fileID: 2100000, guid: d3ff8cd7d65e5528e5bbc35d239adb6a, type: 2}
+      - {fileID: 2100000, guid: b9d962ae74714b3fdfa2093a79cf3781, type: 2}
+      to:
+      - {fileID: 2100000, guid: 9856dbe8c4bf9102ba47e0363928f9ec, type: 2}
+      - {fileID: 2100000, guid: 1d96375fdd41a159fddda031f4316334, type: 2}
+      - {fileID: 2100000, guid: 627302e458fc626f2975abd30049760d, type: 2}
+      - {fileID: 2100000, guid: 16cf3f558c9b04cf33375c65119aca22, type: 2}
+      - {fileID: 2100000, guid: e7aae33a2b2c4485e3fcac5a0cacefaa, type: 2}
+      - {fileID: 2100000, guid: 01ae978d73a9ea933e47bc84acad67d6, type: 2}
+    - label: Bowler
+      hide:
+      - Hair
+      - Glasses
+      add:
+      - Look_Bowler_Hair
+      - Look_Bowler_Hat
+      from:
+      - {fileID: 2100000, guid: b325c6714a8ee0c1eb635c81bd0d1729, type: 2}
+      - {fileID: 2100000, guid: bc7c611beae8bfedfe831859736c8d4a, type: 2}
+      - {fileID: 2100000, guid: ba414ac5b158a74dd5be68ad2d1d76d7, type: 2}
+      - {fileID: 2100000, guid: 2abd1e51a15058220b77fa66f97ed89a, type: 2}
+      - {fileID: 2100000, guid: d3ff8cd7d65e5528e5bbc35d239adb6a, type: 2}
+      - {fileID: 2100000, guid: b9d962ae74714b3fdfa2093a79cf3781, type: 2}
+      to:
+      - {fileID: 2100000, guid: 89d29b33905d5e3c355400ffbe61046d, type: 2}
+      - {fileID: 2100000, guid: 8cb9b5b92cb181d2ed0750d0bfb34db3, type: 2}
+      - {fileID: 2100000, guid: 78db325ba243da52726af466c6ef748d, type: 2}
+      - {fileID: 2100000, guid: 175be10cb88654201b51b31e6deeda72, type: 2}
+      - {fileID: 2100000, guid: 9109d495a7785101c336101af5152940, type: 2}
+      - {fileID: 2100000, guid: 254c588a587a763894da4e7aa8f05e4a, type: 2}
+  - materialPrefix: M_ChildPassenger_
+    looksModel: {fileID: 919132149155446097, guid: bc1960ae78eb7bd13525116bb60c56ab, type: 3}
+    looks:
+    - label: Pigtails
+      hide:
+      - Cap
+      - Hair
+      add:
+      - Look_Pigtails_Hair
+      from:
+      - {fileID: 2100000, guid: b30dbc3a22dc49d3366e2bfd20a5cd3b, type: 2}
+      - {fileID: 2100000, guid: d1b8e6033b705500cae8207eb01eb6d3, type: 2}
+      - {fileID: 2100000, guid: 85c12978de9e24174977afb26bd48f5c, type: 2}
+      - {fileID: 2100000, guid: cf85d1efeca2902a370369b66afc42c9, type: 2}
+      - {fileID: 2100000, guid: 6318d2c2ba220383715782b470e34d2f, type: 2}
+      - {fileID: 2100000, guid: 30338cc83cdbb4a59e0ef1cdec7a9cee, type: 2}
+      - {fileID: 2100000, guid: 7e33586e046c0e674bb530f7267b1649, type: 2}
+      to:
+      - {fileID: 2100000, guid: a0f69bdfa4dfde6b1ff9baa1c93980f6, type: 2}
+      - {fileID: 2100000, guid: ac8b3685b7cdc56fe5ce4039f3a8c485, type: 2}
+      - {fileID: 2100000, guid: 6fcf1aa8d8b74c3e2466642f3850d2bb, type: 2}
+      - {fileID: 2100000, guid: d10627aa4eaf4e8f74e0fe7a04da8dff, type: 2}
+      - {fileID: 2100000, guid: 979230ca09433a8752caa95c0e3aab80, type: 2}
+      - {fileID: 2100000, guid: 8c809fba38d8976c4f01f320d19175c7, type: 2}
+      - {fileID: 2100000, guid: 16f7c51785522b0fe6b8772511a5b373, type: 2}
+    - label: Beanie
+      hide:
+      - Cap
+      - Hair
+      add:
+      - Look_Beanie_Hair
+      - Look_Beanie_Hat
+      from:
+      - {fileID: 2100000, guid: b30dbc3a22dc49d3366e2bfd20a5cd3b, type: 2}
+      - {fileID: 2100000, guid: d1b8e6033b705500cae8207eb01eb6d3, type: 2}
+      - {fileID: 2100000, guid: 85c12978de9e24174977afb26bd48f5c, type: 2}
+      - {fileID: 2100000, guid: cf85d1efeca2902a370369b66afc42c9, type: 2}
+      - {fileID: 2100000, guid: 6318d2c2ba220383715782b470e34d2f, type: 2}
+      - {fileID: 2100000, guid: 30338cc83cdbb4a59e0ef1cdec7a9cee, type: 2}
+      - {fileID: 2100000, guid: 7e33586e046c0e674bb530f7267b1649, type: 2}
+      to:
+      - {fileID: 2100000, guid: 951dd8dd7cb072347969b04b84f651c4, type: 2}
+      - {fileID: 2100000, guid: fb21ef160e03bd17c076b949842eee5b, type: 2}
+      - {fileID: 2100000, guid: 54bce962a6a696564b352a6d17b5547a, type: 2}
+      - {fileID: 2100000, guid: 022ba51f12a592636634ab06ebc63ee2, type: 2}
+      - {fileID: 2100000, guid: 49503e99a339445f070ce81bfb0bd1ef, type: 2}
+      - {fileID: 2100000, guid: 1d21d2fbade511342f31a3603c4d6d49, type: 2}
+      - {fileID: 2100000, guid: ca940ca6e09f0a256c0131c36a62cc0f, type: 2}
+  - materialPrefix: M_ElderlyPassenger_
+    looksModel: {fileID: 919132149155446097, guid: 1b535da581a57b6f38647b4348177519, type: 3}
+    looks:
+    - label: Opa
+      hide:
+      - Hair
+      - Beret
+      add:
+      - Look_Opa_Hair
+      - Look_Opa_Mustache
+      - Look_Opa_Cap
+      from:
+      - {fileID: 2100000, guid: cf521ea0369fd5c03ae3bc502db801e8, type: 2}
+      - {fileID: 2100000, guid: fbdba080c8a2d3528efad733a7308094, type: 2}
+      - {fileID: 2100000, guid: 7494ab01cfd141ce9c100509c67dc532, type: 2}
+      - {fileID: 2100000, guid: 671e7afc57a64185acb951adc1dfd0a5, type: 2}
+      - {fileID: 2100000, guid: 2a2638d54db51d1aec67c6471e3692d9, type: 2}
+      - {fileID: 2100000, guid: f2c5045cc62b3eb33c3ed7a6d069ff7c, type: 2}
+      - {fileID: 2100000, guid: 4adc0a9a3b1703f675b940954582733f, type: 2}
+      - {fileID: 2100000, guid: 2de8e679869d92ceb2c8e9a3e8d992bf, type: 2}
+      to:
+      - {fileID: 2100000, guid: 7b713b177827ec8d2fc458b1c303a3fe, type: 2}
+      - {fileID: 2100000, guid: 3cd1849025ad67e3c639dac854c2aff5, type: 2}
+      - {fileID: 2100000, guid: f7d1e96880b05030977571a6a89d3021, type: 2}
+      - {fileID: 2100000, guid: 5a6ff8358cb5b849c532644a5d9abbe8, type: 2}
+      - {fileID: 2100000, guid: 12215eeebf95b7cd4b98256c85909646, type: 2}
+      - {fileID: 2100000, guid: 06c933a353d79e6678c44b2efc470256, type: 2}
+      - {fileID: 2100000, guid: 245da9b45ce7d629226b3ec0d6f9c8a9, type: 2}
+      - {fileID: 2100000, guid: 43bdc404cee790f51ba834d2f9c84782, type: 2}
+    - label: Navy
+      hide: []
+      add: []
+      from:
+      - {fileID: 2100000, guid: cf521ea0369fd5c03ae3bc502db801e8, type: 2}
+      - {fileID: 2100000, guid: fbdba080c8a2d3528efad733a7308094, type: 2}
+      - {fileID: 2100000, guid: 7494ab01cfd141ce9c100509c67dc532, type: 2}
+      - {fileID: 2100000, guid: 671e7afc57a64185acb951adc1dfd0a5, type: 2}
+      - {fileID: 2100000, guid: 8211fa7fdc47216ca2764b36967aa2a2, type: 2}
+      - {fileID: 2100000, guid: 399a4e4b667fd9c989c2b7aa4b4b90ff, type: 2}
+      - {fileID: 2100000, guid: f2c5045cc62b3eb33c3ed7a6d069ff7c, type: 2}
+      - {fileID: 2100000, guid: 2a2638d54db51d1aec67c6471e3692d9, type: 2}
+      - {fileID: 2100000, guid: 36bd9eccb8690febc578888b4d188721, type: 2}
+      - {fileID: 2100000, guid: 2de8e679869d92ceb2c8e9a3e8d992bf, type: 2}
+      to:
+      - {fileID: 2100000, guid: f96b084a684510f82e6d6d8952262757, type: 2}
+      - {fileID: 2100000, guid: ef2e030dc12caaa591ae5b644f55441a, type: 2}
+      - {fileID: 2100000, guid: 066d80aca31f8c97bcf72c7f1979355b, type: 2}
+      - {fileID: 2100000, guid: a9ef28217d3c87fb18d440161da12a09, type: 2}
+      - {fileID: 2100000, guid: 4b6d9f57ba513e67a7e54506bce4ee01, type: 2}
+      - {fileID: 2100000, guid: 688f36b0bca79d67172fc30ea97559be, type: 2}
+      - {fileID: 2100000, guid: e049e30276dcf0888fd9d514c638656a, type: 2}
+      - {fileID: 2100000, guid: c113af0938e877721e9abc7b0d979651, type: 2}
+      - {fileID: 2100000, guid: b57aea46f98d593c5f53c0d750ece2cf, type: 2}
+      - {fileID: 2100000, guid: aaa09e2195e6120bf65f176c1d2642e6, type: 2}
+  - materialPrefix: M_Tourist_
+    looksModel: {fileID: 919132149155446097, guid: d6d0c364c6abeeb88f575c8e9907f148, type: 3}
+    looks:
+    - label: Bucket
+      hide:
+      - Hat
+      add:
+      - Look_Bucket_Hat
+      from:
+      - {fileID: 2100000, guid: 8172f6b040e2204d27413f4fe400660d, type: 2}
+      - {fileID: 2100000, guid: d54a5059035938e8ada26f896c172678, type: 2}
+      - {fileID: 2100000, guid: e3392b8664e2a523b2a52e1a0ad48d19, type: 2}
+      - {fileID: 2100000, guid: 99f9a2e2cc5b6bc089117061c618b5cf, type: 2}
+      - {fileID: 2100000, guid: 1105f1a59723a0fa579a8d8e6d34892e, type: 2}
+      - {fileID: 2100000, guid: ffb55f88916e434144cd0317a606c0c9, type: 2}
+      - {fileID: 2100000, guid: e32a26c3e27f39ef7052e3a9b019e25c, type: 2}
+      - {fileID: 2100000, guid: 4e51c196e0e886e8535b377e3e74e0dd, type: 2}
+      to:
+      - {fileID: 2100000, guid: 754f7b6d54e11d7ad050dcbeb1db119c, type: 2}
+      - {fileID: 2100000, guid: e7bf143d44f65859cf0cc0bc1dfa6eb9, type: 2}
+      - {fileID: 2100000, guid: 985a62cb301a69a8b1f65dbc6bb0a8cb, type: 2}
+      - {fileID: 2100000, guid: f80a00c81cc7e6b859488a1ff71ea9c9, type: 2}
+      - {fileID: 2100000, guid: fd8470ae25fbd617b9c0a5e1f0065ee4, type: 2}
+      - {fileID: 2100000, guid: c3faac53ad97141c79ad0d02925c0441, type: 2}
+      - {fileID: 2100000, guid: 82c9c0d757839197c8275ef68fdc1abb, type: 2}
+      - {fileID: 2100000, guid: 2221b5cde47d0e4ca421bb48c21cb07e, type: 2}
+    - label: Straw
+      hide:
+      - Hat
+      add:
+      - Look_Straw_Hat
+      from:
+      - {fileID: 2100000, guid: 8172f6b040e2204d27413f4fe400660d, type: 2}
+      - {fileID: 2100000, guid: d54a5059035938e8ada26f896c172678, type: 2}
+      - {fileID: 2100000, guid: e3392b8664e2a523b2a52e1a0ad48d19, type: 2}
+      - {fileID: 2100000, guid: 4fa629c1ff2a4683fb7795f687796e11, type: 2}
+      - {fileID: 2100000, guid: 1105f1a59723a0fa579a8d8e6d34892e, type: 2}
+      - {fileID: 2100000, guid: ffb55f88916e434144cd0317a606c0c9, type: 2}
+      - {fileID: 2100000, guid: e32a26c3e27f39ef7052e3a9b019e25c, type: 2}
+      - {fileID: 2100000, guid: 4e51c196e0e886e8535b377e3e74e0dd, type: 2}
+      to:
+      - {fileID: 2100000, guid: e8eac1c81d12be7f7a753c67430535a1, type: 2}
+      - {fileID: 2100000, guid: 0d866528a6474dcdc3c8e2de3b26f5e4, type: 2}
+      - {fileID: 2100000, guid: d97a737a60179bc867e873397430936a, type: 2}
+      - {fileID: 2100000, guid: 443fbbe59929ee1ed59808f825844924, type: 2}
+      - {fileID: 2100000, guid: 41f7032486161a093098746b3bf316f3, type: 2}
+      - {fileID: 2100000, guid: bd89793e42926f9a182dca43d221a5df, type: 2}
+      - {fileID: 2100000, guid: 01662f5ac0e99da304db726f5da561b2, type: 2}
+      - {fileID: 2100000, guid: eb4ecfaacc5c0444d01bbc8ce4ebbb69, type: 2}

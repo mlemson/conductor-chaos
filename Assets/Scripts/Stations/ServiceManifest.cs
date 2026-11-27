@@ -9,7 +9,7 @@ namespace ConductorChaos.Stations
             new(70, 111, 186, 255), new(197, 77, 62, 255), new(74, 137, 89, 255), new(226, 168, 48, 255)
         };
 
-        internal static readonly string[] TravellerNames = { "Zakenreiziger", "Toerist", "Oudere reiziger", "Kind" };
+        internal static readonly string[] TravellerNames = { "Zakenreiziger", "Toerist", "Oudere reiziger", "Kind", "Muzikant" };
         internal static readonly string[] FreightNames = { "Postkist", "Houten vat", "Hijskist" };
         private readonly int card;
 
@@ -18,7 +18,8 @@ namespace ConductorChaos.Stations
         internal bool IsReady => card != 0;
         internal int FirstFare => card & 3;
         internal int SecondFare => (card >> 2) & 3;
-        internal int ExcludedTraveller => (card >> 4) & 3;
+        // Reizigerstype: bits 4-5, plus bit 14 als derde bit (5e type, muzikant).
+        internal int ExcludedTraveller => ((card >> 4) & 3) | ((card >> 12) & 4);
         internal int RequiredFreight => (card >> 6) & 3;
         internal int ExcludedFreight => (card >> 8) & 3;
         internal int PickupStop => (card >> 10) & 1;
@@ -30,9 +31,11 @@ namespace ConductorChaos.Stations
             int second = (first + Random.Range(1, 4)) % 4;
             int required = Random.Range(0, 3);
             int excluded = (required + Random.Range(1, 3)) % 3;
-            return (1 << 11) | first | (second << 2) | (Random.Range(0, 4) << 4) | (required << 6) |
+            return (1 << 11) | first | (second << 2) | Traveller(Random.Range(0, TravellerNames.Length)) | (required << 6) |
                 (excluded << 8) | (Random.Range(0, stopCount) << 10);
         }
+
+        private static int Traveller(int type) => ((type & 3) << 4) | ((type & 4) << 12);
 
         internal bool IsFareValid(int fare) => fare == FirstFare || fare == SecondFare;
 

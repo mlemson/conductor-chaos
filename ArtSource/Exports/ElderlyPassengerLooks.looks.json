@@ -1,0 +1,98 @@
+{
+  "type": "ElderlyPassenger",
+  "looks": [
+    {
+      "name": "Opa",
+      "hide": [
+        "Hair",
+        "Beret"
+      ],
+      "add": [
+        "Look_Opa_Hair",
+        "Look_Opa_Mustache",
+        "Look_Opa_Cap"
+      ],
+      "materials": [
+        {
+          "from": "M_ElderlyPassenger_Coat",
+          "to": "M_ElderlyPassengerLooks_Opa_Coat"
+        },
+        {
+          "from": "M_ElderlyPassenger_CoatDark",
+          "to": "M_ElderlyPassengerLooks_Opa_CoatDark"
+        },
+        {
+          "from": "M_ElderlyPassenger_Trousers",
+          "to": "M_ElderlyPassengerLooks_Opa_Trousers"
+        },
+        {
+          "from": "M_ElderlyPassenger_Button",
+          "to": "M_ElderlyPassengerLooks_Opa_Button"
+        },
+        {
+          "from": "M_ElderlyPassenger_Scarf",
+          "to": "M_ElderlyPassengerLooks_Opa_Scarf"
+        },
+        {
+          "from": "M_ElderlyPassenger_Glasses",
+          "to": "M_ElderlyPassengerLooks_Opa_Glasses"
+        },
+        {
+          "from": "M_ElderlyPassenger_Bag",
+          "to": "M_ElderlyPassengerLooks_Opa_Bag"
+        },
+        {
+          "from": "M_ElderlyPassenger_BagPrint",
+          "to": "M_ElderlyPassengerLooks_Opa_BagPrint"
+        }
+      ]
+    },
+    {
+      "name": "Navy",
+      "hide": [],
+      "add": [],
+      "materials": [
+        {
+          "from": "M_ElderlyPassenger_Coat",
+          "to": "M_ElderlyPassengerLooks_Navy_Coat"
+        },
+        {
+          "from": "M_ElderlyPassenger_CoatDark",
+          "to": "M_ElderlyPassengerLooks_Navy_CoatDark"
+        },
+        {
+          "from": "M_ElderlyPassenger_Trousers",
+          "to": "M_ElderlyPassengerLooks_Navy_Trousers"
+        },
+        {
+          "from": "M_ElderlyPassenger_Button",
+          "to": "M_ElderlyPassengerLooks_Navy_Button"
+        },
+        {
+          "from": "M_ElderlyPassenger_Beret",
+          "to": "M_ElderlyPassengerLooks_Navy_Beret"
+        },
+        {
+          "from": "M_ElderlyPassenger_BeretDark",
+          "to": "M_ElderlyPassengerLooks_Navy_BeretDark"
+        },
+        {
+          "from": "M_ElderlyPassenger_Glasses",
+          "to": "M_ElderlyPassengerLooks_Navy_Glasses"
+        },
+        {
+          "from": "M_ElderlyPassenger_Scarf",
+          "to": "M_ElderlyPassengerLooks_Navy_Scarf"
+        },
+        {
+          "from": "M_ElderlyPassenger_Hair",
+          "to": "M_ElderlyPassengerLooks_Navy_Hair"
+        },
+        {
+          "from": "M_ElderlyPassenger_BagPrint",
+          "to": "M_ElderlyPassengerLooks_Navy_BagPrint"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+fileFormatVersion: 2
+guid: 05aad398a96eac3557451c550c3bf807
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bun_Blazer
+    second: {fileID: 2100000, guid: 9856dbe8c4bf9102ba47e0363928f9ec, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bun_Suitcase
+    second: {fileID: 2100000, guid: e7aae33a2b2c4485e3fcac5a0cacefaa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bun_Trousers
+    second: {fileID: 2100000, guid: 627302e458fc626f2975abd30049760d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bun_Hair
+    second: {fileID: 2100000, guid: 20b3339c4c3cf1d51d74e0717bef99d0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bun_BlazerDark
+    second: {fileID: 2100000, guid: 1d96375fdd41a159fddda031f4316334, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bun_SuitcaseDark
+    second: {fileID: 2100000, guid: 01ae978d73a9ea933e47bc84acad67d6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bun_Tie
+    second: {fileID: 2100000, guid: 16cf3f558c9b04cf33375c65119aca22, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bowler_Hair
+    second: {fileID: 2100000, guid: 7321c6b73957383d58ad285cbc153e0b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bowler_Trousers
+    second: {fileID: 2100000, guid: 78db325ba243da52726af466c6ef748d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bowler_Band
+    second: {fileID: 2100000, guid: e669f9c39a74182f58c2828163cc7a84, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bowler_Tie
+    second: {fileID: 2100000, guid: 175be10cb88654201b51b31e6deeda72, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bowler_BlazerDark
+    second: {fileID: 2100000, guid: 8cb9b5b92cb181d2ed0750d0bfb34db3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bowler_FeltDark
+    second: {fileID: 2100000, guid: 85befe436fc22f1b4d4375cfcf9805f5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bowler_Felt
+    second: {fileID: 2100000, guid: 4e6107fe82ba3bcb04b879a0be2c5352, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bowler_SuitcaseDark
+    second: {fileID: 2100000, guid: 254c588a587a763894da4e7aa8f05e4a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bowler_Blazer
+    second: {fileID: 2100000, guid: 89d29b33905d5e3c355400ffbe61046d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BusinessTravelerLooks_Bowler_Suitcase
+    second: {fileID: 2100000, guid: 9109d495a7785101c336101af5152940, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+    isReadable: 1
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

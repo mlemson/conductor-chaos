@@ -1,0 +1,151 @@
+fileFormatVersion: 2
+guid: d6d0c364c6abeeb88f575c8e9907f148
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Bucket_Stitch
+    second: {fileID: 2100000, guid: 86cc9f6cf5b82b77cb4fa7435d1cc851, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Bucket_Band
+    second: {fileID: 2100000, guid: 257f16ea43b5f8967a69895f609636d2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Bucket_Shorts
+    second: {fileID: 2100000, guid: fd8470ae25fbd617b9c0a5e1f0065ee4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Bucket_PrintHeart
+    second: {fileID: 2100000, guid: f80a00c81cc7e6b859488a1ff71ea9c9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Bucket_Shirt
+    second: {fileID: 2100000, guid: 754f7b6d54e11d7ad050dcbeb1db119c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Bucket_ShirtDark
+    second: {fileID: 2100000, guid: e7bf143d44f65859cf0cc0bc1dfa6eb9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Bucket_Backpack
+    second: {fileID: 2100000, guid: 82c9c0d757839197c8275ef68fdc1abb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Bucket_PrintFlower
+    second: {fileID: 2100000, guid: 985a62cb301a69a8b1f65dbc6bb0a8cb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Bucket_ShortsDark
+    second: {fileID: 2100000, guid: c3faac53ad97141c79ad0d02925c0441, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Bucket_BackpackDark
+    second: {fileID: 2100000, guid: 2221b5cde47d0e4ca421bb48c21cb07e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Bucket_Hat
+    second: {fileID: 2100000, guid: c87ad92d1ffac9901756bf67ae9df59f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Straw_Ribbon
+    second: {fileID: 2100000, guid: 48896f443dbbff3b92e2c17c45a74e99, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Straw_ShortsDark
+    second: {fileID: 2100000, guid: bd89793e42926f9a182dca43d221a5df, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Straw_FlowerHeart
+    second: {fileID: 2100000, guid: 7c9a99207db3a8104b748de5256b0a4d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Straw_Backpack
+    second: {fileID: 2100000, guid: 01662f5ac0e99da304db726f5da561b2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Straw_StrawDark
+    second: {fileID: 2100000, guid: 0db4160ece6907f22f4fc6efd44e61e5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Straw_Shirt
+    second: {fileID: 2100000, guid: e8eac1c81d12be7f7a753c67430535a1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Straw_Shorts
+    second: {fileID: 2100000, guid: 41f7032486161a093098746b3bf316f3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Straw_ShirtDark
+    second: {fileID: 2100000, guid: 0d866528a6474dcdc3c8e2de3b26f5e4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Straw_Flower
+    second: {fileID: 2100000, guid: 230279c3e2a5eca5bef503b993ae599a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Straw_PrintLeaf
+    second: {fileID: 2100000, guid: 443fbbe59929ee1ed59808f825844924, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Straw_PrintFlower
+    second: {fileID: 2100000, guid: d97a737a60179bc867e873397430936a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Straw_BackpackDark
+    second: {fileID: 2100000, guid: eb4ecfaacc5c0444d01bbc8ce4ebbb69, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_TouristLooks_Straw_Straw
+    second: {fileID: 2100000, guid: c63a18673a5424e85562967477cc2c62, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+    isReadable: 1
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

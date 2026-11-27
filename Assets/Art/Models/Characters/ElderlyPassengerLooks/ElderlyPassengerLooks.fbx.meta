@@ -1,0 +1,136 @@
+fileFormatVersion: 2
+guid: 1b535da581a57b6f38647b4348177519
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Opa_Coat
+    second: {fileID: 2100000, guid: 7b713b177827ec8d2fc458b1c303a3fe, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Opa_Trousers
+    second: {fileID: 2100000, guid: f7d1e96880b05030977571a6a89d3021, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Opa_CoatDark
+    second: {fileID: 2100000, guid: 3cd1849025ad67e3c639dac854c2aff5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Opa_Scarf
+    second: {fileID: 2100000, guid: 12215eeebf95b7cd4b98256c85909646, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Opa_Glasses
+    second: {fileID: 2100000, guid: 06c933a353d79e6678c44b2efc470256, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Opa_BagPrint
+    second: {fileID: 2100000, guid: 43bdc404cee790f51ba834d2f9c84782, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Opa_Hair
+    second: {fileID: 2100000, guid: ceb0af1e66fdbbe4f7d29282d5454054, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Opa_CapDark
+    second: {fileID: 2100000, guid: 600c861d5b40cd8a59fece8925786e9f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Opa_Cap
+    second: {fileID: 2100000, guid: bb4d7c430b0231d352107c73d942b710, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Opa_Button
+    second: {fileID: 2100000, guid: 5a6ff8358cb5b849c532644a5d9abbe8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Opa_Bag
+    second: {fileID: 2100000, guid: 245da9b45ce7d629226b3ec0d6f9c8a9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Navy_CoatDark
+    second: {fileID: 2100000, guid: ef2e030dc12caaa591ae5b644f55441a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Navy_BeretDark
+    second: {fileID: 2100000, guid: 688f36b0bca79d67172fc30ea97559be, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Navy_Hair
+    second: {fileID: 2100000, guid: b57aea46f98d593c5f53c0d750ece2cf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Navy_BagPrint
+    second: {fileID: 2100000, guid: aaa09e2195e6120bf65f176c1d2642e6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Navy_Beret
+    second: {fileID: 2100000, guid: 4b6d9f57ba513e67a7e54506bce4ee01, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Navy_Button
+    second: {fileID: 2100000, guid: a9ef28217d3c87fb18d440161da12a09, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Navy_Scarf
+    second: {fileID: 2100000, guid: c113af0938e877721e9abc7b0d979651, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Navy_Trousers
+    second: {fileID: 2100000, guid: 066d80aca31f8c97bcf72c7f1979355b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Navy_Coat
+    second: {fileID: 2100000, guid: f96b084a684510f82e6d6d8952262757, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ElderlyPassengerLooks_Navy_Glasses
+    second: {fileID: 2100000, guid: e049e30276dcf0888fd9d514c638656a, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+    isReadable: 1
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

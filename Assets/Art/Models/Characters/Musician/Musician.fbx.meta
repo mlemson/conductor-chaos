@@ -1,0 +1,151 @@
+fileFormatVersion: 2
+guid: 5c831c9ffe3cb0afdb83ef853c9f83db
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Skin
+    second: {fileID: 2100000, guid: dcddb7b480b4e72746f1df9d7a3870ca, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_EyeWhite
+    second: {fileID: 2100000, guid: 5f6bcf06a0a7c28446b6d1e6af03c4c4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Pupil
+    second: {fileID: 2100000, guid: 5b75acd5f9d0122a4704ac616c2160b7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Mouth
+    second: {fileID: 2100000, guid: cd1e841b41c484301dddd80e1a8705c7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Tongue
+    second: {fileID: 2100000, guid: 039fe1537a604f52a40becf2cf09fb71, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Shirt
+    second: {fileID: 2100000, guid: 7918b5e929127e20bff8063409a35a47, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_ShirtDark
+    second: {fileID: 2100000, guid: 5baf780127c3a229ac708ed040661400, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Vest
+    second: {fileID: 2100000, guid: ef5761422dcaca6c55f6adb1340884b6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_VestDark
+    second: {fileID: 2100000, guid: 285b744fa99baadbda168d594f4257bd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Button
+    second: {fileID: 2100000, guid: dfcf28ec64da64102fef2982097f3544, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Trousers
+    second: {fileID: 2100000, guid: 032e7fb62f5c443970a543ed1e6531d8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Shoe
+    second: {fileID: 2100000, guid: 8a2ed43818cc2af677e13a71790ed87e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Scarf
+    second: {fileID: 2100000, guid: 2bb0cbf20c04281df9454d6815354176, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_ScarfDot
+    second: {fileID: 2100000, guid: 8c65749ee2e240b742a1fba23519653a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Hair
+    second: {fileID: 2100000, guid: cd9b5924a877ce71e0d178d376f210da, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Hat
+    second: {fileID: 2100000, guid: c97d576f1f8ed252233d802aca297e28, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_HatDark
+    second: {fileID: 2100000, guid: 1e72953e5cda0a5056377b46d17fe79d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_HatBand
+    second: {fileID: 2100000, guid: 5624e01a33157ca2a15cd9a2d236fc29, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Case
+    second: {fileID: 2100000, guid: 84d31b592be9d00adad03b85f03a7eb8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_CaseDark
+    second: {fileID: 2100000, guid: 90f5313e3a482ab1a189bf29b44ca03e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Latch
+    second: {fileID: 2100000, guid: b499ad71c330c1228114af876aee53ad, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_Sticker
+    second: {fileID: 2100000, guid: df70389edae92906428d432629c4aec6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_StickerInk
+    second: {fileID: 2100000, guid: e1710a5895643196eddd5380d2a5b0d4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Musician_StickerRed
+    second: {fileID: 2100000, guid: f0c1d536e2c710bbd94597b9e40c63f7, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+    isReadable: 1
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -58,7 +58,8 @@ namespace ConductorChaos.UI
             collectTitle.text = "Ophalen · " + pickupStation;
             Picture(0, manifest.RequiredFreight, false, ServiceManifest.FreightNames[manifest.RequiredFreight]);
             Picture(1, manifest.ExcludedFreight, false, ServiceManifest.FreightNames[manifest.ExcludedFreight]);
-            Picture(2, manifest.ExcludedTraveller, true, ServiceManifest.TravellerNames[manifest.ExcludedTraveller]);
+            int traveller = manifest.ExcludedTraveller;     // de muzikant staat in het vrije vak rechtsonder
+            Picture(2, traveller < 4 ? traveller : 3, traveller < 4, ServiceManifest.TravellerNames[traveller]);
         }
 
         internal void Hide() => root.SetActive(false);

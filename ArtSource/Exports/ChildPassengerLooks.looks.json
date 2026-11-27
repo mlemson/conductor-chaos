@@ -1,0 +1,86 @@
+{
+  "type": "ChildPassenger",
+  "looks": [
+    {
+      "name": "Pigtails",
+      "hide": [
+        "Cap",
+        "Hair"
+      ],
+      "add": [
+        "Look_Pigtails_Hair"
+      ],
+      "materials": [
+        {
+          "from": "M_ChildPassenger_Hoodie",
+          "to": "M_ChildPassengerLooks_Pigtails_Hoodie"
+        },
+        {
+          "from": "M_ChildPassenger_HoodieLight",
+          "to": "M_ChildPassengerLooks_Pigtails_HoodieLight"
+        },
+        {
+          "from": "M_ChildPassenger_HoodieDark",
+          "to": "M_ChildPassengerLooks_Pigtails_HoodieDark"
+        },
+        {
+          "from": "M_ChildPassenger_Hood",
+          "to": "M_ChildPassengerLooks_Pigtails_Hood"
+        },
+        {
+          "from": "M_ChildPassenger_Shorts",
+          "to": "M_ChildPassengerLooks_Pigtails_Shorts"
+        },
+        {
+          "from": "M_ChildPassenger_Backpack",
+          "to": "M_ChildPassengerLooks_Pigtails_Backpack"
+        },
+        {
+          "from": "M_ChildPassenger_BackpackDark",
+          "to": "M_ChildPassengerLooks_Pigtails_BackpackDark"
+        }
+      ]
+    },
+    {
+      "name": "Beanie",
+      "hide": [
+        "Cap",
+        "Hair"
+      ],
+      "add": [
+        "Look_Beanie_Hair",
+        "Look_Beanie_Hat"
+      ],
+      "materials": [
+        {
+          "from": "M_ChildPassenger_Hoodie",
+          "to": "M_ChildPassengerLooks_Beanie_Hoodie"
+        },
+        {
+          "from": "M_ChildPassenger_HoodieLight",
+          "to": "M_ChildPassengerLooks_Beanie_HoodieLight"
+        },
+        {
+          "from": "M_ChildPassenger_HoodieDark",
+          "to": "M_ChildPassengerLooks_Beanie_HoodieDark"
+        },
+        {
+          "from": "M_ChildPassenger_Hood",
+          "to": "M_ChildPassengerLooks_Beanie_Hood"
+        },
+        {
+          "from": "M_ChildPassenger_Shorts",
+          "to": "M_ChildPassengerLooks_Beanie_Shorts"
+        },
+        {
+          "from": "M_ChildPassenger_Backpack",
+          "to": "M_ChildPassengerLooks_Beanie_Backpack"
+        },
+        {
+          "from": "M_ChildPassenger_BackpackDark",
+          "to": "M_ChildPassengerLooks_Beanie_BackpackDark"
+        }
+      ]
+    }
+  ]
+}

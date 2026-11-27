@@ -1,0 +1,91 @@
+{
+  "type": "Tourist",
+  "looks": [
+    {
+      "name": "Bucket",
+      "hide": [
+        "Hat"
+      ],
+      "add": [
+        "Look_Bucket_Hat"
+      ],
+      "materials": [
+        {
+          "from": "M_Tourist_Shirt",
+          "to": "M_TouristLooks_Bucket_Shirt"
+        },
+        {
+          "from": "M_Tourist_ShirtDark",
+          "to": "M_TouristLooks_Bucket_ShirtDark"
+        },
+        {
+          "from": "M_Tourist_PrintFlower",
+          "to": "M_TouristLooks_Bucket_PrintFlower"
+        },
+        {
+          "from": "M_Tourist_PrintHeart",
+          "to": "M_TouristLooks_Bucket_PrintHeart"
+        },
+        {
+          "from": "M_Tourist_Shorts",
+          "to": "M_TouristLooks_Bucket_Shorts"
+        },
+        {
+          "from": "M_Tourist_ShortsDark",
+          "to": "M_TouristLooks_Bucket_ShortsDark"
+        },
+        {
+          "from": "M_Tourist_Backpack",
+          "to": "M_TouristLooks_Bucket_Backpack"
+        },
+        {
+          "from": "M_Tourist_BackpackDark",
+          "to": "M_TouristLooks_Bucket_BackpackDark"
+        }
+      ]
+    },
+    {
+      "name": "Straw",
+      "hide": [
+        "Hat"
+      ],
+      "add": [
+        "Look_Straw_Hat"
+      ],
+      "materials": [
+        {
+          "from": "M_Tourist_Shirt",
+          "to": "M_TouristLooks_Straw_Shirt"
+        },
+        {
+          "from": "M_Tourist_ShirtDark",
+          "to": "M_TouristLooks_Straw_ShirtDark"
+        },
+        {
+          "from": "M_Tourist_PrintFlower",
+          "to": "M_TouristLooks_Straw_PrintFlower"
+        },
+        {
+          "from": "M_Tourist_PrintLeaf",
+          "to": "M_TouristLooks_Straw_PrintLeaf"
+        },
+        {
+          "from": "M_Tourist_Shorts",
+          "to": "M_TouristLooks_Straw_Shorts"
+        },
+        {
+          "from": "M_Tourist_ShortsDark",
+          "to": "M_TouristLooks_Straw_ShortsDark"
+        },
+        {
+          "from": "M_Tourist_Backpack",
+          "to": "M_TouristLooks_Straw_Backpack"
+        },
+        {
+          "from": "M_Tourist_BackpackDark",
+          "to": "M_TouristLooks_Straw_BackpackDark"
+        }
+      ]
+    }
+  ]
+}

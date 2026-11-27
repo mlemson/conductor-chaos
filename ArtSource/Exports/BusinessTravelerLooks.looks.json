@@ -1,0 +1,78 @@
+{
+  "type": "BusinessTraveler",
+  "looks": [
+    {
+      "name": "Bun",
+      "hide": [
+        "Hair",
+        "Glasses"
+      ],
+      "add": [
+        "Look_Bun_Hair"
+      ],
+      "materials": [
+        {
+          "from": "M_BusinessTraveler_Blazer",
+          "to": "M_BusinessTravelerLooks_Bun_Blazer"
+        },
+        {
+          "from": "M_BusinessTraveler_BlazerDark",
+          "to": "M_BusinessTravelerLooks_Bun_BlazerDark"
+        },
+        {
+          "from": "M_BusinessTraveler_Trousers",
+          "to": "M_BusinessTravelerLooks_Bun_Trousers"
+        },
+        {
+          "from": "M_BusinessTraveler_Tie",
+          "to": "M_BusinessTravelerLooks_Bun_Tie"
+        },
+        {
+          "from": "M_BusinessTraveler_Suitcase",
+          "to": "M_BusinessTravelerLooks_Bun_Suitcase"
+        },
+        {
+          "from": "M_BusinessTraveler_SuitcaseDark",
+          "to": "M_BusinessTravelerLooks_Bun_SuitcaseDark"
+        }
+      ]
+    },
+    {
+      "name": "Bowler",
+      "hide": [
+        "Hair",
+        "Glasses"
+      ],
+      "add": [
+        "Look_Bowler_Hair",
+        "Look_Bowler_Hat"
+      ],
+      "materials": [
+        {
+          "from": "M_BusinessTraveler_Blazer",
+          "to": "M_BusinessTravelerLooks_Bowler_Blazer"
+        },
+        {
+          "from": "M_BusinessTraveler_BlazerDark",
+          "to": "M_BusinessTravelerLooks_Bowler_BlazerDark"
+        },
+        {
+          "from": "M_BusinessTraveler_Trousers",
+          "to": "M_BusinessTravelerLooks_Bowler_Trousers"
+        },
+        {
+          "from": "M_BusinessTraveler_Tie",
+          "to": "M_BusinessTravelerLooks_Bowler_Tie"
+        },
+        {
+          "from": "M_BusinessTraveler_Suitcase",
+          "to": "M_BusinessTravelerLooks_Bowler_Suitcase"
+        },
+        {
+          "from": "M_BusinessTraveler_SuitcaseDark",
+          "to": "M_BusinessTravelerLooks_Bowler_SuitcaseDark"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+fileFormatVersion: 2
+guid: bc1960ae78eb7bd13525116bb60c56ab
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Pigtails_Shorts
+    second: {fileID: 2100000, guid: 979230ca09433a8752caa95c0e3aab80, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Pigtails_BackpackDark
+    second: {fileID: 2100000, guid: 16f7c51785522b0fe6b8772511a5b373, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Pigtails_HoodieDark
+    second: {fileID: 2100000, guid: 6fcf1aa8d8b74c3e2466642f3850d2bb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Pigtails_Hood
+    second: {fileID: 2100000, guid: d10627aa4eaf4e8f74e0fe7a04da8dff, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Pigtails_Backpack
+    second: {fileID: 2100000, guid: 8c809fba38d8976c4f01f320d19175c7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Pigtails_Hair
+    second: {fileID: 2100000, guid: 699f7174d284e59ef865a3098d679db6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Pigtails_Tie
+    second: {fileID: 2100000, guid: 396bfb419f872f17a0bf8732c6dfd4de, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Pigtails_Hoodie
+    second: {fileID: 2100000, guid: a0f69bdfa4dfde6b1ff9baa1c93980f6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Pigtails_HoodieLight
+    second: {fileID: 2100000, guid: ac8b3685b7cdc56fe5ce4039f3a8c485, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Beanie_KnitDark
+    second: {fileID: 2100000, guid: a7212a65f535e96258a22d5c8725ce01, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Beanie_HoodieLight
+    second: {fileID: 2100000, guid: fb21ef160e03bd17c076b949842eee5b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Beanie_Hoodie
+    second: {fileID: 2100000, guid: 951dd8dd7cb072347969b04b84f651c4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Beanie_BackpackDark
+    second: {fileID: 2100000, guid: ca940ca6e09f0a256c0131c36a62cc0f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Beanie_HoodieDark
+    second: {fileID: 2100000, guid: 54bce962a6a696564b352a6d17b5547a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Beanie_Pompom
+    second: {fileID: 2100000, guid: 01eaa3929098586b53bf487391f068fb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Beanie_Backpack
+    second: {fileID: 2100000, guid: 1d21d2fbade511342f31a3603c4d6d49, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Beanie_Hood
+    second: {fileID: 2100000, guid: 022ba51f12a592636634ab06ebc63ee2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Beanie_Shorts
+    second: {fileID: 2100000, guid: 49503e99a339445f070ce81bfb0bd1ef, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Beanie_Knit
+    second: {fileID: 2100000, guid: 9cb40619c17d743033324e737309bf7e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_ChildPassengerLooks_Beanie_Hair
+    second: {fileID: 2100000, guid: db72db692f74e18f53760c1ae8b767f6, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    importAnimation: 0
+    isReadable: 1
+  meshes:
+    globalScale: 1
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 1
+    importCameras: 0
+    importLights: 0
+    generateSecondaryUV: 0
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalSmoothingSource: 0
+  importAnimation: 0
+  animationType: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

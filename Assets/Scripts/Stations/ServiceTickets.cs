@@ -93,9 +93,9 @@ namespace ConductorChaos.Stations
             if (!prefab || !seat || !outside || !doorway) return;
             InitializeRoster();
             var rotation = Quaternion.LookRotation(-waiting.right);
-            int[] appearances = { 0, 1, 2, 3 };
+            int[] appearances = { 0, 1, 2, 3, 4 };
             int count = Random.value < .40f ? 3 : 4;
-            int skipped = count == 3 ? (manifest.ExcludedTraveller + Random.Range(1, 4)) % 4 : -1;
+            int skip = appearances.Length - count;          // het geweigerde type staat er altijd bij
             int invalidCount = Random.Range(0, count - 1);
             int place = 0;
             for (int i = 0; i < appearances.Length; i++)
@@ -103,7 +103,7 @@ namespace ConductorChaos.Stations
                 int draw = Random.Range(i, appearances.Length);
                 (appearances[i], appearances[draw]) = (appearances[draw], appearances[i]);
                 int appearance = appearances[i];
-                if (appearance == skipped) continue;
+                if (appearance != manifest.ExcludedTraveller && skip > 0) { skip--; continue; }
                 bool excluded = appearance == manifest.ExcludedTraveller;
                 bool badFare = !excluded && invalidCount > 0;
                 if (badFare) invalidCount--;
