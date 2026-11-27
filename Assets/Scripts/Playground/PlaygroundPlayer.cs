@@ -82,6 +82,9 @@ namespace ConductorChaos.Playground
         private float nextSprintHop;
         private float lastServerInput;
         private float lastLeverInputAt;
+        private uint inputSequence, lastInputSequence;
+        private Quaternion visualRest;
+        private float predictedYawOffset;
         private Vector3 smoothedLean;
         private float yaw, pitch = 18f;
         private Camera playerCamera;
@@ -116,6 +119,8 @@ namespace ConductorChaos.Playground
         private bool clearingLimbs;
         private float stalledTime, nextRecoveryProbe, nextTrackStep, restoreLimbsAt;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private static bool showNetStats;
+        private float inputGapMax;
         private bool automatedInput;
 #endif
 
@@ -169,6 +174,9 @@ namespace ConductorChaos.Playground
             legs = PlaygroundLegRig.Create(visual, body, IsServer);
             lastServerInput = Time.unscaledTime;
             lastLeverInputAt = -1f;
+            inputSequence = lastInputSequence = 0;
+            predictedYawOffset = 0f;
+            if (visual) visualRest = visual.localRotation;
             if (left.Collider && right.Collider) Physics.IgnoreCollision(left.Collider, right.Collider);
             if (IsServer)
             {
@@ -211,25 +219,28 @@ namespace ConductorChaos.Playground
 #endif
             Keyboard keyboard = Keyboard.current;
             Mouse mouse = Mouse.current;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (keyboard != null && keyboard.f3Key.wasPressedThisFrame) showNetStats = !showNetStats;
+#endif
             if (PlaygroundMenu.BlocksInput)
             {
                 if (lastLeft || lastRight || Time.unscaledTime >= nextInput)
                 {
-                    SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
-                    nextInput = Time.unscaledTime + 0.05f;
+                    SendInput(Vector2.zero, yaw, pitch, false, false, false, false);
+                    nextInput = Time.unscaledTime + InputInterval;
                     lastLeft = lastRight = false;
                 }
                 return;
             }
             if (keyboard == null || mouse == null)
             {
-                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
+                if (lastLeft || lastRight) SendInput(Vector2.zero, yaw, pitch, false, false, false, false);
                 lastLeft = lastRight = false;
                 return;
             }
             if (mouse.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
             {
-                if (lastLeft || lastRight) SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
+                if (lastLeft || lastRight) SendInput(Vector2.zero, yaw, pitch, false, false, false, false);
                 lastLeft = lastRight = false;
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
@@ -250,17 +261,29 @@ namespace ConductorChaos.Playground
             if (active && keyboard.spaceKey.wasPressedThisFrame) JumpServerRpc();
             if (Time.unscaledTime >= nextInput || l != lastLeft || r != lastRight)
             {
-                SendInputServerRpc(Vector2.ClampMagnitude(move, 1f), yaw, pitch, l, r, active && keyboard.leftShiftKey.isPressed,
+                SendInput(Vector2.ClampMagnitude(move, 1f), yaw, pitch, l, r, active && keyboard.leftShiftKey.isPressed,
                     active && (keyboard.leftCtrlKey.isPressed || keyboard.cKey.isPressed), cameraHandFocus);
-                nextInput = Time.unscaledTime + 0.05f;
+                nextInput = Time.unscaledTime + InputInterval;
                 lastLeft = l;
                 lastRight = r;
             }
         }
 
-        [ServerRpc]
-        private void SendInputServerRpc(Vector2 move, float direction, float lookPitch, bool l, bool r, bool sprint, bool crouch, float handFocus = 0f)
+        // Input is a full state sent every network tick, so a lost packet is replaced by the next one; reliable
+        // delivery would hold newer input back behind a resent packet.
+        private float InputInterval => NetworkManager ? 1f / Mathf.Max(1u, NetworkManager.NetworkConfig.TickRate) : 0.02f;
+
+        private void SendInput(Vector2 move, float direction, float lookPitch, bool l, bool r, bool sprint, bool crouch, float handFocus = 0f) =>
+            SendInputRpc(++inputSequence, move, direction, lookPitch, l, r, sprint, crouch, handFocus);
+
+        [Rpc(SendTo.Server, Delivery = RpcDelivery.Unreliable, InvokePermission = RpcInvokePermission.Owner)]
+        private void SendInputRpc(uint sequence, Vector2 move, float direction, float lookPitch, bool l, bool r, bool sprint, bool crouch, float handFocus)
         {
+            if ((int)(sequence - lastInputSequence) <= 0) return; // unreliable packets may arrive out of order
+            lastInputSequence = sequence;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            inputGapMax = Mathf.Max(inputGapMax * 0.999f, Time.unscaledTime - lastServerInput);
+#endif
             if (!l) { leftHeld = false; left?.Release(); }
             if (!r) { rightHeld = false; right?.Release(); }
             if (sessionHost && sessionHost.Phase != PlaygroundHost.SessionPhase.Playing) return;
@@ -283,7 +306,7 @@ namespace ConductorChaos.Playground
         {
             if (focused || !IsSpawned || !IsOwner) return;
             lastLeft = lastRight = false;
-            SendInputServerRpc(Vector2.zero, yaw, pitch, false, false, false, false);
+            SendInput(Vector2.zero, yaw, pitch, false, false, false, false);
         }
 
         [ServerRpc]
@@ -346,11 +369,11 @@ namespace ConductorChaos.Playground
             float legAngle = 0f;
             for (int i = 0; i < 25; i++)
             {
-                SendInputServerRpc(Vector2.up, 0f, 0f, false, false, false, false);
+                SendInput(Vector2.up, 0f, 0f, false, false, false, false);
                 yield return new WaitForSeconds(0.05f);
                 if (testLeg) legAngle = Mathf.Max(legAngle, Quaternion.Angle(initialLeg, testLeg.localRotation));
             }
-            SendInputServerRpc(Vector2.zero, 0f, 0f, false, false, false, false);
+            SendInput(Vector2.zero, 0f, 0f, false, false, false, false);
             yield return new WaitForSeconds(0.3f);
             float moved = Vector3.Distance(start, transform.position);
             float baseY = transform.position.y;
@@ -835,6 +858,7 @@ namespace ConductorChaos.Playground
                 left.ShowRemote(leftPose.Value, armStretch.Value.x);
                 right.ShowRemote(rightPose.Value, armStretch.Value.y);
                 legs?.ShowRemote(leftLegPose.Value, rightLegPose.Value);
+                if (IsOwner && visual) PredictFacing();
             }
             if (!IsOwner || !playerCamera) return;
             Vector3 focus = transform.position + Vector3.up * 0.9f;
@@ -921,6 +945,33 @@ namespace ConductorChaos.Playground
             playerCamera.transform.SetPositionAndRotation(cameraPosition, look);
         }
 
+        // A remote owner sees its own turn at once: the server body turns to the same yaw a round trip later, so the
+        // visual leads by the difference. Not while gripping (hands are pinned server-side) or when knocked over.
+        private void PredictFacing()
+        {
+            float upright = Mathf.InverseLerp(0.6f, 0.9f, Vector3.Dot(transform.up, Vector3.up));
+            Vector3 flat = Vector3.ProjectOnPlane(transform.forward, Vector3.up);
+            float target = !lastLeft && !lastRight && flat.sqrMagnitude > 0.01f
+                ? Mathf.DeltaAngle(Quaternion.LookRotation(flat).eulerAngles.y, yaw) * upright : 0f;
+            predictedYawOffset = Mathf.Lerp(predictedYawOffset, target, 1f - Mathf.Exp(-25f * Time.deltaTime));
+            visual.localRotation = Quaternion.Inverse(transform.rotation) * Quaternion.AngleAxis(predictedYawOffset, Vector3.up)
+                * transform.rotation * visualRest;
+        }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private void OnGUI()
+        {
+            if (!showNetStats || !IsSpawned || !IsOwner) return;
+            var net = NetworkManager;
+            string text = $"Netwerk (F3)  tick {net.NetworkConfig.TickRate} Hz  buffer {net.NetworkTimeSystem.TickLatency} ticks";
+            if (!IsServer)
+                text += $"\nRTT {net.NetworkConfig.NetworkTransport.GetCurrentRtt(NetworkManager.ServerClientId)} ms  draai vooruit {predictedYawOffset:F0}°";
+            foreach (var player in spawnedPlayers)
+                if (IsServer && player != this) text += $"\nSpeler {player.OwnerClientId}: grootste inputgat {player.inputGapMax * 1000f:F0} ms";
+            GUI.Box(new Rect(10, 10, 430, 22 + 20 * text.Split('\n').Length), text);
+        }
+#endif
+
         private void UpdateCameraFieldOfView(bool fixedPosition)
         {
             float target = fixedPosition
@@ -972,6 +1023,7 @@ namespace ConductorChaos.Playground
         public override void OnNetworkDespawn()
         {
             spawnedPlayers.Remove(this);
+            if (visual && IsOwner && !IsServer) visual.localRotation = visualRest;
             SetCameraBodyHidden(false);
             if (playerCamera)
             {
