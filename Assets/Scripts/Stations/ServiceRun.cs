@@ -26,17 +26,17 @@ namespace ConductorChaos.Stations
         /// <summary>Alle dienstscènes in speelvolgorde (introductie, level 1, 2, 3).</summary>
         public static readonly string[] ServiceScenes = { IntroScene, FirstLevelScene, SecondLevelScene, ThirdLevelScene, FourthLevelScene, FifthLevelScene,
             SixthLevelScene, SeventhLevelScene };
-        // Complete campaign budgets, including the longer journeys. No inherited travel bonus.
+        // Complete campaign budgets, including the longer journeys (+1 minuut speelruimte). No inherited travel bonus.
         private static readonly int[][] CampaignTimeLimits =
         {
             null,
-            new[] { 300, 300, 240, 210 },
-            new[] { 360, 330, 300, 270 },
-            new[] { 600, 555, 520, 485 },
-            new[] { 585, 540, 505, 470 },
-            new[] { 405, 375, 345, 320 },  // kortste route maar krapste marge
-            new[] { 400, 370, 340, 315 },  // woestijn (± 650 m): stormloop, steenlawine en schraagbrug
-            new[] { 445, 410, 380, 350 }   // goudmijnkloof (± 850 m): twee kuddes, twee bruggen, zandstorm en mijnkarretje
+            new[] { 360, 360, 300, 270 },
+            new[] { 420, 390, 360, 330 },
+            new[] { 660, 615, 580, 545 },
+            new[] { 645, 600, 565, 530 },
+            new[] { 465, 435, 405, 380 },  // kortste route maar krapste marge
+            new[] { 460, 430, 400, 375 },  // woestijn (± 650 m): stormloop, steenlawine en schraagbrug
+            new[] { 505, 470, 440, 410 }   // goudmijnkloof (± 850 m): twee kuddes, twee bruggen, zandstorm en mijnkarretje
         };
         public static bool IsServiceScene(string scene) => System.Array.IndexOf(ServiceScenes, scene) >= 0;
         private static readonly string[] CampaignStops = { "Whistleton", "Bumblewick", "Puddleford", "Craggleton", "Eaglecrest", "Frostbury", "Fernwood", "Redrock",
@@ -816,6 +816,6 @@ namespace ConductorChaos.Stations
             return DefaultTimeLimit(crew) + extraTravelSeconds;
         }
 
-        internal static int DefaultTimeLimit(int crew) => crew switch { <= 1 => 300, 2 => 270, 3 => 240, _ => 210 };
+        internal static int DefaultTimeLimit(int crew) => crew switch { <= 1 => 360, 2 => 330, 3 => 300, _ => 270 };
     }
 }
