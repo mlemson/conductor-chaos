@@ -963,12 +963,14 @@ namespace ConductorChaos.Playground
         {
             if (!showNetStats || !IsSpawned || !IsOwner) return;
             var net = NetworkManager;
-            string text = $"Netwerk (F3)  tick {net.NetworkConfig.TickRate} Hz  buffer {net.NetworkTimeSystem.TickLatency} ticks";
+            int buffer = Mathf.Max(1, net.NetworkTimeSystem.TickLatency + NetworkTransform.InterpolationBufferTickOffset);
+            string text = $"Netwerk (F3)  tick {net.NetworkConfig.TickRate} Hz  buffer {buffer} ticks (NGO {net.NetworkTimeSystem.TickLatency})";
             if (!IsServer)
                 text += $"\nRTT {net.NetworkConfig.NetworkTransport.GetCurrentRtt(NetworkManager.ServerClientId)} ms  draai vooruit {predictedYawOffset:F0}°";
             foreach (var player in spawnedPlayers)
                 if (IsServer && player != this) text += $"\nSpeler {player.OwnerClientId}: grootste inputgat {player.inputGapMax * 1000f:F0} ms";
-            GUI.Box(new Rect(10, 10, 430, 22 + 20 * text.Split('\n').Length), text);
+            float height = 22 + 20 * text.Split('\n').Length;
+            GUI.Box(new Rect(10, Screen.height - height - 10, 470, height), text); // bottom-left, clear of the level HUD
         }
 #endif
 

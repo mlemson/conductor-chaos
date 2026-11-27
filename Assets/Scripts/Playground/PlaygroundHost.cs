@@ -21,6 +21,7 @@ namespace ConductorChaos.Playground
         [SerializeField] private GameObject remotePlayerPrefab;
         private const ushort SoloPort = 7777;
         internal const int Capacity = 6;
+        private const int MaxInterpolationTicks = 4;
         private const string RelayProtocol = "dtls";
         private const string LobbyStateMessage = "Playground.LobbyState";
         private const string LobbyScene = "TrainPlayground";
@@ -326,6 +327,12 @@ namespace ConductorChaos.Playground
         private void Update()
         {
             if (!manager) return;
+            // NGO buffers a full round trip of transform states, but a state is only half a round trip old when it
+            // arrives; cap the buffer so clients see the shared world (and their own player) sooner. Measured over
+            // Relay: input gaps up to ~63 ms, so 4 ticks (80 ms at 50 Hz) still covers the jitter.
+            if (manager.IsListening && !manager.IsServer && manager.NetworkTimeSystem != null)
+                Unity.Netcode.Components.NetworkTransform.InterpolationBufferTickOffset =
+                    Mathf.Min(0, MaxInterpolationTicks - manager.NetworkTimeSystem.TickLatency);
             if (returningToLobby && !manager.IsListening && !manager.ShutdownInProgress)
             {
                 returningToLobby = false;
