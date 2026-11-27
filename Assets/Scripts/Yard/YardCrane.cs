@@ -75,6 +75,8 @@ namespace ConductorChaos.Yard
                 float initial = Mathf.InverseLerp(hookTop.y, hookBottom.y, hook.localPosition.y);
                 pose.Value = new Vector4(0f, initial, 0f, 0f);
             }
+            // Clients present slew and hook through their transforms; interpolation would write stale physics poses over them.
+            slewBody.interpolation = hookBody.interpolation = IsServer ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
             turn.GetComponent<Rigidbody>().isKinematic = !IsServer;
             lift.GetComponent<Rigidbody>().isKinematic = !IsServer;
             Present(pose.Value, false);

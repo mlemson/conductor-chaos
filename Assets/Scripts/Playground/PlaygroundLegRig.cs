@@ -308,7 +308,7 @@ namespace ConductorChaos.Playground
                     if (hit.rigidbody && !hit.rigidbody.isKinematic)
                     {
                         NetworkObject target = hit.rigidbody.GetComponentInParent<NetworkObject>();
-                        if (!target || !target.IsSpawned || !target.IsOwnedByServer) continue;
+                        if (!target || !target.IsSpawned || !(target.IsOwnedByServer || target.TryGetComponent<PlaygroundPlayer>(out _))) continue;
                     }
                     nearest = hit;
                     distance = hit.distance;

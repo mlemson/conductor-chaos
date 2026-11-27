@@ -2155,7 +2155,8 @@ namespace ConductorChaos.Playground
             shovelBody.mass = 0.4f;
             shovelBody.isKinematic = !IsServer;
             shovelBody.useGravity = IsServer;
-            shovelBody.interpolation = RigidbodyInterpolation.Interpolate;
+            // Clients place the shovel through its transform; interpolation would write stale physics poses over it.
+            shovelBody.interpolation = IsServer ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
             ControlOwners[shovelBody] = this;
             shovelGrip = shovel.gameObject.AddComponent<SphereCollider>();
             shovelGrip.radius = 0.066f;

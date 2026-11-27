@@ -267,7 +267,7 @@ namespace ConductorChaos.Playground
             if (!float.IsFinite(move.x) || !float.IsFinite(move.y) || !float.IsFinite(direction) || !float.IsFinite(lookPitch) ||
                 !float.IsFinite(handFocus)) return;
             if ((l || r) && (move.sqrMagnitude > 0.01f || Mathf.Abs(Mathf.DeltaAngle(requestedYaw, direction)) > 0.02f || Mathf.Abs(requestedPitch - lookPitch) > 0.02f))
-                lastLeverInputAt = Time.unscaledTime + 0.12f;
+                lastLeverInputAt = Time.unscaledTime + 0.25f; // covers one late 20 Hz input packet from a remote client
             requestedMove = Vector2.ClampMagnitude(move, 1f);
             requestedYaw = Mathf.Repeat(direction, 360f);
             requestedPitch = Mathf.Clamp(lookPitch, -80f, 65f);
@@ -368,7 +368,9 @@ namespace ConductorChaos.Playground
         private void FixedUpdate()
         {
             if (!IsSpawned || !IsServer) return;
-            if (Time.unscaledTime - lastServerInput > 0.35f)
+            // Remote input arrives with network jitter (a resent packet holds later ones back); a short gap must not
+            // stop a remote player or open their hands. Focus loss and menus already send an explicit stop.
+            if (Time.unscaledTime - lastServerInput > 1f)
             {
                 requestedMove = Vector2.zero;
                 requestedHandFocus = 0f;
@@ -1344,7 +1346,8 @@ namespace ConductorChaos.Playground
                     if (hit.rigidbody)
                     {
                         NetworkObject target = hit.rigidbody.GetComponentInParent<NetworkObject>();
-                        bool networkOwned = target && target.IsSpawned && target.IsOwnedByServer;
+                        // Players are server-simulated whoever owns them, so every crew member can be grabbed alike.
+                        bool networkOwned = target && target.IsSpawned && (target.IsOwnedByServer || target.TryGetComponent<PlaygroundPlayer>(out _));
                         bool guidedWagon = TrainDrive.FindGuidedSupport(hit.rigidbody) == hit.rigidbody;
                         if (!networkOwned && !guidedWagon && !TrainDrive.IsCoalBody(hit.rigidbody)) continue;
                     }
